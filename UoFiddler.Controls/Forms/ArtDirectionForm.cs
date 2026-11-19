@@ -51,6 +51,11 @@ namespace UoFiddler.Controls.Forms
         private NumericUpDown _shadowAngle;
         private NumericUpDown _shadowLuma;
         private CheckBox _overlayCheck;
+        private TextBox _searchBox;
+        private CheckBox _subFolderCheck;
+        private TextBox _subFolderName;
+        private bool _imported;              // results come from an imported sprite sheet (not generated)
+        private SpriteSheetInfo _lastSheet;  // layout of the last exported / imported sheet (for the AI prompt)
         private CheckBox _fieldCheck;
         private CheckBox _whiteTransparentCheck;
         private ComboBox _zoomBox;
@@ -109,6 +114,26 @@ namespace UoFiddler.Controls.Forms
             top.Controls.Add(MakeButton("Load image...", (s, e) => LoadFromFile()));
             top.Controls.Add(MakeButton("Paste (Ctrl+V)", (s, e) => LoadFromClipboard()));
             top.Controls.Add(MakeButton("Load item ID...", (s, e) => LoadFromItemId()));
+
+            // browse through the arts and search by name / id / hex
+            var prev = MakeButton("\u25c0", (s, e) => Browse(-1));
+            var next = MakeButton("\u25b6", (s, e) => Browse(1));
+            new ToolTip().SetToolTip(prev, "Previous art (item with a graphic)");
+            new ToolTip().SetToolTip(next, "Next art (item with a graphic)");
+            top.Controls.Add(prev);
+            top.Controls.Add(next);
+            _searchBox = new TextBox { Width = 120 };
+            new ToolTip().SetToolTip(_searchBox, "Name (part of the TileData name), decimal id or hex (0x...). Enter = find (again = next match).");
+            _searchBox.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    Search();
+                    e.SuppressKeyPress = true;
+                }
+            };
+            top.Controls.Add(_searchBox);
+            top.Controls.Add(MakeButton("Find", (s, e) => Search()));
             _whiteTransparentCheck = new CheckBox { Text = "White = transparent (file/clipboard)", AutoSize = true, Checked = true, Margin = new Padding(8, 7, 3, 3) };
             top.Controls.Add(_whiteTransparentCheck);
 
@@ -132,7 +157,7 @@ namespace UoFiddler.Controls.Forms
                 _suspendUpdate = false;
                 Regenerate();
             }));
-            top.Controls.Add(MakeButton("Generate", (s, e) => Regenerate()));
+            top.Controls.Add(MakeButton("Generate", (s, e) => { _imported = false; Regenerate(); }));
             root.Controls.Add(top, 0, 0);
 
             // --- row 2: options
@@ -262,7 +287,20 @@ namespace UoFiddler.Controls.Forms
             // --- row 4: insert all + status
             var bottom = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true };
             bottom.Controls.Add(MakeButton("Next free IDs", (s, e) => FillFreeIds()));
+            bottom.Controls.Add(MakeButton("4 free slots", (s, e) => FindFourFreeSlots()));
             bottom.Controls.Add(MakeButton("Insert all checked into Art", (s, e) => InsertAll()));
+            bottom.Controls.Add(MakeLabel("|"));
+            bottom.Controls.Add(MakeButton("Save PNGs", (s, e) => SavePngs(false)));
+            bottom.Controls.Add(MakeButton("Folder...", (s, e) => SavePngs(true)));
+            _subFolderCheck = new CheckBox { Text = "new folder:", AutoSize = true, Checked = true, Margin = new Padding(6, 7, 0, 3) };
+            bottom.Controls.Add(_subFolderCheck);
+            _subFolderName = new TextBox { Width = 140 };
+            new ToolTip().SetToolTip(_subFolderName, "Name of the new folder inside the export folder (empty = item name + id)");
+            bottom.Controls.Add(_subFolderName);
+            bottom.Controls.Add(MakeLabel("|"));
+            bottom.Controls.Add(MakeButton("Export sprite sheet...", (s, e) => ExportSheet()));
+            bottom.Controls.Add(MakeButton("Import sprite sheet...", (s, e) => ImportSheet()));
+            bottom.Controls.Add(MakeButton("Copy AI prompt", (s, e) => CopyAiPrompt()));
             _statusLabel = MakeLabel("Load an image (or select an item in the Items tab and open this window).");
             _statusLabel.AutoSize = true;
             bottom.Controls.Add(_statusLabel);
@@ -431,6 +469,7 @@ namespace UoFiddler.Controls.Forms
         /// <summary>Sets the source image (called by the Items tab with the selected item).</summary>
         public void LoadSource(Bitmap bitmap, int itemId)
         {
+            _imported = false;
             if (bitmap == null)
             {
                 return;
@@ -738,6 +777,13 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
+            if (_imported)
+            {
+                RefreshPreviews();
+                SetStatus("Showing the imported sprite sheet - press 'Generate' to compute the directions again.");
+                return;
+            }
+
             ArtDirectionOptions options = CurrentOptions();
             _results.Clear();
             foreach (ArtDirection d in _allDirections)
@@ -906,6 +952,393 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        #region Browse / search / free slots / export / sprite sheet
+        private bool IsSourceSlot(ArtDirection d)
+        {
+            return d == SourceDirection && _sourceId >= 0 &&
+                   Utils.ConvertStringToInt(_idBoxes[d].Text, out int id, 0, Art.GetMaxExtendedItemId()) && id == _sourceId;
+        }
+
+        private void LoadItem(int id)
+        {
+            _imported = false;
+            LoadSource(Art.GetStatic(id), id);
+        }
+
+        /// <summary>Previous / next item that has a graphic (legacy range and extension).</summary>
+        private void Browse(int step)
+        {
+            int max = Art.GetMaxExtendedItemId();
+            int id = _sourceId >= 0 ? _sourceId : (step > 0 ? -1 : max + 1);
+            for (int guard = 0; guard <= max + 1; ++guard)
+            {
+                id += step;
+                if (id < 0 || id > max)
+                {
+                    SetStatus(step > 0 ? "Last art reached." : "First art reached.");
+                    return;
+                }
+
+                if (Art.IsLegalStaticId(id) && Art.IsValidStatic(id))
+                {
+                    LoadItem(id);
+                    return;
+                }
+            }
+        }
+
+        /// <summary>Decimal / hex id loads that item; any other text searches the TileData names (next match).</summary>
+        private void Search()
+        {
+            string text = (_searchBox.Text ?? string.Empty).Trim();
+            if (text.Length == 0)
+            {
+                return;
+            }
+
+            bool isNumber = text.StartsWith("0x", StringComparison.OrdinalIgnoreCase) || text.All(char.IsDigit);
+            int max = Art.GetMaxExtendedItemId();
+            if (isNumber)
+            {
+                if (Utils.ConvertStringToInt(text, out int id, 0, max) && Art.IsLegalStaticId(id) && Art.IsValidStatic(id))
+                {
+                    LoadItem(id);
+                }
+                else
+                {
+                    SetStatus($"'{text}' is no art with a graphic.");
+                }
+
+                return;
+            }
+
+            int start = _sourceId >= 0 ? _sourceId : -1;
+            for (int n = 1; n <= max + 1; ++n)
+            {
+                int id = (start + n) % (max + 1);
+                if (!Art.IsLegalStaticId(id) || TileData.ItemTable == null || id >= TileData.ItemTable.Length)
+                {
+                    continue;
+                }
+
+                string name = TileData.ItemTable[id].Name;
+                if (!string.IsNullOrEmpty(name) && name.Contains(text, StringComparison.OrdinalIgnoreCase) && Art.IsValidStatic(id))
+                {
+                    LoadItem(id);
+                    SetStatus($"Found '{name.Trim()}' 0x{id:X4} (Find again = next match).");
+                    return;
+                }
+            }
+
+            SetStatus($"No art named '{text}'.");
+        }
+
+        /// <summary>Four free ids in a row (after the source) -> North, East, South, West, so all four get new slots.</summary>
+        private void FindFourFreeSlots()
+        {
+            int max = Art.GetMaxExtendedItemId();
+            int start = Math.Max(1, _sourceId + 1);
+            for (int pass = 0; pass < 2; ++pass)
+            {
+                for (int id = start; id + 3 <= max; ++id)
+                {
+                    bool free = true;
+                    for (int k = 0; k < 4 && free; ++k)
+                    {
+                        free = Art.IsLegalStaticId(id + k) && !Art.IsValidStatic(id + k);
+                    }
+
+                    if (!free)
+                    {
+                        continue;
+                    }
+
+                    for (int k = 0; k < _allDirections.Length; ++k)
+                    {
+                        _idBoxes[_allDirections[k]].Text = $"0x{id + k:X4}";
+                    }
+
+                    SetStatus($"4 free slots 0x{id:X4} - 0x{id + 3:X4}: North, East, South, West. 'Insert all' places all four there.");
+                    return;
+                }
+
+                start = 1; // nothing after the source: search from the beginning
+            }
+
+            SetStatus("No 4 free slots in a row found.");
+        }
+
+        private string DefaultExportName()
+        {
+            string name = _sourceId >= 0 && TileData.ItemTable != null && _sourceId < TileData.ItemTable.Length
+                ? (TileData.ItemTable[_sourceId].Name ?? string.Empty).Trim()
+                : Path.GetFileNameWithoutExtension(_sourceText);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = "art";
+            }
+
+            if (_sourceId >= 0)
+            {
+                name += $"_0x{_sourceId:X4}";
+            }
+
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                name = name.Replace(c, '_');
+            }
+
+            return name.Replace(' ', '_');
+        }
+
+        /// <summary>The export folder (remembered), optionally with a new sub folder.</summary>
+        private string ExportFolder(bool choose)
+        {
+            ArtDirectionSettings settings = ArtDirectionSettings.Load();
+            string folder = settings.ExportFolder;
+            if (choose || string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+            {
+                using var dlg = new FolderBrowserDialog
+                {
+                    Description = "Folder for the exported graphics (remembered)",
+                    SelectedPath = Directory.Exists(folder ?? string.Empty) ? folder : Options.OutputPath
+                };
+                if (dlg.ShowDialog(this) != DialogResult.OK)
+                {
+                    return null;
+                }
+
+                folder = dlg.SelectedPath;
+                settings.ExportFolder = folder;
+                settings.Save();
+            }
+
+            if (_subFolderCheck.Checked)
+            {
+                string sub = string.IsNullOrWhiteSpace(_subFolderName.Text) ? DefaultExportName() : _subFolderName.Text.Trim();
+                foreach (char c in Path.GetInvalidFileNameChars())
+                {
+                    sub = sub.Replace(c, '_');
+                }
+
+                folder = Path.Combine(folder, sub);
+            }
+
+            Directory.CreateDirectory(folder);
+            return folder;
+        }
+
+        private void SavePngs(bool chooseFolder)
+        {
+            if (_source == null)
+            {
+                return;
+            }
+
+            string folder = ExportFolder(chooseFolder);
+            if (folder == null)
+            {
+                return;
+            }
+
+            string name = DefaultExportName();
+            int count = 0;
+            using (Bitmap src = ToExportBitmap(_source))
+            {
+                src.Save(Path.Combine(folder, $"{name}_Source.png"), ImageFormat.Png);
+                ++count;
+            }
+
+            foreach (ArtDirection d in _allDirections)
+            {
+                if (_results.TryGetValue(d, out ArtDirectionResult r))
+                {
+                    using Bitmap bmp = ToExportBitmap(r.Image);
+                    bmp.Save(Path.Combine(folder, $"{name}_{d}.png"), ImageFormat.Png);
+                    ++count;
+                }
+            }
+
+            SetStatus($"{count} PNG(s) saved to {folder}");
+        }
+
+        private List<(string Label, int ItemId, ArtPixelImage Image)> SheetSprites()
+        {
+            var list = new List<(string, int, ArtPixelImage)> { ("Source", _sourceId, _source) };
+            foreach (ArtDirection d in _allDirections)
+            {
+                int id = Utils.ConvertStringToInt(_idBoxes[d].Text, out int v, 0, Art.GetMaxExtendedItemId()) ? v : -1;
+                list.Add((d.ToString(), id, _results.TryGetValue(d, out ArtDirectionResult r) ? r.Image : null));
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// One picture with Source, North, East, South, West in cells (magenta lines, black = transparent, bottom
+        /// centre = UO fix point) + a .json and a .txt with the instructions - to send it to somebody / an AI.
+        /// </summary>
+        private void ExportSheet()
+        {
+            if (_source == null)
+            {
+                return;
+            }
+
+            string folder = ExportFolder(false);
+            if (folder == null)
+            {
+                return;
+            }
+
+            string name = DefaultExportName();
+            ArtPixelImage sheet = ArtSpriteSheet.Compose(SheetSprites(), 5, 4, name, out SpriteSheetInfo info);
+            string png = Path.Combine(folder, $"{name}_sheet.png");
+            using (Bitmap bmp = ToExportBitmap(sheet, Color.Black))
+            {
+                bmp.Save(png, ImageFormat.Png);
+            }
+
+            File.WriteAllText(Path.ChangeExtension(png, ".json"), ArtSpriteSheet.ToJson(info));
+            File.WriteAllText(Path.Combine(folder, $"{name}_sheet_prompt.txt"), ArtSpriteSheet.AiPrompt(info));
+            _lastSheet = info;
+            SetStatus($"Sprite sheet saved: {png} (+ .json and _prompt.txt). 'Copy AI prompt' puts the instructions into the clipboard.");
+        }
+
+        /// <summary>Inserts every graphic into consecutive free slots (after the source / from the start).</summary>
+        private void InsertAllCells(List<ArtPixelImage> images)
+        {
+            int max = Art.GetMaxExtendedItemId(), n = images.Count;
+            int start = -1;
+            for (int id = Math.Max(1, _sourceId + 1); id + n - 1 <= max && start < 0; ++id)
+            {
+                bool free = true;
+                for (int k = 0; k < n && free; ++k)
+                {
+                    free = Art.IsLegalStaticId(id + k) && !Art.IsValidStatic(id + k);
+                }
+
+                if (free)
+                {
+                    start = id;
+                }
+            }
+
+            if (start < 0)
+            {
+                SetStatus($"No {n} free slots in a row found.");
+                return;
+            }
+
+            for (int k = 0; k < n; ++k)
+            {
+                _insertCallback?.Invoke(start + k, ToBitmap(images[k]));
+            }
+
+            SetStatus($"{n} graphics inserted as 0x{start:X4} - 0x{start + n - 1:X4}. Save the Art to write the files.");
+        }
+
+        private void CopyAiPrompt()
+        {
+            SpriteSheetInfo info = _lastSheet;
+            if (info == null && _source != null)
+            {
+                ArtSpriteSheet.Compose(SheetSprites(), 5, 4, DefaultExportName(), out info);
+            }
+
+            Clipboard.SetText(ArtSpriteSheet.AiPrompt(info));
+            SetStatus("AI prompt copied to the clipboard - paste it together with the sprite sheet.");
+        }
+
+        /// <summary>
+        /// Reads a sprite sheet (PNG, with or without .json) - e.g. edited by somebody else or an AI - and shows its
+        /// cells as Source / North / East / South / West, ready to insert.
+        /// </summary>
+        private void ImportSheet()
+        {
+            using var dlg = new OpenFileDialog { Filter = "Sprite sheet (*.png;*.bmp)|*.png;*.bmp", Title = "Import sprite sheet" };
+            string folder = ArtDirectionSettings.Load().ExportFolder;
+            if (!string.IsNullOrEmpty(folder) && Directory.Exists(folder))
+            {
+                dlg.InitialDirectory = folder;
+            }
+
+            if (dlg.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+
+            ArtPixelImage sheet;
+            using (var bmp = new Bitmap(dlg.FileName))
+            {
+                sheet = FromBitmap(bmp, false);
+            }
+
+            string json = Path.ChangeExtension(dlg.FileName, ".json");
+            SpriteSheetInfo info = File.Exists(json) ? ArtSpriteSheet.FromJson(File.ReadAllText(json)) : null;
+            List<(SpriteSheetCell Cell, ArtPixelImage Image)> cells = ArtSpriteSheet.Slice(sheet, info);
+            if (cells.Count == 0)
+            {
+                SetStatus("No cells found (magenta #FF00FF separator lines or a .json are needed).");
+                return;
+            }
+
+            // a sheet with more cells (new graphics from somebody): all of them can go into free slots at once
+            var filled = cells.Where(c => c.Image != null).ToList();
+            if (cells.Count > 5 && filled.Count > 0 &&
+                MessageBox.Show(this, $"The sheet has {filled.Count} graphics. Insert ALL of them as new items into free slots in a row?" +
+                    Environment.NewLine + "(No = show the first five cells as Source / North / East / South / West.)",
+                    "Import sprite sheet", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                InsertAllCells(filled.Select(c => c.Image).ToList());
+                return;
+            }
+
+            // assign by label, otherwise by position: Source, North, East, South, West
+            string[] order = { "Source", "North", "East", "South", "West" };
+            var byLabel = new Dictionary<string, (SpriteSheetCell Cell, ArtPixelImage Image)>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < cells.Count; ++i)
+            {
+                string label = !string.IsNullOrEmpty(cells[i].Cell.Label) ? cells[i].Cell.Label : i < order.Length ? order[i] : $"Cell{i}";
+                byLabel[label] = cells[i];
+            }
+
+            if (byLabel.TryGetValue("Source", out var srcCell) && srcCell.Image != null)
+            {
+                _source = srcCell.Image;
+                _sourceId = srcCell.Cell.ItemId;
+                _sourceText = $"{Path.GetFileName(dlg.FileName)} (sheet)";
+            }
+
+            _results.Clear();
+            int count = 0;
+            foreach (ArtDirection d in _allDirections)
+            {
+                if (byLabel.TryGetValue(d.ToString(), out var c) && c.Image != null)
+                {
+                    _results[d] = new ArtDirectionResult { Direction = d, Image = c.Image, IsExact = true, Note = "Imported from the sprite sheet." };
+                    if (c.Cell.ItemId >= 0)
+                    {
+                        _idBoxes[d].Text = $"0x{c.Cell.ItemId:X4}";
+                    }
+
+                    ++count;
+                }
+            }
+
+            if (_source == null)
+            {
+                _source = _results.Values.FirstOrDefault()?.Image;
+            }
+
+            _lastSheet = info;
+            _imported = true;
+            RefreshPreviews();
+            SetStatus($"{count} direction(s) imported from {Path.GetFileName(dlg.FileName)}" +
+                      (info == null ? " (cells found by the magenta lines)" : string.Empty) + ". Check them and 'Insert all'.");
+        }
+        #endregion
+
         #region Output
         private void FillFreeIds()
         {
@@ -974,7 +1407,7 @@ namespace UoFiddler.Controls.Forms
         private void InsertAll()
         {
             var used = _allDirections
-                .Where(d => _results.ContainsKey(d) && !(d == SourceDirection && _sourceId >= 0))
+                .Where(d => _results.ContainsKey(d) && !IsSourceSlot(d))
                 .Where(d => Utils.ConvertStringToInt(_idBoxes[d].Text, out int id, 0, Art.GetMaxExtendedItemId()) && Art.IsValidStatic(id))
                 .ToList();
 
@@ -988,8 +1421,8 @@ namespace UoFiddler.Controls.Forms
             int count = 0;
             foreach (ArtDirection d in _allDirections)
             {
-                // the drawn direction of an existing item is not written again
-                if (d == SourceDirection && _sourceId >= 0)
+                // the drawn direction is not written onto the source item itself (but into a new slot, e.g. "4 free slots")
+                if (IsSourceSlot(d))
                 {
                     continue;
                 }
