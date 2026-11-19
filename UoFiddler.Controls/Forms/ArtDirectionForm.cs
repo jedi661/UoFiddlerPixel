@@ -288,6 +288,9 @@ namespace UoFiddler.Controls.Forms
             var bottom = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true };
             bottom.Controls.Add(MakeButton("Next free IDs", (s, e) => FillFreeIds()));
             bottom.Controls.Add(MakeButton("4 free slots", (s, e) => FindFourFreeSlots()));
+            var place = MakeButton("Place...", (s, e) => OpenPlacement());
+            new ToolTip().SetToolTip(place, "Choose the slots of the directions: from an address, free blocks (browse with arrows), the selection in the Items tab or by hand");
+            bottom.Controls.Add(place);
             bottom.Controls.Add(MakeButton("Insert all checked into Art", (s, e) => InsertAll()));
             bottom.Controls.Add(MakeLabel("|"));
             bottom.Controls.Add(MakeButton("Save PNGs", (s, e) => SavePngs(false)));
@@ -1205,37 +1208,17 @@ namespace UoFiddler.Controls.Forms
             SetStatus($"Sprite sheet saved: {png} (+ .json and _prompt.txt). 'Copy AI prompt' puts the instructions into the clipboard.");
         }
 
-        /// <summary>Inserts every graphic into consecutive free slots (after the source / from the start).</summary>
-        private void InsertAllCells(List<ArtPixelImage> images)
+        /// <summary>Placement window for the current directions (North, East, South, West).</summary>
+        private void OpenPlacement()
         {
-            int max = Art.GetMaxExtendedItemId(), n = images.Count;
-            int start = -1;
-            for (int id = Math.Max(1, _sourceId + 1); id + n - 1 <= max && start < 0; ++id)
+            var items = _allDirections.Where(d => _results.ContainsKey(d)).Select(d => (d.ToString(), _results[d].Image)).ToList();
+            if (items.Count == 0)
             {
-                bool free = true;
-                for (int k = 0; k < n && free; ++k)
-                {
-                    free = Art.IsLegalStaticId(id + k) && !Art.IsValidStatic(id + k);
-                }
-
-                if (free)
-                {
-                    start = id;
-                }
-            }
-
-            if (start < 0)
-            {
-                SetStatus($"No {n} free slots in a row found.");
+                SetStatus("Nothing to place - generate or import first.");
                 return;
             }
 
-            for (int k = 0; k < n; ++k)
-            {
-                _insertCallback?.Invoke(start + k, ToBitmap(images[k]));
-            }
-
-            SetStatus($"{n} graphics inserted as 0x{start:X4} - 0x{start + n - 1:X4}. Save the Art to write the files.");
+            new SpriteSheetPlacementForm(items, Math.Max(1, _sourceId + 1), _insertCallback).Show(this);
         }
 
         private void CopyAiPrompt()
@@ -1286,11 +1269,12 @@ namespace UoFiddler.Controls.Forms
             // a sheet with more cells (new graphics from somebody): all of them can go into free slots at once
             var filled = cells.Where(c => c.Image != null).ToList();
             if (cells.Count > 5 && filled.Count > 0 &&
-                MessageBox.Show(this, $"The sheet has {filled.Count} graphics. Insert ALL of them as new items into free slots in a row?" +
+                MessageBox.Show(this, $"The sheet has {filled.Count} graphics. Place ALL of them as new items (choose the slots)?" +
                     Environment.NewLine + "(No = show the first five cells as Source / North / East / South / West.)",
                     "Import sprite sheet", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                InsertAllCells(filled.Select(c => c.Image).ToList());
+                var items = cells.Select((c, i) => (string.IsNullOrEmpty(c.Cell.Label) ? $"Cell {i} (col {c.Cell.Column}, row {c.Cell.Row})" : c.Cell.Label, c.Image)).ToList();
+                new SpriteSheetPlacementForm(items, Math.Max(1, _sourceId + 1), _insertCallback).Show(this);
                 return;
             }
 

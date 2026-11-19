@@ -1086,6 +1086,29 @@ namespace UoFiddler.Controls.UserControls
             SyncViewBox();
         }
 
+        /// <summary>Ids of the slots selected in the Items tab (sorted), e.g. as targets for imported graphics.</summary>
+        public static IReadOnlyList<int> GetSelectedGraphicIds()
+        {
+            ItemsControl m = RefMarker;
+            if (m == null || !m.IsLoaded)
+            {
+                return Array.Empty<int>();
+            }
+
+            return m.ItemsTileView.SelectedIndices.Cast<int>()
+                .Where(i => i >= 0 && i < m._itemList.Count)
+                .Select(i => m._itemList[i])
+                .Distinct()
+                .OrderBy(id => id)
+                .ToList();
+        }
+
+        /// <summary>Shows an id in the Items tab (free slots too: switches to the slot view if needed).</summary>
+        public static void ShowGraphic(int id)
+        {
+            RefMarker?.GoToId(id);
+        }
+
         /// <summary>Selects any id in the Items tab; switches to the slot view if the id is not in the current list.</summary>
         private void GoToId(int id)
         {
