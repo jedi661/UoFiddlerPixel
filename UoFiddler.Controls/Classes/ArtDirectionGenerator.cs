@@ -225,8 +225,25 @@ namespace UoFiddler.Controls.Classes
                 switch (options.Kind)
                 {
                     case ArtObjectKind.Symmetric:
-                        notes.Add("Symmetric object: back side = front side.");
+                    {
+                        // walls / doors: same picture on the opposite (back) edge of the tile. North and West sit on
+                        // the upper edges, 22 px higher - the frame grows instead of cutting the graphic off.
+                        (int dx, int dy) = UoTile.OppositeEdgeShift((int)sourceDirection);
+                        (int nw, int nh, int[] smap) = UoTile.ShiftInFieldMap(img, dx, dy);
+                        var shifted = new ArtPixelImage(nw, nh);
+                        for (int i = 0; i < smap.Length; ++i)
+                        {
+                            if (smap[i] >= 0)
+                            {
+                                shifted.Pixels[i] = img.Pixels[smap[i]];
+                            }
+                        }
+
+                        img = shifted;
+                        cls = ApplyMap(cls, smap);
+                        notes.Add($"Wall/door: moved to the opposite edge of the tile ({dx:+0;-0}/{dy:+0;-0} px, frame {nw}x{nh}).");
                         break;
+                    }
                     case ArtObjectKind.Flat:
                         img = Rotate180(img);
                         notes.Add("Flat object: rotated 180°.");
@@ -1016,7 +1033,7 @@ namespace UoFiddler.Controls.Classes
                 return null;
             }
 
-            var dst = new ArtFaceClass[src.Length];
+            var dst = new ArtFaceClass[map.Length]; // the map may describe a bigger frame (shift in the field)
             for (int i = 0; i < map.Length; ++i)
             {
                 if (map[i] >= 0)

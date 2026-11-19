@@ -39,6 +39,83 @@ namespace UoFiddler.Controls.Classes
         /// <summary>Where a graphic of size w x h is drawn for the tile box (tx, ty) (+ an own offset).</summary>
         public static (int X, int Y) DrawPosition(int tx, int ty, int w, int h, int offX = 0, int offY = 0) =>
             (tx + Half - (w / 2) + offX, ty + Size - h + offY);
+
+        /// <summary>
+        /// Field offset of a wall-like graphic for its edge of the tile: South = lower left edge, East = lower right,
+        /// North = upper right (= South moved by +22/-22), West = upper left (= East moved by -22/-22).
+        /// Returns the move from the edge of <paramref name="from"/> to the edge of the opposite direction.
+        /// </summary>
+        public static (int Dx, int Dy) OppositeEdgeShift(int fromDirection) => fromDirection switch
+        {
+            0 => (Half, -Half),   // South -> North
+            2 => (-Half, Half),   // North -> South
+            1 => (-Half, -Half),  // East  -> West
+            _ => (Half, Half)     // West  -> East
+        };
+
+        /// <summary>
+        /// Moves the graphic by (dx, dy) pixels RELATIVE TO ITS TILE without cutting anything off: the frame is
+        /// changed instead (a graphic can never reach below the bottom corner of its tile):
+        ///   height  h' = h - dy   (up = taller, the rows keep their y; down = the lowest rows are dropped)
+        ///   width   grows by the same amount on both sides only if the moved pixels would leave the frame,
+        ///           so floor(w'/2) - floor(w/2) is compensated and the fix point stays on the tile.
+        /// Returns the new size and a map target index -> source index (-1 = empty).
+        /// </summary>
+        public static (int W, int H, int[] Map) ShiftInFieldMap(ArtPixelImage img, int dx, int dy)
+        {
+            int w = img.Width, h = img.Height;
+            int nh = Math.Max(1, h - dy);
+            int minX = w, maxX = -1;
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    if (img.IsOpaque(x, y))
+                    {
+                        minX = Math.Min(minX, x);
+                        maxX = Math.Max(maxX, x);
+                    }
+                }
+            }
+
+            int overflow = maxX < 0 ? 0 : Math.Max(0, Math.Max(-(minX + dx), maxX + dx - (w - 1)));
+            int nw = w + (2 * overflow);
+            var map = new int[nw * nh];
+            Array.Fill(map, -1);
+            for (int y = 0; y < h && y < nh; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    int nx = x + dx + overflow;
+                    if (nx >= 0 && nx < nw)
+                    {
+                        map[(y * nw) + nx] = (y * w) + x;
+                    }
+                }
+            }
+
+            return (nw, nh, map);
+        }
+
+        public static ArtPixelImage ShiftInField(ArtPixelImage img, int dx, int dy)
+        {
+            if (dx == 0 && dy == 0)
+            {
+                return img;
+            }
+
+            (int nw, int nh, int[] map) = ShiftInFieldMap(img, dx, dy);
+            var dst = new ArtPixelImage(nw, nh);
+            for (int i = 0; i < map.Length; ++i)
+            {
+                if (map[i] >= 0)
+                {
+                    dst.Pixels[i] = img.Pixels[map[i]];
+                }
+            }
+
+            return dst;
+        }
     }
 
     public enum TransformType
@@ -55,7 +132,8 @@ namespace UoFiddler.Controls.Classes
         Move,     // A = dx, B = dy
         Distort,  // P[8] = offsets of the frame corners TL, TR, BL, BR (dx, dy each)
         Warp,     // P[18] = offsets of a 3x3 point grid over the frame (row by row, dx, dy each)
-        Mesh      // A = spacing of the grid dots, P = offsets of every grid dot (see MeshLattice)
+        Mesh,     // A = spacing of the grid dots, P = offsets of every grid dot (see MeshLattice)
+        MeshIso   // P = offsets of every corner of the UO field grid (tile diamonds, see IsoLattice)
     }
 
     /// <summary>One step of a transformation (stored as JSON, so a transformation can be remembered).</summary>
@@ -78,6 +156,12 @@ namespace UoFiddler.Controls.Classes
             return new TransformStep { Type = TransformType.Mesh, A = spacing, P = new double[xs.Length * ys.Length * 2] };
         }
 
+        public static TransformStep NewMeshIso(int canvasWidth, int canvasHeight)
+        {
+            (double[] us, double[] vs) = ArtTransform.IsoLattice(canvasWidth, canvasHeight);
+            return new TransformStep { Type = TransformType.MeshIso, P = new double[us.Length * vs.Length * 2] };
+        }
+
         public override string ToString() => Type switch
         {
             TransformType.FlipH => "Flip \u2194",
@@ -93,6 +177,7 @@ namespace UoFiddler.Controls.Classes
             TransformType.Distort => "Distort (4 corners)",
             TransformType.Warp => "Warp (3x3 points)",
             TransformType.Mesh => $"Grid dots ({A:0} px)",
+            TransformType.MeshIso => "UO field dots (tile corners)",
             _ => Type.ToString()
         };
     }
@@ -158,7 +243,8 @@ namespace UoFiddler.Controls.Classes
                 }
             }
 
-            return Translate(img, settings.OffsetX, settings.OffsetY);
+            // own position in the field: the frame grows / shrinks instead of cutting the graphic off
+            return UoTile.ShiftInField(img, settings.OffsetX, settings.OffsetY);
         }
 
         /// <summary>The image as it is before step <paramref name="index"/> (for the edit points).</summary>
@@ -251,6 +337,8 @@ namespace UoFiddler.Controls.Classes
                     return Warp(img, step.P ?? new double[18]);
                 case TransformType.Mesh:
                     return Mesh(img, (int)Math.Max(2, step.A), step.P ?? Array.Empty<double>());
+                case TransformType.MeshIso:
+                    return MeshIso(img, step.P ?? Array.Empty<double>());
                 default:
                     return img;
             }
@@ -330,6 +418,62 @@ namespace UoFiddler.Controls.Classes
             return (xs.ToArray(), ys.ToArray());
         }
 
+        /// <summary>
+        /// The dots of the UO field grid = the corners of the tile diamonds. In rotated coordinates relative to the
+        /// main tile origin (tx, ty):  u = (x - tx) - (y - ty),  v = (x - tx) + (y - ty)  the corners form a square
+        /// lattice u, v = 22 + 44k. The lattice covers the frame plus one ring of tiles around it.
+        /// </summary>
+        public static (double[] Us, double[] Vs) IsoLattice(int w, int h)
+        {
+            (int tx, int ty) = UoTile.TileOrigin(w, h);
+            const int m = 66;
+            double uMin = double.MaxValue, uMax = double.MinValue, vMin = double.MaxValue, vMax = double.MinValue;
+            foreach (int x in new[] { -m, w + m })
+            {
+                foreach (int y in new[] { -m, h + m })
+                {
+                    double u = (x - tx) - (y - ty), v = (x - tx) + (y - ty);
+                    uMin = Math.Min(uMin, u);
+                    uMax = Math.Max(uMax, u);
+                    vMin = Math.Min(vMin, v);
+                    vMax = Math.Max(vMax, v);
+                }
+            }
+
+            static double[] Values(double lo, double hi)
+            {
+                var list = new List<double>();
+                int k0 = (int)Math.Floor((lo - 22) / 44.0), k1 = (int)Math.Ceiling((hi - 22) / 44.0);
+                for (int k = k0; k <= k1; ++k)
+                {
+                    list.Add(22 + (44.0 * k));
+                }
+
+                return list.ToArray();
+            }
+
+            return (Values(uMin, uMax), Values(vMin, vMax));
+        }
+
+        /// <summary>Screen positions of the UO field dots (+ offsets), row by row (v), then u.</summary>
+        public static (double X, double Y)[] IsoHandles(int w, int h, double[] p)
+        {
+            (int tx, int ty) = UoTile.TileOrigin(w, h);
+            (double[] us, double[] vs) = IsoLattice(w, h);
+            var r = new (double, double)[us.Length * vs.Length];
+            for (int j = 0; j < vs.Length; ++j)
+            {
+                for (int i = 0; i < us.Length; ++i)
+                {
+                    int k = (j * us.Length) + i;
+                    double ox = (k * 2) + 1 < p.Length ? p[k * 2] : 0, oy = (k * 2) + 1 < p.Length ? p[(k * 2) + 1] : 0;
+                    r[k] = (tx + ((us[i] + vs[j]) / 2) + ox, ty + ((vs[j] - us[i]) / 2) + oy);
+                }
+            }
+
+            return r;
+        }
+
         public static (double X, double Y)[] MeshHandles(int w, int h, int spacing, double[] p)
         {
             (double[] xs, double[] ys) = MeshLattice(w, h, spacing);
@@ -396,12 +540,21 @@ namespace UoFiddler.Controls.Classes
             return LatticeWarp(img, xs, ys, p);
         }
 
+        private static ArtPixelImage MeshIso(ArtPixelImage img, double[] p)
+        {
+            (int tx, int ty) = UoTile.TileOrigin(img.Width, img.Height);
+            (double[] us, double[] vs) = IsoLattice(img.Width, img.Height);
+            return LatticeWarp(img, us, vs, p, (x, y) => ((x - tx) - (y - ty), (x - tx) + (y - ty)));
+        }
+
         /// <summary>
         /// Moves every point of the frame by the bilinear mix of the offsets of the surrounding lattice points
         /// (piecewise per cell). Inverse by fixed point iteration.
         /// </summary>
-        private static ArtPixelImage LatticeWarp(ArtPixelImage img, double[] xs, double[] ys, double[] p)
+        private static ArtPixelImage LatticeWarp(ArtPixelImage img, double[] xs, double[] ys, double[] p,
+            Func<double, double, (double A, double B)> toLattice = null)
         {
+            toLattice ??= (x, y) => (x, y);
             int nx = xs.Length;
             double Off(int i, int j, int c)
             {
@@ -420,8 +573,9 @@ namespace UoFiddler.Controls.Classes
                 return Math.Clamp(i, 0, a.Length - 2);
             }
 
-            (double X, double Y) Offset(double x, double y)
+            (double X, double Y) Offset(double sx, double sy)
             {
+                (double x, double y) = toLattice(sx, sy);
                 int i = Cell(xs, x), j = Cell(ys, y);
                 double fu = Math.Clamp((x - xs[i]) / Math.Max(1e-9, xs[i + 1] - xs[i]), 0, 1);
                 double fv = Math.Clamp((y - ys[j]) / Math.Max(1e-9, ys[j + 1] - ys[j]), 0, 1);

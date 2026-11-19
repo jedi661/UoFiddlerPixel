@@ -180,8 +180,9 @@ namespace UoFiddler.Controls.Forms
                 _pointsWarp = new RadioButton { Text = "Warp (3x3 points)", AutoSize = true };
                 _pointsMesh = new RadioButton { Text = "Grid dots (move every dot)", AutoSize = true };
                 new ToolTip().SetToolTip(_pointsMesh,
-                    "Every dot of a grid with the spacing of 'Grid size' (View) becomes a point you can drag." + Environment.NewLine +
-                    "The grid is anchored at the fix point (middle pixel of the lowest row).");
+                    "Every dot of the grid becomes a point you can drag:" + Environment.NewLine +
+                    "Grid 'UO field': the corners of the tile diamonds (main tile + neighbours)." + Environment.NewLine +
+                    "Other grids: the dots every 'size' pixels, anchored at the fix point (middle pixel of the lowest row).");
                 _pointsMesh.CheckedChanged += (s, e) => { if (_pointsMesh.Checked) { SetPointMode(PointMode.Mesh); } };
                 _pointsOff.CheckedChanged += (s, e) => { if (_pointsOff.Checked) { SetPointMode(PointMode.Off); } };
                 _pointsDistort.CheckedChanged += (s, e) => { if (_pointsDistort.Checked) { SetPointMode(PointMode.Distort); } };
@@ -509,7 +510,10 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            TransformType type = mode == PointMode.Distort ? TransformType.Distort : mode == PointMode.Warp ? TransformType.Warp : TransformType.Mesh;
+            // grid dots: with the UO field grid the dots are the tile corners, otherwise the square grid dots
+            bool iso = _canvas.GridMode == PixelGridMode.UoField;
+            TransformType type = mode == PointMode.Distort ? TransformType.Distort : mode == PointMode.Warp ? TransformType.Warp
+                : iso ? TransformType.MeshIso : TransformType.Mesh;
             int index = _editIndex >= 0 && _editIndex < _settings.Steps.Count && _settings.Steps[_editIndex].Type == type
                 ? _editIndex
                 : _settings.Steps.Count > 0 && _settings.Steps[^1].Type == type ? _settings.Steps.Count - 1 : -1;
@@ -520,6 +524,7 @@ namespace UoFiddler.Controls.Forms
                 {
                     _settings.Steps.Add(mode == PointMode.Distort ? TransformStep.NewDistort()
                         : mode == PointMode.Warp ? TransformStep.NewWarp()
+                        : iso ? TransformStep.NewMeshIso(CanvasW, CanvasH)
                         : TransformStep.NewMesh(CanvasW, CanvasH, (int)_gridSize.Value));
                     _editIndex = _settings.Steps.Count - 1;
                 }, false);
@@ -539,7 +544,7 @@ namespace UoFiddler.Controls.Forms
             }
 
             TransformStep step = _settings.Steps[_editIndex];
-            if (step.Type != TransformType.Distort && step.Type != TransformType.Warp && step.Type != TransformType.Mesh)
+            if (step.Type != TransformType.Distort && step.Type != TransformType.Warp && step.Type != TransformType.Mesh && step.Type != TransformType.MeshIso)
             {
                 return;
             }
@@ -551,7 +556,7 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            double nx = x - baseHandles[handle].X, ny = y - baseHandles[handle].Y;
+            double nx = x - _handleShiftX - baseHandles[handle].X, ny = y - baseHandles[handle].Y;
             if (Math.Abs(step.P[handle * 2] - nx) < 0.01 && Math.Abs(step.P[(handle * 2) + 1] - ny) < 0.01)
             {
                 return;
@@ -593,7 +598,7 @@ namespace UoFiddler.Controls.Forms
             }
 
             _pointMode = step.Type == TransformType.Distort ? PointMode.Distort : step.Type == TransformType.Warp ? PointMode.Warp
-                : step.Type == TransformType.Mesh ? PointMode.Mesh : PointMode.Off;
+                : step.Type == TransformType.Mesh || step.Type == TransformType.MeshIso ? PointMode.Mesh : PointMode.Off;
             _pointsDistort.Checked = _pointMode == PointMode.Distort;
             _pointsWarp.Checked = _pointMode == PointMode.Warp;
             _pointsMesh.Checked = _pointMode == PointMode.Mesh;
@@ -677,6 +682,8 @@ namespace UoFiddler.Controls.Forms
         }
         #endregion
 
+        private int _handleShiftX; // display shift of the edit points when the field offset widened the frame
+
         private int CanvasW => _settings.CanvasWidth > 0 ? _settings.CanvasWidth : _source?.Width ?? 1;
 
         private int CanvasH => _settings.CanvasHeight > 0 ? _settings.CanvasHeight : _source?.Height ?? 1;
@@ -687,6 +694,7 @@ namespace UoFiddler.Controls.Forms
             TransformType.Distort => ArtTransform.DistortHandles(CanvasW, CanvasH, p),
             TransformType.Warp => ArtTransform.WarpHandles(CanvasW, CanvasH, p),
             TransformType.Mesh => ArtTransform.MeshHandles(CanvasW, CanvasH, (int)step.A, p),
+            TransformType.MeshIso => ArtTransform.IsoHandles(CanvasW, CanvasH, p),
             _ => Array.Empty<(double, double)>()
         };
 
@@ -781,7 +789,10 @@ namespace UoFiddler.Controls.Forms
             }
 
             _result = ArtTransform.Apply(_source, _settings);
-            ArtPixelImage ghost = ArtTransform.PlaceOnCanvas(_source, _settings);
+
+            // the field offset can make the frame bigger: ghost aligned at the fix point, edit points moved along
+            ArtPixelImage ghost = ArtTransform.PlaceOnCanvas(_source, new TransformSettings { CanvasWidth = _result.Width, CanvasHeight = _result.Height });
+            _handleShiftX = ((_result.Width - CanvasW) / 2) + _settings.OffsetX;
             _canvas.SetImage(_result, ghost);
 
             // edit points
@@ -793,16 +804,19 @@ namespace UoFiddler.Controls.Forms
                 (double X, double Y)[] handles = step.P == null ? Array.Empty<(double, double)>() : Handles(step, step.P);
                 foreach ((double x, double y) in handles)
                 {
-                    _canvas.Handles.Add(new PointF((float)x, (float)y));
+                    _canvas.Handles.Add(new PointF((float)(x + _handleShiftX), (float)y));
                 }
 
                 if (step.Type == TransformType.Distort && handles.Length == 4)
                 {
                     _canvas.HandleLinks.AddRange(new[] { (0, 1), (1, 3), (3, 2), (2, 0) });
                 }
-                else if (step.Type == TransformType.Mesh)
+                else if (step.Type == TransformType.Mesh || step.Type == TransformType.MeshIso)
                 {
-                    (double[] xs, double[] ys) = ArtTransform.MeshLattice(CanvasW, CanvasH, (int)step.A);
+                    // links between neighbouring dots (for the UO field dots these are the diamond edges)
+                    (double[] xs, double[] ys) = step.Type == TransformType.Mesh
+                        ? ArtTransform.MeshLattice(CanvasW, CanvasH, (int)step.A)
+                        : ArtTransform.IsoLattice(CanvasW, CanvasH);
                     for (int j = 0; j < ys.Length; ++j)
                     {
                         for (int i = 0; i < xs.Length; ++i)
