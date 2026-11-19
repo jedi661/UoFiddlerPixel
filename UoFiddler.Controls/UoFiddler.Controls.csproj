@@ -333,6 +333,18 @@
 			<DependentUpon>Resources.resx</DependentUpon>
 		</Compile>
 		<Compile Update="UserControls\RadarColorControl.cs" />
+		<Compile Update="Forms\LandTextureStudioForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\LandTextureStudioForm.Designer.cs">
+			<DependentUpon>LandTextureStudioForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="Forms\TerrainCheckForm.cs">
+			<SubType>Form</SubType>
+		</Compile>
+		<Compile Update="Forms\TerrainCheckForm.Designer.cs">
+			<DependentUpon>TerrainCheckForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="UserControls\ExtendedControl.cs">
 			<SubType>UserControl</SubType>
 		</Compile>

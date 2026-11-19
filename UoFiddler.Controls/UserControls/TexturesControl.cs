@@ -142,6 +142,17 @@ namespace UoFiddler.Controls.UserControls
             MiscToolStripDropDownButton.DropDownItems.Add(extItem);
             MiscToolStripDropDownButton.DropDownItems.Add(gotoExt);
 
+            var studio = new ToolStripMenuItem("Land + texture studio...")
+            {
+                ToolTipText = "Make a land tile and its texture from one image and link them in the tiledata"
+            };
+            studio.Click += (s, e) => LandTextureStudioForm.ShowStudio();
+            var check = new ToolStripMenuItem("Check land tiles / textures (empty, placeholder, link)...");
+            check.Click += (s, e) => TerrainCheckForm.ShowCheck();
+            MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
+            MiscToolStripDropDownButton.DropDownItems.Add(studio);
+            MiscToolStripDropDownButton.DropDownItems.Add(check);
+
             UoExtensions.Changed += kind =>
             {
                 if (kind == null || kind == UoExtensionKind.Textures)
