@@ -30,7 +30,14 @@ namespace UoFiddler.Controls.Classes
         /// 180 degree turn on the ground - the ground line is reversed, the height of every column is kept.
         /// Pixel based approximation (the back side uses the colours of the front side).
         /// </summary>
-        Directional = 3
+        Directional = 3,
+
+        /// <summary>
+        /// Boxes and furniture standing in the middle of their tile (chest, crate, table, barrel ...): turned by
+        /// 180 degrees the box covers the SAME footprint - north = south and west = east in the same place.
+        /// The geometry is exact; front details (lock, handles) are then on the back and may need removing.
+        /// </summary>
+        Box = 4
     }
 
     /// <summary>Manual transformation for one target direction (overrides the automatic one).</summary>
@@ -247,6 +254,11 @@ namespace UoFiddler.Controls.Classes
                     case ArtObjectKind.Flat:
                         img = Rotate180(img);
                         notes.Add("Flat object: rotated 180°.");
+                        break;
+                    case ArtObjectKind.Box:
+                        // same picture, same place in the field - only the side we look at is the back now
+                        result.IsExact = false;
+                        notes.Add("Box/furniture: same footprint (north = south, west = east). Remove front details (lock, handles) if the back side looks different.");
                         break;
                     case ArtObjectKind.Directional:
                         // drawn pointing West/East lies on a "\\" diagonal, North/South on "/"

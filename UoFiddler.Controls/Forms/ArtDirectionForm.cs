@@ -151,13 +151,15 @@ namespace UoFiddler.Controls.Forms
                 "Wall / fence (front = back)",
                 "Flat on the ground",
                 "Solid object (template)",
-                "Directional (cannon, chair...)"
+                "Directional (cannon, chair...)",
+                "Box / furniture (chest, crate)"
             }, 0, 190);
             new ToolTip().SetToolTip(_kindBox,
                 "Wall / fence: north = south (front and back look the same)." + Environment.NewLine +
                 "Flat: lies on the ground, turned 180°." + Environment.NewLine +
                 "Solid: back side as shaded template to paint over." + Environment.NewLine +
-                "Directional: things that point somewhere (cannon barrel, chair) - turned 180° on the ground.");
+                "Directional: things that point somewhere (cannon barrel, chair) - turned 180° on the ground." + Environment.NewLine +
+                "Box / furniture: chest, crate, table - same footprint, north = south and west = east in the same place.");
             opt.Controls.Add(_kindBox);
 
             _relightCheck = new CheckBox { Text = "Swap face light", AutoSize = true, Checked = true, Margin = new Padding(10, 7, 3, 3) };
@@ -574,6 +576,11 @@ namespace UoFiddler.Controls.Forms
                 {
                     _kindBox.SelectedIndex = Math.Clamp(rule.Kind, 0, _kindBox.Items.Count - 1);
                     _sourceDirectionBox.SelectedItem = (ArtDirection)rule.Direction;
+                    if (rule.RelightStrength >= 0)
+                    {
+                        _relightCheck.Checked = rule.RelightStrength > 0;
+                        _relightStrength.Value = Math.Clamp(rule.RelightStrength, 0, 100);
+                    }
                     foreach (ArtDirection d in _allDirections)
                     {
                         if (_manual.TryGetValue(d, out ManualControls mc))
@@ -597,7 +604,8 @@ namespace UoFiddler.Controls.Forms
                 ArtSuggestion s = ArtDirectionLearning.Suggest(_source, has,
                     has && (data.Flags & TileFlag.Wall) != 0, has && (data.Flags & TileFlag.Door) != 0,
                     has && (data.Flags & TileFlag.Window) != 0, has && (data.Flags & TileFlag.Surface) != 0,
-                    has && (data.Flags & TileFlag.Foliage) != 0, has ? data.Height : 1);
+                    has && (data.Flags & TileFlag.Foliage) != 0, has ? data.Height : 1,
+                    has && (data.Flags & TileFlag.Container) != 0);
 
                 _kindBox.SelectedIndex = (int)s.Kind;
                 _sourceDirectionBox.SelectedItem = s.Direction;
@@ -634,7 +642,8 @@ namespace UoFiddler.Controls.Forms
                 Name = !string.IsNullOrWhiteSpace(_sourceText) ? _sourceText : "image",
                 SourceId = _sourceId,
                 Kind = _kindBox.SelectedIndex,
-                Direction = (int)SourceDirection
+                Direction = (int)SourceDirection,
+                RelightStrength = _relightCheck.Checked ? _relightStrength.Value : 0
             };
             foreach (ArtDirection d in _allDirections)
             {
@@ -673,12 +682,18 @@ namespace UoFiddler.Controls.Forms
             }
 
             new ArtSimilarItemsForm(_source, _sourceId,
-                (kind, why) =>
+                (kind, relight, why) =>
                 {
                     _suspendUpdate = true;
                     _kindBox.SelectedIndex = (int)kind;
+                    if (relight >= 0)
+                    {
+                        _relightCheck.Checked = relight > 0;
+                        _relightStrength.Value = (int)Math.Round(relight * 100);
+                    }
+
                     _suspendUpdate = false;
-                    _learnLabel.Text = $"Object type {_kindBox.SelectedItem} {why}.";
+                    _learnLabel.Text = $"Object type {_kindBox.SelectedItem}" + (relight >= 0 ? $", light swap {relight:P0}" : string.Empty) + $" {why}.";
                     Regenerate();
                 },
                 id =>
