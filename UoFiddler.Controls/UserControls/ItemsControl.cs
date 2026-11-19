@@ -62,6 +62,14 @@ namespace UoFiddler.Controls.UserControls
             extendedItem.Click += (s, e) => ShowExtendedFormatForm();
             MiscToolStripDropDownButton.DropDownItems.Add(new ToolStripSeparator());
             MiscToolStripDropDownButton.DropDownItems.Add(extendedItem);
+            var sheetsItem = new ToolStripMenuItem("Sprite sheets (export / import a range)...");
+            sheetsItem.Click += (s, e) =>
+            {
+                IReadOnlyList<int> sel = GetSelectedGraphicIds();
+                new SpriteSheetBatchForm(BatchInsert, BatchEnd, sel.Count > 1 ? sel[0] : 0, sel.Count > 1 ? sel[^1] : Art.GetMaxExtendedItemId()).Show();
+            };
+            MiscToolStripDropDownButton.DropDownItems.Add(sheetsItem);
+
             var checkItem = new ToolStripMenuItem("Check extended files (what is saved)...");
             checkItem.Click += (s, e) => new ExtendedCheckForm(GoToId, Reload).Show();
             MiscToolStripDropDownButton.DropDownItems.Add(checkItem);
@@ -1084,6 +1092,27 @@ namespace UoFiddler.Controls.UserControls
                 ? $"Free slots: {free:N0} (0x0000 - 0x{max:X})"
                 : $"Items: {used:N0}  free: {free:N0}  (0x0000 - 0x{max:X})";
             SyncViewBox();
+        }
+
+        /// <summary>Inserts one graphic during a batch import (no redraw - call <see cref="BatchEnd"/> at the end).</summary>
+        public void BatchInsert(int id, Bitmap bitmap)
+        {
+            if (bitmap == null || !Art.IsLegalStaticId(id))
+            {
+                return;
+            }
+
+            Art.ReplaceStatic(id, bitmap);
+            ControlEvents.FireItemChangeEvent(this, id);
+            Options.ChangedUltimaClass["Art"] = true;
+            InsertIntoItemList(id);
+        }
+
+        /// <summary>Redraws the Items tab once after a batch import.</summary>
+        public void BatchEnd()
+        {
+            ItemsTileView.VirtualListSize = _itemList.Count;
+            ItemsTileView.Invalidate();
         }
 
         /// <summary>Ids of the slots selected in the Items tab (sorted), e.g. as targets for imported graphics.</summary>

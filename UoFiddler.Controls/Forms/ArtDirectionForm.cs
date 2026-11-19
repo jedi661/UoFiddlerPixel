@@ -1461,7 +1461,7 @@ namespace UoFiddler.Controls.Forms
         }
 
         /// <summary>Same size as the art image, transparent pixels filled with <paramref name="background"/>.</summary>
-        private static Bitmap ToExportBitmap(ArtPixelImage img, Color background)
+        internal static Bitmap ToExportBitmap(ArtPixelImage img, Color background)
         {
             using Bitmap art = ToBitmap(img);
             bool transparent = background.A == 0;

@@ -278,6 +278,78 @@ namespace UoFiddler.Controls.Classes
             return img;
         }
 
+        /// <summary>Size of a sheet with <paramref name="count"/> cells of max sprite size <paramref name="maxW"/> x <paramref name="maxH"/>.</summary>
+        public static (int Width, int Height) SheetSize(int count, int columns, int padding, int maxW, int maxH)
+        {
+            int cols = Math.Max(1, Math.Min(columns, count));
+            int rows = Math.Max(1, (count + cols - 1) / cols);
+            int cw = maxW + (2 * padding), ch = maxH + padding;
+            return ((cols * cw) + cols + 1, (rows * ch) + rows + 1);
+        }
+
+        /// <summary>Columns that fit into <paramref name="maxSize"/> px for cells of sprites up to <paramref name="maxW"/> wide.</summary>
+        public static int EffectiveColumns(int columns, int padding, int maxW, int maxSize)
+        {
+            int cw = maxW + (2 * padding) + 1;
+            return Math.Max(1, Math.Min(columns, (maxSize - 1) / Math.Max(1, cw)));
+        }
+
+        /// <summary>
+        /// Splits a list of sprites (in order) into sheets: a sheet is closed before it would get wider / higher than
+        /// <paramref name="maxSize"/> px or would hold more than <paramref name="maxCells"/> cells. A single sprite that
+        /// alone is bigger than the limit gets a sheet of its own and is reported in <paramref name="oversize"/>.
+        /// </summary>
+        /// <returns>For every sheet the indices of its sprites.</returns>
+        public static List<List<int>> PlanSheets(IReadOnlyList<(int Width, int Height)> sizes, int columns, int padding,
+            int maxSize, int maxCells, out List<int> oversize)
+        {
+            oversize = new List<int>();
+            var sheets = new List<List<int>>();
+            var current = new List<int>();
+            int maxW = 0, maxH = 0;
+            for (int i = 0; i < sizes.Count; ++i)
+            {
+                (int w, int h) = sizes[i];
+                (int sw, int sh) = SheetSize(1, 1, padding, w, h);
+                if (sw > maxSize || sh > maxSize)
+                {
+                    oversize.Add(i);
+                }
+
+                int nw = Math.Max(maxW, w), nh = Math.Max(maxH, h);
+                (int tw, int th) = SheetSize(current.Count + 1, EffectiveColumns(columns, padding, nw, maxSize), padding, nw, nh);
+                if (current.Count > 0 && (tw > maxSize || th > maxSize || current.Count + 1 > maxCells))
+                {
+                    sheets.Add(current);
+                    current = new List<int>();
+                    nw = w;
+                    nh = h;
+                }
+
+                current.Add(i);
+                maxW = nw;
+                maxH = nh;
+            }
+
+            if (current.Count > 0)
+            {
+                sheets.Add(current);
+            }
+
+            return sheets;
+        }
+
+        /// <summary>Width and height from the header of raw static art (without decoding the pixels).</summary>
+        public static (int Width, int Height) RawSize(byte[] raw)
+        {
+            if (raw == null || raw.Length < 8)
+            {
+                return (0, 0);
+            }
+
+            return (raw[4] | (raw[5] << 8), raw[6] | (raw[7] << 8));
+        }
+
         public static string ToJson(SpriteSheetInfo info) => JsonSerializer.Serialize(info, new JsonSerializerOptions { WriteIndented = true });
 
         public static SpriteSheetInfo FromJson(string json)
