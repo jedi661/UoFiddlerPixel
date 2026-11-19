@@ -145,7 +145,7 @@ namespace UoFiddler.Controls.Classes
         public bool Repair { get; set; } = true;
 
         /// <summary>Largest enclosed transparent area (pixels) that is treated as a hole and filled.</summary>
-        public int RepairMaxHole { get; set; } = 12;
+        public int RepairMaxHole { get; set; } = 4;
 
         /// <summary>Colour used for a cast shadow when none was detected (ARGB1555 without alpha bit).</summary>
         public ushort DefaultShadowColor { get; set; } = 0x0C63; // dark grey (3,3,3)
@@ -258,11 +258,20 @@ namespace UoFiddler.Controls.Classes
                     case ArtObjectKind.Box:
                         // same picture, same place in the field - only the side we look at is the back now
                         result.IsExact = false;
-                        notes.Add("Box/furniture: same footprint (north = south, west = east). Remove front details (lock, handles) if the back side looks different.");
+                        notes.Add("Box/furniture: same footprint (north = south, west = east). Remove front details (lock, handles) " +
+                                  "if the back looks different; chairs/benches need a drawn back view - template: 'Similar existing items'.");
                         break;
                     case ArtObjectKind.Directional:
                         // drawn pointing West/East lies on a "\\" diagonal, North/South on "/"
                         int slope2 = sourceDirection == ArtDirection.West || sourceDirection == ArtDirection.East ? 1 : -1;
+                        // turn on a padded frame, then cut the frame to the content again (keeping the fix point
+                        // and the ground row): the turned object may need more room than the drawn one
+                        int pad = Math.Max(img.Width, img.Height);
+                        int origW = img.Width, origH = img.Height;
+                        int[] padMap = PadMap(origW, origH, pad, pad, out int pw, out int ph);
+                        img = ApplyMap(img, padMap, pw, ph);
+                        cls = ApplyMap(cls, padMap);
+
                         int[] map = TurnOnGroundMap(img, slope2, 0, out _, out bool axisMismatch);
                         if (axisMismatch)
                         {
@@ -272,6 +281,14 @@ namespace UoFiddler.Controls.Classes
 
                         img = ApplyMap(img, map);
                         cls = ApplyMap(cls, map);
+
+                        int[] cropMap = CropMap(img, origW, origH, out int cw, out int ch);
+                        img = ApplyMap(img, cropMap, cw, ch);
+                        cls = ApplyMap(cls, cropMap);
+                        if (cw != origW || ch != origH)
+                        {
+                            notes.Add($"Frame grown to {cw}x{ch} so nothing is cut off.");
+                        }
                         odd = !odd; // the turn contains a horizontal flip
                         result.IsExact = false; // back side = front colours, round parts get a little sheared
                         notes.Add("Turned 180° on the ground (points the other way) - approximation, please retouch the details.");
@@ -311,7 +328,10 @@ namespace UoFiddler.Controls.Classes
 
             if (options.Repair)
             {
-                img = Repair(img, options.RepairMaxHole);
+                // see-through pixels that are already in the source (glass, gaps between spindles) are wanted:
+                // then only stray pixels and colour 0 are repaired, no holes are filled
+                FindErrors(source, options.RepairMaxHole, out int sourceHoles, out _, out _, out _);
+                img = Repair(img, sourceHoles > 0 ? 0 : options.RepairMaxHole);
             }
 
             result.Image = img;
@@ -680,7 +700,10 @@ namespace UoFiddler.Controls.Classes
 
             if (options.Repair)
             {
-                img = Repair(img, options.RepairMaxHole);
+                // see-through pixels that are already in the source (glass, gaps between spindles) are wanted:
+                // then only stray pixels and colour 0 are repaired, no holes are filled
+                FindErrors(source, options.RepairMaxHole, out int sourceHoles, out _, out _, out _);
+                img = Repair(img, sourceHoles > 0 ? 0 : options.RepairMaxHole);
             }
 
             return new ArtDirectionResult { Direction = target, Image = img, IsExact = method != ArtManualMethod.TurnCrossAxis && method != ArtManualMethod.TurnShear, Note = note };
@@ -1022,6 +1045,67 @@ namespace UoFiddler.Controls.Classes
 
             slopes.Sort();
             return slopes[slopes.Count / 2];
+        }
+
+        private static ArtPixelImage ApplyMap(ArtPixelImage src, int[] map, int width, int height)
+        {
+            var dst = new ArtPixelImage(width, height);
+            for (int i = 0; i < map.Length; ++i)
+            {
+                if (map[i] >= 0)
+                {
+                    dst.Pixels[i] = src.Pixels[map[i]];
+                }
+            }
+
+            return dst;
+        }
+
+        /// <summary>Bigger frame: <paramref name="side"/> columns left and right, <paramref name="top"/> rows above (bottom row and fix point stay).</summary>
+        private static int[] PadMap(int w, int h, int side, int top, out int nw, out int nh)
+        {
+            nw = w + (2 * side);
+            nh = h + top;
+            var map = new int[nw * nh];
+            Array.Fill(map, -1);
+            for (int y = 0; y < h; ++y)
+            {
+                for (int x = 0; x < w; ++x)
+                {
+                    map[((y + top) * nw) + x + side] = (y * w) + x;
+                }
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Smallest frame (at least <paramref name="minW"/> x <paramref name="minH"/>) around the content that keeps
+        /// the fix point column (floor(w/2)) and the bottom row.
+        /// </summary>
+        private static int[] CropMap(ArtPixelImage img, int minW, int minH, out int nw, out int nh)
+        {
+            int w = img.Width, h = img.Height, c = w / 2;
+            GetBounds(img, out int minX, out int minY, out int maxX, out _);
+            int half = maxX < minX ? 0 : Math.Max(c - minX, maxX - c + 1);
+            nw = Math.Max(minW, 2 * half);
+            nh = Math.Max(minH, maxX < minX ? 0 : h - minY);
+            var map = new int[nw * nh];
+            Array.Fill(map, -1);
+            int ox = c - (nw / 2), oy = h - nh;
+            for (int y = 0; y < nh; ++y)
+            {
+                for (int x = 0; x < nw; ++x)
+                {
+                    int sx = x + ox, sy = y + oy;
+                    if (sx >= 0 && sy >= 0 && sx < w && sy < h)
+                    {
+                        map[(y * nw) + x] = (sy * w) + sx;
+                    }
+                }
+            }
+
+            return map;
         }
 
         private static ArtPixelImage ApplyMap(ArtPixelImage src, int[] map)

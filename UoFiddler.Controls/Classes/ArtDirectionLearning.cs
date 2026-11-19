@@ -201,17 +201,28 @@ namespace UoFiddler.Controls.Classes
                 s.Confidence = 0.85;
                 why.Add("TileData: container");
             }
-            else if (hasFlags && (isSurface || height == 0) && !isFoliage)
+            else if (hasFlags && (isSurface || height == 0) && !isFoliage && BoundsHeight(img) <= 48)
             {
+                // really flat: lies inside its tile (rug, floor decal) - not a table or chair with the surface flag
                 s.Kind = ArtObjectKind.Flat;
                 s.Confidence = 0.75;
-                why.Add(isSurface ? "TileData: surface" : "TileData: height 0");
+                why.Add(isSurface ? "TileData: surface, low" : "TileData: height 0");
+            }
+            else if (hasFlags && isSurface)
+            {
+                // tables, chairs, benches: something to sit / put things on, standing on its footprint
+                s.Kind = ArtObjectKind.Box;
+                s.Confidence = 0.7;
+                why.Add("TileData: surface (furniture)");
             }
             else
             {
                 GetBounds(img, out int minX, out int minY, out int maxX, out int maxY);
                 int w = maxX - minX + 1, h = maxY - minY + 1;
-                bool tallThin = w > 0 && h > w * 1.6 && (backslash || slash) && FillRatio(img) > 0.35;
+                double fill = FillRatio(img);
+                bool tallThin = w > 0 && h > w * 1.6 && (backslash || slash) && fill > 0.6;
+                bool big = w > 110 || h > 130;
+                bool lowLong = w > 0 && h <= w * 1.3;
                 if (tallThin)
                 {
                     // narrow upright slab on a diagonal: looks like a wall piece
@@ -219,19 +230,26 @@ namespace UoFiddler.Controls.Classes
                     s.Confidence = 0.6;
                     why.Add("shape: upright slab on a diagonal");
                 }
-                else if ((backslash || slash) && FillRatio(img) >= 0.5)
+                else if (big)
                 {
-                    // compact block (chest, crate, table): fills most of its outline
+                    // multi-tile objects (wagon, ship parts): turning them by pixels gives no usable result
                     s.Kind = ArtObjectKind.Box;
-                    s.Confidence = 0.6;
-                    why.Add("shape: compact block on a diagonal");
+                    s.Confidence = 0.5;
+                    why.Add("shape: big object (several tiles)");
+                }
+                else if ((backslash || slash) && fill < 0.5 && lowLong)
+                {
+                    // low, elongated, open shape (cannon): points somewhere
+                    s.Kind = ArtObjectKind.Directional;
+                    s.Confidence = hasFlags ? 0.65 : 0.55;
+                    why.Add("shape: low slim object along a diagonal");
                 }
                 else if (backslash || slash)
                 {
-                    // elongated, open shape (cannon, bench): points somewhere
-                    s.Kind = ArtObjectKind.Directional;
-                    s.Confidence = hasFlags ? 0.65 : 0.55;
-                    why.Add("shape: slim object along a diagonal");
+                    // block or furniture (chest, crate, table, chair): stands on its footprint
+                    s.Kind = ArtObjectKind.Box;
+                    s.Confidence = 0.55;
+                    why.Add(fill >= 0.5 ? "shape: compact block on a diagonal" : "shape: furniture on a diagonal");
                 }
                 else
                 {
@@ -297,6 +315,12 @@ namespace UoFiddler.Controls.Classes
             }
 
             return left < right;
+        }
+
+        private static int BoundsHeight(ArtPixelImage img)
+        {
+            GetBounds(img, out _, out int minY, out _, out int maxY);
+            return maxY < minY ? 0 : maxY - minY + 1;
         }
 
         private static double FillRatio(ArtPixelImage img)

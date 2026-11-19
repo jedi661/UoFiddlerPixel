@@ -186,7 +186,7 @@ namespace UoFiddler.Controls.Forms
             _repairCheck.CheckedChanged += (s, e) => Regenerate();
             opt.Controls.Add(_repairCheck);
             opt.Controls.Add(MakeLabel("holes ≤"));
-            _repairHole = MakeNumeric(1, 200, 12, 0, 1);
+            _repairHole = MakeNumeric(1, 200, 4, 0, 1);
             opt.Controls.Add(_repairHole);
             opt.Controls.Add(MakeButton("Repair source", (s, e) => RepairSource()));
 
@@ -817,7 +817,20 @@ namespace UoFiddler.Controls.Forms
         private string ErrorText(ArtPixelImage img, out bool hasErrors)
         {
             ArtDirectionGenerator.FindErrors(img, (int)_repairHole.Value, out int holes, out int strays, out int blacks, out int white);
-            hasErrors = holes + strays + blacks + white > 0;
+
+            // see-through pixels the source already has (glass, gaps between spindles) are part of the art
+            int sourceHoles = 0;
+            if (_source != null)
+            {
+                ArtDirectionGenerator.FindErrors(_source, (int)_repairHole.Value, out sourceHoles, out _, out _, out _);
+            }
+
+            bool holesWanted = sourceHoles > 0;
+            hasErrors = (holesWanted ? 0 : holes) + strays + blacks + white > 0;
+            if (!hasErrors && holes > 0)
+            {
+                return $"{img.Width}x{img.Height} - no errors ({holes} see-through px as in the source)";
+            }
             if (!hasErrors)
             {
                 return $"{img.Width}x{img.Height} - no errors";
