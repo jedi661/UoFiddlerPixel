@@ -1312,8 +1312,8 @@ namespace UoFiddler.Controls.UserControls
             // TileData tab, so "Select in TileData" selected the item in an invisible control)
             if (_selectedGraphicId >= 0)
             {
+                TileDataControl.ActivateTab(); // show the tab first, then select (so the list scrolls to the entry)
                 TileDataControl.Select(_selectedGraphicId, false);
-                TileDataControl.ActivateTab();
             }
         }
         #endregion
@@ -1324,8 +1324,8 @@ namespace UoFiddler.Controls.UserControls
             // ids 0x10000+ have their colours in radarcolext.mul
             if (_selectedGraphicId >= 0)
             {
+                RadarColorControl.ActivateTab(); // show the tab first, then select (so the list scrolls to the entry)
                 RadarColorControl.Select(_selectedGraphicId, false);
-                RadarColorControl.ActivateTab();
             }
         }
         #endregion

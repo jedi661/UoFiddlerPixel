@@ -33,6 +33,7 @@ namespace UoFiddler.Controls.UserControls
         {
             InitializeComponent();
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+            _instances.Add(new WeakReference<HuesControl>(this));
 
             pictureBox.MouseWheel += OnMouseWheel;
             pictureBox.MouseDown += OnMouseDownList;
@@ -56,6 +57,67 @@ namespace UoFiddler.Controls.UserControls
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool HuesEditable { get; set; } = true;
+
+        private static readonly List<WeakReference<HuesControl>> _instances = new List<WeakReference<HuesControl>>();
+
+        /// <summary>The editable hue list of the Hues tab (not the hue pickers): editable and placed on a tab page.</summary>
+        public static HuesControl MainInstance
+        {
+            get
+            {
+                foreach (WeakReference<HuesControl> w in _instances)
+                {
+                    if (w.TryGetTarget(out HuesControl c) && !c.IsDisposed && c.HuesEditable && HasTabPage(c))
+                    {
+                        return c;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        private static bool HasTabPage(Control c)
+        {
+            for (Control p = c.Parent; p != null; p = p.Parent)
+            {
+                if (p is TabPage)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>Selects a hue (file index = hue number - 1) in the Hues tab and brings the tab to the front.</summary>
+        public static bool SelectInTab(int index, bool activate = true)
+        {
+            HuesControl c = MainInstance;
+            if (c == null || index < 0 || index >= Hues.List.Length)
+            {
+                return false;
+            }
+
+            if (!c._loaded)
+            {
+                c.OnLoad(c, EventArgs.Empty);
+            }
+
+            if (activate)
+            {
+                TabNavigation.BringToFront(c); // show the tab first, then select (scrolls to the hue)
+            }
+
+            c.ResetFilter();
+            c._multi.Clear();
+            c.Selected = index;
+            if (activate)
+            {
+                c.pictureBox.Focus();
+            }
+            return true;
+        }
 
         /// <summary>Raised when the selected hue changed</summary>
         public event EventHandler SelectedChanged;

@@ -1526,6 +1526,15 @@ namespace Ultima
         /// </summary>
         public static void SaveExtension(string path)
         {
+            SaveExtension(path, false);
+        }
+
+        /// <summary>
+        /// <paramref name="asCopy"/> = true: only writes the files (e.g. for a test) - the tool keeps reading from the
+        /// loaded files and the "unsaved" marks stay.
+        /// </summary>
+        public static void SaveExtension(string path, bool asCopy)
+        {
             if (!HasExtension)
             {
                 return;
@@ -1589,6 +1598,12 @@ namespace Ultima
 
             bool sameAsSource = _extDataPath != null &&
                 string.Equals(Path.GetFullPath(_extDataPath), Path.GetFullPath(mulFinal), StringComparison.OrdinalIgnoreCase);
+            if (asCopy && !sameAsSource)
+            {
+                File.Move(mulTmp, mulFinal, true);
+                File.Move(idxTmp, idxFinal, true);
+                return;
+            }
 
             if (sameAsSource)
             {

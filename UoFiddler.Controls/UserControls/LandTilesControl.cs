@@ -686,8 +686,8 @@ namespace UoFiddler.Controls.UserControls
         {
             if (_selectedGraphicId >= 0)
             {
+                TileDataControl.ActivateTab(); // show the tab first, then select (so the list scrolls to the entry)
                 TileDataControl.Select(_selectedGraphicId, true);
-                TileDataControl.ActivateTab();
             }
         }
         #endregion
@@ -697,8 +697,8 @@ namespace UoFiddler.Controls.UserControls
         {
             if (_selectedGraphicId >= 0)
             {
+                RadarColorControl.ActivateTab(); // show the tab first, then select (so the list scrolls to the entry)
                 RadarColorControl.Select(_selectedGraphicId, true);
-                RadarColorControl.ActivateTab();
             }
         }
         #endregion

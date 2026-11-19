@@ -168,6 +168,12 @@ namespace Ultima
         /// <summary>Writes huesext.mul (only if there are extended hues).</summary>
         public static void SaveExtension(string path)
         {
+            SaveExtension(path, true);
+        }
+
+        /// <summary><paramref name="remember"/> = false: only write (e.g. a test copy), the loaded path stays.</summary>
+        public static void SaveExtension(string path, bool remember)
+        {
             if (!HasExtension)
             {
                 return;
@@ -176,7 +182,10 @@ namespace Ultima
             string file = Path.Combine(path, ExtendedFormat.HueFileName);
             ExtendedFormat.WriteRecords(file, ExtendedFormat.HueMagic, ExtendedFormat.HueBaseId, ExtendedFormat.HueRecordSize,
                 ExtendedCount, (bw, k) => WriteHue(bw, List[LegacyCount + k]));
-            ExtensionPath = file;
+            if (remember)
+            {
+                ExtensionPath = file;
+            }
         }
 
         private static void WriteHue(BinaryWriter bw, Hue hue)

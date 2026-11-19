@@ -1216,10 +1216,14 @@ namespace UoFiddler.Controls.UserControls
             }
 
             int index = (int)treeViewItem.SelectedNode.Tag;
-            var found = ItemsControl.SearchGraphic(index);
-            if (!found)
+            ItemsControl.ActivateTab(); // first show the tab, then select (the view scrolls to the item)
+            if (!ItemsControl.SearchGraphic(index))
             {
-                MessageBox.Show("You need to load Items tab first.", "Information");
+                TabNavigation.BringToFront(this);
+                MessageBox.Show(Art.IsValidStatic(index)
+                        ? $"0x{index:X} is not in the current Items view (filter / view 'free slots only'?)."
+                        : $"0x{index:X} has no graphic - nothing to show in the Items tab.", "Select in Items",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         #endregion
@@ -1233,10 +1237,14 @@ namespace UoFiddler.Controls.UserControls
             }
 
             int index = (int)treeViewLand.SelectedNode.Tag;
-            var found = LandTilesControl.SearchGraphic(index);
-            if (!found)
+            LandTilesControl.ActivateTab();
+            if (!LandTilesControl.SearchGraphic(index))
             {
-                MessageBox.Show("You need to load LandTiles tab first.", "Information");
+                TabNavigation.BringToFront(this);
+                MessageBox.Show(Art.IsValidLand(index)
+                        ? $"0x{index:X} is not in the current LandTiles view."
+                        : $"0x{index:X} has no graphic - nothing to show in the LandTiles tab.", "Select in LandTiles",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         #endregion
@@ -1249,7 +1257,12 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            int index = (int)treeViewItem.SelectedNode.Tag;
+            if (treeViewItem.SelectedNode.Tag is not int index)
+            {
+                return; // a group node
+            }
+
+            RadarColorControl.ActivateTab();
             RadarColorControl.Select(index, false);
         }
         #endregion
@@ -1262,7 +1275,12 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            int index = (int)treeViewLand.SelectedNode.Tag;
+            if (treeViewLand.SelectedNode.Tag is not int index)
+            {
+                return;
+            }
+
+            RadarColorControl.ActivateTab();
             RadarColorControl.Select(index, true);
         }
         #endregion

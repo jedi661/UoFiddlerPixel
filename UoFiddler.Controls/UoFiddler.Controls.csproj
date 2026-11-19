@@ -333,6 +333,12 @@
 			<DependentUpon>Resources.resx</DependentUpon>
 		</Compile>
 		<Compile Update="UserControls\RadarColorControl.cs" />
+		<Compile Update="UserControls\ExtendedControl.cs">
+			<SubType>UserControl</SubType>
+		</Compile>
+		<Compile Update="UserControls\ExtendedControl.Designer.cs">
+			<DependentUpon>ExtendedControl.cs</DependentUpon>
+		</Compile>
 		<Compile Update="UserControls\RadarColorControl.Designer.cs">
 			<DependentUpon>RadarColorControl.cs</DependentUpon>
 		</Compile>
