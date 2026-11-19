@@ -33,7 +33,8 @@ namespace UoFiddler.Controls.Forms
         {
             Off,
             Distort,
-            Warp
+            Warp,
+            Mesh
         }
 
         private readonly Action<int, Bitmap> _insertCallback;
@@ -60,7 +61,9 @@ namespace UoFiddler.Controls.Forms
         private NumericUpDown _skewX, _skewY, _rotate, _scaleX, _scaleY, _moveX, _moveY;
         private NumericUpDown _canvasW, _canvasH;
         private CheckBox _keepBottom;
-        private RadioButton _pointsOff, _pointsDistort, _pointsWarp;
+        private RadioButton _pointsOff, _pointsDistort, _pointsWarp, _pointsMesh;
+        private NumericUpDown _offsetStep;
+        private Label _offsetLabel;
         private ListBox _stepList;
         private NumericUpDown _zoom, _gridSize;
         private ComboBox _gridMode;
@@ -146,7 +149,7 @@ namespace UoFiddler.Controls.Forms
                 g.Controls.Add(Lbl("Y"));
                 _skewY = Num(-3, 3, 0, 2, 0.05m, v => Edit(TransformType.SkewY, (double)v, 0));
                 g.Controls.Add(_skewY);
-                g.Controls.Add(Lbl("(0.5 = iso 2:1)"));
+                g.Controls.Add(Lbl("(1 = UO diagonal 45\u00b0)"));
             }));
 
             tools.Controls.Add(Group("Rotate / scale / move", g =>
@@ -175,13 +178,56 @@ namespace UoFiddler.Controls.Forms
                 _pointsOff = new RadioButton { Text = "Off", AutoSize = true, Checked = true };
                 _pointsDistort = new RadioButton { Text = "Distort (4 corners)", AutoSize = true };
                 _pointsWarp = new RadioButton { Text = "Warp (3x3 points)", AutoSize = true };
+                _pointsMesh = new RadioButton { Text = "Grid dots (move every dot)", AutoSize = true };
+                new ToolTip().SetToolTip(_pointsMesh,
+                    "Every dot of a grid with the spacing of 'Grid size' (View) becomes a point you can drag." + Environment.NewLine +
+                    "The grid is anchored at the fix point (middle pixel of the lowest row).");
+                _pointsMesh.CheckedChanged += (s, e) => { if (_pointsMesh.Checked) { SetPointMode(PointMode.Mesh); } };
                 _pointsOff.CheckedChanged += (s, e) => { if (_pointsOff.Checked) { SetPointMode(PointMode.Off); } };
                 _pointsDistort.CheckedChanged += (s, e) => { if (_pointsDistort.Checked) { SetPointMode(PointMode.Distort); } };
                 _pointsWarp.CheckedChanged += (s, e) => { if (_pointsWarp.Checked) { SetPointMode(PointMode.Warp); } };
                 g.Controls.Add(_pointsOff);
                 g.Controls.Add(_pointsDistort);
                 g.Controls.Add(_pointsWarp);
+                g.Controls.Add(_pointsMesh);
                 g.Controls.Add(Btn("Reset points", (s, e) => ResetPoints()));
+            }));
+
+            tools.Controls.Add(Group("Position in the UO field", g =>
+            {
+                // 8 directions + snap (0,0) = standard anchor rule: drawX = tx + 22 - floor(w/2), drawY = ty + 44 - h
+                var pad = new TableLayoutPanel { ColumnCount = 3, RowCount = 3, AutoSize = true };
+                (string Text, int Dx, int Dy)[] arrows =
+                {
+                    ("\u2196", -1, -1), ("\u2191", 0, -1), ("\u2197", 1, -1),
+                    ("\u2190", -1, 0), ("0", 0, 0), ("\u2192", 1, 0),
+                    ("\u2199", -1, 1), ("\u2193", 0, 1), ("\u2198", 1, 1)
+                };
+                for (int k = 0; k < arrows.Length; ++k)
+                {
+                    (string text, int dx, int dy) = arrows[k];
+                    var b = new Button { Text = text, Width = 34, Height = 28, Margin = new Padding(1) };
+                    if (dx == 0 && dy == 0)
+                    {
+                        b.Click += (s, e) => Commit("offset", () => { _settings.OffsetX = 0; _settings.OffsetY = 0; }, false);
+                        new ToolTip().SetToolTip(b, "Snap to the standard anchor (offset 0, 0)");
+                    }
+                    else
+                    {
+                        b.Click += (s, e) => MoveInField(dx, dy);
+                    }
+
+                    pad.Controls.Add(b, k % 3, k / 3);
+                }
+
+                g.Controls.Add(pad);
+                var right = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, AutoSize = true };
+                right.Controls.Add(Lbl("Step"));
+                _offsetStep = new NumericUpDown { Minimum = 1, Maximum = 44, Value = 1, Width = 50 };
+                right.Controls.Add(_offsetStep);
+                _offsetLabel = new Label { AutoSize = true, Font = new Font(FontFamily.GenericMonospace, 9f, FontStyle.Bold), Margin = new Padding(3, 6, 3, 3) };
+                right.Controls.Add(_offsetLabel);
+                g.Controls.Add(right);
             }));
 
             tools.Controls.Add(Group("Canvas", g =>
@@ -194,7 +240,10 @@ namespace UoFiddler.Controls.Forms
                 g.Controls.Add(_canvasH);
                 g.Controls.Add(Btn("Fit", (s, e) => FitCanvas()));
                 g.Controls.Add(Btn("Source size", (s, e) => SourceCanvas()));
-                _keepBottom = new CheckBox { Text = "Keep bottom row (UO anchor)", AutoSize = true, Checked = true };
+                _keepBottom = new CheckBox { Text = "Keep lowest coloured row", AutoSize = true, Checked = false };
+                new ToolTip().SetToolTip(_keepBottom,
+                    "Off (standard): the whole frame defines the position in the field - fix point = middle pixel of the lowest row." + Environment.NewLine +
+                    "On: after the steps the coloured pixels are moved back so their lowest row stays where it was.");
                 _keepBottom.CheckedChanged += (s, e) =>
                 {
                     if (!_programmatic)
@@ -225,16 +274,11 @@ namespace UoFiddler.Controls.Forms
                 g.SetFlowBreak(_ghost, true);
                 g.Controls.Add(Lbl("Grid"));
                 _gridMode = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 110 };
-                _gridMode.Items.AddRange(new object[] { "None", "Lines", "Dots", "Lines + dots", "UO iso diamonds" });
-                _gridMode.SelectedIndex = 0;
+                _gridMode.Items.AddRange(new object[] { "None", "Lines", "Dots", "Lines + dots", "UO field (tiles)" });
+                _gridMode.SelectedIndex = 4;
                 _gridMode.SelectedIndexChanged += (s, e) =>
                 {
                     _canvas.GridMode = (PixelGridMode)_gridMode.SelectedIndex;
-                    if (_canvas.GridMode == PixelGridMode.Iso && _gridSize.Value < 8)
-                    {
-                        _gridSize.Value = 44;
-                    }
-
                     _canvas.Invalidate();
                 };
                 g.Controls.Add(_gridMode);
@@ -259,7 +303,8 @@ namespace UoFiddler.Controls.Forms
 
             // --- canvas
             var scroll = new Panel { Dock = DockStyle.Fill, AutoScroll = true, BackColor = Color.Black };
-            _canvas = new PixelCanvas { Location = new Point(8, 8) };
+            _canvas = new PixelCanvas { Location = new Point(8, 8), ViewMargin = 48, GridMode = PixelGridMode.UoField };
+            _canvas.ZoomRequested += d => _zoom.Value = Math.Clamp(_zoom.Value + d, _zoom.Minimum, _zoom.Maximum);
             _canvas.HandleMoved += OnHandleMoved;
             _canvas.HandleDragEnded += () => _lastEditKey = null;
             _canvas.PixelHover += (x, y, c) => _hoverLabel.Text = x < 0 ? string.Empty
@@ -464,7 +509,7 @@ namespace UoFiddler.Controls.Forms
                 return;
             }
 
-            TransformType type = mode == PointMode.Distort ? TransformType.Distort : TransformType.Warp;
+            TransformType type = mode == PointMode.Distort ? TransformType.Distort : mode == PointMode.Warp ? TransformType.Warp : TransformType.Mesh;
             int index = _editIndex >= 0 && _editIndex < _settings.Steps.Count && _settings.Steps[_editIndex].Type == type
                 ? _editIndex
                 : _settings.Steps.Count > 0 && _settings.Steps[^1].Type == type ? _settings.Steps.Count - 1 : -1;
@@ -473,7 +518,9 @@ namespace UoFiddler.Controls.Forms
             {
                 Commit("add", () =>
                 {
-                    _settings.Steps.Add(mode == PointMode.Distort ? TransformStep.NewDistort() : TransformStep.NewWarp());
+                    _settings.Steps.Add(mode == PointMode.Distort ? TransformStep.NewDistort()
+                        : mode == PointMode.Warp ? TransformStep.NewWarp()
+                        : TransformStep.NewMesh(CanvasW, CanvasH, (int)_gridSize.Value));
                     _editIndex = _settings.Steps.Count - 1;
                 }, false);
             }
@@ -492,16 +539,13 @@ namespace UoFiddler.Controls.Forms
             }
 
             TransformStep step = _settings.Steps[_editIndex];
-            if (step.Type != TransformType.Distort && step.Type != TransformType.Warp)
+            if (step.Type != TransformType.Distort && step.Type != TransformType.Warp && step.Type != TransformType.Mesh)
             {
                 return;
             }
 
-            ArtPixelImage before = ArtTransform.ApplyBefore(_source, _settings, _editIndex);
             double[] zero = new double[step.P.Length];
-            (double X, double Y)[] baseHandles = step.Type == TransformType.Distort
-                ? ArtTransform.DistortHandles(before, zero)
-                : ArtTransform.WarpHandles(before, zero);
+            (double X, double Y)[] baseHandles = Handles(step, zero);
             if (handle >= baseHandles.Length)
             {
                 return;
@@ -548,9 +592,11 @@ namespace UoFiddler.Controls.Forms
                 case TransformType.Move: _moveX.Value = Clamp(_moveX, step.A); _moveY.Value = Clamp(_moveY, step.B); break;
             }
 
-            _pointMode = step.Type == TransformType.Distort ? PointMode.Distort : step.Type == TransformType.Warp ? PointMode.Warp : PointMode.Off;
+            _pointMode = step.Type == TransformType.Distort ? PointMode.Distort : step.Type == TransformType.Warp ? PointMode.Warp
+                : step.Type == TransformType.Mesh ? PointMode.Mesh : PointMode.Off;
             _pointsDistort.Checked = _pointMode == PointMode.Distort;
             _pointsWarp.Checked = _pointMode == PointMode.Warp;
+            _pointsMesh.Checked = _pointMode == PointMode.Mesh;
             _pointsOff.Checked = _pointMode == PointMode.Off;
             _programmatic = false;
             RefreshAll();
@@ -630,6 +676,30 @@ namespace UoFiddler.Controls.Forms
             SyncToolsFromSettings();
         }
         #endregion
+
+        private int CanvasW => _settings.CanvasWidth > 0 ? _settings.CanvasWidth : _source?.Width ?? 1;
+
+        private int CanvasH => _settings.CanvasHeight > 0 ? _settings.CanvasHeight : _source?.Height ?? 1;
+
+        /// <summary>Edit points of a distort / warp / grid-dot step (all on the whole frame).</summary>
+        private (double X, double Y)[] Handles(TransformStep step, double[] p) => step.Type switch
+        {
+            TransformType.Distort => ArtTransform.DistortHandles(CanvasW, CanvasH, p),
+            TransformType.Warp => ArtTransform.WarpHandles(CanvasW, CanvasH, p),
+            TransformType.Mesh => ArtTransform.MeshHandles(CanvasW, CanvasH, (int)step.A, p),
+            _ => Array.Empty<(double, double)>()
+        };
+
+        /// <summary>Moves the graphic in the field (own offset, remembered with the transformation).</summary>
+        private void MoveInField(int dx, int dy)
+        {
+            int step = (int)_offsetStep.Value;
+            Commit("offset", () =>
+            {
+                _settings.OffsetX += dx * step;
+                _settings.OffsetY += dy * step;
+            }, true);
+        }
 
         #region Undo / redo
         private void Undo()
@@ -720,10 +790,7 @@ namespace UoFiddler.Controls.Forms
             if (_pointMode != PointMode.Off && _editIndex >= 0 && _editIndex < _settings.Steps.Count)
             {
                 TransformStep step = _settings.Steps[_editIndex];
-                ArtPixelImage before = ArtTransform.ApplyBefore(_source, _settings, _editIndex);
-                (double X, double Y)[] handles = step.Type == TransformType.Distort ? ArtTransform.DistortHandles(before, step.P)
-                    : step.Type == TransformType.Warp ? ArtTransform.WarpHandles(before, step.P)
-                    : Array.Empty<(double, double)>();
+                (double X, double Y)[] handles = step.P == null ? Array.Empty<(double, double)>() : Handles(step, step.P);
                 foreach ((double x, double y) in handles)
                 {
                     _canvas.Handles.Add(new PointF((float)x, (float)y));
@@ -732,6 +799,19 @@ namespace UoFiddler.Controls.Forms
                 if (step.Type == TransformType.Distort && handles.Length == 4)
                 {
                     _canvas.HandleLinks.AddRange(new[] { (0, 1), (1, 3), (3, 2), (2, 0) });
+                }
+                else if (step.Type == TransformType.Mesh)
+                {
+                    (double[] xs, double[] ys) = ArtTransform.MeshLattice(CanvasW, CanvasH, (int)step.A);
+                    for (int j = 0; j < ys.Length; ++j)
+                    {
+                        for (int i = 0; i < xs.Length; ++i)
+                        {
+                            int k = (j * xs.Length) + i;
+                            if (i < xs.Length - 1) { _canvas.HandleLinks.Add((k, k + 1)); }
+                            if (j < ys.Length - 1) { _canvas.HandleLinks.Add((k, k + xs.Length)); }
+                        }
+                    }
                 }
                 else if (handles.Length == 9)
                 {
@@ -748,6 +828,7 @@ namespace UoFiddler.Controls.Forms
             }
 
             _canvas.Invalidate();
+            _offsetLabel.Text = $"X {_settings.OffsetX:+0;-0;0}  Y {_settings.OffsetY:+0;-0;0}";
 
             // step list
             _programmatic = true;

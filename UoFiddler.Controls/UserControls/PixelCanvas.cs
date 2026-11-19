@@ -24,12 +24,15 @@ namespace UoFiddler.Controls.UserControls
         Lines,
         Dots,
         LinesAndDots,
-        Iso
+
+        /// <summary>UO field: main tile (44x44 diamond, bottom corner = fix point) + 5x5 neighbours, centre and ground line.</summary>
+        UoField
     }
 
     /// <summary>
     /// Zoomed, pixel exact view of an <see cref="ArtPixelImage"/> (nearest neighbour, no smoothing) with an optional
-    /// ghost of the original, a grid (lines / dots / UO iso diamonds) and draggable edit points.
+    /// ghost of the original, a grid (lines / dots / UO field) and draggable edit points. A margin around the frame
+    /// shows the neighbour tiles; Ctrl + mouse wheel zooms.
     /// </summary>
     public sealed class PixelCanvas : Control
     {
@@ -57,6 +60,27 @@ namespace UoFiddler.Controls.UserControls
         }
 
         public PixelGridMode GridMode { get; set; } = PixelGridMode.None;
+
+        /// <summary>Space around the frame in image pixels (to see the neighbour tiles of the UO field).</summary>
+        public int ViewMargin
+        {
+            get => _margin;
+            set
+            {
+                _margin = Math.Max(0, value);
+                UpdateSize();
+                Invalidate();
+            }
+        }
+
+        private int _margin;
+        private int Off => _margin * _zoom;
+
+        /// <summary>Ctrl + mouse wheel: +1 / -1.</summary>
+        public event Action<int> ZoomRequested;
+
+        /// <summary>Also draw the frame of the graphic (its full size defines the position in the field).</summary>
+        public bool ShowFrame { get; set; } = true;
         public int GridSize { get; set; } = 8;
         public Color GridColor { get; set; } = Color.FromArgb(150, 0, 200, 255);
         public bool ShowGhost { get; set; }
@@ -98,7 +122,7 @@ namespace UoFiddler.Controls.UserControls
         {
             if (_pixels != null)
             {
-                Size = new Size((_pixels.Width * _zoom) + 1, (_pixels.Height * _zoom) + 1);
+                Size = new Size(((_pixels.Width + (2 * _margin)) * _zoom) + 1, ((_pixels.Height + (2 * _margin)) * _zoom) + 1);
             }
         }
 
@@ -111,6 +135,7 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
+            g.TranslateTransform(Off, Off);
             g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.PixelOffsetMode = PixelOffsetMode.Half;
             var dest = new Rectangle(0, 0, _pixels.Width * _zoom, _pixels.Height * _zoom);
@@ -128,6 +153,13 @@ namespace UoFiddler.Controls.UserControls
             }
 
             g.PixelOffsetMode = PixelOffsetMode.Default;
+            if (ShowFrame)
+            {
+                // the whole frame - not only the coloured pixels - defines where the graphic sits in the field
+                using var framePen = new Pen(Color.FromArgb(110, 128, 128, 128)) { DashStyle = DashStyle.Dot };
+                g.DrawRectangle(framePen, 0, 0, (_pixels.Width * _zoom) - 1, (_pixels.Height * _zoom) - 1);
+            }
+
             DrawGrid(g);
             DrawHandles(g);
         }
@@ -144,31 +176,9 @@ namespace UoFiddler.Controls.UserControls
             using var dot = new SolidBrush(Color.FromArgb(Math.Min(255, GridColor.A + 80), GridColor));
             float r = Math.Max(1.5f, _zoom / 3f);
 
-            if (GridMode == PixelGridMode.Iso)
+            if (GridMode == PixelGridMode.UoField)
             {
-                // UO tile diamonds (GridSize = tile width, height = width / 2), anchored at the bottom centre
-                float ax = w / 2f, ay = h;
-                int tw = Math.Max(4, GridSize);
-                for (int c = -(w + (2 * h)); c <= w + (2 * h); c += tw)
-                {
-                    // lines x - 2y = ax - 2ay + c   and   x + 2y = ax + 2ay + c
-                    DrawIsoLine(g, pen, ax - (2 * ay) + c, 1, w, h);
-                    DrawIsoLine(g, pen, ax + (2 * ay) + c, -1, w, h);
-                }
-
-                for (int c1 = -(w + (2 * h)); c1 <= w + (2 * h); c1 += tw)
-                {
-                    for (int c2 = -(w + (2 * h)); c2 <= w + (2 * h); c2 += tw)
-                    {
-                        float k1 = ax - (2 * ay) + c1, k2 = ax + (2 * ay) + c2;
-                        float x = (k1 + k2) / 2, y = (k2 - k1) / 4;
-                        if (x >= 0 && y >= 0 && x <= w && y <= h)
-                        {
-                            g.FillEllipse(dot, (x * _zoom) - r, (y * _zoom) - r, r * 2, r * 2);
-                        }
-                    }
-                }
-
+                DrawUoField(g, w, h);
                 return;
             }
 
@@ -211,18 +221,57 @@ namespace UoFiddler.Controls.UserControls
             }
         }
 
-        /// <summary>Line x - 2y = k (sign 1, "\") or x + 2y = k (sign -1, "/") clipped to the image.</summary>
-        private void DrawIsoLine(Graphics g, Pen pen, float k, int sign, int w, int h)
+        /// <summary>
+        /// UO field (see UoTile): the graphic stands with the middle pixel of its lowest row on the bottom corner of
+        /// the main tile. Draws 5x5 neighbour tiles (thin), the main tile (bold), the vertical line through the
+        /// tile centre, the ground line (lowest row) and the fix point. All in image pixels, scaled at the end.
+        /// </summary>
+        private void DrawUoField(Graphics g, int w, int h)
         {
-            // y = (x - k) / 2 for sign 1, y = (k - x) / 2 for sign -1
-            float yAt0 = sign == 1 ? -k / 2 : k / 2;
-            float yAtW = sign == 1 ? (w - k) / 2 : (k - w) / 2;
-            if ((yAt0 < 0 && yAtW < 0) || (yAt0 > h && yAtW > h))
+            (int tx, int ty) = UoTile.TileOrigin(w, h);
+            using var thin = new Pen(Color.FromArgb(Math.Min((int)GridColor.A, 120), GridColor));
+            using var bold = new Pen(Color.FromArgb(230, 255, 200, 40), Math.Max(2, _zoom / 2f));
+            using var help = new Pen(Color.FromArgb(150, 255, 200, 40)) { DashStyle = DashStyle.Dash };
+            using var dot = new SolidBrush(Color.FromArgb(200, GridColor));
+            float r = Math.Max(1.5f, _zoom / 3f);
+
+            for (int j = -2; j <= 2; ++j)
             {
-                return;
+                for (int i = -2; i <= 2; ++i)
+                {
+                    (int nx, int ny) = UoTile.NeighbourOrigin(tx, ty, i, j);
+                    (int X, int Y)[] d = UoTile.Diamond(nx, ny);
+                    DrawDiamond(g, thin, d);
+                    foreach ((int X, int Y) c in d)
+                    {
+                        g.FillEllipse(dot, (c.X * _zoom) - r, (c.Y * _zoom) - r, r * 2, r * 2);
+                    }
+                }
             }
 
-            g.DrawLine(pen, 0, yAt0 * _zoom, w * _zoom, yAtW * _zoom);
+            DrawDiamond(g, bold, UoTile.Diamond(tx, ty));
+
+            // centre line (x = tx + 22) and ground line (y = ty + 44 = lowest row of the frame)
+            int top = -_margin, bottom = h + _margin, left = -_margin, right = w + _margin;
+            g.DrawLine(help, (tx + UoTile.Half) * _zoom, top * _zoom, (tx + UoTile.Half) * _zoom, bottom * _zoom);
+            g.DrawLine(help, left * _zoom, (ty + UoTile.Size) * _zoom, right * _zoom, (ty + UoTile.Size) * _zoom);
+
+            // fix point: middle pixel of the lowest row
+            (int ax, int ay) = UoTile.Anchor(w, h);
+            using var fix = new Pen(Color.Red, 2);
+            g.DrawRectangle(fix, ax * _zoom, ay * _zoom, _zoom, _zoom);
+        }
+
+        private void DrawDiamond(Graphics g, Pen pen, (int X, int Y)[] d)
+        {
+            var pts = new PointF[5];
+            for (int k = 0; k < 4; ++k)
+            {
+                pts[k] = new PointF(d[k].X * _zoom, d[k].Y * _zoom);
+            }
+
+            pts[4] = pts[0];
+            g.DrawLines(pen, pts);
         }
 
         private void DrawHandles(Graphics g)
@@ -244,7 +293,8 @@ namespace UoFiddler.Controls.UserControls
             for (int i = 0; i < Handles.Count; ++i)
             {
                 float x = Handles[i].X * _zoom, y = Handles[i].Y * _zoom;
-                var rect = new RectangleF(x - 5, y - 5, 10, 10);
+                float hs = Handles.Count > 20 ? 3.5f : 5;
+                var rect = new RectangleF(x - hs, y - hs, hs * 2, hs * 2);
                 g.FillRectangle(i == _drag ? Brushes.Orange : Brushes.White, rect);
                 g.DrawRectangle(Pens.Black, rect.X, rect.Y, rect.Width, rect.Height);
             }
@@ -258,7 +308,7 @@ namespace UoFiddler.Controls.UserControls
             double best = 10;
             for (int i = 0; i < Handles.Count; ++i)
             {
-                double d = Math.Sqrt(Math.Pow((Handles[i].X * _zoom) - e.X, 2) + Math.Pow((Handles[i].Y * _zoom) - e.Y, 2));
+                double d = Math.Sqrt(Math.Pow((Handles[i].X * _zoom) + Off - e.X, 2) + Math.Pow((Handles[i].Y * _zoom) + Off - e.Y, 2));
                 if (d < best)
                 {
                     best = d;
@@ -277,16 +327,32 @@ namespace UoFiddler.Controls.UserControls
                 return;
             }
 
-            int px = e.X / _zoom, py = e.Y / _zoom;
+            int px = (int)Math.Floor((e.X - Off) / (double)_zoom), py = (int)Math.Floor((e.Y - Off) / (double)_zoom);
             bool inside = px >= 0 && py >= 0 && px < _pixels.Width && py < _pixels.Height;
             PixelHover?.Invoke(inside ? px : -1, inside ? py : -1, inside ? _pixels[px, py] : (ushort)0);
 
             if (_drag >= 0 && e.Button == MouseButtons.Left)
             {
                 // points sit on pixel edges: round to whole pixels -> pixel exact results
-                int ix = (int)Math.Round(e.X / (double)_zoom), iy = (int)Math.Round(e.Y / (double)_zoom);
+                int ix = (int)Math.Round((e.X - Off) / (double)_zoom), iy = (int)Math.Round((e.Y - Off) / (double)_zoom);
                 HandleMoved?.Invoke(_drag, ix, iy);
             }
+        }
+
+        protected override void OnMouseWheel(MouseEventArgs e)
+        {
+            if ((ModifierKeys & Keys.Control) != 0)
+            {
+                ZoomRequested?.Invoke(e.Delta > 0 ? 1 : -1);
+                if (e is HandledMouseEventArgs handled)
+                {
+                    handled.Handled = true;
+                }
+
+                return;
+            }
+
+            base.OnMouseWheel(e);
         }
 
         protected override void OnMouseUp(MouseEventArgs e)

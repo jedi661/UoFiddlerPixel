@@ -237,3 +237,20 @@ Das Original-Protokoll überträgt Item-Grafiken als `uint16`. Empfohlener Weg:
 > < 0x10000 wie bisher. Grafik-IDs von ushort auf uint umstellen, Arrays dynamisch, fehlende radarcol/animdata
 > für Ext-IDs mit Standardwerten. Spezifikation: Docs/ExtendedFormat_Client_Spezifikation.md im Repo
 > jedi661/UoFiddlerPixel, Referenzcode Ultima/ExtendedFormat.cs."
+
+---
+
+## 12. Anhang: Lage einer Grafik im UO-Feld (verbindlich, so rechnet UOFiddler)
+
+Implementiert in `UoFiddler.Controls/Classes/ArtTransform.cs` (`UoTile`) und von allen Werkzeugen
+(Directions, Transform, Raster) benutzt:
+
+- Ein Feld (Land-Tile) ist eine Raute **44 x 44**: oben (22,0), rechts (44,22), unten (22,44), links (0,22),
+  Mitte (22,22). Kanten unter **45 Grad**. Welt -> Bildschirm: `sx = (x - y) * 22`, `sy = (x + y) * 22 - z * 4`.
+- Eine Static-/Art-Grafik wird mit ihrem **ganzen Rahmen** (Breite w, Höhe h - nicht nur den farbigen Pixeln)
+  gesetzt: `drawX = tx + 22 - floor(w / 2)`, `drawY = ty + 44 - h` (+ eigener Offset `offX`, `offY`).
+- **Fixpunkt** = mittlerer Pixel der untersten Bildreihe `(floor(w/2), h-1)` = untere Ecke des Feldes.
+- Nachbarfeld (i, j): `tx = baseX + (i - j) * 22`, `ty = baseY + (i + j) * 22`.
+- Prüfung: eine 44x44-Bodenplatte füllt die Raute exakt (`drawX = tx`, `drawY = ty`).
+- Eine Grafik reicht nie unter die untere Ecke ihres Feldes; Objekte, die zum Betrachter zeigen, stehen auf
+  ihrem vordersten Feld.

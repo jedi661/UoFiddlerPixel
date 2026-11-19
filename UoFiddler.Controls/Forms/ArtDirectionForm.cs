@@ -51,6 +51,7 @@ namespace UoFiddler.Controls.Forms
         private NumericUpDown _shadowAngle;
         private NumericUpDown _shadowLuma;
         private CheckBox _overlayCheck;
+        private CheckBox _fieldCheck;
         private CheckBox _whiteTransparentCheck;
         private ComboBox _zoomBox;
         private Color _background = Color.Black; // UO: black = transparent
@@ -186,6 +187,13 @@ namespace UoFiddler.Controls.Forms
             _repairHole = MakeNumeric(1, 200, 12, 0, 1);
             opt.Controls.Add(_repairHole);
             opt.Controls.Add(MakeButton("Repair source", (s, e) => RepairSource()));
+
+            _fieldCheck = new CheckBox { Text = "UO field", AutoSize = true, Checked = true, Margin = new Padding(10, 7, 3, 3) };
+            new ToolTip().SetToolTip(_fieldCheck,
+                "Shows the UO tile the graphic stands on: the middle pixel of the lowest row (red) is the fix point" + Environment.NewLine +
+                "on the bottom corner of the 44x44 diamond; dashed: centre line and ground line.");
+            _fieldCheck.CheckedChanged += (s, e) => RefreshPreviews();
+            opt.Controls.Add(_fieldCheck);
 
             _overlayCheck = new CheckBox { Text = "Show errors", AutoSize = true, Checked = true, Margin = new Padding(10, 7, 3, 3) };
             _overlayCheck.CheckedChanged += (s, e) => RefreshPreviews();
@@ -347,7 +355,7 @@ namespace UoFiddler.Controls.Forms
                 "Flip: upside down.   Rotate 180: turned in the picture." + Environment.NewLine +
                 "Turn (cross axis): points the other way, round parts stay round." + Environment.NewLine +
                 "Turn (column shift): points the other way, vertical parts stay vertical.");
-            tip.SetToolTip(mc.Axis, "Axis slope for the turns: 0 = measured, 0.5 = \\ diagonal, -0.5 = / diagonal");
+            tip.SetToolTip(mc.Axis, "Axis slope for the turns: 0 = measured, 1 = \\ UO tile diagonal (45 degrees), -1 = / diagonal");
             tip.SetToolTip(mc.Dx, "Move the result left (-) / right (+) in pixels");
             tip.SetToolTip(mc.Dy, "Move the result up (-) / down (+) in pixels");
 
@@ -777,6 +785,20 @@ namespace UoFiddler.Controls.Forms
             }
         }
 
+        /// <summary>Main UO tile under the graphic (see UoTile): diamond, centre line, ground line, fix point.</summary>
+        private void DrawUoField(Graphics g, int w, int h, int zoom)
+        {
+            (int tx, int ty) = UoTile.TileOrigin(w, h);
+            (int X, int Y)[] d = UoTile.Diamond(tx, ty);
+            using var pen = new Pen(Color.FromArgb(200, 255, 200, 40), Math.Max(1, zoom / 2f));
+            g.DrawPolygon(pen, d.Select(c => new PointF(c.X * zoom, c.Y * zoom)).ToArray());
+            using var help = new Pen(Color.FromArgb(120, 255, 200, 40)) { DashStyle = DashStyle.Dash };
+            g.DrawLine(help, (tx + UoTile.Half) * zoom, 0, (tx + UoTile.Half) * zoom, h * zoom);
+            g.DrawLine(help, 0, (ty + UoTile.Size) * zoom - 1, w * zoom, (ty + UoTile.Size) * zoom - 1);
+            (int ax, int ay) = UoTile.Anchor(w, h);
+            g.DrawRectangle(Pens.Red, ax * zoom, ay * zoom, Math.Max(1, zoom - 1), Math.Max(1, zoom - 1));
+        }
+
         private string ErrorText(ArtPixelImage img, out bool hasErrors)
         {
             ArtDirectionGenerator.FindErrors(img, (int)_repairHole.Value, out int holes, out int strays, out int blacks, out int white);
@@ -845,9 +867,10 @@ namespace UoFiddler.Controls.Forms
                     }
                 }
 
-                // UO anchor: bottom center
-                using var pen = new Pen(Color.FromArgb(160, _background.GetBrightness() < 0.5f ? Color.White : Color.Black)) { DashStyle = DashStyle.Dot };
-                g.DrawLine(pen, view.Width / 2, view.Height - (4 * zoom), view.Width / 2, view.Height - 1);
+                if (_fieldCheck == null || _fieldCheck.Checked)
+                {
+                    DrawUoField(g, img.Width, img.Height, zoom);
+                }
             }
 
             pb.Image = view;

@@ -580,7 +580,7 @@ namespace UoFiddler.Controls.Classes
         /// <summary>
         /// One direction with a manually chosen transformation (instead of the automatic one of the object type).
         /// <paramref name="axisSlope"/>: slope of the object axis on screen for the turn methods (0 = measure,
-        /// e.g. 0.5 = "\" iso diagonal, -0.5 = "/"). Shadow, re-light and repair work like in <see cref="Generate"/>.
+        /// e.g. 1 = "\" UO tile diagonal (45 degrees), -1 = "/"). Shadow, re-light and repair work like in <see cref="Generate"/>.
         /// </summary>
         public static ArtDirectionResult GenerateManual(ArtPixelImage source, ArtDirection target, ArtManualMethod method,
             double axisSlope, ArtDirectionOptions options)
@@ -869,8 +869,8 @@ namespace UoFiddler.Controls.Classes
         /// while everything keeps its side of the axis - the highlight stays on top of the barrel, the carriage
         /// stays below it - and, being a mirror, it does not distort shapes: round muzzles and knobs stay round.
         /// The axis is the robust (Theil-Sen) slope of the upper outline; if it does not lie on the expected
-        /// diagonal (<paramref name="slope2"/>: +1 = "\" for West/East, -1 = "/" for North/South) the iso slope
-        /// 1/2 is used. Nearest-neighbour sampling (every target pixel takes exactly one source pixel, no holes).
+        /// diagonal (<paramref name="slope2"/>: +1 = "\" for West/East, -1 = "/" for North/South) the UO tile
+        /// diagonal (45 degrees, slope 1) is used. Nearest-neighbour sampling (every target pixel takes exactly one source pixel, no holes).
         /// Same image size, the lowest pixel keeps its row (UO anchor).
         /// </summary>
         public static int[] TurnOnGroundMap(ArtPixelImage img, int slope2)
@@ -883,7 +883,7 @@ namespace UoFiddler.Controls.Classes
         /// <param name="mismatch">true if the measured axis does not lie on the expected diagonal.</param>
         public static int[] TurnOnGroundMap(ArtPixelImage img, int slope2, double kOverride, out double usedK, out bool mismatch)
         {
-            usedK = 0.5 * slope2;
+            usedK = slope2; // UO tiles: 45 degree diagonals
             mismatch = false;
             int w = img.Width, h = img.Height;
             var map = new int[w * h];
@@ -917,13 +917,14 @@ namespace UoFiddler.Controls.Classes
             else if (Math.Sign(k) != Math.Sign(slope2) || Math.Abs(k) < 0.25 || Math.Abs(k) > 2.5)
             {
                 mismatch = Math.Abs(k) >= 0.25 && Math.Abs(k) <= 2.5; // a clear axis, but on the other diagonal
-                k = 0.5 * slope2;
+                k = slope2; // UO diagonal (45 degrees)
             }
 
             usedK = k;
 
-            // reflection across the line through (cx, cy) with angle axis + 90 degrees (an involution)
-            double cx = (minX + maxX) / 2.0, cy = (minY + maxY) / 2.0;
+            // reflection across the line through the centre of the object with angle axis + 90 degrees
+            // (an involution). Afterwards the turned object is seated on the ground again (see below).
+            double cx = (minX + maxX + 1) / 2.0, cy = (minY + maxY + 1) / 2.0;
             double phi = Math.Atan(k) + (Math.PI / 2);
             double c2 = Math.Cos(2 * phi), s2 = Math.Sin(2 * phi);
             (double X, double Y) Reflect(double x, double y)
@@ -932,7 +933,9 @@ namespace UoFiddler.Controls.Classes
                 return (cx + (c2 * dx) + (s2 * dy), cy + (s2 * dx) - (c2 * dy));
             }
 
-            // anchor: the lowest reflected pixel goes onto the lowest row of the source
+            // UO: a graphic can never reach below the bottom corner of its tile (drawY = ty + 44 - h), an object
+            // that now points towards the viewer stands on its FRONT tile. So the turned object is seated on the
+            // ground row again: its lowest pixel row keeps the distance to the fix point row it had before.
             double newMax = double.MinValue;
             for (int y = minY; y <= maxY; ++y)
             {
@@ -940,20 +943,19 @@ namespace UoFiddler.Controls.Classes
                 {
                     if (img.IsOpaque(x, y))
                     {
-                        newMax = Math.Max(newMax, Reflect(x, y).Y);
+                        newMax = Math.Max(newMax, Reflect(x + 0.5, y + 0.5).Y);
                     }
                 }
             }
 
-            int shift = maxY - (int)Math.Round(newMax, MidpointRounding.AwayFromZero);
+            int shift = maxY - (int)Math.Floor(newMax);
 
             for (int y = 0; y < h; ++y)
             {
                 for (int x = 0; x < w; ++x)
                 {
-                    (double sx, double sy) = Reflect(x, y - shift);
-                    int ix = (int)Math.Round(sx, MidpointRounding.AwayFromZero);
-                    int iy = (int)Math.Round(sy, MidpointRounding.AwayFromZero);
+                    (double sx, double sy) = Reflect(x + 0.5, y + 0.5 - shift);
+                    int ix = (int)Math.Floor(sx), iy = (int)Math.Floor(sy);
                     if (ix >= 0 && iy >= 0 && ix < w && iy < h && img.IsOpaque(ix, iy))
                     {
                         map[(y * w) + x] = (iy * w) + ix;
@@ -1039,21 +1041,25 @@ namespace UoFiddler.Controls.Classes
         }
         #endregion
 
+        /// <summary>
+        /// 180 degree turn of a flat object around the centre of its UO tile. The tile of a w x h graphic is the
+        /// 44x44 diamond whose bottom corner is the fix point (middle pixel of the lowest row), so its centre is
+        /// the pixel corner (floor(w/2), h - 22). Turning around a pixel corner is an exact permutation; a 44x44
+        /// floor tile is turned onto itself.
+        /// </summary>
         public static ArtPixelImage Rotate180(ArtPixelImage src)
         {
-            // rotate inside the opaque bounding box, so the object stays on the ground (bottom anchor) and centered
-            GetBounds(src, out int minX, out int minY, out int maxX, out int maxY);
+            int cx = src.Width / 2, cy = src.Height - UoTile.Half;
             var dst = new ArtPixelImage(src.Width, src.Height);
-            if (maxX < minX)
+            for (int y = 0; y < src.Height; ++y)
             {
-                return dst;
-            }
-
-            for (int y = minY; y <= maxY; ++y)
-            {
-                for (int x = minX; x <= maxX; ++x)
+                for (int x = 0; x < src.Width; ++x)
                 {
-                    dst[minX + maxX - x, minY + maxY - y] = src[x, y];
+                    int sx = (2 * cx) - x - 1, sy = (2 * cy) - y - 1;
+                    if (sx >= 0 && sy >= 0 && sx < src.Width && sy < src.Height)
+                    {
+                        dst[x, y] = src[sx, sy];
+                    }
                 }
             }
 

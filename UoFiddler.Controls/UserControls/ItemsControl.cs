@@ -66,10 +66,12 @@ namespace UoFiddler.Controls.UserControls
             checkItem.Click += (s, e) => new ExtendedCheckForm(GoToId, Reload).Show();
             MiscToolStripDropDownButton.DropDownItems.Add(checkItem);
 
-            var directionsButton = new ToolStripButton("Directions N/E/S/W")
+            var directionsButton = new ToolStripButton("Directions N/E/S/W", ToolIcons.Directions())
             {
-                DisplayStyle = ToolStripItemDisplayStyle.Text,
-                ToolTipText = "Generate the other orientations (north/east/south/west) of the selected item"
+                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+                ToolTipText = "Directions N/E/S/W" + Environment.NewLine +
+                              "Generates the other facings of the selected item (mirror, turn, light, shadow)." + Environment.NewLine +
+                              "Shows the UO field: the middle pixel of the lowest row is the fix point on the tile."
             };
             directionsButton.Click += (s, e) => ShowDirectionForm();
             ToolStrip.Items.Add(directionsButton);
@@ -107,10 +109,12 @@ namespace UoFiddler.Controls.UserControls
             TileViewContextMenuStrip.Items.Insert(freeIndex + 1, _onlyFreeMenuItem);
             TileViewContextMenuStrip.Items.Insert(freeIndex + 2, gotoExtended);
 
-            var transformButton = new ToolStripButton("Transform")
+            var transformButton = new ToolStripButton("Transform", ToolIcons.Transform())
             {
-                DisplayStyle = ToolStripItemDisplayStyle.Text,
-                ToolTipText = "Skew / distort / warp / flip the selected item pixel exactly (undo, grid, remembered)"
+                DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+                ToolTipText = "Transform (pixel exact)" + Environment.NewLine +
+                              "Flip, rotate, skew, scale, distort, warp and move every grid dot - colours stay identical." + Environment.NewLine +
+                              "UO field grid, position in the field (8 arrows), undo/redo; remembered per item."
             };
             transformButton.Click += (s, e) => ShowTransformForm();
             ToolStrip.Items.Add(transformButton);
