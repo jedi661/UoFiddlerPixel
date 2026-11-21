@@ -67,6 +67,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void EnsureCaveRule(IndexedMap map = null)
         {
             GeneratorSettings g = _settings.Generator;
+            if (map == null && g.CaveEntrances > 0 && g.CaveEntranceOriginal)
+            {
+                // original entrances: black group, rule to the mountain, cave floor -> dirt
+                EnsureCaveColourRules(false);
+            }
             bool needed = map == null ? g.CaveEntrances > 0 : MapUsesGroup(map, g.CaveGroup);
             if (needed && _rules.EnsureCaveRule(g.CaveGroup, g.MountainGroup))
             {

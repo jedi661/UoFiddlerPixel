@@ -196,6 +196,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("3 Gebirge"), DisplayName("Höhleneingänge"), Description("Anzahl unsichtbarer Höhleneingänge (Gruppe 1d) am Bergrand. Aktiviert die Regel 1d→Berg (map/cave-enti2mountain.txt). 0 = keine.")]
         public int CaveEntrances { get; set; } = 8;
 
+        [Category("3 Gebirge"), DisplayName("Höhleneingang wie Original"), Description("An: Eingänge wie in der Original-Karte (schwarzer Mund 01DB mit Rahmen, Höhlenboden-Reihe, Erdweg davor) – nur an Bergseiten nach Süden / Osten. Aus: unsichtbare 2×2-Eingänge der Gruppe 1d (wie bisher).")]
+        public bool CaveEntranceOriginal { get; set; } = true;
+
         [Category("3 Gebirge"), DisplayName("Höhleneingang-Gruppe"), Description("IMod13: 29 (= 1d hex, Invisible Cave entrance).")]
         public int CaveGroup { get; set; } = 0x1d;
 
@@ -451,10 +454,81 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             if (_s.CaveEntrances > 0)
             {
-                AddCaveEntrances(map, seed, cancel);
+                int visible = _rules.Groups.Where(g => g.Name == CaveColorStamp.VisibleGroupName).Select(g => g.Id).DefaultIfEmpty(-1).First();
+                if (_s.CaveEntranceOriginal && visible >= 0)
+                {
+                    AddOriginalCaveEntrances(map, visible, seed, cancel);
+                }
+                else
+                {
+                    AddCaveEntrances(map, seed, cancel);
+                }
             }
             progress?.Report(100);
             return map;
+        }
+
+        /// <summary>Entrances like the original map (colour stamp) on mountain sides facing south or east.</summary>
+        private void AddOriginalCaveEntrances(IndexedMap map, int entranceGroup, int seed, CancellationToken cancel)
+        {
+            var groupOf = new int[65536];
+            Array.Fill(groupOf, -1);
+            foreach (DragonPaletteEntry e in _rules.Palette.Where(p => p.Defined))
+            {
+                groupOf[e.Index] = e.Group;
+            }
+            int w = map.Width, h = map.Height, mountain = _s.MountainGroup, water = _s.WaterGroup;
+            int G(int x, int y) => x < 0 || y < 0 || x >= w || y >= h ? -1 : groupOf[map[x, y]];
+            bool Land(int x, int y)
+            {
+                int g = G(x, y);
+                return g >= 0 && g != mountain && g != water && g != entranceGroup;
+            }
+            // a wide straight mountain side: 7 cells mountain in a row with 4 rows land in front
+            var candidates = new List<(int x, int y)>();
+            for (int y = 3; y < h - 6; y += 2)
+            {
+                for (int x = 3; x < w - 6; x += 2)
+                {
+                    bool south = true, east = true;
+                    for (int a = -3; a <= 3 && (south || east); a++)
+                    {
+                        south &= G(x + a, y) == mountain && G(x + a, y - 1) == mountain && G(x + a, y - 2) == mountain && Land(x + a, y + 1) && Land(x + a, y + 3);
+                        east &= G(x, y + a) == mountain && G(x - 1, y + a) == mountain && G(x - 2, y + a) == mountain && Land(x + 1, y + a) && Land(x + 3, y + a);
+                    }
+                    if (south)
+                    {
+                        candidates.Add((x, y + 1));
+                    }
+                    else if (east)
+                    {
+                        candidates.Add((x + 1, y));
+                    }
+                }
+                if ((y & 63) == 0)
+                {
+                    cancel.ThrowIfCancellationRequested();
+                }
+            }
+            var rnd = new Random(seed + 707);
+            var placed = new List<(int x, int y)>();
+            int minDist = Math.Max(16, Math.Max(w, h) / 12);
+            var o = new CaveColorOptions { MountainGroup = mountain, WaterGroup = water };
+            foreach (var c in candidates.OrderBy(_ => rnd.Next()))
+            {
+                if (placed.Count >= _s.CaveEntrances)
+                {
+                    break;
+                }
+                if (placed.Any(p => Math.Abs(p.x - c.x) + Math.Abs(p.y - c.y) < minDist))
+                {
+                    continue;
+                }
+                if (!CaveColorStamp.Stamp(map, _rules, c.x, c.y, o, entranceGroup, out _).IsEmpty)
+                {
+                    placed.Add(c);
+                }
+            }
         }
 
         /// <summary>Places 2×2 invisible cave entrances in the mountain border (one side touches the land).</summary>

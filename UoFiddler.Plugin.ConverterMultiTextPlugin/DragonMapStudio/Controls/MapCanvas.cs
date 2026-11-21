@@ -35,7 +35,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Raise,
         Lower,
         Select,
-        Pan
+        Pan,
+
+        /// <summary>Click: cave entrance like the original (colours), right click: remove it again.</summary>
+        CaveStamp
+    }
+
+    public sealed class MapClickEventArgs : EventArgs
+    {
+        public MapClickEventArgs(int x, int y, MouseButtons button, Keys modifiers)
+        {
+            X = x;
+            Y = y;
+            Button = button;
+            Modifiers = modifiers;
+        }
+
+        public int X { get; }
+        public int Y { get; }
+        public MouseButtons Button { get; }
+        public Keys Modifiers { get; }
     }
 
     public sealed class MapPointEventArgs : EventArgs
@@ -101,6 +120,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         public event EventHandler<MapPointEventArgs> CursorMoved;
+
+        /// <summary>Click with a tool the form carries out (cave stamp).</summary>
+        public event EventHandler<MapClickEventArgs> ToolClicked;
+
+        /// <summary>
+        /// One undoable edit by the form: everything within <paramref name="radius"/> around (x, y) is recorded first,
+        /// <paramref name="edit"/> changes the map and returns the changed area (empty = nothing changed, no undo step).
+        /// </summary>
+        public Rectangle EditAround(int x, int y, int radius, string name, Func<IndexedMap, Rectangle> edit)
+        {
+            if (_map == null)
+            {
+                return Rectangle.Empty;
+            }
+            var area = Rectangle.FromLTRB(x - radius, y - radius, x + radius + 1, y + radius + 1);
+            area.Intersect(_map.Bounds);
+            _history?.Begin(name);
+            _history?.Touch(area);
+            Rectangle r = edit(_map);
+            if (r.IsEmpty)
+            {
+                _history?.Cancel();
+                return r;
+            }
+            EndEdit();
+            Changed(r);
+            return r;
+        }
         public event EventHandler<PaletteIndexEventArgs> ColorPicked;
         public event EventHandler ViewChanged;
         public event EventHandler MapEdited;
@@ -566,6 +613,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
             switch (_tool)
             {
+                case MapTool.CaveStamp:
+                    if (_map.InBounds(p.X, p.Y))
+                    {
+                        ToolClicked?.Invoke(this, new MapClickEventArgs(p.X, p.Y, e.Button, ModifierKeys));
+                    }
+                    return;
                 case MapTool.Picker:
                     if (_map.InBounds(p.X, p.Y))
                     {
@@ -753,6 +806,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 case MapTool.FilledEllipse: return "Ellipse gefüllt";
                 case MapTool.Raise: return "Höhe +";
                 case MapTool.Lower: return "Höhe −";
+                case MapTool.CaveStamp: return "Höhleneingang";
                 default: return t.ToString();
             }
         }

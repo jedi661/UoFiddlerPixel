@@ -43,6 +43,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 "Boden und Berg werden am Tile erkannt (Gras darf höher liegen): die Höhe vorn wird der Höhlenboden, " +
                 "die vordere Reihe wird unsichtbar (0002), dahinter der Bogen 01D3–01DA bis zur Mund-Höhe, links und rechts der Rahmen, davor ein Weg. " +
                 "Ziehen statt klicken: von einer Seite des Mundes zur anderen = Breite, das Ende oben an der Bergwand = Höhe. " +
+                "Strg+Klick = Eingang wieder entfernen (Berg / Boden, NODRAW weg). Varianten oben: Original, Ohne Weg, Unsichtbar. " +
+                "'Übergänge berechnen' setzt danach Gras → Erde usw. nach den Dragon-Regeln (auch Bereich + T). " +
                 "Auswerten: einen Eingang (z. B. aus der Original-Karte) mit 'Bereich' markieren und den Knopf drücken – das Log zeigt ID, Höhe, Textur, Farbe und Muster jedes Tiles. " +
                 "Der Client zeichnet Land nur am Hang mit Textur, flach mit dem Land-Bild – die Ansicht macht es jetzt genauso.");
             _settings.Mountain ??= new MountainSettings();
@@ -144,6 +146,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             int mountain = _settings?.Generator?.MountainGroup ?? 0x06;
             isoView.CaveEntranceMountainIds = new HashSet<ushort>(_rules.EntriesOfGroup(mountain).SelectMany(e => e.GetTileIds()));
             isoView.CaveIsMountain = MountainClassifier(isoView.CaveEntranceMountainIds);
+            try
+            {
+                isoView.LandTransitions = new LandTransitionEngine(_rules);
+            }
+            catch (Exception ex)
+            {
+                isoView.LandTransitions = null;
+                Log("Übergänge für die CGI-Ansicht nicht verfügbar: " + ex.Message);
+            }
             if (isoView.CaveEntranceMountainIds.Count > 0)
             {
                 isoView.MountainFallbackTiles = isoView.CaveEntranceMountainIds.OrderBy(i => i).ToArray();
@@ -321,6 +332,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 lstCgiCavePatterns.Items.Add($"{t.Name}   ({t.LandWidth}×{t.LandHeight}" + (t.Statics.Count > 0 ? $", {t.Statics.Count} St." : string.Empty) + ")");
             }
             lstCgiCavePatterns.EndUpdate();
+            lstCgiStampSaved.BeginUpdate();
+            lstCgiStampSaved.Items.Clear();
+            foreach (object item in lstCgiCavePatterns.Items)
+            {
+                lstCgiStampSaved.Items.Add(item);
+            }
+            lstCgiStampSaved.EndUpdate();
             int sel = selectFile == null ? -1 : _cavePatterns.FindIndex(t => string.Equals(t.File, selectFile, StringComparison.OrdinalIgnoreCase));
             if (sel >= 0)
             {
@@ -447,6 +465,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
         }
 
+        private void BtnCgiTransArea_Click(object sender, EventArgs e)
+        {
+            ApplyCaveEntranceRules();
+            isoView.TransitionArea();
+            isoView.Focus();
+        }
+
+        private void BtnCgiStampPlaceSaved_Click(object sender, EventArgs e)
+        {
+            EnsureTemplateLibrary();
+            int i = lstCgiStampSaved.SelectedIndex;
+            if (i < 0 || i >= _cavePatterns.Count)
+            {
+                SetStatus("Erst einen gespeicherten Stempel wählen – oder einen fertigen Eingang mit 'Bereich' markieren und 'Bereich → speichern'.");
+                return;
+            }
+            chkCgiTplLand.Checked = true;
+            chkCgiTplLandZ.Checked = true;
+            isoView.Template = _cavePatterns[i];
+            SelectCgiTool(IsoTool.Template);
+            tabCgiSide.SelectedTab = tabCgiStamp;
+            isoView.Focus();
+            SetStatus($"Stempel '{_cavePatterns[i].Name}': Klick auf den Boden vor dem Berg setzt ihn – Land + Höhen relativ zum Boden, Statics (NODRAW) mit.");
+        }
+
         private void CgiViewTextures_Changed(object sender, EventArgs e)
         {
             isoView.AlwaysTextures = chkCgiAlwaysTextures.Checked;
@@ -504,7 +547,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 EnsureTemplateLibrary();
             }
-            else if (tabCgiSide.SelectedTab == tabCgiCave)
+            else if (tabCgiSide.SelectedTab == tabCgiCave || tabCgiSide.SelectedTab == tabCgiStamp)
             {
                 EnsureCaveTiles();
                 EnsureTemplateLibrary();

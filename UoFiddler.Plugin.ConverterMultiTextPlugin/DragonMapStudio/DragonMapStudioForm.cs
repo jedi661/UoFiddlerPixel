@@ -63,6 +63,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _toolButtons[tsbLower] = MapTool.Lower;
             _toolButtons[tsbSelect] = MapTool.Select;
             _toolButtons[tsbPan] = MapTool.Pan;
+            _toolButtons[tsbCaveStamp2D] = MapTool.CaveStamp;
+            mapCanvas.ToolClicked += MapCanvas_ToolClicked;
 
             _history.Changed += (s, e) => UpdateUndoState();
         }

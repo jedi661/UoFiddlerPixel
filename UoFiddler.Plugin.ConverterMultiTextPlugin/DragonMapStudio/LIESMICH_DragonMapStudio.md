@@ -490,6 +490,24 @@ Alle Tiles haben eine eigene Textur (Textur-ID = Land-ID), am Hang zeichnet der 
 
 Der Stempel baut genau dieses Raster. **Ziehen:** unten am Rahmen anfangen und schräg nach oben zur anderen oberen Ecke ziehen. Der Abstand entlang der Wand ergibt die Breite (Start und Ende sind die Rahmen), die Höhe am Ende des Zuges die Höhe der oberen Reihe. Mund und Rahmen werden im selben Verhältnis angepasst.
 
+**Varianten** (Einstellung „Variante“, alle drei kommen in der Original-Karte vor):
+* **Original** – schwarzer Mund, Übergangsreihe `01E6/01DF/01E4`, Erdweg davor.
+* **Ohne Weg** – schwarzer Mund direkt auf dem Boden, das Gras davor bleibt.
+* **Unsichtbar** – Mund `0002` mit Höhlenboden `0245`–`0249` davor (wie innen im Dungeon).
+
+**Übergänge** (`Core/LandTransitions.cs`): Nach dem Stempeln werden die Map-Übergänge des Dragon-Regelsatzes rund um den Eingang neu gesetzt: Gras → Erde (`0083`, `0086`, `0087`, `0089`, `007E` …) und Berg → Erde (`00DF`, `06F2` …), wie im Original. Jedes Land-Tile wird dazu seiner Gruppe zugeordnet (Farbtabelle + Übergangsdateien). Das geht auch für beliebige Bereiche: Werkzeug „Bereich“, markieren, **T** – z. B. nach dem Malen einer Straße.
+
+**Entfernen:** Strg+Klick mit dem Höhlen-Stempel auf einen Eingang – Mund, Rahmen und obere Reihe werden wieder Berg (Höhe aus dem Berg drumherum), die Vorderreihe wird Boden, die NODRAW-Statics werden gelöscht, danach Übergänge neu.
+
+**Eigene Stempel:** einen fertigen Eingang mit „Bereich“ markieren und „Bereich → speichern“ (Vorlagen-Ordner `Höhleneingang`). Die Liste „Gespeicherte Stempel“ setzt ihn mit Land, Höhen (relativ zum Boden) und Statics wieder.
+
+### Höhleneingänge im 2D-Editor und im Generator
+
+* Werkzeug **„Höhle“** in der Leiste des Karten-Editors: neben einen Berg klicken, dessen Süd- oder Ostseite an Boden grenzt. Gemalt werden Farben: obere Reihe + Mund-Reihe = Gruppe „Höhleneingang schwarz (01DB)“ (Höhe Boden + 20), davor Höhlenboden (Gruppe 03), daneben und davor Erde (Gruppe 09). **Umschalt+Klick** = unsichtbare Variante (Gruppe 1d), **Rechtsklick** = Eingang wieder Berg.
+* Fehlt die Gruppe „Höhleneingang schwarz (01DB)“, wird sie angelegt (nächste freie Gruppe, 3 Farben mit Höhe 10 / 20 / 30, Tile `01DB`), dazu die Regeln Eingang → Berg (`map/cave-ent2mountain.txt`) und 03 → 09 (`map/cave2dirt.txt`). Mit „JSON speichern“ / „Als Dragon-Skripte exportieren“ dauerhaft machen.
+* Beim Bauen entsteht daraus genau das Original-Raster: `01D3/01D4/01D5` (+26…34), `01DA/01DB/01D6` (+20), `01E6/01DF/01E4`, daneben `00DF`, weiche Gras-Erde-Kanten. Die Build-Option **„Höhleneingang: NODRAW-Statics“** setzt das unsichtbare Static `0001` auf jedes Tile der Mund-Reihe.
+* **Generator:** „Höhleneingang wie Original“ (an) setzt die Eingänge mit diesem Stempel an geraden Bergseiten nach Süden / Osten, aus = unsichtbare 2×2-Eingänge (Gruppe 1d) wie bisher.
+
 **Bereich auswerten:** Werkzeug „Bereich“, mit der linken Maustaste ein Viereck ziehen, dann **L** drücken (oder den Knopf im Reiter). Das Log wird als Datei gespeichert **und in die Zwischenablage kopiert**.
 
 Ein Klick auf den Boden direkt vor einer Bergwand (Süd- oder Ostseite) setzt einen kompletten Eingang (`Core/CaveEntranceBuilder.cs`):

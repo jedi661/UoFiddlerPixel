@@ -100,6 +100,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("3 Details"), DisplayName("Statics mehrerer IDs"), Description("RandomOne = eine ID zufällig (wie Dragon: 'itemid1 to x will be used randomly'), PlaceAll = alle IDs einer Zeile setzen.")]
         public StaticTileMode StaticMode { get; set; } = StaticTileMode.RandomOne;
 
+        [Category("3 Details"), DisplayName("Höhleneingang: NODRAW-Statics"), Description("Wie im Original: auf jedes Tile der Mund-Reihe eines Höhleneingangs (01DA/01DB/01D6 vor 01DC–01E7, nach Osten 01D4/01DB/01D8) ein unsichtbares Static 0001 auf Bodenhöhe.")]
+        public bool CaveNoDrawStatics { get; set; } = true;
+
         [Category("3 Details"), DisplayName("Übergang: Höhe Z1..Z2"), Description("Dragon-Tutorial: neue Höhe = alte Höhe + Zufallszahl zwischen Z1 und Z2 (z. B. '005 007' → +5..+7). Aus = Höhe bleibt.")]
         public bool MapTransitionZ { get; set; } = true;
 
@@ -352,6 +355,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             if (_o.ApplyStaticTransitions && _o.WriteStatics)
             {
                 ApplyTransitions(TransitionLayer.Static, result, progress, 45, 60, cancel);
+            }
+
+            if (_o.CaveNoDrawStatics && _o.WriteStatics)
+            {
+                long nodraw = AddCaveNoDrawStatics();
+                if (nodraw > 0)
+                {
+                    _log($"Höhleneingänge: {nodraw:N0} NODRAW-Statics auf der Mund-Reihe.");
+                }
             }
 
             long waterStatics = AddCoastWaterStatics();
@@ -992,6 +1004,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
             }
             return changed;
+        }
+
+        /// <summary>
+        /// Original cave entrance: every tile of the mouth row (01DA / 01DB / 01D6 with the cave-to-dirt row 01DC–01E7 south of it,
+        /// or 01D4 / 01DB / 01D8 with it east of it) carries the invisible static 0001 on the ground height in front.
+        /// </summary>
+        private long AddCaveNoDrawStatics()
+        {
+            static bool Front(ushort t) => t >= 0x01DC && t <= 0x01E7;
+            long n = 0;
+            for (int y = 0; y < _h; y++)
+            {
+                for (int x = 0; x < _w; x++)
+                {
+                    ushort t = _tile[y * _w + x];
+                    if (t < 0x01D3 || t > 0x01DB)
+                    {
+                        continue;
+                    }
+                    if ((t == 0x01DA || t == 0x01DB || t == 0x01D6) && y + 1 < _h && Front(_tile[(y + 1) * _w + x]))
+                    {
+                        AddStatic(0x0001, x, y, _z[(y + 1) * _w + x], 0);
+                        n++;
+                    }
+                    else if ((t == 0x01D4 || t == 0x01DB || t == 0x01D8) && x + 1 < _w && Front(_tile[y * _w + x + 1]))
+                    {
+                        AddStatic(0x0001, x, y, _z[y * _w + x + 1], 0);
+                        n++;
+                    }
+                }
+            }
+            return n;
         }
 
         private void AddStatic(ushort id, int x, int y, int z, ushort hue)

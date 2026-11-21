@@ -121,6 +121,9 @@
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.Bits.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.Caves.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.RulesUi.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>
