@@ -125,6 +125,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public event EventHandler<MapClickEventArgs> ToolClicked;
 
         /// <summary>
+        /// Right click with Auswahl / Hand / Pipette, or Umschalt + right click with any tool: the form shows its context menu
+        /// (X / Y = map position, the screen position is <see cref="Control.MousePosition"/>).
+        /// </summary>
+        public event EventHandler<MapClickEventArgs> ContextRequested;
+
+        /// <summary>Paste / colour stamp: turns the buffer into the pixels for this position (e.g. heights adapted to the ground there).</summary>
+        [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public Func<IndexedMap, Point, IndexedMap> PasteTransform { get; set; }
+
+        /// <summary>Name of the undo step while pasting (e.g. "Stempel Haus").</summary>
+        [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public string PasteName { get; set; } = "Einfügen";
+
+        /// <summary>Paste mode stays on after a click (stamp several times); Esc / right click ends it.</summary>
+        [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public bool PasteRepeat { get; set; }
+
+        public bool PasteActive => _pasteMode && _pasteBuffer != null;
+
+        public void EndPaste()
+        {
+            _pasteMode = false;
+            PasteTransform = null;
+            PasteRepeat = false;
+            PasteName = "Einfügen";
+            Invalidate();
+        }
+
+        /// <summary>
         /// One undoable edit by the form: everything within <paramref name="radius"/> around (x, y) is recorded first,
         /// <paramref name="edit"/> changes the map and returns the changed area (empty = nothing changed, no undo step).
         /// </summary>
@@ -599,10 +628,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             Point p = ScreenToMap(e.Location);
             ushort color = (ushort)(e.Button == MouseButtons.Left ? PrimaryIndex : SecondaryIndex);
 
+            if (e.Button == MouseButtons.Right && !(_pasteMode && _pasteBuffer != null) &&
+                ((ModifierKeys & Keys.Shift) != 0 || _tool == MapTool.Select || _tool == MapTool.Pan || _tool == MapTool.Picker))
+            {
+                ContextRequested?.Invoke(this, new MapClickEventArgs(p.X, p.Y, e.Button, ModifierKeys));
+                return;
+            }
+
             if (_pasteMode && _pasteBuffer != null)
             {
                 if (e.Button == MouseButtons.Right)
                 {
+                    PasteTransform = null;
+                    PasteRepeat = false;
+                    PasteName = "Einfügen";
                     _pasteMode = false;
                     Invalidate();
                     return;
@@ -1095,13 +1134,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 return;
             }
-            _history?.Begin("Einfügen");
+            IndexedMap buffer = PasteTransform?.Invoke(_pasteBuffer, p) ?? _pasteBuffer;
+            _history?.Begin(PasteName ?? "Einfügen");
             _history?.Touch(r);
             for (int y = r.Top; y < r.Bottom; y++)
             {
                 for (int x = r.Left; x < r.Right; x++)
                 {
-                    _map.Pixels[y * _map.Width + x] = _pasteBuffer.Pixels[(y - p.Y) * _pasteBuffer.Width + (x - p.X)];
+                    _map.Pixels[y * _map.Width + x] = buffer.Pixels[(y - p.Y) * buffer.Width + (x - p.X)];
                 }
             }
             Changed(r);
