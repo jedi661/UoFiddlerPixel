@@ -550,3 +550,12 @@ Der Höhle-Pinsel macht nur noch **Berg-Tiles** zur Wand. Gras daneben bleibt Bo
 * Danach mit „Eingang“ den Höhleneingang an der Süd- oder Ostseite setzen.
 
 Im 2D-Editor: werden Farben der Gruppe 1d von Hand gemalt, aktiviert „MUL erzeugen“ / „CGI-Karte bauen“ jetzt die Regel 1d → Berg selbst (vorher nur der Generator).
+
+## CGI-Ansicht: neue Seitenleiste
+
+* **Kartenübersicht** als aufklappbarer Abschnitt, Knöpfe im Kopf: **−** / **+** zoomen, **↕** Größe klein / mittel / groß, **⧉** in ein eigenes Fenster abdocken (Fenster schließen = wieder andocken). In der Übersicht: Mausrad = Zoom um den Mauszeiger, rechte Taste ziehen = schieben, Doppelklick rechts = ganze Karte, Klick links = hinspringen. Gezoomt folgt sie der Ansicht. Das Übersichtsbild ist jetzt bis 1024 Pixel groß (vorher 320), dadurch bleibt es beim Zoomen scharf. Gilt auch für die Übersicht im Karten-Editor.
+* **Gehe zu** aufklappbar.
+* Statt zwei Reihen Reiter: **farbige Kategorien mit Bildern** – Bauen (Items, Multis, Vorlagen), Gelände (Land, Küste / Wasser, Berg), Höhlen (Höhle / Weg, Höhlen-Stempel), Prüfen (Auswahl, Probleme). Die Bilder sind Land- / Item-Grafiken aus den Client-Dateien (ohne Client-Dateien ein farbiger Buchstabe).
+* Die Reiter **Höhle / Weg**, **Höhlen-Stempel** und **Berg** bestehen aus aufklappbaren Abschnitten (Werkzeug, Einstellungen, Ansicht, Auswerten, Gespeicherte, Hilfe). Die Hilfe ist zu Beginn zugeklappt. Welche Abschnitte offen sind, wird gespeichert.
+* **Höhlen-Stempel → Vorschau:** zeigt das Raster der gewählten Variante mit den echten Tile-Bildern, IDs und Höhen.
+* Die Seitenleiste ist breiter (der Trenner lässt sich weiter ziehen, mindestens 300 Pixel).

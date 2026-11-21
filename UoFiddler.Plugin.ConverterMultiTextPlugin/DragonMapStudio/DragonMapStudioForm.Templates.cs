@@ -407,6 +407,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void PropCgiStamp_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
+            UpdateStampPreview();
             isoView.CaveStamp = _settings.CaveStamp;
         }
 
@@ -547,7 +548,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 EnsureTemplateLibrary();
             }
-            else if (tabCgiSide.SelectedTab == tabCgiCave || tabCgiSide.SelectedTab == tabCgiStamp)
+            UpdateCgiNav();
+            if (tabCgiSide.SelectedTab == tabCgiCave || tabCgiSide.SelectedTab == tabCgiStamp)
             {
                 EnsureCaveTiles();
                 EnsureTemplateLibrary();

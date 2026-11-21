@@ -114,6 +114,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             gridCgiLand.NameOf = id => UoArtCache.LandName(id) + (UoArtCache.Texture(id) != null ? "  (mit Textur)" : string.Empty);
             LoadCoastSettings(CoastSettings.From(CurrentBuildOptions()));
             InitTemplatesAndCaves();
+            BuildCgiLayout();
             SelectCgiTool(IsoTool.Select);
             foreach (string z in new[] { "127", "100", "80", "60", "40", "30", "20", "10", "0" })
             {
@@ -221,30 +222,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             Bitmap thumb;
             if (_cgiFromEditor && _map != null && _map.Width == _cgiMap.Width && _map.Height == _cgiMap.Height)
             {
-                thumb = IndexedBitmapIO.ToBitmap(_map, _rules.GetColors(), 320);
+                thumb = IndexedBitmapIO.ToBitmap(_map, _rules.GetColors(), 1024);
             }
             else
             {
-                int step = Math.Max(1, (Math.Max(_cgiMap.Width, _cgiMap.Height) + 319) / 320);
-                int w = Math.Max(1, _cgiMap.Width / step), h = Math.Max(1, _cgiMap.Height / step);
-                thumb = new Bitmap(w, h);
-                var colors = new Dictionary<ushort, Color>();
-                for (int y = 0; y < h; y++)
-                {
-                    for (int x = 0; x < w; x++)
-                    {
-                        ushort id = _cgiMap.LandId(x * step, y * step);
-                        if (!colors.TryGetValue(id, out Color c))
-                        {
-                            colors[id] = c = UoArtCache.LandColor(id);
-                        }
-                        thumb.SetPixel(x, y, c);
-                    }
-                }
+                thumb = RadarThumbnail(_cgiMap, 1024);
             }
             cgiNavigator.SetThumbnail(thumb, _cgiMap.Width, _cgiMap.Height);
             cgiNavigator.SetView(isoView.ViewRect);
             UpdateCgiMark();
+            // the client files are there now: pictures for the category buttons / sections
+            RefreshCgiIcons();
+            UpdateStampPreview();
         }
 
         private void UpdateCgiMark()
