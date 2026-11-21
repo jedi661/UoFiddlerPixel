@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Linq;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 {
@@ -48,34 +49,43 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public int Rise { get; set; } = 5;
     }
 
-    /// <summary>Settings of the cave stamp (tab "Höhle / Weg").</summary>
+    /// <summary>
+    /// Settings of the cave stamp. Default values measured on the original map (Britannia, see LIESMICH):
+    /// mouth 01DB about 20 above the ground, frame 01DA / 01D6 about 15, top row 01D3 / 01D4 / 01D5 about 33.
+    /// </summary>
     public sealed class CaveStampSettings
     {
         [Category("1 Eingang"), DisplayName("Richtung"), Description("Wohin der Eingang zeigt. Sichtbar sind nur Eingänge nach Süden oder Osten (die Kamera schaut von Südosten).")]
         public CaveFacing Facing { get; set; } = CaveFacing.Auto;
 
-        [Category("1 Eingang"), DisplayName("Breite"), Description("Breite des Mundes in Tiles (Original: 2–4).")]
+        [Category("1 Eingang"), DisplayName("Breite"), Description("Anzahl schwarzer Mund-Tiles 01DB (Original: 3). Dazu kommt links und rechts der Rahmen.")]
         public int Width { get; set; } = 3;
 
-        [Category("1 Eingang"), DisplayName("Rahmen"), Description("Links und rechts vom Mund je eine Spalte Rahmen-Tiles (01DA / 01D6 / Ecken) – die Umrandung wie im Original. Aus = der Mund selbst bekommt den Rand.")]
-        public bool Frame { get; set; } = true;
+        [Category("2 Höhen über dem Boden"), DisplayName("Mund 01DB"), Description("Höhe der schwarzen Mund-Tiles über dem Boden davor (Original 17–25). Beim Ziehen: die Höhe am Ende des Zuges.")]
+        public int MouthHeight { get; set; } = 22;
 
-        [Category("1 Eingang"), DisplayName("Tiefe"), Description("Reihen in den Berg: 2 = Vorderkante + Bogen (Original), 3 = höherer Bogen.")]
-        public int Depth { get; set; } = 2;
+        [Category("2 Höhen über dem Boden"), DisplayName("Rahmen 01DA / 01D6"), Description("Höhe der Rahmen-Tiles links / rechts vom Mund (Original 10–20).")]
+        public int FrameHeight { get; set; } = 15;
 
-        [Category("1 Eingang"), DisplayName("Mund-Höhe"), Description("So hoch über dem Boden liegt die hintere Reihe (Bogen). Wird durch die Berg-Höhe begrenzt.")]
-        public int MouthHeight { get; set; } = 20;
+        [Category("2 Höhen über dem Boden"), DisplayName("Oben 01D3 / 01D4 / 01D5"), Description("Höhe der oberen Reihe über dem Boden (Original 30–37).")]
+        public int ArchHeight { get; set; } = 33;
 
-        [Category("1 Eingang"), DisplayName("Berg anheben"), Description("Ist der Berg hinter dem Eingang niedriger als der Bogen + diese Höhe, wird die Reihe dahinter so weit angehoben (0 = nie).")]
-        public int WallAbove { get; set; } = 15;
+        [Category("2 Höhen über dem Boden"), DisplayName("Berg dahinter +"), Description("Die Bergreihe hinter der oberen Reihe liegt mindestens so viel höher (Original +5…+12, 0 = nicht anheben).")]
+        public int WallAbove { get; set; } = 8;
 
-        [Category("2 Weg davor"), DisplayName("Weg-Länge"), Description("Tiles Weg vor dem Eingang auf Bodenhöhe (0 = kein Weg).")]
+        [Category("3 Unsichtbare Statics"), DisplayName("NODRAW-Statics setzen"), Description("Original: auf jedem Tile der Mund-Reihe (Rahmen + Mund) liegt ein unsichtbares Static auf Bodenhöhe – darauf läuft man in die Höhle.")]
+        public bool NoDrawStatics { get; set; } = true;
+
+        [Category("3 Unsichtbare Statics"), DisplayName("NODRAW-Static-ID"), Description("Item-ID (hex) des unsichtbaren Statics. 0001 = nodraw (der Client zeichnet 0001, 21BC, 2198–21A4 und Namen 'nodraw…' nicht).")]
+        public string NoDrawStaticId { get; set; } = "0001";
+
+        [Category("4 Weg davor"), DisplayName("Weg-Länge"), Description("Reihen Erdweg vor der Übergangsreihe 01E6 / 01DF / 01E4 (0 = kein Weg).")]
         public int PathLength { get; set; } = 2;
 
-        [Category("2 Weg davor"), DisplayName("Weg-Tiles"), Description("Land-Tiles (hex) des Weges, zufällig gemischt – z. B. Erde 0071–0078 oder Höhlenboden 0245–0249.")]
+        [Category("4 Weg davor"), DisplayName("Weg-Tiles"), Description("Land-Tiles (hex) des Weges, zufällig gemischt – Original: Erde 0071–0078.")]
         public string PathTiles { get; set; } = "0071 0072 0073 0074 0075 0076 0077 0078";
 
-        [Category("2 Weg davor"), DisplayName("Weg-Breite +"), Description("Der Weg ist so viele Tiles breiter als der Mund (je Seite die Hälfte).")]
+        [Category("4 Weg davor"), DisplayName("Weg-Breite +"), Description("Der Weg ist so viele Tiles breiter als Mund + Rahmen (je Seite die Hälfte).")]
         public int PathExtraWidth { get; set; } = 0;
     }
 
@@ -216,9 +226,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         }
 
         /// <summary>
-        /// Cuts a complete entrance into the mountain face next to (<paramref name="cx"/>, <paramref name="cy"/>):
-        /// finds where ground meets mountain, takes the ground height in front (whatever it is) and the mountain
-        /// height behind, writes front row / arch / path. Call inside BeginLand / EndLand for one undo step.
+        /// The original entrance as a fixed raster (measured on the Britannia map), south facing (mountain north, ground south),
+        /// columns: left frame | mouth × Width | right frame:
+        ///   top row   (2nd mountain row):  01D3 | 01D4 … | 01D5     ≈ ground + 33
+        ///   mouth row (1st mountain row):  01DA | 01DB … | 01D6     ≈ ground + 15 / + 22 / + 15, NODRAW statics on the ground
+        ///   front row (1st ground row):    01E6 | 01DF … | 01E4     ground (cave2dirt transition)
+        ///   then the dirt path.
+        /// East facing (mountain west) is the same turned: top 01D3 | 01DA … | 01D9, mouth 01D4 | 01DB … | 01D8, front 01E7 | 01DD … | 01E4.
+        /// </summary>
+        private static (ushort first, ushort middle, ushort last) RowTiles(bool south, int row) => (south, row) switch
+        {
+            (true, 2) => (0x01D3, 0x01D4, 0x01D5),
+            (true, 1) => (0x01DA, 0x01DB, 0x01D6),
+            (true, 0) => (0x01E6, 0x01DF, 0x01E4),
+            (false, 2) => (0x01D3, 0x01DA, 0x01D9),
+            (false, 1) => (0x01D4, 0x01DB, 0x01D8),
+            _ => (0x01E7, 0x01DD, 0x01E4)
+        };
+
+        /// <summary>Static the client never draws (ClassicUO GameObject.CanBeDrawn).</summary>
+        public static bool IsNoDrawStatic(ushort id, string name)
+        {
+            return id == 0x0001 || id == 0x21BC || (id >= 0xA1FE && id <= 0xA201) || (id >= 0x2198 && id <= 0x21A4) ||
+                   (!string.IsNullOrEmpty(name) && name.StartsWith("nodraw", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Cuts a complete entrance like the original into the mountain face next to (<paramref name="cx"/>, <paramref name="cy"/>):
+        /// finds where ground meets mountain, takes the ground height in front (whatever it is, higher grass included), writes the
+        /// three rows, the NODRAW statics and the path. <paramref name="dragEnd"/>: dragged along the face = width, the end on
+        /// the face = mouth height. Call inside BeginLand / EndLand for one undo step.
         /// </summary>
         public static CaveStampResult Stamp(MapData map, int cx, int cy, CaveStampSettings s, CaveEntranceOptions o, Random rnd, Point? dragEnd = null)
         {
@@ -234,12 +271,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             // where does the mountain start? south facing: mountain at (x, f), ground at (x, f + 1)
             int FindFront(bool south)
             {
-                int best = int.MinValue;
+                int best = int.MinValue, c = south ? cy : cx;
                 for (int d = -1; d <= 4; d++)
                 {
-                    int f = (south ? cy : cx) - d;
+                    int f = c - d;
                     bool ok = south ? Mountain(cx, f) && Ground(cx, f + 1) : Mountain(f, cy) && Ground(f + 1, cy);
-                    if (ok && (best == int.MinValue || Math.Abs(f - (south ? cy : cx)) < Math.Abs(best - (south ? cy : cx))))
+                    if (ok && (best == int.MinValue || Math.Abs(f - c) < Math.Abs(best - c)))
                     {
                         best = f;
                     }
@@ -248,18 +285,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             int fs = s.Facing != CaveFacing.East ? FindFront(true) : int.MinValue;
             int fe = s.Facing != CaveFacing.South ? FindFront(false) : int.MinValue;
-            bool southFacing;
+            bool south;
             if (fs != int.MinValue && fe != int.MinValue)
             {
-                southFacing = Math.Abs(fs - cy) <= Math.Abs(fe - cx);
+                south = Math.Abs(fs - cy) <= Math.Abs(fe - cx);
             }
-            else if (fs != int.MinValue)
+            else if (fs != int.MinValue || fe != int.MinValue)
             {
-                southFacing = true;
-            }
-            else if (fe != int.MinValue)
-            {
-                southFacing = false;
+                south = fs != int.MinValue;
             }
             else
             {
@@ -268,37 +301,41 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     : "Kein Bergfuß in dieser Richtung gefunden.";
                 return result;
             }
-            int front = southFacing ? fs : fe;
-            int width = Math.Max(1, s.Width), depth = Math.Clamp(s.Depth, 2, 4);
-            int mouthHeight = s.MouthHeight;
-            int alongCenter = southFacing ? cx : cy;
+            int front = south ? fs : fe; // first mountain row = mouth row
+
+            // map (along, row) -> cell; row 1 = mouth row, 2 = top row, 0 = front ground row, -1.. = path
+            Point Cell(int along, int row) => south ? new Point(along, front + 1 - row) : new Point(front + 1 - row, along);
+
+            int width = Math.Max(1, s.Width);
+            int mouthH = s.MouthHeight, frameH = s.FrameHeight, archH = s.ArchHeight;
+            int alongCenter = south ? cx : cy;
             if (dragEnd is Point end && end != new Point(cx, cy))
             {
-                // dragged from one side of the mouth to the other (and up the face): width along the face, height = z there
-                int a0 = southFacing ? cx : cy, a1 = southFacing ? end.X : end.Y;
-                if (a0 != a1)
+                // dragged along the face (left to right or back): width; the end up on the face: mouth height
+                int a0 = south ? cx : cy, a1 = south ? end.X : end.Y;
+                if (Math.Abs(a1 - a0) >= 2)
                 {
-                    width = Math.Abs(a1 - a0) + 1;
+                    width = Math.Abs(a1 - a0) - 1; // start and end are the frames
                     alongCenter = (a0 + a1) / 2;
                 }
-                int endZ = map.LandZ(end.X, end.Y);
-                int frontGround = southFacing ? map.LandZ(cx, front + 1) : map.LandZ(front + 1, cy);
-                if (Mountain(end.X, end.Y) && endZ - frontGround >= 5)
+                int frontGround = map.LandZ(Cell(alongCenter, 0).X, Cell(alongCenter, 0).Y);
+                // the drag ends at the top corner (01D3 / 01D5 / 01D9): its height above the ground = top row height
+                int h = map.LandZ(end.X, end.Y) - frontGround;
+                if (Mountain(end.X, end.Y) && h >= 8)
                 {
-                    mouthHeight = Math.Min(80, endZ - frontGround);
+                    double k = Math.Min(90, h) / (double)Math.Max(1, s.ArchHeight);
+                    mouthH = (int)Math.Round(s.MouthHeight * k);
+                    frameH = (int)Math.Round(s.FrameHeight * k);
+                    archH = (int)Math.Round(s.ArchHeight * k);
                 }
             }
-            int along0 = alongCenter - (width - 1) / 2;
-            int frame = s.Frame ? 1 : 0;
+            int first = alongCenter - (width - 1) / 2 - 1, last = first + width + 1; // frame columns
 
-            // map (along, depth row) -> cell. row 0 = front (first mountain row), row k = k rows into the mountain, row -1.. = path
-            Point Cell(int along, int row) => southFacing ? new Point(along, front - row) : new Point(front - row, along);
-
-            // ground: the open ground in front of every column (grass may lie higher – it is still ground)
+            // ground: the front ground row (grass may lie higher – it is still ground)
             var grounds = new List<int>();
-            for (int a = along0; a < along0 + width; a++)
+            for (int a = first; a <= last; a++)
             {
-                Point g = Cell(a, -1);
+                Point g = Cell(a, 0);
                 if (Ground(g.X, g.Y))
                 {
                     grounds.Add(map.LandZ(g.X, g.Y));
@@ -312,70 +349,72 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             grounds.Sort();
             int groundZ = grounds[grounds.Count / 2];
 
-            // mountain behind the arch
-            int mountainZ = int.MaxValue;
-            for (int a = along0; a < along0 + width; a++)
+            // the three rows
+            for (int row = 0; row <= 2; row++)
             {
-                Point m = Cell(a, depth);
-                if (map.InBounds(m.X, m.Y))
-                {
-                    mountainZ = Math.Min(mountainZ, map.LandZ(m.X, m.Y));
-                }
-            }
-            if (mountainZ == int.MaxValue)
-            {
-                mountainZ = groundZ + mouthHeight;
-            }
-            int archZ = groundZ + Math.Max(5, mouthHeight);
-            if (s.WallAbove > 0 && mountainZ < archZ + s.WallAbove)
-            {
-                // the mountain behind is too low for the arch: raise the row behind it (and the side columns)
-                int wallZ = Math.Clamp(archZ + s.WallAbove, -128, 127);
-                for (int a = along0 - 1 - frame; a <= along0 + width + frame; a++)
-                {
-                    for (int row = depth; row <= depth + 1; row++)
-                    {
-                        Point m = Cell(a, row);
-                        if (Mountain(m.X, m.Y) && map.LandZ(m.X, m.Y) < wallZ)
-                        {
-                            map.SetLand(m.X, m.Y, map.LandId(m.X, m.Y), wallZ);
-                        }
-                    }
-                }
-                mountainZ = Math.Max(mountainZ, wallZ);
-            }
-            else
-            {
-                archZ = Math.Min(archZ, mountainZ);
-            }
-
-            // region: front row on the ground, the rows behind rising to the arch height
-            var heights = new Dictionary<Point, int>();
-            for (int a = along0 - frame; a < along0 + width + frame; a++)
-            {
-                for (int row = 0; row < depth; row++)
+                (ushort t0, ushort tm, ushort t1) = RowTiles(south, row);
+                for (int a = first; a <= last; a++)
                 {
                     Point c = Cell(a, row);
                     if (!map.InBounds(c.X, c.Y))
                     {
                         continue;
                     }
-                    int z = row == 0 ? groundZ : groundZ + (archZ - groundZ) * row / (depth - 1);
-                    heights[c] = z;
-                    map.SetLand(c.X, c.Y, o.FillId, z);
+                    bool edge = a == first || a == last;
+                    ushort tile = a == first ? t0 : a == last ? t1 : tm;
+                    int z = row switch
+                    {
+                        0 => groundZ,
+                        1 => groundZ + (edge ? frameH : mouthH),
+                        _ => groundZ + archH
+                    };
+                    map.SetLand(c.X, c.Y, tile, Math.Clamp(z, -128, 127));
                 }
             }
-            Rectangle region = southFacing
-                ? new Rectangle(along0 - frame, front - depth + 1, width + 2 * frame, depth)
-                : new Rectangle(front - depth + 1, along0 - frame, depth, width + 2 * frame);
-            Rectangle retile = Rectangle.Inflate(region, 1, 1);
-            Retile(map, retile, o, (x, y) => groundZ,
-                (x, y, dz) => heights.TryGetValue(new Point(x, y), out int z)
-                    ? (dz == int.MinValue || IsFrontRow(x, y) ? z : z + dz)
-                    : (int?)null, rnd);
 
-            // the front row keeps the ground height also where it gets a frame tile (01DA / 01D6 at the ends)
-            bool IsFrontRow(int x, int y) => southFacing ? y == front : x == front;
+            // mountain behind the top row and beside the frames: never lower than the entrance
+            int mountainZ = int.MaxValue;
+            if (s.WallAbove > 0)
+            {
+                int wallZ = Math.Clamp(groundZ + archH + s.WallAbove, -128, 127);
+                for (int a = first - 1; a <= last + 1; a++)
+                {
+                    Point m = Cell(a, 3);
+                    if (Mountain(m.X, m.Y) && map.LandZ(m.X, m.Y) < wallZ)
+                    {
+                        map.SetLand(m.X, m.Y, map.LandId(m.X, m.Y), wallZ);
+                    }
+                    if (map.InBounds(m.X, m.Y))
+                    {
+                        mountainZ = Math.Min(mountainZ, map.LandZ(m.X, m.Y));
+                    }
+                }
+                foreach (int a in new[] { first - 1, last + 1 })
+                {
+                    Point side = Cell(a, 2);
+                    if (Mountain(side.X, side.Y) && map.LandZ(side.X, side.Y) < groundZ + archH)
+                    {
+                        map.SetLand(side.X, side.Y, map.LandId(side.X, side.Y), groundZ + archH);
+                    }
+                }
+            }
+
+            // invisible statics on the ground of the mouth row (the original has one on every tile of the row)
+            ushort[] nd = HexList.Parse(s.NoDrawStaticId);
+            if (s.NoDrawStatics && nd.Length > 0)
+            {
+                var changes = new List<StaticChange>();
+                for (int a = first; a <= last; a++)
+                {
+                    Point c = Cell(a, 1);
+                    if (!map.InBounds(c.X, c.Y) || map.StaticsAt(c.X, c.Y).Any(st => st.Id == nd[0] && st.Z == groundZ))
+                    {
+                        continue;
+                    }
+                    changes.Add(MapData.Add(new StaticItem { Id = nd[0], X = c.X, Y = c.Y, Z = Math.Clamp(groundZ, -128, 127) }));
+                }
+                map.ApplyStatics(changes);
+            }
 
             // path in front on the ground height
             ushort[] path = HexList.Parse(s.PathTiles);
@@ -384,27 +423,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 int extra = Math.Max(0, s.PathExtraWidth);
                 for (int row = -1; row >= -s.PathLength; row--)
                 {
-                    for (int a = along0 - extra / 2; a < along0 + width + (extra + 1) / 2; a++)
+                    for (int a = first - extra / 2; a <= last + (extra + 1) / 2; a++)
                     {
                         Point p = Cell(a, row);
                         if (!Ground(p.X, p.Y))
                         {
                             continue;
                         }
-                        // first row on the floor height, then blend into the ground
                         int own = map.LandZ(p.X, p.Y);
                         int z = row == -1 ? groundZ : (groundZ + own) / 2;
                         map.SetLand(p.X, p.Y, path[rnd.Next(path.Length)], z);
                     }
                 }
             }
+            Rectangle region = south
+                ? new Rectangle(first, front - 1, width + 2, 3)
+                : new Rectangle(front - 1, first, 3, width + 2);
             result.Ok = true;
-            result.Facing = southFacing ? CaveFacing.South : CaveFacing.East;
+            result.Facing = south ? CaveFacing.South : CaveFacing.East;
             result.GroundZ = groundZ;
-            result.MountainZ = mountainZ;
+            result.MountainZ = mountainZ == int.MaxValue ? groundZ + archH : mountainZ;
             result.Region = region;
-            result.Message = $"Höhleneingang nach {(southFacing ? "Süden" : "Osten")}: Boden {groundZ}, Bogen {archZ}, Berg dahinter {mountainZ}, Mund {width} breit" +
-                (frame > 0 ? " + Rahmen" : string.Empty) + $", {depth} tief.";
+            result.Message = $"Höhleneingang nach {(south ? "Süden" : "Osten")} wie im Original: Boden {groundZ}, Rahmen +{frameH}, Mund +{mouthH}, oben +{archH}, " +
+                             $"{width} breit + Rahmen" + (s.NoDrawStatics ? ", NODRAW-Statics" : string.Empty) + ".";
             return result;
         }
     }

@@ -632,8 +632,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         var placed = new Placed { Item = st, Rect = rect, Image = img };
                         StaticItem item = st;
                         bool seeThrough = IsSeeThrough(st.Id);
+                        bool noDraw = CaveEntranceBuilder.IsNoDrawStatic(st.Id, UoArtCache.ItemName(st.Id));
+                        PointF floor = new PointF(top.X, top.Y + Half - st.Z * ZStep);
                         drawables.Add((x + y, (st.Z + threshold) * 4 + threshold, order++, () =>
                         {
+                            if (noDraw)
+                            {
+                                // the client never draws it – only a marker so it can be seen and selected
+                                if (ShowNoDraw)
+                                {
+                                    using var nd = new Pen(Color.FromArgb(170, 255, 140, 0)) { DashStyle = DashStyle.Dot };
+                                    var r = new RectangleF(floor.X - 9, floor.Y - 5, 18, 10);
+                                    g.DrawEllipse(nd, r);
+                                    _placed.Add(new Placed { Item = item, Rect = Rectangle.Round(r), Image = null });
+                                }
+                                return;
+                            }
                             if (img != null && seeThrough)
                             {
                                 g.DrawImage(img, rect, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, TranslucentAttr);
@@ -1438,6 +1452,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     case Keys.M:
                         MountainArea();
                         break;
+                    case Keys.L:
+                        AreaLogRequested?.Invoke(this, EventArgs.Empty);
+                        break;
                     case Keys.S:
                         SelectAreaStatics();
                         break;
@@ -1959,6 +1976,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         public void PlaceCaveStamp(int x, int y) => PlaceCaveStamp(x, y, null);
+
+        /// <summary>Key L in the area tool: write the analysis of the marked area (log file + clipboard).</summary>
+        public event EventHandler AreaLogRequested;
 
         /// <summary>Marked area as analysis text (land ids, heights, textures, classes, entrance patterns, statics) or null.</summary>
         public string AnalyzeArea()
@@ -2483,7 +2503,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         tool = L.T("Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat");
                         break;
                     case IsoTool.Area:
-                        tool = L.T("Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · M = Berg formen (Reiter Berg) · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
+                        tool = L.T("Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · M = Berg formen (Reiter Berg) · L = Bereich auswerten (Log + Zwischenablage) · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
                                "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Esc = Markierung weg");
                         break;
                     case IsoTool.Cave:

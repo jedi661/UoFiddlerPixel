@@ -471,6 +471,27 @@ Korrekturen am Pinsel **Höhle**: nur Land, das schon über dem Boden liegt, wir
 
 ## Höhlen-Stempel (Reiter „Höhlen-Stempel“)
 
+**So ist ein Eingang in der Original-Karte gebaut** (ausgewertet aus der CGI-Ansicht mit „ID + Höhe + Textur“, Höhen über dem Boden davor):
+
+Nach Süden (Berg im Norden), Spalten: Rahmen links | Mund × 3 | Rahmen rechts
+
+| Reihe | Tiles | Höhe |
+|-------|-------|------|
+| oben (2. Bergreihe) | `01D3` · `01D4 01D4 01D4` · `01D5` | +30 … +37 |
+| Mund (1. Bergreihe) | `01DA` · `01DB 01DB 01DB` · `01D6` | Rahmen +10 … +20, Mund +17 … +25 |
+| vorn (1. Bodenreihe) | `01E6` · `01DF 01DF 01DF` · `01E4` | Boden (Übergang Höhle → Erde, `cave2dirt.txt`) |
+| davor | Erde `0071`–`0078` | Boden |
+
+Auf jedem Tile der Mund-Reihe liegt ein unsichtbares Static („NO DRAW“) auf Bodenhöhe. Neben den Rahmen liegt Fels (z. B. `00DF`) mit etwa +12 … +16.
+
+Nach Osten (Berg im Westen) genauso gedreht: oben `01D3` · `01DA …` · `01D9`, Mund `01D4` · `01DB …` · `01D8`, vorn `01E7` · `01DD …` · `01E4`.
+
+Alle Tiles haben eine eigene Textur (Textur-ID = Land-ID), am Hang zeichnet der Client also die Textur.
+
+Der Stempel baut genau dieses Raster. **Ziehen:** unten am Rahmen anfangen und schräg nach oben zur anderen oberen Ecke ziehen. Der Abstand entlang der Wand ergibt die Breite (Start und Ende sind die Rahmen), die Höhe am Ende des Zuges die Höhe der oberen Reihe. Mund und Rahmen werden im selben Verhältnis angepasst.
+
+**Bereich auswerten:** Werkzeug „Bereich“, mit der linken Maustaste ein Viereck ziehen, dann **L** drücken (oder den Knopf im Reiter). Das Log wird als Datei gespeichert **und in die Zwischenablage kopiert**.
+
 Ein Klick auf den Boden direkt vor einer Bergwand (Süd- oder Ostseite) setzt einen kompletten Eingang (`Core/CaveEntranceBuilder.cs`):
 
 1. **Boden und Berg werden am Tile erkannt**, nicht an der Höhe: Berg = Berg-Gruppe der Farbtabelle + Berg-Pinsel-Tiles + alle Land-Tiles mit „mountain“ / „rock“ im TileData-Namen. Alles andere (Gras, Erde, Sand …) ist Boden – auch wenn es höher liegt.

@@ -38,6 +38,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.CaveStamp = _settings.CaveStamp;
             propCgiStamp.SelectedObject = _settings.CaveStamp;
             tscCgiLabels.SelectedIndex = 0;
+            isoView.AreaLogRequested += (s, e) => BtnCgiAreaLog_Click(s, e);
             lblCgiStampInfo.Text = L.T("Höhlen-Stempel: auf den Boden direkt vor einer Bergwand klicken, die nach Süden oder Osten zeigt. " +
                 "Boden und Berg werden am Tile erkannt (Gras darf höher liegen): die Höhe vorn wird der Höhlenboden, " +
                 "die vordere Reihe wird unsichtbar (0002), dahinter der Bogen 01D3–01DA bis zur Mund-Höhe, links und rechts der Rahmen, davor ein Weg. " +
@@ -425,7 +426,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             Rectangle a = isoView.Area;
             string path = WriteLog($"cgi_bereich_{a.X}_{a.Y}_{a.Width}x{a.Height}.txt", text);
             Log("Bereichs-Auswertung: " + path);
-            SetStatus("Auswertung gespeichert: " + path + " – die Datei kannst du mir schicken.");
+            bool copied = false;
+            try
+            {
+                Clipboard.SetText(text);
+                copied = true;
+            }
+            catch (Exception)
+            {
+                // clipboard busy – the file is there anyway
+            }
+            SetStatus("Auswertung gespeichert: " + path + (copied ? " und in die Zwischenablage kopiert" : string.Empty) + ".");
             try
             {
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = path, UseShellExecute = true });
