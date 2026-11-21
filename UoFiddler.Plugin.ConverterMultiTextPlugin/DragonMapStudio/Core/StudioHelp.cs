@@ -147,6 +147,9 @@ Zeigt die gebaute Karte wie der Client (Land-Art, Texturen an Hängen, Statics m
 * Pinsel ""Eingang"": Höhleneingang am Bergfuß – auf der Bodenhöhe davor klicken, 2–3 Tiles in den Hang ziehen.
   Mund = 01DB (schwarz) oder 0002 (unsichtbar), der Rand zum Berg bekommt 01D3–01DA wie Dragon
   (map/cave-enti2mountain.txt). Dahinter mit ""Höhle"" weitergraben oder auf dem Server einen Teleporter setzen.
+  ""Mund-Höhe"" hebt den Mund über den Boden – er wird als steile Wand gezeichnet; nur nach Süden / Osten sichtbar.
+* Reiter ""Höhle / Weg"": Galerie der Höhlen-Tiles (TileData ""cave"" + eigene IDs, mit Texturen) und
+  Eingangs-Muster: fertigen Eingang mit ""Bereich"" markieren -> ""Bereich → Muster"", später ""Muster setzen"".
 * Wege / Gebäude-Böden: Reiter Land -> ""Aus der Farbtabelle"" (cobblestones, marble, Holzboden …),
   dazu ""Höhe vom ersten Klick übernehmen"". Mehrere IDs im Feld = zufällig gemischt.
 
@@ -342,6 +345,9 @@ Shows the built map like the client (land art, textures on slopes, statics with 
 * Brush ""Eingang"" (cave entrance): click at the foot of a mountain on the ground height, drag 2–3 tiles into the slope.
   Mouth = 01DB (black) or 0002 (invisible), the edge to the mountain gets 01D3–01DA like Dragon
   (map/cave-enti2mountain.txt). Dig on with ""Höhle"" or put a teleporter on the server.
+  ""Mund-Höhe"" lifts the mouth above the ground – it is drawn as a steep face; only visible facing south / east.
+* Tab ""Höhle / Weg"": gallery of cave tiles (tiledata ""cave"" + own ids, with textures) and entrance patterns:
+  mark a finished entrance with ""Bereich"" -> ""Bereich → Muster"", later ""Muster setzen"".
 * Roads / building floors: tab Land -> ""Aus der Farbtabelle"" (cobblestones, marble, wood floor …),
   plus ""Höhe vom ersten Klick übernehmen"". Several ids in the field = mixed at random.
 

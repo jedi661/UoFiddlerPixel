@@ -75,6 +75,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
         public string TemplateFolder { get; set; } = string.Empty;
 
+        /// <summary>Own cave land tiles (hex) for the gallery in the tab "Höhle / Weg" – in addition to the tiledata names with "cave".</summary>
+        public string CaveTileIds { get; set; } = string.Empty;
+
         [Category("1 Ordner"), DisplayName("maptrans-Datei"), Description("maptrans.txt oder maptrans105.txt …")]
         public string MapTransFile { get; set; } = "maptrans.txt";
 

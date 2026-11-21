@@ -52,6 +52,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
 
         public string TemplateName => txtName.Text.Trim();
 
+        /// <summary>Pre-sets name and category (e.g. "Höhleneingang" from the tab "Höhle / Weg").</summary>
+        public void Preset(string name, string category)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                txtName.Text = name;
+            }
+            if (!string.IsNullOrEmpty(category))
+            {
+                cmbCategory.Text = category;
+            }
+        }
+
         public string Category => cmbCategory.Text.Trim().Replace('\\', '/').Trim('/');
 
         public TemplateFormat Format => cmbFormat.SelectedIndex switch

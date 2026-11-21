@@ -238,6 +238,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CaveEntranceRise { get; set; } = 5;
 
+        /// <summary>
+        /// Cave entrance brush: the mouth lies this much above the ground of the first click. Like the original the black
+        /// tile is then stretched up the mountain side (a steep face toward south / east) instead of lying flat on the ground.
+        /// </summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int CaveEntranceMouthHeight { get; set; } = 20;
+
         /// <summary>Template of the tool "Template" (building / floor pattern).</summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MapTemplate Template
@@ -1668,7 +1675,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                                 break;
                             }
                         case IsoTool.CaveEntrance:
-                            _map.SetLand(x, y, CaveEntranceFillId, _strokeZ);
+                            _map.SetLand(x, y, CaveEntranceFillId, Math.Clamp(_strokeZ + CaveEntranceMouthHeight, -128, 127));
                             _strokeCells.Add(y * _map.Width + x);
                             break;
                         case IsoTool.Raise:
@@ -1794,7 +1801,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     }
                     int i = y * _map.Width + x;
                     bool painted = _strokeCells.Contains(i);
-                    int baseZ = painted ? _strokeZ : _map.LandZ(x, y);
+                    // ground in front of the mouth: the first click, for cells of an earlier stroke their height minus the mouth height
+                    int groundZ = painted ? _strokeZ : _map.LandZ(x, y) - CaveEntranceMouthHeight;
+                    int baseZ = _strokeZ + CaveEntranceMouthHeight;
                     byte mask = 0;
                     for (int k = 0; k < 8; k++)
                     {
@@ -1809,7 +1818,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                             continue;
                         }
                         bool mountain = (CaveEntranceMountainIds != null && CaveEntranceMountainIds.Contains(nid)) ||
-                                        _map.LandZ(nx, ny) >= baseZ + Math.Max(1, CaveEntranceRise);
+                                        _map.LandZ(nx, ny) >= groundZ + Math.Max(1, CaveEntranceRise);
                         if (mountain)
                         {
                             mask |= (byte)(1 << k);
@@ -2301,7 +2310,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         tool = L.T("Höhle: am Eingang anfangen und in den Berg ziehen – Boden auf der Höhe des ersten Klicks (oder 'Höhe ='), der Rand wird Wand (Reiter Höhle / Weg) · Pinsel oben · ein Zug = ein Rückgängig-Schritt");
                         break;
                     case IsoTool.CaveEntrance:
-                        tool = L.T("Höhleneingang: am Fuß des Berges klicken / ein Stück in den Hang ziehen (mind. 2×2) – Mund 01DB (schwarz) oder 0002 (unsichtbar), der Rand zum Berg bekommt automatisch 01D3–01DA (Reiter Höhle / Weg) · ein Zug = ein Rückgängig-Schritt");
+                        tool = L.T("Höhleneingang: am Fuß des Berges klicken / ein Stück in den Hang ziehen (mind. 2×2) – Mund 01DB (schwarz) oder 0002 (unsichtbar) liegt 'Mund-Höhe' über dem Boden und wird als steile Wand in den Hang gezogen – sichtbar nur, wenn der Eingang nach Süden / Osten zeigt; der Rand zum Berg bekommt automatisch 01D3–01DA (Reiter Höhle / Weg) · ein Zug = ein Rückgängig-Schritt");
                         break;
                     case IsoTool.Template:
                         tool = L.T("Vorlage setzen: die Vorschau folgt der Maus, Klick setzt auf die Boden-Höhe + 'Z +' · danach ausgewählt: Pfeile / Bild↑↓ verschieben, Entf löscht · Strg+Z nimmt alles zurück");

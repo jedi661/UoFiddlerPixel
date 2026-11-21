@@ -32,6 +32,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         {
             _cgiTools[tsbCgiCave] = IsoTool.Cave;
             _cgiTools[tsbCgiCaveEntrance] = IsoTool.CaveEntrance;
+            gridCgiCaveTiles.ImageOf = CaveTilePicture;
+            gridCgiCaveTiles.NameOf = CaveTileName;
+            txtCgiCaveOwn.Text = _settings.CaveTileIds ?? string.Empty;
             _cgiTools[tsbCgiTemplate] = IsoTool.Template;
             FillLandPresets();
             CgiCaveSettings_Changed(this, EventArgs.Empty);
@@ -86,6 +89,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.CaveWallHeight = (int)numCgiCaveWall.Value;
             isoView.CaveRaiseWalls = chkCgiCaveWalls.Checked;
             isoView.CaveUseTargetHeight = chkCgiCaveTarget.Checked;
+            isoView.CaveEntranceMouthHeight = (int)numCgiCaveMouth.Value;
             ApplyCaveEntranceRules();
             lblCgiCaveInfo.Text =
                 L.T("Höhleneingang: Werkzeug 'Eingang' – am Fuß des Berges (Höhe des Bodens davor) klicken und 2–3 Tiles in den Hang ziehen. " +
@@ -128,6 +132,207 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.Focus();
         }
 
+        // ================================================================== cave tiles (gallery) and entrance patterns
+
+        private const string CaveEntranceCategory = "Höhleneingang";
+
+        /// <summary>Tiles a cave is built from in the original: entrance 01D3–01DB, invisible 0002, black 0244, cave floor 0245–0249.</summary>
+        private static readonly int[] KnownCaveTiles =
+        {
+            0x0002, 0x01D3, 0x01D4, 0x01D5, 0x01D6, 0x01D7, 0x01D8, 0x01D9, 0x01DA, 0x01DB, 0x01DD, 0x01DE,
+            0x0244, 0x0245, 0x0246, 0x0247, 0x0248, 0x0249
+        };
+
+        private List<int> _caveTiles;
+
+        /// <summary>Gallery: known cave tiles + every land tile whose tiledata name contains "cave" / "höhle" + own ids.</summary>
+        private void EnsureCaveTiles(bool force = false)
+        {
+            if (_caveTiles != null && !force)
+            {
+                return;
+            }
+            var ids = new List<int>();
+            void Add(int id)
+            {
+                if (id >= 0 && id <= UoArtCache.MaxLandId && !ids.Contains(id))
+                {
+                    ids.Add(id);
+                }
+            }
+            foreach (ushort id in HexList.Parse(txtCgiCaveOwn.Text))
+            {
+                Add(id);
+            }
+            foreach (int id in KnownCaveTiles)
+            {
+                Add(id);
+            }
+            bool art = UoArtCache.ArtAvailableCached;
+            for (int id = 0; id <= UoArtCache.MaxLandId; id++)
+            {
+                string name = UoArtCache.LandName(id);
+                if ((name.Contains("cave", StringComparison.OrdinalIgnoreCase) || name.Contains("höhle", StringComparison.OrdinalIgnoreCase)) &&
+                    (!art || UoArtCache.IsValidLand(id)))
+                {
+                    Add(id);
+                }
+            }
+            _caveTiles = ids;
+            gridCgiCaveTiles.Ids = ids;
+            lblCgiCaveTiles.Text = L.T("Höhlen-Tiles") + $" ({ids.Count}): " + L.T("TileData 'cave' + eigene · Doppelklick = Land-Pinsel");
+        }
+
+        private Image CaveTilePicture(int id)
+        {
+            return chkCgiCaveTextures.Checked ? UoArtCache.Texture(id) ?? (Image)UoArtCache.Land(id) : UoArtCache.Land(id);
+        }
+
+        private static string CaveTileName(int id)
+        {
+            string role = id switch
+            {
+                0x0002 => "unsichtbarer Eingang",
+                0x01DB => "Eingang schwarz (Mund)",
+                0x01DA => "Eingang, Berg im Westen",
+                0x01D6 => "Eingang, Berg im Osten",
+                0x01D8 => "Eingang, Berg im Süden",
+                0x01D4 => "Eingang, Berg im Norden",
+                0x01D3 or 0x01D5 or 0x01D7 or 0x01D9 => "Eingang, Ecke",
+                0x01DD or 0x01DE => "Höhlenboden → Erdweg",
+                0x0244 => "Schwarz (Dungeon-Füllung)",
+                >= 0x0245 and <= 0x0249 => "Höhlenboden",
+                _ => string.Empty
+            };
+            string name = UoArtCache.LandName(id);
+            string tex = UoArtCache.Texture(id) != null ? "  (mit Textur)" : "  (keine Textur)";
+            return (role.Length > 0 ? role + " – " : string.Empty) + name + tex;
+        }
+
+        private void ChkCgiCaveTextures_CheckedChanged(object sender, EventArgs e) => gridCgiCaveTiles.Invalidate();
+
+        private void TxtCgiCaveOwn_Leave(object sender, EventArgs e)
+        {
+            string text = string.Join(" ", HexList.Parse(txtCgiCaveOwn.Text).Select(id => id.ToString("x4")));
+            txtCgiCaveOwn.Text = text;
+            if (_settings.CaveTileIds != text)
+            {
+                _settings.CaveTileIds = text;
+                _settings.Save();
+            }
+            EnsureCaveTiles(true);
+        }
+
+        private void BtnCgiCaveAddOwn_Click(object sender, EventArgs e)
+        {
+            int id = gridCgiCaveTiles.SelectedId >= 0 ? gridCgiCaveTiles.SelectedId : isoView.PlaceLandId;
+            List<ushort> own = HexList.Parse(txtCgiCaveOwn.Text).ToList();
+            if (!own.Contains((ushort)id))
+            {
+                own.Add((ushort)id);
+            }
+            txtCgiCaveOwn.Text = string.Join(" ", own.Select(i => i.ToString("x4")));
+            TxtCgiCaveOwn_Leave(sender, e);
+            SetStatus($"{id:x4} als eigenes Höhlen-Tile gespeichert (Einstellungen).");
+        }
+
+        private void GridCgiCaveTiles_ItemActivated(object sender, EventArgs e)
+        {
+            int id = gridCgiCaveTiles.SelectedId;
+            if (id < 0)
+            {
+                return;
+            }
+            txtCgiLandId.Text = id.ToString("x4");
+            SelectCgiTool(IsoTool.LandSet);
+            isoView.Focus();
+        }
+
+        private void BtnCgiCaveAsFloor_Click(object sender, EventArgs e)
+        {
+            int id = gridCgiCaveTiles.SelectedId;
+            if (id < 0)
+            {
+                SetStatus("Erst ein Tile in der Galerie wählen.");
+                return;
+            }
+            List<ushort> floor = HexList.Parse(txtCgiCaveFloor.Text).ToList();
+            if (!floor.Contains((ushort)id))
+            {
+                floor.Add((ushort)id);
+            }
+            txtCgiCaveFloor.Text = string.Join(" ", floor.Select(i => i.ToString("x4")));
+        }
+
+        private void BtnCgiCaveAsMouth_Click(object sender, EventArgs e)
+        {
+            int id = gridCgiCaveTiles.SelectedId;
+            if (id < 0)
+            {
+                SetStatus("Erst ein Tile in der Galerie wählen.");
+                return;
+            }
+            chkCgiCaveInvisible.Checked = false;
+            isoView.CaveEntranceFillId = (ushort)id;
+            SetStatus($"Eingang-Pinsel: Mund = {id:x4} (bis zur nächsten Änderung im Reiter).");
+            SelectCgiTool(IsoTool.CaveEntrance);
+            isoView.Focus();
+        }
+
+        private List<MapTemplate> _cavePatterns = new List<MapTemplate>();
+
+        /// <summary>Templates of the category "Höhleneingang" (sub folder of the template folder).</summary>
+        private void FillCavePatterns(string selectFile)
+        {
+            if (_templates == null)
+            {
+                return;
+            }
+            _cavePatterns = _templates.Find(CaveEntranceCategory, string.Empty).OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase).ToList();
+            lstCgiCavePatterns.BeginUpdate();
+            lstCgiCavePatterns.Items.Clear();
+            foreach (MapTemplate t in _cavePatterns)
+            {
+                lstCgiCavePatterns.Items.Add($"{t.Name}   ({t.LandWidth}×{t.LandHeight}" + (t.Statics.Count > 0 ? $", {t.Statics.Count} St." : string.Empty) + ")");
+            }
+            lstCgiCavePatterns.EndUpdate();
+            int sel = selectFile == null ? -1 : _cavePatterns.FindIndex(t => string.Equals(t.File, selectFile, StringComparison.OrdinalIgnoreCase));
+            if (sel >= 0)
+            {
+                lstCgiCavePatterns.SelectedIndex = sel;
+            }
+        }
+
+        private void BtnCgiCaveSavePattern_Click(object sender, EventArgs e)
+        {
+            if (_cgiMap == null || isoView.Area.IsEmpty)
+            {
+                SetStatus("Erst mit dem Werkzeug 'Bereich' einen fertigen Eingang (z. B. aus der Original-Karte) mit etwas Boden davor markieren.");
+                return;
+            }
+            EnsureTemplateLibrary();
+            MapTemplate t = isoView.CaptureArea(true, true);
+            SaveTemplate(t, true, "Eingang", CaveEntranceCategory);
+        }
+
+        private void BtnCgiCavePlacePattern_Click(object sender, EventArgs e)
+        {
+            int i = lstCgiCavePatterns.SelectedIndex;
+            if (i < 0 || i >= _cavePatterns.Count)
+            {
+                SetStatus("Erst ein Eingangs-Muster wählen (oder mit 'Bereich → Muster speichern' eins anlegen).");
+                return;
+            }
+            // land with its heights, relative to the ground where you click
+            chkCgiTplLand.Checked = true;
+            chkCgiTplLandZ.Checked = true;
+            isoView.Template = _cavePatterns[i];
+            SelectCgiTool(IsoTool.Template);
+            tabCgiSide.SelectedTab = tabCgiCave;
+            isoView.Focus();
+            SetStatus($"Muster '{_cavePatterns[i].Name}': Klick auf den Boden vor dem Berg setzt es (Land + Höhen relativ zum Klick).");
+        }
+
         private void BtnCgiCaveTool_Click(object sender, EventArgs e)
         {
             SelectCgiTool(IsoTool.Cave);
@@ -146,6 +351,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         {
             if (tabCgiSide.SelectedTab == tabCgiTemplates)
             {
+                EnsureTemplateLibrary();
+            }
+            else if (tabCgiSide.SelectedTab == tabCgiCave)
+            {
+                EnsureCaveTiles();
                 EnsureTemplateLibrary();
             }
         }
@@ -184,6 +394,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     cmbCgiTplCategory.SelectedIndex = 0;
                 }
                 ApplyTemplateFilter(select);
+                FillCavePatterns(select);
                 lib.Errors.ForEach(err => Log("Vorlage nicht lesbar: " + err));
                 SetStatus($"{lib.Items.Count:N0} Vorlagen in {lib.Categories.Count()} Kategorien geladen ({root})" + (lib.Errors.Count > 0 ? $", {lib.Errors.Count} nicht lesbar (siehe Log)" : string.Empty));
             });
@@ -307,7 +518,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         /// <summary>Asks name / category / format and saves the template into the template folder.</summary>
-        private void SaveTemplate(MapTemplate t, bool landAvailable)
+        private void SaveTemplate(MapTemplate t, bool landAvailable, string presetName = null, string presetCategory = null)
         {
             Bitmap preview = null;
             try
@@ -320,6 +531,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             IEnumerable<string> categories = _templates?.Categories ?? Enumerable.Empty<string>();
             using var dlg = new SaveTemplateDialog(categories, landAvailable, t.Statics.Count, preview);
+            dlg.Preset(presetName, presetCategory);
             if (dlg.ShowDialog(this) != DialogResult.OK)
             {
                 preview?.Dispose();
@@ -365,7 +577,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 {
                     LoadTemplateLibrary(file);
                 }
-                tabCgiSide.SelectedTab = tabCgiTemplates;
+                if (presetCategory == CaveEntranceCategory)
+                {
+                    FillCavePatterns(file);
+                }
+                else
+                {
+                    tabCgiSide.SelectedTab = tabCgiTemplates;
+                }
             }
             catch (Exception ex)
             {

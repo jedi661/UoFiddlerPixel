@@ -266,6 +266,20 @@
             btnCgiCaveTool = new System.Windows.Forms.Button();
             btnCgiCaveBlack = new System.Windows.Forms.Button();
             btnCgiCaveEntrance = new System.Windows.Forms.Button();
+            lblCgiCaveMouth = new System.Windows.Forms.Label();
+            numCgiCaveMouth = new System.Windows.Forms.NumericUpDown();
+            lblCgiCaveTiles = new System.Windows.Forms.Label();
+            gridCgiCaveTiles = new UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls.TileGridView();
+            chkCgiCaveTextures = new System.Windows.Forms.CheckBox();
+            lblCgiCaveOwn = new System.Windows.Forms.Label();
+            txtCgiCaveOwn = new System.Windows.Forms.TextBox();
+            btnCgiCaveAddOwn = new System.Windows.Forms.Button();
+            btnCgiCaveAsFloor = new System.Windows.Forms.Button();
+            btnCgiCaveAsMouth = new System.Windows.Forms.Button();
+            lblCgiCavePatterns = new System.Windows.Forms.Label();
+            lstCgiCavePatterns = new System.Windows.Forms.ListBox();
+            btnCgiCaveSavePattern = new System.Windows.Forms.Button();
+            btnCgiCavePlacePattern = new System.Windows.Forms.Button();
             chkCgiCaveInvisible = new System.Windows.Forms.CheckBox();
             lblCgiCaveInfo = new System.Windows.Forms.Label();
             lstCgiTemplates = new System.Windows.Forms.ListBox();
@@ -572,6 +586,7 @@
             ((System.ComponentModel.ISupportInitialize)numCgiWaterWidth).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCgiSurfaceZ).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCgiCaveWall).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiCaveMouth).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picCgiTpl).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numCgiTplZ).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picCgiMulti).BeginInit();
@@ -2452,6 +2467,20 @@
             panelCgiCave.Controls.Add(btnCgiCaveBlack);
             panelCgiCave.Controls.Add(btnCgiCaveEntrance);
             panelCgiCave.Controls.Add(chkCgiCaveInvisible);
+            panelCgiCave.Controls.Add(lblCgiCaveMouth);
+            panelCgiCave.Controls.Add(numCgiCaveMouth);
+            panelCgiCave.Controls.Add(lblCgiCaveTiles);
+            panelCgiCave.Controls.Add(gridCgiCaveTiles);
+            panelCgiCave.Controls.Add(chkCgiCaveTextures);
+            panelCgiCave.Controls.Add(lblCgiCaveOwn);
+            panelCgiCave.Controls.Add(txtCgiCaveOwn);
+            panelCgiCave.Controls.Add(btnCgiCaveAddOwn);
+            panelCgiCave.Controls.Add(btnCgiCaveAsFloor);
+            panelCgiCave.Controls.Add(btnCgiCaveAsMouth);
+            panelCgiCave.Controls.Add(lblCgiCavePatterns);
+            panelCgiCave.Controls.Add(lstCgiCavePatterns);
+            panelCgiCave.Controls.Add(btnCgiCaveSavePattern);
+            panelCgiCave.Controls.Add(btnCgiCavePlacePattern);
             panelCgiCave.Controls.Add(lblCgiCaveInfo);
             panelCgiCave.Dock = System.Windows.Forms.DockStyle.Fill;
             panelCgiCave.AutoScroll = true;
@@ -2542,9 +2571,124 @@
             chkCgiCaveInvisible.Name = "chkCgiCaveInvisible";
             chkCgiCaveInvisible.CheckedChanged += CgiCaveSettings_Changed;
             // 
+            // lblCgiCaveMouth
+            // 
+            lblCgiCaveMouth.AutoSize = true;
+            lblCgiCaveMouth.Location = new System.Drawing.Point(4, 238);
+            lblCgiCaveMouth.Text = "Mund-Höhe:";
+            lblCgiCaveMouth.Name = "lblCgiCaveMouth";
+            // 
+            // numCgiCaveMouth
+            // 
+            numCgiCaveMouth.Location = new System.Drawing.Point(110, 234);
+            numCgiCaveMouth.Maximum = new decimal(new int[] { 100, 0, 0, 0 });
+            numCgiCaveMouth.Minimum = new decimal(new int[] { 0, 0, 0, 0 });
+            numCgiCaveMouth.Size = new System.Drawing.Size(60, 23);
+            numCgiCaveMouth.Value = new decimal(new int[] { 20, 0, 0, 0 });
+            numCgiCaveMouth.Name = "numCgiCaveMouth";
+            numCgiCaveMouth.ValueChanged += CgiCaveSettings_Changed;
+            // 
+            // lblCgiCaveTiles
+            // 
+            lblCgiCaveTiles.Size = new System.Drawing.Size(280, 32);
+            lblCgiCaveTiles.Location = new System.Drawing.Point(4, 266);
+            lblCgiCaveTiles.Text = "Höhlen-Tiles";
+            lblCgiCaveTiles.Name = "lblCgiCaveTiles";
+            // 
+            // gridCgiCaveTiles
+            // 
+            gridCgiCaveTiles.Location = new System.Drawing.Point(4, 300);
+            gridCgiCaveTiles.Size = new System.Drawing.Size(276, 220);
+            gridCgiCaveTiles.Name = "gridCgiCaveTiles";
+            gridCgiCaveTiles.ItemActivated += GridCgiCaveTiles_ItemActivated;
+            // 
+            // chkCgiCaveTextures
+            // 
+            chkCgiCaveTextures.AutoSize = true;
+            chkCgiCaveTextures.Checked = true;
+            chkCgiCaveTextures.CheckState = System.Windows.Forms.CheckState.Checked;
+            chkCgiCaveTextures.Location = new System.Drawing.Point(4, 524);
+            chkCgiCaveTextures.Text = "Texturen zeigen (so sieht es am Hang aus)";
+            chkCgiCaveTextures.Name = "chkCgiCaveTextures";
+            chkCgiCaveTextures.CheckedChanged += ChkCgiCaveTextures_CheckedChanged;
+            // 
+            // lblCgiCaveOwn
+            // 
+            lblCgiCaveOwn.AutoSize = true;
+            lblCgiCaveOwn.Location = new System.Drawing.Point(4, 553);
+            lblCgiCaveOwn.Text = "Eigene IDs:";
+            lblCgiCaveOwn.Name = "lblCgiCaveOwn";
+            // 
+            // txtCgiCaveOwn
+            // 
+            txtCgiCaveOwn.Location = new System.Drawing.Point(80, 549);
+            txtCgiCaveOwn.Size = new System.Drawing.Size(140, 23);
+            txtCgiCaveOwn.Name = "txtCgiCaveOwn";
+            txtCgiCaveOwn.Leave += TxtCgiCaveOwn_Leave;
+            // 
+            // btnCgiCaveAddOwn
+            // 
+            btnCgiCaveAddOwn.Location = new System.Drawing.Point(224, 548);
+            btnCgiCaveAddOwn.Size = new System.Drawing.Size(56, 25);
+            btnCgiCaveAddOwn.Text = "+ Tile";
+            btnCgiCaveAddOwn.UseVisualStyleBackColor = true;
+            btnCgiCaveAddOwn.Name = "btnCgiCaveAddOwn";
+            btnCgiCaveAddOwn.Click += BtnCgiCaveAddOwn_Click;
+            // 
+            // btnCgiCaveAsFloor
+            // 
+            btnCgiCaveAsFloor.Location = new System.Drawing.Point(4, 578);
+            btnCgiCaveAsFloor.Size = new System.Drawing.Size(136, 25);
+            btnCgiCaveAsFloor.Text = "→ Höhlenboden";
+            btnCgiCaveAsFloor.UseVisualStyleBackColor = true;
+            btnCgiCaveAsFloor.Name = "btnCgiCaveAsFloor";
+            btnCgiCaveAsFloor.Click += BtnCgiCaveAsFloor_Click;
+            // 
+            // btnCgiCaveAsMouth
+            // 
+            btnCgiCaveAsMouth.Location = new System.Drawing.Point(144, 578);
+            btnCgiCaveAsMouth.Size = new System.Drawing.Size(136, 25);
+            btnCgiCaveAsMouth.Text = "→ Eingang (Mund)";
+            btnCgiCaveAsMouth.UseVisualStyleBackColor = true;
+            btnCgiCaveAsMouth.Name = "btnCgiCaveAsMouth";
+            btnCgiCaveAsMouth.Click += BtnCgiCaveAsMouth_Click;
+            // 
+            // lblCgiCavePatterns
+            // 
+            lblCgiCavePatterns.AutoSize = true;
+            lblCgiCavePatterns.Location = new System.Drawing.Point(4, 612);
+            lblCgiCavePatterns.Text = "Eingangs-Muster (Vorlagen, Ordner Höhleneingang):";
+            lblCgiCavePatterns.Name = "lblCgiCavePatterns";
+            // 
+            // lstCgiCavePatterns
+            // 
+            lstCgiCavePatterns.Location = new System.Drawing.Point(4, 632);
+            lstCgiCavePatterns.Size = new System.Drawing.Size(276, 109);
+            lstCgiCavePatterns.IntegralHeight = false;
+            lstCgiCavePatterns.Name = "lstCgiCavePatterns";
+            lstCgiCavePatterns.DoubleClick += BtnCgiCavePlacePattern_Click;
+            // 
+            // btnCgiCaveSavePattern
+            // 
+            btnCgiCaveSavePattern.Location = new System.Drawing.Point(4, 745);
+            btnCgiCaveSavePattern.Size = new System.Drawing.Size(136, 25);
+            btnCgiCaveSavePattern.Text = "Bereich → Muster";
+            btnCgiCaveSavePattern.UseVisualStyleBackColor = true;
+            btnCgiCaveSavePattern.Name = "btnCgiCaveSavePattern";
+            btnCgiCaveSavePattern.Click += BtnCgiCaveSavePattern_Click;
+            // 
+            // btnCgiCavePlacePattern
+            // 
+            btnCgiCavePlacePattern.Location = new System.Drawing.Point(144, 745);
+            btnCgiCavePlacePattern.Size = new System.Drawing.Size(136, 25);
+            btnCgiCavePlacePattern.Text = "Muster setzen";
+            btnCgiCavePlacePattern.UseVisualStyleBackColor = true;
+            btnCgiCavePlacePattern.Name = "btnCgiCavePlacePattern";
+            btnCgiCavePlacePattern.Click += BtnCgiCavePlacePattern_Click;
+            // 
             // lblCgiCaveInfo
             // 
-            lblCgiCaveInfo.Location = new System.Drawing.Point(4, 236);
+            lblCgiCaveInfo.Location = new System.Drawing.Point(4, 778);
             lblCgiCaveInfo.Size = new System.Drawing.Size(280, 260);
             lblCgiCaveInfo.Text = "-";
             lblCgiCaveInfo.Name = "lblCgiCaveInfo";
@@ -4195,6 +4339,7 @@
             ((System.ComponentModel.ISupportInitialize)numCgiWaterWidth).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCgiSurfaceZ).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCgiCaveWall).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numCgiCaveMouth).EndInit();
             ((System.ComponentModel.ISupportInitialize)picCgiTpl).EndInit();
             ((System.ComponentModel.ISupportInitialize)numCgiTplZ).EndInit();
             ((System.ComponentModel.ISupportInitialize)picCgiMulti).EndInit();
@@ -4638,6 +4783,20 @@
         private System.Windows.Forms.Button btnCgiCaveBlack;
         private System.Windows.Forms.Button btnCgiCaveEntrance;
         private System.Windows.Forms.CheckBox chkCgiCaveInvisible;
+        private System.Windows.Forms.Label lblCgiCaveMouth;
+        private System.Windows.Forms.NumericUpDown numCgiCaveMouth;
+        private System.Windows.Forms.Label lblCgiCaveTiles;
+        private UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls.TileGridView gridCgiCaveTiles;
+        private System.Windows.Forms.CheckBox chkCgiCaveTextures;
+        private System.Windows.Forms.Label lblCgiCaveOwn;
+        private System.Windows.Forms.TextBox txtCgiCaveOwn;
+        private System.Windows.Forms.Button btnCgiCaveAddOwn;
+        private System.Windows.Forms.Button btnCgiCaveAsFloor;
+        private System.Windows.Forms.Button btnCgiCaveAsMouth;
+        private System.Windows.Forms.Label lblCgiCavePatterns;
+        private System.Windows.Forms.ListBox lstCgiCavePatterns;
+        private System.Windows.Forms.Button btnCgiCaveSavePattern;
+        private System.Windows.Forms.Button btnCgiCavePlacePattern;
         private System.Windows.Forms.Label lblCgiCaveInfo;
         private System.Windows.Forms.ListBox lstCgiTemplates;
         private System.Windows.Forms.Panel panelCgiTplTop;

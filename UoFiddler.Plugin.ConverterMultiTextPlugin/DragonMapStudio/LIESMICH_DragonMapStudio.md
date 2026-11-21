@@ -459,6 +459,12 @@ Die offene Seite (zum flachen Land) bekommt keinen Übergang – das ist gewollt
 
 **Pinsel „Eingang“** (Leiste Land, Reiter „Höhle / Weg“): am Fuß des Berges auf der Bodenhöhe klicken und 2–3 Tiles in den Hang ziehen. Jede Zelle wird Mund (`01DB`, oder `0002` mit „Eingang unsichtbar“), danach bekommt jede Eingangs-Zelle mit Berg-Nachbarn ihr Rand-Tile aus der Regel-Datei (fehlt sie: eingebaute Kopie). Als Berg zählt ein Nachbar mit Tile der Berg-Gruppe (Generator → Berg-Gruppe) oder einer, der mind. 5 höher liegt.
 
+**Mund-Höhe** (Standard 20): Der Mund liegt so viel über dem Boden des ersten Klicks. Wie im Original wird das schwarze Tile dadurch als steile Wand in den Hang gezogen (Bogen-Form) statt flach auf dem Boden zu liegen. Sichtbar ist das nur, wenn der Eingang nach **Süden oder Osten** zeigt – die Kamera schaut von Südosten.
+
+**Höhlen-Tiles (Galerie im Reiter „Höhle / Weg“):** alle Land-Tiles, deren TileData-Name „cave“ enthält, dazu die bekannten (`0002`, `01D3`–`01DE`, `0244`–`0249`) und **eigene IDs** (Feld „Eigene IDs“ oder „+ Tile“, wird in den Einstellungen gespeichert). „Texturen zeigen“ zeigt die Textur, mit der das Tile am Hang gezeichnet wird. Doppelklick = Land-Pinsel, „→ Höhlenboden“ nimmt das Tile in den Höhlen-Pinsel, „→ Eingang (Mund)“ nimmt es als Mund für den Eingang-Pinsel.
+
+**Eingangs-Muster:** einen fertigen Eingang (z. B. aus der Original-Karte) mit dem Werkzeug „Bereich“ samt etwas Boden davor markieren, „Bereich → Muster“ speichert ihn als Vorlage im Ordner `Höhleneingang` (Land-Tiles + Höhen relativ zum Anker). „Muster setzen“ / Doppelklick: Klick auf den Boden vor einem Berg setzt ihn mit allen Höhen.
+
 Korrekturen am Pinsel **Höhle**: nur Land, das schon über dem Boden liegt, wird zur Wand (vorher wurde auch der Boden vor dem Eingang zu einem Wall angehoben), und Boden aus einem früheren Zug auf anderer Höhe wird nicht mehr zur Wand.
 
 Im 2D-Editor: werden Farben der Gruppe 1d von Hand gemalt, aktiviert „MUL erzeugen“ / „CGI-Karte bauen“ jetzt die Regel 1d → Berg selbst (vorher nur der Generator).
