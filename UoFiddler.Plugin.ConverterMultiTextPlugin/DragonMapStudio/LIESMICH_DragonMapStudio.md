@@ -559,3 +559,14 @@ Im 2D-Editor: werden Farben der Gruppe 1d von Hand gemalt, aktiviert „MUL erze
 * Die Reiter **Höhle / Weg**, **Höhlen-Stempel** und **Berg** bestehen aus aufklappbaren Abschnitten (Werkzeug, Einstellungen, Ansicht, Auswerten, Gespeicherte, Hilfe). Die Hilfe ist zu Beginn zugeklappt. Welche Abschnitte offen sind, wird gespeichert.
 * **Höhlen-Stempel → Vorschau:** zeigt das Raster der gewählten Variante mit den echten Tile-Bildern, IDs und Höhen.
 * Die Seitenleiste ist breiter (der Trenner lässt sich weiter ziehen, mindestens 300 Pixel).
+
+## Karten-Editor: neue Seitenleiste
+
+* **Kartenübersicht** oben wie in der CGI-Ansicht: aufklappbar, **−** / **+** / Mausrad = Zoom, rechte Taste = schieben, **↕** Größe, **⧉** abdocken. Übersichtsbild bis 768 Pixel.
+* **Karten (Projekt-Ordner)** aufklappbar.
+* **Werkzeug „Höhle“** (zu Beginn zugeklappt): Einstellungen des Höhleneingangs im 2D-Editor (Breite, Mund über Boden, Gruppen, Weg-Länge, unsichtbar).
+* **Farben** füllen den Rest; die Kopfzeile klappt sie ein und aus.
+
+## Fehler behoben: Generator → Karten-Editor (aktuelle Karte)
+
+Mit „aktuelle Kartengröße benutzen“ wurde nur die **obere Hälfte** der erzeugten Karte in die geöffnete Karte kopiert. Unten blieb die alte Karte stehen, deshalb war eine harte Kante quer durch die Karte zu sehen. Ursache: `Buffer.BlockCopy` zählt Bytes, die Karte hat aber 2 Byte pro Pixel (16-Bit-Farbadressen). Jetzt wird mit `Array.Copy` kopiert. Derselbe Fehler steckte in **„Karte reparieren“** und ist dort auch behoben. Der Generator selbst rechnet richtig: Vorschau und volle Größe stimmen zu 96–100 % überein, die Abweichungen sind nur feine Details.

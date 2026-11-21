@@ -92,6 +92,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             tsbGrid.Checked = true;
             mapCanvas.GridFromZoom = _settings.GridFromZoom;
             SelectTool(MapTool.Brush);
+            BuildEditorLayout();
 
             cmbM2BSize.Items.Add(L.T("Eigene Größe"));
             foreach (MapSizePreset p in MapSizePreset.All)
@@ -715,7 +716,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             _thumbDirty = false;
-            mapNavigator.SetThumbnail(IndexedBitmapIO.ToBitmap(_map, _rules.GetColors(), 320), _map.Width, _map.Height);
+            // up to 768 pixels: stays sharp when the overview is zoomed in
+            mapNavigator.SetThumbnail(IndexedBitmapIO.ToBitmap(_map, _rules.GetColors(), 768), _map.Width, _map.Height);
             mapNavigator.SetView(mapCanvas.ViewRect);
         }
 

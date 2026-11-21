@@ -43,9 +43,6 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private readonly List<NavEntry> _cgiNav = new List<NavEntry>();
         private readonly List<(CollapsibleSection section, Func<Image> icon)> _sectionIcons = new List<(CollapsibleSection, Func<Image>)>();
-        private CollapsibleSection _secOverview;
-        private Form _overviewWindow;
-        private int _overviewSize = 1;
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
@@ -65,18 +62,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             side.BackColor = Color.FromArgb(236, 239, 244);
 
             // ------------------------------------------------ overview
-            _secOverview = NewSection("overview", "Kartenübersicht", ColView, OverviewHeights[_overviewSize]);
-            _secOverview.Body.Padding = new Padding(0);
-            cgiNavigator.Dock = DockStyle.Fill;
-            _secOverview.Body.Controls.Add(cgiNavigator);
-            _secOverview.AddHeaderButton("−", "Herauszoomen (auch Mausrad)", (s, e) => cgiNavigator.ZoomStep(-1));
-            _secOverview.AddHeaderButton("+", "Hineinzoomen (auch Mausrad) – rechte Maustaste schiebt, Doppelklick rechts = ganze Karte", (s, e) => cgiNavigator.ZoomStep(1));
-            _secOverview.AddHeaderButton("↕", "Größe: klein / mittel / groß", (s, e) =>
-            {
-                _overviewSize = (_overviewSize + 1) % OverviewHeights.Length;
-                _secOverview.BodyHeight = OverviewHeights[_overviewSize];
-            });
-            _secOverview.AddHeaderButton("⧉", "Übersicht in einem eigenen Fenster (abdocken / wieder andocken)", (s, e) => ToggleOverviewWindow());
+            CollapsibleSection secOverview = OverviewSection(cgiNavigator, "overview", splitCgi.Panel2);
 
             // ------------------------------------------------ go to
             CollapsibleSection secGoto = NewSection("goto", "Gehe zu", ColView, 74);
@@ -117,7 +103,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             side.Controls.Add(tabCgiSide);
             side.Controls.Add(nav);
             side.Controls.Add(secGoto);
-            side.Controls.Add(_secOverview);
+            side.Controls.Add(secOverview);
             side.ResumeLayout(true);
             splitCgi.Panel2MinSize = 300;
             if (splitCgi.Width > 900)
@@ -223,6 +209,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             foreach (NavEntry n in _cgiNav)
             {
                 bool on = tabCgiSide.SelectedTab == n.Tab;
+                n.Button.Text = n.Tab.Text;
                 n.Button.BackColor = on ? n.Color : Color.FromArgb(245, 247, 250);
                 n.Button.ForeColor = on ? Color.White : Color.FromArgb(30, 41, 59);
                 n.Button.Font = new Font("Segoe UI", 8.25f, on ? FontStyle.Bold : FontStyle.Regular);
@@ -286,40 +273,130 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         // ================================================================== overview window
 
-        private void ToggleOverviewWindow()
+        /// <summary>
+        /// Folding section with an overview map: − / + zoom, ↕ size, ⧉ undock into its own window (closing it docks back).
+        /// Used by the CGI view and the map editor.
+        /// </summary>
+        private CollapsibleSection OverviewSection(MapNavigator nav, string key, Control anchor)
         {
-            if (_overviewWindow != null)
+            int size = 1;
+            Form window = null;
+            CollapsibleSection sec = NewSection(key, "Kartenübersicht", ColView, OverviewHeights[size]);
+            sec.Body.Padding = new Padding(0);
+            nav.Dock = DockStyle.Fill;
+            sec.Body.Controls.Add(nav);
+            sec.AddHeaderButton("−", L.T("Herauszoomen (auch Mausrad)"), (s, e) => nav.ZoomStep(-1));
+            sec.AddHeaderButton("+", L.T("Hineinzoomen (auch Mausrad) – rechte Maustaste schiebt, Doppelklick rechts = ganze Karte"), (s, e) => nav.ZoomStep(1));
+            sec.AddHeaderButton("↕", L.T("Größe: klein / mittel / groß"), (s, e) =>
             {
-                _overviewWindow.Close();
+                size = (size + 1) % OverviewHeights.Length;
+                if (window == null)
+                {
+                    sec.BodyHeight = OverviewHeights[size];
+                }
+            });
+            sec.AddHeaderButton("⧉", L.T("Übersicht in einem eigenen Fenster (abdocken / wieder andocken)"), (s, e) =>
+            {
+                if (window != null)
+                {
+                    window.Close();
+                    return;
+                }
+                var f = new Form
+                {
+                    Text = L.T("Kartenübersicht – Mausrad = Zoom, rechte Taste = schieben, Klick = hinspringen"),
+                    FormBorderStyle = FormBorderStyle.SizableToolWindow,
+                    ShowInTaskbar = false,
+                    StartPosition = FormStartPosition.Manual,
+                    Size = new Size(720, 720),
+                    Owner = this
+                };
+                Point screen = anchor.PointToScreen(Point.Empty);
+                f.Location = new Point(Math.Max(0, screen.X - f.Width - 8), Math.Max(0, screen.Y));
+                nav.Parent = f;
+                nav.Dock = DockStyle.Fill;
+                sec.Title = L.T("Kartenübersicht (abgedockt)");
+                sec.BodyHeight = 0;
+                sec.Invalidate(true);
+                f.FormClosed += (o, ev) =>
+                {
+                    sec.Body.Controls.Add(nav);
+                    nav.Dock = DockStyle.Fill;
+                    sec.Title = L.T("Kartenübersicht");
+                    sec.BodyHeight = OverviewHeights[size];
+                    sec.Invalidate(true);
+                    window = null;
+                };
+                window = f;
+                f.Show(this);
+            });
+            return sec;
+        }
+
+        // ================================================================== map editor side panel
+
+        private bool _editorLayoutBuilt;
+
+        /// <summary>Map editor: overview (zoom, undock), map list and cave tool options in folding sections, colours below.</summary>
+        private void BuildEditorLayout()
+        {
+            if (_editorLayoutBuilt)
+            {
                 return;
             }
-            var f = new Form
+            _editorLayoutBuilt = true;
+            _settings.CgiCollapsed ??= new List<string>();
+            Control side = splitEditor.Panel1;
+            side.SuspendLayout();
+            side.Controls.Clear();
+            side.BackColor = Color.FromArgb(236, 239, 244);
+
+            CollapsibleSection secOverview = OverviewSection(mapNavigator, "editor.overview", splitEditor.Panel1);
+
+            CollapsibleSection secMaps = NewSection("editor.maps", "Karten (Projekt-Ordner)", ColBuild, 220);
+            grpLibrary.Text = string.Empty;
+            grpLibrary.Dock = DockStyle.Fill;
+            secMaps.Body.Padding = new Padding(2);
+            secMaps.Body.Controls.Add(grpLibrary);
+
+            _settings.CaveColor ??= new CaveColorOptions();
+            var propCave = new PropertyGrid
             {
-                Text = L.T("Kartenübersicht – Mausrad = Zoom, rechte Taste = schieben, Klick = hinspringen"),
-                FormBorderStyle = FormBorderStyle.SizableToolWindow,
-                ShowInTaskbar = false,
-                StartPosition = FormStartPosition.Manual,
-                Size = new Size(720, 720),
-                Owner = this
+                Dock = DockStyle.Fill,
+                ToolbarVisible = false,
+                HelpVisible = true,
+                SelectedObject = _settings.CaveColor
             };
-            Point screen = splitCgi.Panel2.PointToScreen(Point.Empty);
-            f.Location = new Point(Math.Max(0, screen.X - f.Width - 8), Math.Max(0, screen.Y));
-            cgiNavigator.Parent = f;
-            cgiNavigator.Dock = DockStyle.Fill;
-            _secOverview.Title = L.T("Kartenübersicht (abgedockt)");
-            _secOverview.BodyHeight = 0;
-            _secOverview.Invalidate(true);
-            f.FormClosed += (s, e) =>
+            CollapsibleSection secCave = NewSection("editor.cave", "Werkzeug „Höhle“ (Höhleneingang)", ColCave, 230, true);
+            secCave.Body.Padding = new Padding(2);
+            secCave.Body.Controls.Add(propCave);
+            var caveHint = new Label
             {
-                _secOverview.Body.Controls.Add(cgiNavigator);
-                cgiNavigator.Dock = DockStyle.Fill;
-                _secOverview.Title = L.T("Kartenübersicht");
-                _secOverview.BodyHeight = OverviewHeights[_overviewSize];
-                _secOverview.Invalidate(true);
-                _overviewWindow = null;
+                Dock = DockStyle.Top,
+                Height = 34,
+                Text = L.T("Klick neben den Berg = Eingang · Umschalt = unsichtbar (1d) · Rechtsklick = wieder Berg"),
+                ForeColor = Color.FromArgb(71, 85, 105),
+                Font = new Font("Segoe UI", 8f)
             };
-            _overviewWindow = f;
-            f.Show(this);
+            secCave.Body.Controls.Add(caveHint);
+            _sectionIcons.Add((secCave, () => UoArtCache.Land(0x01D4)));
+
+            var colorsHead = new CollapsibleSection(L.T("Farben – linke Taste = Farbe 1, rechte = Farbe 2"), ColTerrain, 0) { Dock = DockStyle.Top, Height = CollapsibleSection.HeaderHeight };
+            colorsHead.CollapsedChanged += (o, e) => grpPalette.Visible = !colorsHead.Collapsed;
+            grpPalette.Text = string.Empty;
+            grpPalette.Dock = DockStyle.Fill;
+
+            // last added = top
+            side.Controls.Add(grpPalette);
+            side.Controls.Add(colorsHead);
+            side.Controls.Add(secCave);
+            side.Controls.Add(secMaps);
+            side.Controls.Add(secOverview);
+            side.ResumeLayout(true);
+            if (splitEditor.SplitterDistance < 320)
+            {
+                splitEditor.SplitterDistance = 330;
+            }
         }
 
         // ================================================================== sections in the tabs

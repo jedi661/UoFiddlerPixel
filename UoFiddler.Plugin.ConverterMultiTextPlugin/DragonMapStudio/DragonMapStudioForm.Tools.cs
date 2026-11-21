@@ -150,7 +150,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 {
                     _history.Begin("Generator");
                     _history.TouchAll();
-                    Buffer.BlockCopy(generated.Pixels, 0, _map.Pixels, 0, generated.Pixels.Length);
+                    // Pixels is ushort[]: Array.Copy counts elements (Buffer.BlockCopy counted bytes and copied only the upper half)
+                    Array.Copy(generated.Pixels, _map.Pixels, generated.Pixels.Length);
                     _history.End();
                     AfterExternalEdit();
                 }
