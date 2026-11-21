@@ -31,6 +31,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void InitTemplatesAndCaves()
         {
             _cgiTools[tsbCgiCave] = IsoTool.Cave;
+            _cgiTools[tsbCgiCaveEntrance] = IsoTool.CaveEntrance;
             _cgiTools[tsbCgiTemplate] = IsoTool.Template;
             FillLandPresets();
             CgiCaveSettings_Changed(this, EventArgs.Empty);
@@ -85,13 +86,46 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.CaveWallHeight = (int)numCgiCaveWall.Value;
             isoView.CaveRaiseWalls = chkCgiCaveWalls.Checked;
             isoView.CaveUseTargetHeight = chkCgiCaveTarget.Checked;
+            ApplyCaveEntranceRules();
             lblCgiCaveInfo.Text =
+                L.T("Höhleneingang: Werkzeug 'Eingang' – am Fuß des Berges (Höhe des Bodens davor) klicken und 2–3 Tiles in den Hang ziehen. " +
+                "Der Mund wird 01DB (schwarz) bzw. 0002 (unsichtbar), der Rand zum Berg bekommt die Eingangs-Tiles 01D3–01DA wie Dragon " +
+                "(map/cave-enti2mountain.txt). Dahinter mit 'Höhle' weitergraben oder auf dem Server einen Teleporter in den Dungeon setzen.") + Environment.NewLine + Environment.NewLine +
                 L.T("Höhle: Werkzeug 'Höhle' (Leiste Land), am Fuß des Berges anfangen und hineinziehen. Der Boden bekommt die Höhe des ersten Klicks " +
                 "(oder 'Höhe =' aus dem Reiter Land), der Rand wird bis zur Wand-Höhe angehoben – der Client zeichnet dort die Fels-Textur als Wand. " +
                 "Pinsel-Größe oben = Breite des Ganges. Ein Zug = ein Rückgängig-Schritt.") + Environment.NewLine + Environment.NewLine +
                 L.T("Wege und Gebäude-Böden: Reiter Land → 'Aus der Farbtabelle' (z. B. cobblestones, marble floor, Wood Floorboards) und " +
                 "'Höhe vom ersten Klick übernehmen'. Ganze Flächen: Werkzeug 'Bereich', dann F.") + Environment.NewLine + Environment.NewLine +
                 L.T("Fertige Böden / Höhlen-Stücke lassen sich mit 'Bereich → Vorlage…' (Reiter Vorlagen) speichern und wieder setzen.");
+        }
+
+        /// <summary>Entrance brush: mouth tile, the patterns of map/cave-enti2mountain.txt and the mountain tiles of the colour table.</summary>
+        private void ApplyCaveEntranceRules()
+        {
+            isoView.CaveEntranceFillId = chkCgiCaveInvisible.Checked ? (ushort)0x0002 : (ushort)0x01DB;
+            if (_rules == null)
+            {
+                return;
+            }
+            TransitionFile file = _rules.FindTransitionFile("map/cave-enti2mountain.txt") ?? _rules.FindTransitionFile("map/cave-ent2mountain.txt");
+            var patterns = new Dictionary<byte, TransitionPattern>();
+            if (file != null)
+            {
+                foreach (TransitionPattern p in file.Patterns)
+                {
+                    patterns.TryAdd(p.Mask, p);
+                }
+            }
+            isoView.CaveEntrancePatterns = patterns;
+            int mountain = _settings?.Generator?.MountainGroup ?? 0x06;
+            isoView.CaveEntranceMountainIds = new HashSet<ushort>(_rules.EntriesOfGroup(mountain).SelectMany(e => e.GetTileIds()));
+        }
+
+        private void BtnCgiCaveEntrance_Click(object sender, EventArgs e)
+        {
+            ApplyCaveEntranceRules();
+            SelectCgiTool(IsoTool.CaveEntrance);
+            isoView.Focus();
         }
 
         private void BtnCgiCaveTool_Click(object sender, EventArgs e)

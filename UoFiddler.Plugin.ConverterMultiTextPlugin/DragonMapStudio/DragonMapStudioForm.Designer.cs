@@ -265,6 +265,8 @@
             chkCgiCaveTarget = new System.Windows.Forms.CheckBox();
             btnCgiCaveTool = new System.Windows.Forms.Button();
             btnCgiCaveBlack = new System.Windows.Forms.Button();
+            btnCgiCaveEntrance = new System.Windows.Forms.Button();
+            chkCgiCaveInvisible = new System.Windows.Forms.CheckBox();
             lblCgiCaveInfo = new System.Windows.Forms.Label();
             lstCgiTemplates = new System.Windows.Forms.ListBox();
             panelCgiTplTop = new System.Windows.Forms.Panel();
@@ -314,6 +316,7 @@
             tsbCgiSmooth = new System.Windows.Forms.ToolStripButton();
             tsbCgiCoast = new System.Windows.Forms.ToolStripButton();
             tsbCgiCave = new System.Windows.Forms.ToolStripButton();
+            tsbCgiCaveEntrance = new System.Windows.Forms.ToolStripButton();
             tsbCgiWater = new System.Windows.Forms.ToolStripButton();
             tsbCgiArea = new System.Windows.Forms.ToolStripButton();
             tssCgiLand1 = new System.Windows.Forms.ToolStripSeparator();
@@ -2447,6 +2450,8 @@
             panelCgiCave.Controls.Add(chkCgiCaveTarget);
             panelCgiCave.Controls.Add(btnCgiCaveTool);
             panelCgiCave.Controls.Add(btnCgiCaveBlack);
+            panelCgiCave.Controls.Add(btnCgiCaveEntrance);
+            panelCgiCave.Controls.Add(chkCgiCaveInvisible);
             panelCgiCave.Controls.Add(lblCgiCaveInfo);
             panelCgiCave.Dock = System.Windows.Forms.DockStyle.Fill;
             panelCgiCave.AutoScroll = true;
@@ -2520,9 +2525,26 @@
             btnCgiCaveBlack.Name = "btnCgiCaveBlack";
             btnCgiCaveBlack.Click += BtnCgiCaveBlack_Click;
             // 
+            // btnCgiCaveEntrance
+            // 
+            btnCgiCaveEntrance.Location = new System.Drawing.Point(4, 178);
+            btnCgiCaveEntrance.Size = new System.Drawing.Size(276, 25);
+            btnCgiCaveEntrance.Text = "Höhleneingang-Pinsel wählen";
+            btnCgiCaveEntrance.UseVisualStyleBackColor = true;
+            btnCgiCaveEntrance.Name = "btnCgiCaveEntrance";
+            btnCgiCaveEntrance.Click += BtnCgiCaveEntrance_Click;
+            // 
+            // chkCgiCaveInvisible
+            // 
+            chkCgiCaveInvisible.AutoSize = true;
+            chkCgiCaveInvisible.Location = new System.Drawing.Point(4, 208);
+            chkCgiCaveInvisible.Text = "Eingang unsichtbar (0002 statt schwarz 01DB)";
+            chkCgiCaveInvisible.Name = "chkCgiCaveInvisible";
+            chkCgiCaveInvisible.CheckedChanged += CgiCaveSettings_Changed;
+            // 
             // lblCgiCaveInfo
             // 
-            lblCgiCaveInfo.Location = new System.Drawing.Point(4, 174);
+            lblCgiCaveInfo.Location = new System.Drawing.Point(4, 236);
             lblCgiCaveInfo.Size = new System.Drawing.Size(280, 260);
             lblCgiCaveInfo.Text = "-";
             lblCgiCaveInfo.Name = "lblCgiCaveInfo";
@@ -2879,7 +2901,7 @@
             // 
             // toolStripCgiLand
             // 
-            toolStripCgiLand.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tslCgiLandTools, tsbCgiLandSet, tsbCgiRaise, tsbCgiLower, tsbCgiSetHeight, tsbCgiSmooth, tsbCgiCoast, tsbCgiCave, tsbCgiWater, tsbCgiArea, tssCgiLand1, tslCgiBrush, tscCgiBrush });
+            toolStripCgiLand.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tslCgiLandTools, tsbCgiLandSet, tsbCgiRaise, tsbCgiLower, tsbCgiSetHeight, tsbCgiSmooth, tsbCgiCoast, tsbCgiCave, tsbCgiCaveEntrance, tsbCgiWater, tsbCgiArea, tssCgiLand1, tslCgiBrush, tscCgiBrush });
             toolStripCgiLand.Dock = System.Windows.Forms.DockStyle.Top;
             toolStripCgiLand.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStripCgiLand.Name = "toolStripCgiLand";
@@ -2944,6 +2966,14 @@
             tsbCgiCave.ToolTipText = "Pinsel: Höhle in den Berg graben – Boden auf einer Höhe, der Rand wird Wand (Reiter Höhle / Weg)";
             tsbCgiCave.Name = "tsbCgiCave";
             tsbCgiCave.Click += CgiTool_Click;
+            // 
+            // tsbCgiCaveEntrance
+            // 
+            tsbCgiCaveEntrance.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiCaveEntrance.Text = "Eingang";
+            tsbCgiCaveEntrance.ToolTipText = "Pinsel: Höhleneingang am Bergfuß – schwarzer Mund 01DB, Rand zum Berg 01D3–01DA automatisch (Reiter Höhle / Weg)";
+            tsbCgiCaveEntrance.Name = "tsbCgiCaveEntrance";
+            tsbCgiCaveEntrance.Click += CgiTool_Click;
             // 
             // tsbCgiWater
             // 
@@ -4606,6 +4636,8 @@
         private System.Windows.Forms.CheckBox chkCgiCaveTarget;
         private System.Windows.Forms.Button btnCgiCaveTool;
         private System.Windows.Forms.Button btnCgiCaveBlack;
+        private System.Windows.Forms.Button btnCgiCaveEntrance;
+        private System.Windows.Forms.CheckBox chkCgiCaveInvisible;
         private System.Windows.Forms.Label lblCgiCaveInfo;
         private System.Windows.Forms.ListBox lstCgiTemplates;
         private System.Windows.Forms.Panel panelCgiTplTop;
@@ -4655,6 +4687,7 @@
         private System.Windows.Forms.ToolStripButton tsbCgiSmooth;
         private System.Windows.Forms.ToolStripButton tsbCgiCoast;
         private System.Windows.Forms.ToolStripButton tsbCgiCave;
+        private System.Windows.Forms.ToolStripButton tsbCgiCaveEntrance;
         private System.Windows.Forms.ToolStripButton tsbCgiWater;
         private System.Windows.Forms.ToolStripButton tsbCgiArea;
         private System.Windows.Forms.ToolStripSeparator tssCgiLand1;

@@ -442,3 +442,23 @@ Für eigene / gespeicherte Regelsätze: **„Hinweise beheben“** ordnet Farben
 **Skript-Editor** (`Dialogs/ScriptEditorForm`, auch Menü Regeln): alle Skript-Dateien als Text, Suche, Speichern mit `.bak`; rechts die Bedeutung der aktuellen Zeile (Farbe, Gruppe, Tiles/Statics als Bilder, Muster als 3×3-Bild), unten Syntax und Beispiel des Dateityps. Nach dem Speichern werden die Regeln auf Wunsch neu eingelesen.
 
 Neue Dateien: `Core/RuleSetTools.cs`, `Controls/ColorPreviewPopup.cs`, `Dialogs/ColorDefinitionDialog`, `Dialogs/GroupDialog`, `Dialogs/TransitionRuleDialog`, `Dialogs/ScriptEditorForm` (jeweils mit `.Designer.cs`), `DragonMapStudioForm.RulesUi.cs`.
+
+## Höhleneingänge in der CGI-Ansicht
+
+So baut Ultima Online einen Höhleneingang (Original-Karte, Dragon/IMod13 `map/cave-enti2mountain.txt`):
+
+| Tile | Bedeutung (A = Eingang, B = Berg) |
+|------|-----------------------------------|
+| `01DB` | schwarzer Mund (begehbar; Dragon-Gruppe 1a) |
+| `0002` | unsichtbarer Mund (Dragon-Gruppe 1d) |
+| `01DA` / `01D6` | Berg im Westen / im Osten |
+| `01D8` / `01D4` | Berg im Süden / im Norden (`01D4` +5…15 höher) |
+| `01D3` `01D5` `01D7` `01D9` | Ecken (SO / SW / NW / NO), teils +5…15 höher |
+
+Die offene Seite (zum flachen Land) bekommt keinen Übergang – das ist gewollt. Eine echte „Unterwelt“ gibt es in UO nicht: dahinter wird entweder mit dem Pinsel **Höhle** weitergegraben (Boden `0245`–`0249`, Rand wird Fels-Wand) oder auf dem Server ein Teleporter in den Dungeon-Bereich gesetzt (x > 5119, Rest mit Schwarz `0244`).
+
+**Pinsel „Eingang“** (Leiste Land, Reiter „Höhle / Weg“): am Fuß des Berges auf der Bodenhöhe klicken und 2–3 Tiles in den Hang ziehen. Jede Zelle wird Mund (`01DB`, oder `0002` mit „Eingang unsichtbar“), danach bekommt jede Eingangs-Zelle mit Berg-Nachbarn ihr Rand-Tile aus der Regel-Datei (fehlt sie: eingebaute Kopie). Als Berg zählt ein Nachbar mit Tile der Berg-Gruppe (Generator → Berg-Gruppe) oder einer, der mind. 5 höher liegt.
+
+Korrekturen am Pinsel **Höhle**: nur Land, das schon über dem Boden liegt, wird zur Wand (vorher wurde auch der Boden vor dem Eingang zu einem Wall angehoben), und Boden aus einem früheren Zug auf anderer Höhe wird nicht mehr zur Wand.
+
+Im 2D-Editor: werden Farben der Gruppe 1d von Hand gemalt, aktiviert „MUL erzeugen“ / „CGI-Karte bauen“ jetzt die Regel 1d → Berg selbst (vorher nur der Generator).
