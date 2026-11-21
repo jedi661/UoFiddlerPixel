@@ -281,6 +281,15 @@
             btnCgiCaveSavePattern = new System.Windows.Forms.Button();
             btnCgiCavePlacePattern = new System.Windows.Forms.Button();
             chkCgiCaveInvisible = new System.Windows.Forms.CheckBox();
+            chkCgiCaveFront = new System.Windows.Forms.CheckBox();
+            tabCgiMountain = new System.Windows.Forms.TabPage();
+            propCgiMountain = new System.Windows.Forms.PropertyGrid();
+            panelCgiMountainBottom = new System.Windows.Forms.Panel();
+            btnCgiMountainTool = new System.Windows.Forms.Button();
+            btnCgiMountainArea = new System.Windows.Forms.Button();
+            btnCgiMountainSeed = new System.Windows.Forms.Button();
+            lblCgiMountainInfo = new System.Windows.Forms.Label();
+            tsbCgiMountain = new System.Windows.Forms.ToolStripButton();
             lblCgiCaveInfo = new System.Windows.Forms.Label();
             lstCgiTemplates = new System.Windows.Forms.ListBox();
             panelCgiTplTop = new System.Windows.Forms.Panel();
@@ -1778,6 +1787,7 @@
             tabCgiSide.Controls.Add(tabCgiLand);
             tabCgiSide.Controls.Add(tabCgiCoast);
             tabCgiSide.Controls.Add(tabCgiCave);
+            tabCgiSide.Controls.Add(tabCgiMountain);
             tabCgiSide.Controls.Add(tabCgiTemplates);
             tabCgiSide.Controls.Add(tabCgiSelection);
             tabCgiSide.Controls.Add(tabCgiProblems);
@@ -2467,6 +2477,7 @@
             panelCgiCave.Controls.Add(btnCgiCaveBlack);
             panelCgiCave.Controls.Add(btnCgiCaveEntrance);
             panelCgiCave.Controls.Add(chkCgiCaveInvisible);
+            panelCgiCave.Controls.Add(chkCgiCaveFront);
             panelCgiCave.Controls.Add(lblCgiCaveMouth);
             panelCgiCave.Controls.Add(numCgiCaveMouth);
             panelCgiCave.Controls.Add(lblCgiCaveTiles);
@@ -2571,6 +2582,79 @@
             chkCgiCaveInvisible.Name = "chkCgiCaveInvisible";
             chkCgiCaveInvisible.CheckedChanged += CgiCaveSettings_Changed;
             // 
+            // chkCgiCaveFront
+            // 
+            chkCgiCaveFront.AutoSize = true;
+            chkCgiCaveFront.Checked = true;
+            chkCgiCaveFront.CheckState = System.Windows.Forms.CheckState.Checked;
+            chkCgiCaveFront.Location = new System.Drawing.Point(4, 262);
+            chkCgiCaveFront.Text = "Vorderkante unsichtbar (0002, wie Original)";
+            chkCgiCaveFront.Name = "chkCgiCaveFront";
+            chkCgiCaveFront.CheckedChanged += CgiCaveSettings_Changed;
+            // 
+            // tabCgiMountain
+            // 
+            tabCgiMountain.Controls.Add(propCgiMountain);
+            tabCgiMountain.Controls.Add(panelCgiMountainBottom);
+            tabCgiMountain.Text = "Berg";
+            tabCgiMountain.UseVisualStyleBackColor = true;
+            tabCgiMountain.Padding = new System.Windows.Forms.Padding(3);
+            tabCgiMountain.Name = "tabCgiMountain";
+            tabCgiMountain.Location = new System.Drawing.Point(4, 24);
+            tabCgiMountain.Size = new System.Drawing.Size(1176, 640);
+            // 
+            // propCgiMountain
+            // 
+            propCgiMountain.Dock = System.Windows.Forms.DockStyle.Fill;
+            propCgiMountain.ToolbarVisible = false;
+            propCgiMountain.HelpVisible = true;
+            propCgiMountain.Name = "propCgiMountain";
+            propCgiMountain.PropertyValueChanged += PropCgiMountain_PropertyValueChanged;
+            // 
+            // panelCgiMountainBottom
+            // 
+            panelCgiMountainBottom.Controls.Add(btnCgiMountainTool);
+            panelCgiMountainBottom.Controls.Add(btnCgiMountainArea);
+            panelCgiMountainBottom.Controls.Add(btnCgiMountainSeed);
+            panelCgiMountainBottom.Controls.Add(lblCgiMountainInfo);
+            panelCgiMountainBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
+            panelCgiMountainBottom.Size = new System.Drawing.Size(290, 200);
+            panelCgiMountainBottom.Name = "panelCgiMountainBottom";
+            // 
+            // btnCgiMountainTool
+            // 
+            btnCgiMountainTool.Location = new System.Drawing.Point(4, 4);
+            btnCgiMountainTool.Size = new System.Drawing.Size(276, 25);
+            btnCgiMountainTool.Text = "Berg-Pinsel wählen";
+            btnCgiMountainTool.UseVisualStyleBackColor = true;
+            btnCgiMountainTool.Name = "btnCgiMountainTool";
+            btnCgiMountainTool.Click += BtnCgiMountainTool_Click;
+            // 
+            // btnCgiMountainArea
+            // 
+            btnCgiMountainArea.Location = new System.Drawing.Point(4, 33);
+            btnCgiMountainArea.Size = new System.Drawing.Size(276, 25);
+            btnCgiMountainArea.Text = "Markierten Bereich zum Berg formen (M)";
+            btnCgiMountainArea.UseVisualStyleBackColor = true;
+            btnCgiMountainArea.Name = "btnCgiMountainArea";
+            btnCgiMountainArea.Click += BtnCgiMountainArea_Click;
+            // 
+            // btnCgiMountainSeed
+            // 
+            btnCgiMountainSeed.Location = new System.Drawing.Point(4, 62);
+            btnCgiMountainSeed.Size = new System.Drawing.Size(276, 25);
+            btnCgiMountainSeed.Text = "Neue Zufalls-Zahl (anderer Berg)";
+            btnCgiMountainSeed.UseVisualStyleBackColor = true;
+            btnCgiMountainSeed.Name = "btnCgiMountainSeed";
+            btnCgiMountainSeed.Click += BtnCgiMountainSeed_Click;
+            // 
+            // lblCgiMountainInfo
+            // 
+            lblCgiMountainInfo.Location = new System.Drawing.Point(4, 92);
+            lblCgiMountainInfo.Size = new System.Drawing.Size(280, 104);
+            lblCgiMountainInfo.Text = "-";
+            lblCgiMountainInfo.Name = "lblCgiMountainInfo";
+            // 
             // lblCgiCaveMouth
             // 
             lblCgiCaveMouth.AutoSize = true;
@@ -2591,13 +2675,13 @@
             // lblCgiCaveTiles
             // 
             lblCgiCaveTiles.Size = new System.Drawing.Size(280, 32);
-            lblCgiCaveTiles.Location = new System.Drawing.Point(4, 266);
+            lblCgiCaveTiles.Location = new System.Drawing.Point(4, 292);
             lblCgiCaveTiles.Text = "Höhlen-Tiles";
             lblCgiCaveTiles.Name = "lblCgiCaveTiles";
             // 
             // gridCgiCaveTiles
             // 
-            gridCgiCaveTiles.Location = new System.Drawing.Point(4, 300);
+            gridCgiCaveTiles.Location = new System.Drawing.Point(4, 326);
             gridCgiCaveTiles.Size = new System.Drawing.Size(276, 220);
             gridCgiCaveTiles.Name = "gridCgiCaveTiles";
             gridCgiCaveTiles.ItemActivated += GridCgiCaveTiles_ItemActivated;
@@ -2607,7 +2691,7 @@
             chkCgiCaveTextures.AutoSize = true;
             chkCgiCaveTextures.Checked = true;
             chkCgiCaveTextures.CheckState = System.Windows.Forms.CheckState.Checked;
-            chkCgiCaveTextures.Location = new System.Drawing.Point(4, 524);
+            chkCgiCaveTextures.Location = new System.Drawing.Point(4, 550);
             chkCgiCaveTextures.Text = "Texturen zeigen (so sieht es am Hang aus)";
             chkCgiCaveTextures.Name = "chkCgiCaveTextures";
             chkCgiCaveTextures.CheckedChanged += ChkCgiCaveTextures_CheckedChanged;
@@ -2615,20 +2699,20 @@
             // lblCgiCaveOwn
             // 
             lblCgiCaveOwn.AutoSize = true;
-            lblCgiCaveOwn.Location = new System.Drawing.Point(4, 553);
+            lblCgiCaveOwn.Location = new System.Drawing.Point(4, 579);
             lblCgiCaveOwn.Text = "Eigene IDs:";
             lblCgiCaveOwn.Name = "lblCgiCaveOwn";
             // 
             // txtCgiCaveOwn
             // 
-            txtCgiCaveOwn.Location = new System.Drawing.Point(80, 549);
+            txtCgiCaveOwn.Location = new System.Drawing.Point(80, 575);
             txtCgiCaveOwn.Size = new System.Drawing.Size(140, 23);
             txtCgiCaveOwn.Name = "txtCgiCaveOwn";
             txtCgiCaveOwn.Leave += TxtCgiCaveOwn_Leave;
             // 
             // btnCgiCaveAddOwn
             // 
-            btnCgiCaveAddOwn.Location = new System.Drawing.Point(224, 548);
+            btnCgiCaveAddOwn.Location = new System.Drawing.Point(224, 574);
             btnCgiCaveAddOwn.Size = new System.Drawing.Size(56, 25);
             btnCgiCaveAddOwn.Text = "+ Tile";
             btnCgiCaveAddOwn.UseVisualStyleBackColor = true;
@@ -2637,7 +2721,7 @@
             // 
             // btnCgiCaveAsFloor
             // 
-            btnCgiCaveAsFloor.Location = new System.Drawing.Point(4, 578);
+            btnCgiCaveAsFloor.Location = new System.Drawing.Point(4, 604);
             btnCgiCaveAsFloor.Size = new System.Drawing.Size(136, 25);
             btnCgiCaveAsFloor.Text = "→ Höhlenboden";
             btnCgiCaveAsFloor.UseVisualStyleBackColor = true;
@@ -2646,7 +2730,7 @@
             // 
             // btnCgiCaveAsMouth
             // 
-            btnCgiCaveAsMouth.Location = new System.Drawing.Point(144, 578);
+            btnCgiCaveAsMouth.Location = new System.Drawing.Point(144, 604);
             btnCgiCaveAsMouth.Size = new System.Drawing.Size(136, 25);
             btnCgiCaveAsMouth.Text = "→ Eingang (Mund)";
             btnCgiCaveAsMouth.UseVisualStyleBackColor = true;
@@ -2656,13 +2740,13 @@
             // lblCgiCavePatterns
             // 
             lblCgiCavePatterns.AutoSize = true;
-            lblCgiCavePatterns.Location = new System.Drawing.Point(4, 612);
+            lblCgiCavePatterns.Location = new System.Drawing.Point(4, 638);
             lblCgiCavePatterns.Text = "Eingangs-Muster (Vorlagen, Ordner Höhleneingang):";
             lblCgiCavePatterns.Name = "lblCgiCavePatterns";
             // 
             // lstCgiCavePatterns
             // 
-            lstCgiCavePatterns.Location = new System.Drawing.Point(4, 632);
+            lstCgiCavePatterns.Location = new System.Drawing.Point(4, 658);
             lstCgiCavePatterns.Size = new System.Drawing.Size(276, 109);
             lstCgiCavePatterns.IntegralHeight = false;
             lstCgiCavePatterns.Name = "lstCgiCavePatterns";
@@ -2670,7 +2754,7 @@
             // 
             // btnCgiCaveSavePattern
             // 
-            btnCgiCaveSavePattern.Location = new System.Drawing.Point(4, 745);
+            btnCgiCaveSavePattern.Location = new System.Drawing.Point(4, 771);
             btnCgiCaveSavePattern.Size = new System.Drawing.Size(136, 25);
             btnCgiCaveSavePattern.Text = "Bereich → Muster";
             btnCgiCaveSavePattern.UseVisualStyleBackColor = true;
@@ -2679,7 +2763,7 @@
             // 
             // btnCgiCavePlacePattern
             // 
-            btnCgiCavePlacePattern.Location = new System.Drawing.Point(144, 745);
+            btnCgiCavePlacePattern.Location = new System.Drawing.Point(144, 771);
             btnCgiCavePlacePattern.Size = new System.Drawing.Size(136, 25);
             btnCgiCavePlacePattern.Text = "Muster setzen";
             btnCgiCavePlacePattern.UseVisualStyleBackColor = true;
@@ -2688,7 +2772,7 @@
             // 
             // lblCgiCaveInfo
             // 
-            lblCgiCaveInfo.Location = new System.Drawing.Point(4, 778);
+            lblCgiCaveInfo.Location = new System.Drawing.Point(4, 804);
             lblCgiCaveInfo.Size = new System.Drawing.Size(280, 260);
             lblCgiCaveInfo.Text = "-";
             lblCgiCaveInfo.Name = "lblCgiCaveInfo";
@@ -3045,7 +3129,7 @@
             // 
             // toolStripCgiLand
             // 
-            toolStripCgiLand.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tslCgiLandTools, tsbCgiLandSet, tsbCgiRaise, tsbCgiLower, tsbCgiSetHeight, tsbCgiSmooth, tsbCgiCoast, tsbCgiCave, tsbCgiCaveEntrance, tsbCgiWater, tsbCgiArea, tssCgiLand1, tslCgiBrush, tscCgiBrush });
+            toolStripCgiLand.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tslCgiLandTools, tsbCgiLandSet, tsbCgiRaise, tsbCgiLower, tsbCgiSetHeight, tsbCgiSmooth, tsbCgiCoast, tsbCgiCave, tsbCgiCaveEntrance, tsbCgiMountain, tsbCgiWater, tsbCgiArea, tssCgiLand1, tslCgiBrush, tscCgiBrush });
             toolStripCgiLand.Dock = System.Windows.Forms.DockStyle.Top;
             toolStripCgiLand.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStripCgiLand.Name = "toolStripCgiLand";
@@ -3118,6 +3202,14 @@
             tsbCgiCaveEntrance.ToolTipText = "Pinsel: Höhleneingang am Bergfuß – schwarzer Mund 01DB, Rand zum Berg 01D3–01DA automatisch (Reiter Höhle / Weg)";
             tsbCgiCaveEntrance.Name = "tsbCgiCaveEntrance";
             tsbCgiCaveEntrance.Click += CgiTool_Click;
+            // 
+            // tsbCgiMountain
+            // 
+            tsbCgiMountain.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiMountain.Text = "Berg";
+            tsbCgiMountain.ToolTipText = "Pinsel: Berg ab der Bodenhöhe aufbauen – steil, mit Kuppen und Felskanten (Reiter Berg) · Bereich + M = ganzer Berg";
+            tsbCgiMountain.Name = "tsbCgiMountain";
+            tsbCgiMountain.Click += CgiTool_Click;
             // 
             // tsbCgiWater
             // 
@@ -4783,6 +4875,15 @@
         private System.Windows.Forms.Button btnCgiCaveBlack;
         private System.Windows.Forms.Button btnCgiCaveEntrance;
         private System.Windows.Forms.CheckBox chkCgiCaveInvisible;
+        private System.Windows.Forms.CheckBox chkCgiCaveFront;
+        private System.Windows.Forms.TabPage tabCgiMountain;
+        private System.Windows.Forms.PropertyGrid propCgiMountain;
+        private System.Windows.Forms.Panel panelCgiMountainBottom;
+        private System.Windows.Forms.Button btnCgiMountainTool;
+        private System.Windows.Forms.Button btnCgiMountainArea;
+        private System.Windows.Forms.Button btnCgiMountainSeed;
+        private System.Windows.Forms.Label lblCgiMountainInfo;
+        private System.Windows.Forms.ToolStripButton tsbCgiMountain;
         private System.Windows.Forms.Label lblCgiCaveMouth;
         private System.Windows.Forms.NumericUpDown numCgiCaveMouth;
         private System.Windows.Forms.Label lblCgiCaveTiles;

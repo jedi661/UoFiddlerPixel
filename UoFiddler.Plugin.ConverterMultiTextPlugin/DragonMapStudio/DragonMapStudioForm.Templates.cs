@@ -32,6 +32,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         {
             _cgiTools[tsbCgiCave] = IsoTool.Cave;
             _cgiTools[tsbCgiCaveEntrance] = IsoTool.CaveEntrance;
+            _cgiTools[tsbCgiMountain] = IsoTool.Mountain;
+            _settings.Mountain ??= new MountainSettings();
+            isoView.Mountain = _settings.Mountain;
+            propCgiMountain.SelectedObject = _settings.Mountain;
+            lblCgiMountainInfo.Text = L.T("Berg: Werkzeug 'Berg' (Leiste Land) – am Fuß klicken und ziehen, der Berg steigt ab der Bodenhöhe (oder 'Fuß-Z') " +
+                "mit 'Steilheit' Z pro Tile bis 'Gipfel-Z'. Mehrmals ziehen baut einen Grat. Ganzer Berg: mit 'Bereich' markieren, dann M oder der Knopf oben. " +
+                "Danach mit 'Eingang' / 'Höhle' einen Höhleneingang anlegen. Strg+Z nimmt alles zurück.");
             gridCgiCaveTiles.ImageOf = CaveTilePicture;
             gridCgiCaveTiles.NameOf = CaveTileName;
             txtCgiCaveOwn.Text = _settings.CaveTileIds ?? string.Empty;
@@ -90,6 +97,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.CaveRaiseWalls = chkCgiCaveWalls.Checked;
             isoView.CaveUseTargetHeight = chkCgiCaveTarget.Checked;
             isoView.CaveEntranceMouthHeight = (int)numCgiCaveMouth.Value;
+            isoView.CaveEntranceFrontNoDraw = chkCgiCaveFront.Checked;
             ApplyCaveEntranceRules();
             lblCgiCaveInfo.Text =
                 L.T("Höhleneingang: Werkzeug 'Eingang' – am Fuß des Berges (Höhe des Bodens davor) klicken und 2–3 Tiles in den Hang ziehen. " +
@@ -123,6 +131,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.CaveEntrancePatterns = patterns;
             int mountain = _settings?.Generator?.MountainGroup ?? 0x06;
             isoView.CaveEntranceMountainIds = new HashSet<ushort>(_rules.EntriesOfGroup(mountain).SelectMany(e => e.GetTileIds()));
+            if (isoView.CaveEntranceMountainIds.Count > 0)
+            {
+                isoView.MountainFallbackTiles = isoView.CaveEntranceMountainIds.OrderBy(i => i).ToArray();
+            }
         }
 
         private void BtnCgiCaveEntrance_Click(object sender, EventArgs e)
@@ -331,6 +343,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             tabCgiSide.SelectedTab = tabCgiCave;
             isoView.Focus();
             SetStatus($"Muster '{_cavePatterns[i].Name}': Klick auf den Boden vor dem Berg setzt es (Land + Höhen relativ zum Klick).");
+        }
+
+        // ================================================================== mountain
+
+        private void PropCgiMountain_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
+        {
+            isoView.Mountain = _settings.Mountain;
+            isoView.Invalidate();
+        }
+
+        private void BtnCgiMountainTool_Click(object sender, EventArgs e)
+        {
+            SelectCgiTool(IsoTool.Mountain);
+            isoView.Focus();
+        }
+
+        private void BtnCgiMountainArea_Click(object sender, EventArgs e)
+        {
+            if (isoView.Area.IsEmpty)
+            {
+                SetStatus("Erst mit dem Werkzeug 'Bereich' (Leiste Land) die Fläche des Berges aufziehen.");
+                return;
+            }
+            isoView.MountainArea();
+            isoView.Focus();
+        }
+
+        private void BtnCgiMountainSeed_Click(object sender, EventArgs e)
+        {
+            _settings.Mountain.Seed = new Random().Next(1, 1000000);
+            propCgiMountain.Refresh();
+            SetStatus($"Zufalls-Zahl {_settings.Mountain.Seed} – Strg+Z und noch einmal M zeigt den anderen Berg.");
         }
 
         private void BtnCgiCaveTool_Click(object sender, EventArgs e)

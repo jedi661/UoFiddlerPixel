@@ -465,6 +465,15 @@ Die offene Seite (zum flachen Land) bekommt keinen Übergang – das ist gewollt
 
 **Eingangs-Muster:** einen fertigen Eingang (z. B. aus der Original-Karte) mit dem Werkzeug „Bereich“ samt etwas Boden davor markieren, „Bereich → Muster“ speichert ihn als Vorlage im Ordner `Höhleneingang` (Land-Tiles + Höhen relativ zum Anker). „Muster setzen“ / Doppelklick: Klick auf den Boden vor einem Berg setzt ihn mit allen Höhen.
 
+**Vorderkante unsichtbar** (an): Wie im Original (im Client als „NO DRAW“ zu sehen) wird die vordere Reihe des Mundes – die Zellen, die direkt an den flachen Boden grenzen – zum unsichtbaren Tile `0002` auf Bodenhöhe. Dadurch reicht die schwarze Wand dahinter bis auf den Boden. Davor am besten einen Erdweg (Reiter Land, Erde) mit „Höhe vom ersten Klick“ malen.
+
 Korrekturen am Pinsel **Höhle**: nur Land, das schon über dem Boden liegt, wird zur Wand (vorher wurde auch der Boden vor dem Eingang zu einem Wall angehoben), und Boden aus einem früheren Zug auf anderer Höhe wird nicht mehr zur Wand.
+
+## Berge in der CGI-Ansicht (Reiter „Berg“)
+
+* **Pinsel „Berg“** (Leiste Land): am Fuß klicken und ziehen. Der Berg steigt ab der Bodenhöhe des ersten Klicks (oder „Fuß-Z“, wenn „Fuß automatisch“ aus ist) um „Steilheit“ Z pro Tile bis „Gipfel-Z“. Pinsel-Größe oben = Breite. Mehrmals ziehen baut einen Grat (mit „Nur anheben“ wird nie etwas abgesenkt).
+* **Bereich + M** (oder Knopf „Markierten Bereich zum Berg formen“): die ganze markierte Fläche wird ein Berg – der Rand ausgefranst, innen Kuppen und Täler, Felskanten durch „Rauheit“.
+* Einstellungen: Gipfel-Z (Standard 90 wie Dragon-Gruppe 06), Steilheit, Hügel-Größe / -Stärke, Rauheit, Rand ausfransen, Berg-Tiles (Standard `022c`–`022f`, leer = Berg-Gruppe der Farbtabelle), optional Fuß-Tiles für die äußerste Reihe, Zufalls-Zahl. Werden in den Einstellungen gespeichert.
+* Danach mit „Eingang“ den Höhleneingang an der Süd- oder Ostseite setzen.
 
 Im 2D-Editor: werden Farben der Gruppe 1d von Hand gemalt, aktiviert „MUL erzeugen“ / „CGI-Karte bauen“ jetzt die Regel 1d → Berg selbst (vorher nur der Generator).

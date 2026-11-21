@@ -78,6 +78,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Own cave land tiles (hex) for the gallery in the tab "Höhle / Weg" – in addition to the tiledata names with "cave".</summary>
         public string CaveTileIds { get; set; } = string.Empty;
 
+        /// <summary>Mountain brush / area of the CGI view (tab "Berg").</summary>
+        public MountainSettings Mountain { get; set; } = new MountainSettings();
+
         [Category("1 Ordner"), DisplayName("maptrans-Datei"), Description("maptrans.txt oder maptrans105.txt …")]
         public string MapTransFile { get; set; } = "maptrans.txt";
 

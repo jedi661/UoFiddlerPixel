@@ -47,6 +47,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Brush: cave entrance in the mountain side – black (01DB) or invisible (0002) mouth, the edge gets the entrance tiles 01D3–01DA.</summary>
         CaveEntrance,
 
+        /// <summary>Brush: raises a mountain from the foot height (settings in the tab "Berg").</summary>
+        Mountain,
+
         /// <summary>Places a template (building / floor pattern) from the library.</summary>
         Template
     }
@@ -244,6 +247,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// </summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CaveEntranceMouthHeight { get; set; } = 20;
+
+        /// <summary>
+        /// Cave entrance brush: the front row of the mouth (toward the open ground) becomes the invisible tile 0002 on the ground
+        /// height, like the original – the black face behind it then reaches down to the ground.
+        /// </summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool CaveEntranceFrontNoDraw { get; set; } = true;
+
+        /// <summary>Mountain brush / area: shape settings (tab "Berg").</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public MountainSettings Mountain { get; set; } = new MountainSettings();
+
+        /// <summary>Mountain tiles when <see cref="MountainSettings.Tiles"/> is empty (mountain group of the colour table).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ushort[] MountainFallbackTiles { get; set; } = { 0x022c, 0x022d, 0x022e, 0x022f };
+
+        private ushort[] MountainTiles()
+        {
+            ushort[] t = HexList.Parse(Mountain?.Tiles ?? string.Empty);
+            return t.Length > 0 ? t : MountainFallbackTiles ?? Array.Empty<ushort>();
+        }
 
         /// <summary>Template of the tool "Template" (building / floor pattern).</summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -960,7 +984,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth ||
-                                                     t == IsoTool.Coast || t == IsoTool.Water || t == IsoTool.Cave || t == IsoTool.CaveEntrance;
+                                                     t == IsoTool.Coast || t == IsoTool.Water || t == IsoTool.Cave || t == IsoTool.CaveEntrance || t == IsoTool.Mountain;
 
         /// <summary>Outline of a map rectangle (at the land heights of its corners).</summary>
         private PointF[] AreaPoly(Rectangle r)
@@ -1334,6 +1358,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     case Keys.G:
                         SmoothArea();
                         break;
+                    case Keys.M:
+                        MountainArea();
+                        break;
                     case Keys.S:
                         SelectAreaStatics();
                         break;
@@ -1678,6 +1705,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                             _map.SetLand(x, y, CaveEntranceFillId, Math.Clamp(_strokeZ + CaveEntranceMouthHeight, -128, 127));
                             _strokeCells.Add(y * _map.Width + x);
                             break;
+                        case IsoTool.Mountain:
+                            {
+                                MountainSettings ms = Mountain ?? new MountainSettings();
+                                ushort[] tiles = MountainTiles();
+                                if (tiles.Length == 0)
+                                {
+                                    break;
+                                }
+                                // distance to the brush edge (1 = outermost ring), the edge frayed by noise
+                                double d = r + 1 - Math.Sqrt((x - center.X) * (x - center.X) + (y - center.Y) * (y - center.Y));
+                                d -= (r + 1) * Math.Clamp(ms.EdgeNoise, 0, 90) / 100.0 * MountainShaper.Smooth(x, y, Math.Max(2, ms.HillSize), ms.Seed + 51);
+                                if (d < 0.5)
+                                {
+                                    break;
+                                }
+                                int footZ = ms.AutoFoot ? _strokeZ : ms.FootZ;
+                                int nz = MountainShaper.Height(ms, x, y, Math.Max(1, d), footZ);
+                                if (ms.OnlyRaise && nz < z)
+                                {
+                                    nz = z;
+                                }
+                                ushort nid = Array.IndexOf(tiles, id) >= 0 ? id : MountainShaper.Tile(tiles, x, y, ms.Seed);
+                                _map.SetLand(x, y, nid, nz);
+                                break;
+                            }
                         case IsoTool.Raise:
                             _map.SetLand(x, y, id, z + Math.Max(1, HeightStep));
                             break;
@@ -1720,6 +1772,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         // ------------------------------------------------------------------ cave entrance
 
+        /// <summary>Entrance cell with a direct (N/E/S/W) neighbour that is open ground: not entrance, not mountain, not higher than the ground.</summary>
+        private bool IsFrontCell(int x, int y, int groundZ)
+        {
+            int[] dx = { 0, 1, 0, -1 }, dy = { -1, 0, 1, 0 };
+            for (int k = 0; k < 4; k++)
+            {
+                int nx = x + dx[k], ny = y + dy[k];
+                if (!_map.InBounds(nx, ny))
+                {
+                    continue;
+                }
+                ushort nid = _map.LandId(nx, ny);
+                if (IsCaveEntranceTile(nid) || (CaveEntranceMountainIds != null && CaveEntranceMountainIds.Contains(nid)))
+                {
+                    continue;
+                }
+                if (_map.LandZ(nx, ny) < groundZ + Math.Max(1, CaveEntranceRise))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// Built-in copy of map/cave-enti2mountain.txt (IMod13 / Dragon): A = entrance, B = mountain,
         /// order NW N NE E SE S SW W. Z offset is the middle of Z1..Z2 of the file (S side +10).
@@ -1747,7 +1823,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private static readonly int[] NbDy = { -1, -1, -1, 0, 1, 1, 1, 0 };
 
         /// <summary>Land tiles that belong to a cave entrance: 01D3–01DB and the mouth tile of the brush.</summary>
-        public bool IsCaveEntranceTile(ushort id) => (id >= 0x01D3 && id <= 0x01DB) || id == CaveEntranceFillId;
+        public bool IsCaveEntranceTile(ushort id) => (id >= 0x01D3 && id <= 0x01DB) || id == CaveEntranceFillId || id == 0x0002;
 
         private bool TryEntrancePattern(byte mask, out ushort tile, out int z)
         {
@@ -1804,6 +1880,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     // ground in front of the mouth: the first click, for cells of an earlier stroke their height minus the mouth height
                     int groundZ = painted ? _strokeZ : _map.LandZ(x, y) - CaveEntranceMouthHeight;
                     int baseZ = _strokeZ + CaveEntranceMouthHeight;
+                    if (CaveEntranceFrontNoDraw && IsFrontCell(x, y, groundZ))
+                    {
+                        // front row on the ground: invisible, the black face behind reaches down to it (original: "NO DRAW" row)
+                        int fz = painted ? groundZ : _map.LandZ(x, y);
+                        if (_map.LandId(x, y) != 0x0002 || _map.LandZ(x, y) != fz)
+                        {
+                            _map.SetLand(x, y, 0x0002, Math.Clamp(fz, -128, 127));
+                        }
+                        continue;
+                    }
                     byte mask = 0;
                     for (int k = 0; k < 8; k++)
                     {
@@ -2221,6 +2307,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }, "Bereich geglättet");
         }
 
+        /// <summary>Mountain over the marked area (settings <see cref="Mountain"/>), one undo step.</summary>
+        public void MountainArea()
+        {
+            if (!NeedArea())
+            {
+                return;
+            }
+            ushort[] tiles = MountainTiles();
+            if (tiles.Length == 0)
+            {
+                Message?.Invoke(this, "Berg: keine Berg-Tiles (Reiter Berg).");
+                return;
+            }
+            var land = new List<LandChange>();
+            foreach ((int x, int y, ushort id, int z) in MountainShaper.ShapeArea(_map, _area, Mountain ?? new MountainSettings(), tiles))
+            {
+                int i = y * _map.Width + x;
+                var c = new LandChange { Index = i, OldId = _map.Tiles[i], OldZ = _map.Z[i], NewId = id, NewZ = (sbyte)Math.Clamp(z, -128, 127) };
+                if (c.NewId != c.OldId || c.NewZ != c.OldZ)
+                {
+                    land.Add(c);
+                }
+            }
+            _map.Apply(null, land);
+            Refresh(true);
+            MapChanged?.Invoke(this, EventArgs.Empty);
+            Message?.Invoke(this, $"Berg geformt: {land.Count} Tile(s) – Strg+Z nimmt ihn zurück, andere 'Zufalls-Zahl' = anderer Berg.");
+        }
+
         /// <summary>Coast of the marked area like the original map.</summary>
         public void ShapeCoastArea()
         {
@@ -2303,7 +2418,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         tool = L.T("Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat");
                         break;
                     case IsoTool.Area:
-                        tool = L.T("Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
+                        tool = L.T("Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · M = Berg formen (Reiter Berg) · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
                                "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Esc = Markierung weg");
                         break;
                     case IsoTool.Cave:
@@ -2311,6 +2426,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         break;
                     case IsoTool.CaveEntrance:
                         tool = L.T("Höhleneingang: am Fuß des Berges klicken / ein Stück in den Hang ziehen (mind. 2×2) – Mund 01DB (schwarz) oder 0002 (unsichtbar) liegt 'Mund-Höhe' über dem Boden und wird als steile Wand in den Hang gezogen – sichtbar nur, wenn der Eingang nach Süden / Osten zeigt; der Rand zum Berg bekommt automatisch 01D3–01DA (Reiter Höhle / Weg) · ein Zug = ein Rückgängig-Schritt");
+                        break;
+                    case IsoTool.Mountain:
+                        tool = L.T("Berg: Ziehen baut einen Berg ab der Bodenhöhe des ersten Klicks (oder 'Fuß-Z') auf – steil, mit Kuppen und Felskanten (Reiter Berg) · Pinsel oben = Breite · mehrmals ziehen = Grat · Bereich + M = ganzer Berg");
                         break;
                     case IsoTool.Template:
                         tool = L.T("Vorlage setzen: die Vorschau folgt der Maus, Klick setzt auf die Boden-Höhe + 'Z +' · danach ausgewählt: Pfeile / Bild↑↓ verschieben, Entf löscht · Strg+Z nimmt alles zurück");
