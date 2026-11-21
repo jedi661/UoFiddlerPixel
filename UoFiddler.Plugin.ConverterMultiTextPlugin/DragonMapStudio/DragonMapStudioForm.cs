@@ -846,6 +846,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             tabMain.SelectedTab = tabEditor;
+            _placingStamp = null;
             mapCanvas.BeginPaste(_clipboard);
             mapCanvas.Focus();
             SetStatus("Einfügen: Linksklick setzt (mehrfach möglich), Esc oder Rechtsklick beendet.");
@@ -864,6 +865,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _map = map;
             _history.Attach(map);
             mapCanvas.SetMap(map, _history);
+            LoadStaticsLayer();
             mapCanvas.PrimaryIndex = Math.Clamp(_settings.PrimaryIndex, 0, Math.Min(map.MaxIndex, _rules.Palette.Count - 1));
             mapCanvas.SecondaryIndex = Math.Clamp(_settings.SecondaryIndex, 0, Math.Min(map.MaxIndex, _rules.Palette.Count - 1));
             UpdateBrushColorPanels();
@@ -956,6 +958,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             try
             {
                 IndexedBitmapIO.Save(path, _map, _rules.GetColors());
+                _staticsLayer.Save(StaticsLayer.PathFor(path));
                 _map.FilePath = path;
                 _map.Modified = false;
                 _settings.AddRecent(path);
@@ -1174,6 +1177,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             File.Move(file, target);
+            if (File.Exists(StaticsLayer.PathFor(file)))
+            {
+                File.Move(StaticsLayer.PathFor(file), StaticsLayer.PathFor(target));
+            }
             if (_map != null && string.Equals(_map.FilePath, file, StringComparison.OrdinalIgnoreCase))
             {
                 _map.FilePath = target;

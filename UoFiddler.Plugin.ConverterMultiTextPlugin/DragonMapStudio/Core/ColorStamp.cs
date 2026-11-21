@@ -40,6 +40,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Ground of the stamp: median altitude of its border (water left out).</summary>
         public int BaseAltitude { get; set; }
 
+        /// <summary>Statics of the stamp (X / Y inside the stamp, Dz above the land) – placed into the statics layer of the map.</summary>
+        public List<LayerStatic> Statics { get; set; } = new List<LayerStatic>();
+
         /// <summary>File the stamp was loaded from.</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public string File { get; set; } = string.Empty;
@@ -50,6 +53,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     public static class ColorStampTools
     {
         public const string Extension = ".dmstamp.json";
+
+        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions { WriteIndented = false, IncludeFields = true };
 
         /// <summary>Median altitude of the border cells of <paramref name="r"/> (water group left out when possible).</summary>
         public static int GroundAltitude(IndexedMap map, System.Drawing.Rectangle r, DragonRuleSet rules, int waterGroup)
@@ -138,7 +143,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Directory.CreateDirectory(folder);
             string safe = string.Concat((string.IsNullOrWhiteSpace(s.Name) ? "Stempel" : s.Name).Select(ch => Path.GetInvalidFileNameChars().Contains(ch) ? '_' : ch));
             string path = Path.Combine(folder, safe + Extension);
-            System.IO.File.WriteAllText(path, JsonSerializer.Serialize(s, new JsonSerializerOptions { WriteIndented = false }));
+            System.IO.File.WriteAllText(path, JsonSerializer.Serialize(s, JsonOptions));
             s.File = path;
             return path;
         }
@@ -154,7 +159,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 try
                 {
-                    ColorStamp s = JsonSerializer.Deserialize<ColorStamp>(System.IO.File.ReadAllText(f));
+                    ColorStamp s = JsonSerializer.Deserialize<ColorStamp>(System.IO.File.ReadAllText(f), JsonOptions);
+                    if (s != null)
+                    {
+                        s.Statics ??= new List<LayerStatic>();
+                    }
                     if (s != null && s.Width > 0 && s.Height > 0 && s.Pixels.Length == s.Width * s.Height)
                     {
                         s.File = f;

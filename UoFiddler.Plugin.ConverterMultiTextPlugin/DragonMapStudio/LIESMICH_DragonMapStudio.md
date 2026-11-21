@@ -589,3 +589,37 @@ Seitenleiste von oben nach unten (jeder Abschnitt auf- und zuklappbar):
 Rückgängig / Wiederholen gab es schon (Strg+Z / Strg+Y, Leiste, Menü Bearbeiten) – jetzt auch im Kontextmenü. Höhen: Werkzeuge „Höhe +“ / „Höhe −“ wechseln innerhalb der Gruppe die Farbe; Straßen, Wege, Hausböden und Küsten malt man mit den Farben aus dem Katalog – die Übergänge macht der Compiler (in der CGI-Vorschau sofort zu sehen).
 
 Im Fenstertitel steht jetzt `[Stand 21.11.2026 – Editor 8]`.
+
+## CGI-Ansicht → Farben: Stempel aus gebauten Karten, ganze Karte zurück in Farben
+
+In der CGI-Ansicht mit den Werkzeugen Land (Land-Tiles / Texturen), Items, Multis und Vorlagen bauen – oder eine andere Karte laden (MUL / UOP) und dort etwas markieren. Reiter **Höhlen-Stempel → „In Farben umwandeln“**:
+
+* **„Markierten Bereich → Farb-Stempel…“** (vorher mit „Bereich“ markieren): Name, Kategorie, Statics-Art, Art für fehlende Farben wählen. Der Stempel landet im Ordner `Farbstempel` und erscheint im Karten-Editor (Stempel-Menü, Abschnitt Stempel). Ein Bericht wird als `cgi_stempel_<Name>.txt` im Log-Ordner gespeichert.
+* **„Ganze Karte → Farbkarte (Karten-Editor)…“:** die ganze CGI-Karte wird zur Farbkarte mit Statics-Ebene (z. B. die Original-Karte zum Nachbauen oder zur Fehlersuche). Bericht: `cgi_karte_zu_farben.txt`.
+
+**So wird umgewandelt** (`Core/CgiToColor.cs`), für jedes Land-Tile mit seiner Höhe:
+1. Eine Farbe, deren Tiles das Tile enthalten und deren Höhe höchstens 4 abweicht.
+2. Ein Übergangs-Tile einer Regel (z. B. Gras → Erde) → die Zellgruppe der Regel (der Compiler macht den Übergang wieder).
+3. Tiles, die der Compiler selbst setzt (Meeresgrund `0064` der Küste) → Wasser-Gruppe.
+4. Sonst je nach Einstellung **„Fehlende Farben“**:
+   * **Vorschlag + Bestätigen (empfohlen):** Liste mit Tile, Höhe (in 5er-Schritten), Anzahl, TileData-Name, Radar-Farbe und Gruppe (eine vorhandene Gruppe mit gleichem Tile-Namen oder eine neue, Name änderbar). Angehakte werden als neue Farben angelegt (Farbe = Radar-Farbe, eindeutig gemacht; Kategorie „Aus CGI“).
+   * **Automatisch anlegen:** dasselbe ohne Nachfrage.
+   * **Nur vorhandene Farben:** die Farbe, deren Tile die ähnlichste Radar-Farbe hat (und die passende Höhe).
+   Neue Farben / Gruppen mit „JSON speichern“ / „Als Dragon-Skripte exportieren“ dauerhaft machen.
+
+**Statics** (Einstellung „Statics“):
+* **Statics-Ebene (empfohlen):** alle Statics 1:1 (Lage, Höhe über dem Land, ID, Hue). Beim Stempeln im Karten-Editor kommen sie in die **Statics-Ebene** der Karte (`<Karte>.statics.bin` neben der Karte, wird mit der Karte gespeichert, umbenannt und mit Strg+Z / Strg+Y zurückgenommen). Ab Zoom 2 als kleine orange Quadrate sichtbar. Beim Bauen (MUL erzeugen, CGI-Karte bauen, CGI-Vorschau) setzt der Compiler sie auf die gebaute Landhöhe.
+* **Nur Land:** Statics weglassen.
+* **Dragon-Item-Regel:** alle Statics als eine Item-Gruppe in `items/stamp_<name>.txt` (relativ zur Mitte) und eine Regel für die häufigste Gruppe des Bereichs (Chance 1) – Dragon setzt sie dann zufällig.
+
+Eine **ganze umgewandelte Karte** bekommt eine *vollständige* Statics-Ebene mit absoluten Höhen: beim Bauen setzt Dragon dann keine eigenen Statics dazu (keine Übergangs-Statics, Items, Wasser-, NODRAW-Statics) – sonst wären sie doppelt.
+
+**Test** (Generator-Karte 512×512 bauen → zurück in Farben → wieder bauen, mit dem Regelsatz im Repo): 97,7 % gleiche Tile-Gruppe, 99,4 % Höhe ±3, alle 32.787 Statics identisch (Lage, Höhe, ID, Hue). Abweichungen nur bei Gruppen mit denselben Tiles (Gras / Wald, Sand / Wüste) – gebaut ergibt das dasselbe Tile.
+
+### Stempel-Menü im Karten-Editor
+
+Knopf **„▦ Stempel-Menü“** in der Werkzeugleiste: alle Farb-Stempel als Bilder (Farben, Statics als orange Punkte), Kategorie-Auswahl, Suche, „Höhen an den Boden anpassen“, Setzen / Löschen / Ordner / Neu laden.
+* Mit **mehreren Monitoren** öffnet es sich als **eigenes Fenster** (auf dem anderen Monitor), mit einem Monitor als **Leiste rechts** neben der Karte.
+* **⧉** im Kopf: Fenster ↔ Leiste. **Fenster schließen** = es kommt als Leiste rechts zurück. **✕** blendet es aus.
+
+Im Fenstertitel steht jetzt `[Stand 21.11.2026 – Stempel 9]`.

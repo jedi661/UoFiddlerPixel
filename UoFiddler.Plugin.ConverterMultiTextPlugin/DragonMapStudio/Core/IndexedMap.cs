@@ -128,6 +128,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private sealed class Step
         {
             public string Name;
+            public Action ExtraUndo;
+            public Action ExtraRedo;
             public readonly Dictionary<int, ushort[]> Before = new Dictionary<int, ushort[]>();
             public readonly Dictionary<int, ushort[]> After = new Dictionary<int, ushort[]>();
             public long Bytes;
@@ -208,11 +210,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         public void TouchAll() => Touch(_map?.Bounds ?? Rectangle.Empty);
 
+        /// <summary>
+        /// Something that belongs to the current step but is not a pixel (e.g. statics of a colour stamp): undone / redone
+        /// together with the pixels.
+        /// </summary>
+        public void AddExtra(Action undo, Action redo)
+        {
+            if (_current == null)
+            {
+                return;
+            }
+            _current.ExtraUndo += undo;
+            _current.ExtraRedo += redo;
+        }
+
         public void End()
         {
             Step step = _current;
             _current = null;
-            if (step == null || step.Before.Count == 0)
+            if (step == null || (step.Before.Count == 0 && step.ExtraUndo == null))
             {
                 return;
             }
@@ -227,7 +243,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     changed = true;
                 }
             }
-            if (!changed)
+            if (!changed && step.ExtraUndo == null)
             {
                 return;
             }
@@ -248,6 +264,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 WriteTile(kv.Key % _tilesX, kv.Key / _tilesX, kv.Value);
             }
+            _current.ExtraUndo?.Invoke();
             _current = null;
         }
 
@@ -265,6 +282,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Step step = _undo.Last.Value;
             _undo.RemoveLast();
             Rectangle area = Apply(step.Before);
+            step.ExtraUndo?.Invoke();
             _redo.Push(step);
             _map.Modified = true;
             Changed?.Invoke(this, EventArgs.Empty);
@@ -279,6 +297,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             Step step = _redo.Pop();
             Rectangle area = Apply(step.After);
+            step.ExtraRedo?.Invoke();
             _undo.AddLast(step);
             _map.Modified = true;
             Changed?.Invoke(this, EventArgs.Empty);

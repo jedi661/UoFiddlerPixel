@@ -130,6 +130,9 @@
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.EditorTools.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.CgiToColor.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.RulesUi.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>

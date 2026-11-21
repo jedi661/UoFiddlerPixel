@@ -273,6 +273,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             EnsureCaveRule(_map);
             BuildOptions o = CurrentBuildOptions();
+            o.ExtraStatics = _staticsLayer.Items.ToList();
+            o.ExtraStaticsComplete = _staticsLayer.Complete;
             DragonRuleSet rules = _rules;
             IndexedMap copy = _map.Clone();
             RunBusy("CGI-Karte bauen", (progress, token) => new DragonCompiler(rules, o, Log).BuildInMemory(copy, progress, token), data =>

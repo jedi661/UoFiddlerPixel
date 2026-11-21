@@ -46,7 +46,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 21.11.2026 – Editor 8";
+        public const string BuildMark = "Stand 21.11.2026 – Stempel 9";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
@@ -428,6 +428,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             preview.Click += (s, e) => ShowSelectionInCgi();
             toolStripEditor.Items.Add(new ToolStripSeparator());
             toolStripEditor.Items.Add(preview);
+            var stampMenu = new ToolStripButton(L.T("▦ Stempel-Menü"))
+            {
+                ToolTipText = L.T("Farb-Stempel mit Bildern: bei mehreren Monitoren als eigenes Fenster, sonst rechts neben der Karte"),
+                BackColor = ColBuild,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            stampMenu.Click += (s, e) => ToggleStampMenu();
+            toolStripEditor.Items.Add(stampMenu);
         }
 
         // ================================================================== sections in the tabs
@@ -563,6 +572,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             StyleButton(btnCgiStampPlaceSaved, ColBuild);
             lstCgiStampSaved.Height = 110;
             AddSection(col, "stamp.saved", "Gespeicherte Stempel", ColBuild, null, Row(lstCgiStampSaved), Row(btnCgiStampSave, btnCgiStampPlaceSaved));
+            var toStamp = new Button { Text = L.T("Markierten Bereich → Farb-Stempel…") };
+            StyleButton(toStamp, ColTerrain, true);
+            toStamp.Click += (s, e) => CgiAreaToColorStamp();
+            var toMap = new Button { Text = L.T("Ganze Karte → Farbkarte (Karten-Editor)…") };
+            StyleButton(toMap, ColTerrain);
+            toMap.Click += (s, e) => CgiMapToColorMap();
+            AddSection(col, "stamp.tocolor", "In Farben umwandeln (für den Karten-Editor)", ColTerrain, () => UoArtCache.Land(0x0003),
+                Row(toStamp), Row(toMap),
+                Row(Hint(L.T("Land-Tiles + Höhe → Farben der Farbtabelle (fehlende: Vorschlag / automatisch / ähnlichste), Statics → Statics-Ebene, Item-Regel oder weglassen. " +
+                             "Mit Items, Multis, Land und Vorlagen hier bauen oder aus einer anderen Karte kopieren – dann als Stempel speichern."))));
             lblCgiStampInfo.AutoSize = false;
             AddSection(col, "stamp.help", "Hilfe", ColView, null, true, Row(lblCgiStampInfo));
             propCgiStamp.PropertyValueChanged += (s, e) => UpdateStampPreview();

@@ -144,6 +144,43 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         public bool PasteActive => _pasteMode && _pasteBuffer != null;
 
+        /// <summary>After a paste / stamp was written, still inside its undo step (the form adds the statics of the stamp).</summary>
+        public event EventHandler<MapPointEventArgs> PasteApplied;
+
+        private IReadOnlyList<LayerStatic> _markers;
+
+        /// <summary>Statics layer of the map: shown as small orange squares from zoom 2 on.</summary>
+        public void SetStaticMarkers(IReadOnlyList<LayerStatic> items)
+        {
+            _markers = items;
+            Invalidate();
+        }
+
+        private void DrawStaticMarkers(Graphics g)
+        {
+            if (_markers == null || _markers.Count == 0 || _zoom < 2)
+            {
+                return;
+            }
+            RectangleF v = ViewRect;
+            float size = (float)Math.Max(2, _zoom * 0.45);
+            using var brush = new SolidBrush(Color.FromArgb(220, 255, 140, 0));
+            int drawn = 0;
+            foreach (LayerStatic s in _markers)
+            {
+                if (s.X < v.Left - 1 || s.Y < v.Top - 1 || s.X > v.Right || s.Y > v.Bottom)
+                {
+                    continue;
+                }
+                PointF p = MapToScreen(s.X + 0.5, s.Y + 0.5);
+                g.FillRectangle(brush, p.X - size / 2, p.Y - size / 2, size, size);
+                if (++drawn > 20000)
+                {
+                    break;
+                }
+            }
+        }
+
         public void EndPaste()
         {
             _pasteMode = false;
@@ -505,6 +542,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 g.DrawRectangle(Pens.Black, a.X, a.Y, b.X - a.X, b.Y - a.Y);
                 g.DrawRectangle(pen, a.X, a.Y, b.X - a.X, b.Y - a.Y);
             }
+
+            DrawStaticMarkers(g);
 
             if (_cursor.X == -1 && _cursor.Y == -1)
             {
@@ -1144,6 +1183,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     _map.Pixels[y * _map.Width + x] = buffer.Pixels[(y - p.Y) * buffer.Width + (x - p.X)];
                 }
             }
+            PasteApplied?.Invoke(this, new MapPointEventArgs(p.X, p.Y, -1));
             Changed(r);
             EndEdit();
         }

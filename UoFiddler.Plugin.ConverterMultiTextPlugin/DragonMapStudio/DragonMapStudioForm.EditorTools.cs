@@ -358,6 +358,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 _stampList.SelectedIndex = sel;
             }
+            _stampBrowser?.SetStamps(_stamps);
         }
 
         private void SaveSelectionAsStamp()
@@ -386,10 +387,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 SetStatus(L.T("Erst einen Stempel in der Liste wählen."));
                 return;
             }
+            PlaceStamp(s, _stampAdapt.Checked);
+        }
+
+        /// <summary>The stamp hangs at the mouse; every click writes it (heights adapted to the ground there), statics into the layer.</summary>
+        private void PlaceStamp(ColorStamp s, bool adapt)
+        {
+            if (_map == null)
+            {
+                SetStatus(L.T("Im Karten-Editor ist keine Karte geöffnet."));
+                return;
+            }
+            tabMain.SelectedTab = tabEditor;
             var raw = new IndexedMap(s.Width, s.Height, (ushort[])s.Pixels.Clone(), _map?.Bits ?? 8);
             mapCanvas.BeginPaste(raw);
+            _placingStamp = s;
             mapCanvas.PasteName = "Stempel " + s.Name;
-            bool adapt = _stampAdapt.Checked;
             mapCanvas.PasteTransform = (buffer, p) =>
             {
                 if (!adapt || _map == null)
@@ -405,10 +418,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void DeleteSelectedStamp()
         {
-            if (_stampList?.SelectedItem is not ColorStamp s)
+            if (_stampList?.SelectedItem is ColorStamp s)
             {
-                return;
+                DeleteStamp(s);
             }
+        }
+
+        private void DeleteStamp(ColorStamp s)
+        {
             if (MessageBox.Show(this, $"Stempel '{s.Name}' löschen?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
             {
                 return;
@@ -422,6 +439,215 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             LoadColorStamps();
+        }
+
+        // ================================================================== stamp menu (window on another monitor or panel on the right)
+
+        private StampBrowser _stampBrowser;
+        private Form _stampWindow;
+        private Panel _stampDock;
+
+        private void EnsureStampBrowser()
+        {
+            if (_stampBrowser != null)
+            {
+                return;
+            }
+            _stampBrowser = new StampBrowser { Dock = DockStyle.Fill, Thumbnail = StampThumbnail };
+            _stampBrowser.PlaceRequested += (s, st) => PlaceStamp(st, _stampBrowser.AdaptHeights);
+            _stampBrowser.DeleteRequested += (s, st) => DeleteStamp(st);
+            _stampBrowser.FolderRequested += (s, e) =>
+            {
+                Directory.CreateDirectory(ColorStampFolder);
+                OpenFolder(ColorStampFolder);
+            };
+            _stampBrowser.ReloadRequested += (s, e) => LoadColorStamps();
+            _stampBrowser.DockToggleRequested += (s, e) =>
+            {
+                if (_stampWindow != null)
+                {
+                    _stampWindow.Close();
+                }
+                else
+                {
+                    ShowStampWindow();
+                }
+            };
+            _stampBrowser.CloseRequested += (s, e) =>
+            {
+                if (_stampWindow != null)
+                {
+                    _stampWindow.Close();
+                }
+                if (_stampDock != null)
+                {
+                    _stampDock.Visible = false;
+                }
+            };
+            _stampDock = new Panel { Dock = DockStyle.Right, Width = 270, Visible = false };
+            splitEditor.Panel2.Controls.Add(_stampDock);
+            _stampBrowser.SetStamps(_stamps);
+        }
+
+        /// <summary>Button "Stempel-Menü": with several monitors its own window, otherwise the panel right of the map.</summary>
+        private void ToggleStampMenu()
+        {
+            EnsureStampBrowser();
+            if (_stampWindow != null)
+            {
+                _stampWindow.Activate();
+                return;
+            }
+            if (_stampDock.Visible)
+            {
+                _stampDock.Visible = false;
+                return;
+            }
+            if (Screen.AllScreens.Length > 1)
+            {
+                ShowStampWindow();
+            }
+            else
+            {
+                DockStampBrowser();
+            }
+        }
+
+        private void DockStampBrowser()
+        {
+            _stampDock.Controls.Add(_stampBrowser);
+            _stampBrowser.Undocked = false;
+            _stampDock.Visible = true;
+        }
+
+        private void ShowStampWindow()
+        {
+            _stampDock.Visible = false;
+            var f = new Form
+            {
+                Text = L.T("Stempel – Dragon Map Studio"),
+                FormBorderStyle = FormBorderStyle.SizableToolWindow,
+                ShowInTaskbar = false,
+                StartPosition = FormStartPosition.Manual,
+                Size = new Size(320, 720),
+                Owner = this
+            };
+            // on a second monitor if there is one, otherwise next to the main window
+            Screen other = Screen.AllScreens.FirstOrDefault(sc => !sc.Bounds.Contains(Bounds.Location)) ?? Screen.FromControl(this);
+            f.Location = other.Bounds.Contains(Bounds.Location)
+                ? new Point(Math.Max(other.WorkingArea.Left, Right - f.Width - 20), Top + 80)
+                : new Point(other.WorkingArea.Left + 40, other.WorkingArea.Top + 40);
+            f.Controls.Add(_stampBrowser);
+            _stampBrowser.Undocked = true;
+            f.FormClosed += (s, e) =>
+            {
+                _stampWindow = null;
+                // closing the window = the menu comes back as panel on the right
+                if (!IsDisposed)
+                {
+                    DockStampBrowser();
+                }
+            };
+            _stampWindow = f;
+            f.Show(this);
+        }
+
+        /// <summary>72×72 picture of a stamp: its colours, statics as orange dots.</summary>
+        private Image StampThumbnail(ColorStamp s)
+        {
+            Color[] colors = _rules.GetColors();
+            var bmp = new Bitmap(72, 72);
+            using Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.FromArgb(24, 24, 27));
+            float k = Math.Min(70f / s.Width, 70f / s.Height);
+            float ox = (72 - s.Width * k) / 2, oy = (72 - s.Height * k) / 2;
+            var brushes = new Dictionary<ushort, SolidBrush>();
+            try
+            {
+                for (int y = 0; y < s.Height; y++)
+                {
+                    for (int x = 0; x < s.Width; x++)
+                    {
+                        ushort c = s.Pixels[y * s.Width + x];
+                        if (!brushes.TryGetValue(c, out SolidBrush b))
+                        {
+                            brushes[c] = b = new SolidBrush(c < colors.Length ? colors[c] : Color.Magenta);
+                        }
+                        g.FillRectangle(b, ox + x * k, oy + y * k, Math.Max(1, k), Math.Max(1, k));
+                    }
+                }
+            }
+            finally
+            {
+                foreach (SolidBrush b in brushes.Values)
+                {
+                    b.Dispose();
+                }
+            }
+            if (s.Statics != null)
+            {
+                using var dot = new SolidBrush(Color.FromArgb(230, 255, 140, 0));
+                foreach (LayerStatic st in s.Statics.Take(4000))
+                {
+                    g.FillRectangle(dot, ox + st.X * k, oy + st.Y * k, Math.Max(1, k * 0.6f), Math.Max(1, k * 0.6f));
+                }
+            }
+            return bmp;
+        }
+
+        // ================================================================== statics layer
+
+        private StaticsLayer _staticsLayer = new StaticsLayer();
+        private ColorStamp _placingStamp;
+        private bool _pasteHooked;
+
+        private void LoadStaticsLayer()
+        {
+            try
+            {
+                _staticsLayer = StaticsLayer.Load(StaticsLayer.PathFor(_map?.FilePath));
+            }
+            catch (Exception ex)
+            {
+                _staticsLayer = new StaticsLayer();
+                Log("Statics-Ebene nicht lesbar: " + ex.Message);
+            }
+            mapCanvas.SetStaticMarkers(_staticsLayer.Items);
+            _placingStamp = null;
+            if (!_pasteHooked)
+            {
+                _pasteHooked = true;
+                mapCanvas.PasteApplied += MapCanvas_PasteApplied;
+            }
+            if (_staticsLayer.Items.Count > 0)
+            {
+                Log($"Statics-Ebene: {_staticsLayer.Items.Count:N0} Statics ({StaticsLayer.PathFor(_map?.FilePath)}).");
+            }
+        }
+
+        /// <summary>A colour stamp with statics was written: its statics go into the layer (same undo step), the old ones there are replaced.</summary>
+        private void MapCanvas_PasteApplied(object sender, MapPointEventArgs e)
+        {
+            ColorStamp s = _placingStamp;
+            if (s == null || !mapCanvas.PasteActive || s.Statics == null || s.Statics.Count == 0 || _map == null)
+            {
+                return;
+            }
+            var area = new Rectangle(e.X, e.Y, s.Width, s.Height);
+            List<LayerStatic> removed = _staticsLayer.Items.Where(st => area.Contains(st.X, st.Y)).ToList();
+            List<LayerStatic> added = s.Statics.Select(st => new LayerStatic { X = st.X + e.X, Y = st.Y + e.Y, Dz = st.Dz, Id = st.Id, Hue = st.Hue })
+                                              .Where(st => _map.InBounds(st.X, st.Y)).ToList();
+            void Apply(List<LayerStatic> remove, List<LayerStatic> add)
+            {
+                var set = new HashSet<(int, int, int, ushort, ushort)>(remove.Select(r => (r.X, r.Y, r.Dz, r.Id, r.Hue)));
+                _staticsLayer.Items.RemoveAll(st => set.Contains((st.X, st.Y, st.Dz, st.Id, st.Hue)));
+                _staticsLayer.Items.AddRange(add);
+                _staticsLayer.Modified = true;
+                _map.Modified = true;
+                mapCanvas.SetStaticMarkers(_staticsLayer.Items);
+            }
+            Apply(removed, added);
+            _history.AddExtra(() => Apply(added, removed), () => Apply(removed, added));
         }
 
         // ================================================================== CGI preview of a marked area
@@ -452,6 +678,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             var r = Rectangle.FromLTRB(x0, y0, x1, y1);
             IndexedMap crop = _map.Crop(r);
             BuildOptions o = CurrentBuildOptions();
+            o.ExtraStatics = _staticsLayer.Crop(r);
+            o.ExtraStaticsComplete = _staticsLayer.Complete;
             DragonRuleSet rules = _rules;
             EnsureCaveRule(crop);
             Rectangle inner = new Rectangle(area.X - r.X, area.Y - r.Y, area.Width, area.Height);
