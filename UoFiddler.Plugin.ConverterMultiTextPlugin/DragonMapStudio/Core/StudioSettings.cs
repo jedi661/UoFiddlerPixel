@@ -84,6 +84,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Cave stamp of the CGI view (tab "Höhlen-Stempel").</summary>
         public CaveStampSettings CaveStamp { get; set; } = new CaveStampSettings();
 
+        /// <summary>Cave entrance stamp of the 2D map editor (colours).</summary>
+        public CaveColorOptions CaveColor { get; set; } = new CaveColorOptions();
+
+        /// <summary>Folded sections of the CGI side panel.</summary>
+        public List<string> CgiCollapsed { get; set; } = new List<string>();
+
         [Category("1 Ordner"), DisplayName("maptrans-Datei"), Description("maptrans.txt oder maptrans105.txt …")]
         public string MapTransFile { get; set; } = "maptrans.txt";
 

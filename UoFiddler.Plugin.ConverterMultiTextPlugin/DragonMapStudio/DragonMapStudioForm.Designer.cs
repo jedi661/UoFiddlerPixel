@@ -162,6 +162,7 @@
             tsbLower = new System.Windows.Forms.ToolStripButton();
             tsbSelect = new System.Windows.Forms.ToolStripButton();
             tsbPan = new System.Windows.Forms.ToolStripButton();
+            tsbCaveStamp2D = new System.Windows.Forms.ToolStripButton();
             tssEd1 = new System.Windows.Forms.ToolStripSeparator();
             tslBrushSize = new System.Windows.Forms.ToolStripLabel();
             tscBrushSize = new System.Windows.Forms.ToolStripComboBox();
@@ -340,6 +341,11 @@
             btnCgiRemoveDup = new System.Windows.Forms.Button();
             btnCgiSaveLog = new System.Windows.Forms.Button();
             btnCgiAreaLog = new System.Windows.Forms.Button();
+            btnCgiTransArea = new System.Windows.Forms.Button();
+            lblCgiStampSaved = new System.Windows.Forms.Label();
+            lstCgiStampSaved = new System.Windows.Forms.ListBox();
+            btnCgiStampSave = new System.Windows.Forms.Button();
+            btnCgiStampPlaceSaved = new System.Windows.Forms.Button();
             toolStripCgiLand = new System.Windows.Forms.ToolStrip();
             tslCgiLandTools = new System.Windows.Forms.ToolStripLabel();
             tsbCgiLandSet = new System.Windows.Forms.ToolStripButton();
@@ -1534,7 +1540,7 @@
             // 
             // toolStripEditor
             // 
-            toolStripEditor.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsbBrush, tsbEraser, tsbSpray, tsbLine, tsbRect, tsbRectFill, tsbEllipse, tsbEllipseFill, tsbFill, tsbPicker, tsbRaise, tsbLower, tsbSelect, tsbPan, tssEd1, tslBrushSize, tscBrushSize, tsbSquare, tssEd2, tsbZoomIn, tsbZoomOut, tsbZoomFit, tsbZoom100, tsbGrid, tsbHeights, tssEd3, tsbUndo, tsbRedo, tssEd4, tsbCgiHere });
+            toolStripEditor.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsbBrush, tsbEraser, tsbSpray, tsbLine, tsbRect, tsbRectFill, tsbEllipse, tsbEllipseFill, tsbFill, tsbPicker, tsbRaise, tsbLower, tsbSelect, tsbPan, tsbCaveStamp2D, tssEd1, tslBrushSize, tscBrushSize, tsbSquare, tssEd2, tsbZoomIn, tsbZoomOut, tsbZoomFit, tsbZoom100, tsbGrid, tsbHeights, tssEd3, tsbUndo, tsbRedo, tssEd4, tsbCgiHere });
             toolStripEditor.Dock = System.Windows.Forms.DockStyle.Top;
             toolStripEditor.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStripEditor.Name = "toolStripEditor";
@@ -1648,6 +1654,14 @@
             tsbPan.ToolTipText = "Verschieben (auch mittlere Maustaste oder Leertaste)";
             tsbPan.Name = "tsbPan";
             tsbPan.Click += ToolButton_Click;
+            // 
+            // tsbCaveStamp2D
+            // 
+            tsbCaveStamp2D.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCaveStamp2D.Text = "Höhle";
+            tsbCaveStamp2D.ToolTipText = "Höhleneingang wie im Original an den Bergrand malen (Süd- / Ostseite) · Umschalt = unsichtbar (1d) · Rechtsklick = Eingang wieder Berg";
+            tsbCaveStamp2D.Name = "tsbCaveStamp2D";
+            tsbCaveStamp2D.Click += ToolButton_Click;
             // 
             // tssEd1
             // 
@@ -2629,8 +2643,13 @@
             panelCgiStampBottom.Controls.Add(chkCgiShowNoDraw);
             panelCgiStampBottom.Controls.Add(lblCgiStampInfo);
             panelCgiStampBottom.Controls.Add(btnCgiAreaLog);
+            panelCgiStampBottom.Controls.Add(btnCgiTransArea);
+            panelCgiStampBottom.Controls.Add(lblCgiStampSaved);
+            panelCgiStampBottom.Controls.Add(lstCgiStampSaved);
+            panelCgiStampBottom.Controls.Add(btnCgiStampSave);
+            panelCgiStampBottom.Controls.Add(btnCgiStampPlaceSaved);
             panelCgiStampBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            panelCgiStampBottom.Size = new System.Drawing.Size(290, 300);
+            panelCgiStampBottom.Size = new System.Drawing.Size(290, 505);
             panelCgiStampBottom.Name = "panelCgiStampBottom";
             // 
             // btnCgiStampTool
@@ -2662,8 +2681,51 @@
             // 
             // lblCgiStampInfo
             // 
-            lblCgiStampInfo.Location = new System.Drawing.Point(4, 116);
-            lblCgiStampInfo.Size = new System.Drawing.Size(280, 180);
+            lblCgiStampInfo.Location = new System.Drawing.Point(4, 302);
+            lblCgiStampInfo.Size = new System.Drawing.Size(280, 200);
+            // 
+            // btnCgiTransArea
+            // 
+            btnCgiTransArea.Location = new System.Drawing.Point(4, 114);
+            btnCgiTransArea.Size = new System.Drawing.Size(276, 25);
+            btnCgiTransArea.Text = "Übergänge im markierten Bereich neu (T)";
+            btnCgiTransArea.UseVisualStyleBackColor = true;
+            btnCgiTransArea.Name = "btnCgiTransArea";
+            btnCgiTransArea.Click += BtnCgiTransArea_Click;
+            // 
+            // lblCgiStampSaved
+            // 
+            lblCgiStampSaved.AutoSize = true;
+            lblCgiStampSaved.Location = new System.Drawing.Point(4, 148);
+            lblCgiStampSaved.Text = "Gespeicherte Stempel (Vorlagen-Ordner Höhleneingang):";
+            lblCgiStampSaved.Name = "lblCgiStampSaved";
+            // 
+            // lstCgiStampSaved
+            // 
+            lstCgiStampSaved.Location = new System.Drawing.Point(4, 166);
+            lstCgiStampSaved.Size = new System.Drawing.Size(276, 100);
+            lstCgiStampSaved.IntegralHeight = false;
+            lstCgiStampSaved.Name = "lstCgiStampSaved";
+            lstCgiStampSaved.DoubleClick += BtnCgiStampPlaceSaved_Click;
+            // 
+            // btnCgiStampSave
+            // 
+            btnCgiStampSave.Location = new System.Drawing.Point(4, 270);
+            btnCgiStampSave.Size = new System.Drawing.Size(136, 25);
+            btnCgiStampSave.Text = "Bereich → speichern";
+            btnCgiStampSave.UseVisualStyleBackColor = true;
+            btnCgiStampSave.Name = "btnCgiStampSave";
+            btnCgiStampSave.Click += BtnCgiCaveSavePattern_Click;
+            // 
+            // btnCgiStampPlaceSaved
+            // 
+            btnCgiStampPlaceSaved.Location = new System.Drawing.Point(144, 270);
+            btnCgiStampPlaceSaved.Size = new System.Drawing.Size(136, 25);
+            btnCgiStampPlaceSaved.Text = "Gespeicherten setzen";
+            btnCgiStampPlaceSaved.UseVisualStyleBackColor = true;
+            btnCgiStampPlaceSaved.Name = "btnCgiStampPlaceSaved";
+            btnCgiStampPlaceSaved.Click += BtnCgiStampPlaceSaved_Click;
+
             // 
             // btnCgiAreaLog
             // 
@@ -4871,6 +4933,7 @@
         private System.Windows.Forms.ToolStripButton tsbLower;
         private System.Windows.Forms.ToolStripButton tsbSelect;
         private System.Windows.Forms.ToolStripButton tsbPan;
+        private System.Windows.Forms.ToolStripButton tsbCaveStamp2D;
         private System.Windows.Forms.ToolStripSeparator tssEd1;
         private System.Windows.Forms.ToolStripLabel tslBrushSize;
         private System.Windows.Forms.ToolStripComboBox tscBrushSize;
@@ -4988,6 +5051,11 @@
         private System.Windows.Forms.ToolStripButton tsbCgiStamp;
         private System.Windows.Forms.ToolStripComboBox tscCgiLabels;
         private System.Windows.Forms.Button btnCgiAreaLog;
+        private System.Windows.Forms.Button btnCgiTransArea;
+        private System.Windows.Forms.Label lblCgiStampSaved;
+        private System.Windows.Forms.ListBox lstCgiStampSaved;
+        private System.Windows.Forms.Button btnCgiStampSave;
+        private System.Windows.Forms.Button btnCgiStampPlaceSaved;
         private System.Windows.Forms.PropertyGrid propCgiMountain;
         private System.Windows.Forms.Panel panelCgiMountainBottom;
         private System.Windows.Forms.Button btnCgiMountainTool;

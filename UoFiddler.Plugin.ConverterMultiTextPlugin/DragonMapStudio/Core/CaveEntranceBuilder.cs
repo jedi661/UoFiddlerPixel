@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – cave entrances like the original map (IMod13 / Dragon "1d -> mountain")
  *  *
@@ -21,6 +21,19 @@ using System.Linq;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 {
+    /// <summary>Kinds of entrances found on the original map.</summary>
+    public enum CaveVariant
+    {
+        [Description("Original: schwarzer Mund, Übergang 01E6/01DF/01E4 und Erdweg davor")]
+        Original,
+
+        [Description("Ohne Weg: schwarzer Mund direkt auf dem Boden (Gras bleibt)")]
+        OnGround,
+
+        [Description("Unsichtbar: Mund 0002, davor Höhlenboden (Dungeon-Seite)")]
+        Invisible
+    }
+
     public enum CaveFacing
     {
         [Description("Automatisch")]
@@ -58,6 +71,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("1 Eingang"), DisplayName("Richtung"), Description("Wohin der Eingang zeigt. Sichtbar sind nur Eingänge nach Süden oder Osten (die Kamera schaut von Südosten).")]
         public CaveFacing Facing { get; set; } = CaveFacing.Auto;
 
+        [Category("1 Eingang"), DisplayName("Variante"), Description("Original = schwarzer Mund mit Übergangsreihe und Erdweg; Ohne Weg = Mund direkt auf dem Boden; Unsichtbar = Mund 0002 mit Höhlenboden davor (wie innen im Dungeon).")]
+        public CaveVariant Variant { get; set; } = CaveVariant.Original;
+
+        [Category("4 Weg davor"), DisplayName("Höhlenboden-Tiles"), Description("Variante Unsichtbar: Boden vor dem Mund (Original 0245–0249).")]
+        public string CaveFloorTiles { get; set; } = "0245 0246 0247 0248 0249";
+
+        [Category("4 Weg davor"), DisplayName("Übergänge berechnen"), Description("Nach dem Stempeln die Dragon-Übergänge (z. B. Gras → Erde, Berg → Erde) rund um den Eingang neu setzen, damit der Weg weich ins Gras übergeht.")]
+        public bool Transitions { get; set; } = true;
+
         [Category("1 Eingang"), DisplayName("Breite"), Description("Anzahl schwarzer Mund-Tiles 01DB (Original: 3). Dazu kommt links und rechts der Rahmen.")]
         public int Width { get; set; } = 3;
 
@@ -86,7 +108,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public string PathTiles { get; set; } = "0071 0072 0073 0074 0075 0076 0077 0078";
 
         [Category("4 Weg davor"), DisplayName("Weg-Breite +"), Description("Der Weg ist so viele Tiles breiter als Mund + Rahmen (je Seite die Hälfte).")]
-        public int PathExtraWidth { get; set; } = 0;
+        public int PathExtraWidth { get; set; } = 2;
     }
 
     public sealed class CaveStampResult
@@ -244,6 +266,111 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             _ => (0x01E7, 0x01DD, 0x01E4)
         };
 
+        /// <summary>Land tiles of an entrance built like the original: 0000–0002 and 01D3–01E7.</summary>
+        public static bool IsEntrancePart(ushort id) => id <= 2 || (id >= 0x01D3 && id <= 0x01E7);
+
+        /// <summary>
+        /// Removes the cave entrance at / next to (x, y): mouth, frame and top row become mountain again (height from the
+        /// mountain around), the front row becomes the ground around, NODRAW statics on it are deleted.
+        /// Call inside BeginLand / EndLand. Returns the area or Rectangle.Empty.
+        /// </summary>
+        public static Rectangle Remove(MapData map, int x, int y, ushort[] mountainTiles, Func<ushort, bool> isMountain, Random rnd, out string message)
+        {
+            message = string.Empty;
+            Point start = new Point(-1, -1);
+            for (int r = 0; r <= 3 && start.X < 0; r++)
+            {
+                for (int dy = -r; dy <= r && start.X < 0; dy++)
+                {
+                    for (int dx = -r; dx <= r; dx++)
+                    {
+                        if (map.InBounds(x + dx, y + dy) && IsEntrancePart(map.LandId(x + dx, y + dy)))
+                        {
+                            start = new Point(x + dx, y + dy);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (start.X < 0 || mountainTiles == null || mountainTiles.Length == 0)
+            {
+                message = start.X < 0 ? "Hier ist kein Höhleneingang (01D3–01E7 / 0002)." : "Keine Berg-Tiles bekannt.";
+                return Rectangle.Empty;
+            }
+            var cells = new HashSet<Point>();
+            var queue = new Queue<Point>();
+            queue.Enqueue(start);
+            cells.Add(start);
+            while (queue.Count > 0 && cells.Count < 400)
+            {
+                Point p = queue.Dequeue();
+                for (int k = 0; k < 8; k++)
+                {
+                    var n = new Point(p.X + NbDx[k], p.Y + NbDy[k]);
+                    if (map.InBounds(n.X, n.Y) && !cells.Contains(n) && IsEntrancePart(map.LandId(n.X, n.Y)))
+                    {
+                        cells.Add(n);
+                        queue.Enqueue(n);
+                    }
+                }
+            }
+            int minX = cells.Min(c => c.X), minY = cells.Min(c => c.Y), maxX = cells.Max(c => c.X), maxY = cells.Max(c => c.Y);
+            // decide per cell: front row tiles (01DC–01E7, cave2dirt) were ground, the rest was mountain
+            var plan = new List<(Point p, ushort id, int z)>();
+            foreach (Point c in cells)
+            {
+                ushort id = map.LandId(c.X, c.Y);
+                bool wasGround = id >= 0x01DC && id <= 0x01E7;
+                var mountainZ = new List<int>();
+                var ground = new List<(ushort id, int z)>();
+                for (int r = 1; r <= 2; r++)
+                {
+                    for (int dy = -r; dy <= r; dy++)
+                    {
+                        for (int dx = -r; dx <= r; dx++)
+                        {
+                            int nx = c.X + dx, ny = c.Y + dy;
+                            if (!map.InBounds(nx, ny) || cells.Contains(new Point(nx, ny)))
+                            {
+                                continue;
+                            }
+                            ushort nid = map.LandId(nx, ny);
+                            if (isMountain != null && isMountain(nid))
+                            {
+                                mountainZ.Add(map.LandZ(nx, ny));
+                            }
+                            else
+                            {
+                                ground.Add((nid, map.LandZ(nx, ny)));
+                            }
+                        }
+                    }
+                }
+                if (wasGround && ground.Count > 0)
+                {
+                    ushort gid = ground.GroupBy(g => g.id).OrderByDescending(g => g.Count()).First().Key;
+                    plan.Add((c, gid, (int)Math.Round(ground.Average(g => g.z))));
+                }
+                else
+                {
+                    int z = mountainZ.Count > 0 ? (int)Math.Round(mountainZ.Average()) : map.LandZ(c.X, c.Y) + 10;
+                    plan.Add((c, mountainTiles[rnd.Next(mountainTiles.Length)], Math.Max(z, map.LandZ(c.X, c.Y))));
+                }
+            }
+            foreach ((Point p, ushort id, int z) in plan)
+            {
+                map.SetLand(p.X, p.Y, id, Math.Clamp(z, -128, 127));
+            }
+            var statics = new List<StaticChange>();
+            foreach (Point c in cells)
+            {
+                statics.AddRange(map.StaticsAt(c.X, c.Y).Where(st => IsNoDrawStatic(st.Id, null)).ToList().Select(MapData.Remove));
+            }
+            map.ApplyStatics(statics);
+            message = $"Höhleneingang entfernt: {cells.Count} Tiles wieder Berg / Boden" + (statics.Count > 0 ? $", {statics.Count} NODRAW-Statics gelöscht" : string.Empty) + ".";
+            return Rectangle.Inflate(Rectangle.FromLTRB(minX, minY, maxX + 1, maxY + 1), 2, 2);
+        }
+
         /// <summary>Static the client never draws (ClassicUO GameObject.CanBeDrawn).</summary>
         public static bool IsNoDrawStatic(ushort id, string name)
         {
@@ -349,10 +476,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             grounds.Sort();
             int groundZ = grounds[grounds.Count / 2];
 
-            // the three rows
-            for (int row = 0; row <= 2; row++)
+            // the three rows (variant "on the ground": no front row; "invisible": front row = cave floor, mouth 0002)
+            ushort[] caveFloor = HexList.Parse(s.CaveFloorTiles);
+            for (int row = s.Variant == CaveVariant.OnGround ? 1 : 0; row <= 2; row++)
             {
                 (ushort t0, ushort tm, ushort t1) = RowTiles(south, row);
+                if (row == 1 && s.Variant == CaveVariant.Invisible)
+                {
+                    tm = 0x0002;
+                }
+                if (row == 0 && s.Variant == CaveVariant.Invisible && caveFloor.Length > 0)
+                {
+                    t0 = tm = t1 = caveFloor[rnd.Next(caveFloor.Length)];
+                }
                 for (int a = first; a <= last; a++)
                 {
                     Point c = Cell(a, row);
@@ -362,6 +498,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     }
                     bool edge = a == first || a == last;
                     ushort tile = a == first ? t0 : a == last ? t1 : tm;
+                    if (row == 0 && s.Variant == CaveVariant.Invisible && caveFloor.Length > 0)
+                    {
+                        tile = caveFloor[rnd.Next(caveFloor.Length)];
+                    }
                     int z = row switch
                     {
                         0 => groundZ,
@@ -417,10 +557,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
 
             // path in front on the ground height
-            ushort[] path = HexList.Parse(s.PathTiles);
-            if (s.PathLength > 0 && path.Length > 0)
+            ushort[] path = s.Variant == CaveVariant.Invisible ? caveFloor : HexList.Parse(s.PathTiles);
+            if (s.Variant != CaveVariant.OnGround && s.PathLength > 0 && path.Length > 0)
             {
                 int extra = Math.Max(0, s.PathExtraWidth);
+                // beside the front row the path also lies on the ground (the corners 01E6 / 01E4 have dirt at the side)
+                foreach (int a in new[] { first - 1, last + 1 })
+                {
+                    Point side = Cell(a, 0);
+                    if (extra > 0 && Ground(side.X, side.Y))
+                    {
+                        map.SetLand(side.X, side.Y, path[rnd.Next(path.Length)], groundZ);
+                    }
+                }
                 for (int row = -1; row >= -s.PathLength; row--)
                 {
                     for (int a = first - extra / 2; a <= last + (extra + 1) / 2; a++)
@@ -436,15 +585,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     }
                 }
             }
-            Rectangle region = south
-                ? new Rectangle(first, front - 1, width + 2, 3)
-                : new Rectangle(front - 1, first, 3, width + 2);
             result.Ok = true;
             result.Facing = south ? CaveFacing.South : CaveFacing.East;
             result.GroundZ = groundZ;
             result.MountainZ = mountainZ == int.MaxValue ? groundZ + archH : mountainZ;
-            result.Region = region;
-            result.Message = $"Höhleneingang nach {(south ? "Süden" : "Osten")} wie im Original: Boden {groundZ}, Rahmen +{frameH}, Mund +{mouthH}, oben +{archH}, " +
+            result.Region = Rectangle.Inflate(south
+                ? Rectangle.FromLTRB(first - 1, front - 2, last + 2, front + 2 + Math.Max(0, s.PathLength))
+                : Rectangle.FromLTRB(front - 2, first - 1, front + 2 + Math.Max(0, s.PathLength), last + 2), 1, 1);
+            result.Message = $"Höhleneingang ({s.Variant}) nach {(south ? "Süden" : "Osten")}: Boden {groundZ}, Rahmen +{frameH}, Mund +{mouthH}, oben +{archH}, " +
                              $"{width} breit + Rahmen" + (s.NoDrawStatics ? ", NODRAW-Statics" : string.Empty) + ".";
             return result;
         }

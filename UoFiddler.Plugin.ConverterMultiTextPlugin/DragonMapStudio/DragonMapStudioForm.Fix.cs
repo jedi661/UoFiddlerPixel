@@ -105,7 +105,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
                 _history.Begin("Karte reparieren");
                 _history.TouchAll();
-                Buffer.BlockCopy(r.work.Pixels, 0, _map.Pixels, 0, _map.Pixels.Length);
+                // Pixels is ushort[]: Array.Copy counts elements (Buffer.BlockCopy counted bytes = only the upper half)
+                Array.Copy(r.work.Pixels, _map.Pixels, _map.Pixels.Length);
                 _history.End();
                 AfterExternalEdit();
                 string path = WriteLog("map_fix_log.txt", BuildLog.CreateCheck(rules, r.Item2, name));

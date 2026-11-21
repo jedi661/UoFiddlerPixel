@@ -63,6 +63,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _toolButtons[tsbLower] = MapTool.Lower;
             _toolButtons[tsbSelect] = MapTool.Select;
             _toolButtons[tsbPan] = MapTool.Pan;
+            _toolButtons[tsbCaveStamp2D] = MapTool.CaveStamp;
+            mapCanvas.ToolClicked += MapCanvas_ToolClicked;
 
             _history.Changed += (s, e) => UpdateUndoState();
         }
@@ -90,6 +92,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             tsbGrid.Checked = true;
             mapCanvas.GridFromZoom = _settings.GridFromZoom;
             SelectTool(MapTool.Brush);
+            BuildEditorLayout();
 
             cmbM2BSize.Items.Add(L.T("Eigene Größe"));
             foreach (MapSizePreset p in MapSizePreset.All)
@@ -170,7 +173,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             string name = _map == null ? "keine Karte" : (_map.FilePath == null ? "Unbenannt" : Path.GetFileName(_map.FilePath));
             string size = _map == null ? string.Empty : $" ({_map.Width}×{_map.Height}, {_map.Bits} Bit)";
             string mod = _map != null && _map.Modified ? " *" : string.Empty;
-            Text = $"Dragon Map Studio – {name}{size}{mod} – Regeln: {_rules.Name} ({_rules.ColorBits} Bit){(_rulesDirty ? " *" : string.Empty)}";
+            Text = $"Dragon Map Studio [{BuildMark}] – {name}{size}{mod} – Regeln: {_rules.Name} ({_rules.ColorBits} Bit){(_rulesDirty ? " *" : string.Empty)}";
         }
 
         private void SetStatus(string text) => lblStatus.Text = text;
@@ -713,7 +716,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             _thumbDirty = false;
-            mapNavigator.SetThumbnail(IndexedBitmapIO.ToBitmap(_map, _rules.GetColors(), 320), _map.Width, _map.Height);
+            // up to 768 pixels: stays sharp when the overview is zoomed in
+            mapNavigator.SetThumbnail(IndexedBitmapIO.ToBitmap(_map, _rules.GetColors(), 768), _map.Width, _map.Height);
             mapNavigator.SetView(mapCanvas.ViewRect);
         }
 

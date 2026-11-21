@@ -1300,6 +1300,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     PlaceTemplate(tile.X, tile.Y);
                     break;
                 case IsoTool.CaveStamp:
+                    if ((ModifierKeys & Keys.Control) != 0)
+                    {
+                        RemoveCaveEntrance(tile.X, tile.Y);
+                        break;
+                    }
                     // click = stamp with the settings; drag along the face = width, up the face = mouth height
                     _stampStart = tile;
                     _stampDragging = true;
@@ -1454,6 +1459,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         break;
                     case Keys.L:
                         AreaLogRequested?.Invoke(this, EventArgs.Empty);
+                        break;
+                    case Keys.T:
+                        TransitionArea();
                         break;
                     case Keys.S:
                         SelectAreaStatics();
@@ -1977,6 +1985,48 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         public void PlaceCaveStamp(int x, int y) => PlaceCaveStamp(x, y, null);
 
+        /// <summary>Dragon map transitions (grass → dirt …) for the CGI view; null = rules not loaded.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public LandTransitionEngine LandTransitions { get; set; }
+
+        /// <summary>Ctrl+click with the cave stamp: entrance back to mountain / ground, one undo step.</summary>
+        public void RemoveCaveEntrance(int x, int y)
+        {
+            _map.BeginLand();
+            Rectangle r = CaveEntranceBuilder.Remove(_map, x, y, MountainTiles(), EntranceOptions(0x0002).IsMountain, _rnd, out string message);
+            if (!r.IsEmpty && LandTransitions != null && (CaveStamp?.Transitions ?? true))
+            {
+                LandTransitions.Apply(_map, r, _rnd);
+            }
+            int n = _map.EndLand();
+            Refresh(true);
+            if (n > 0)
+            {
+                MapChanged?.Invoke(this, EventArgs.Empty);
+            }
+            Message?.Invoke(this, message + (n > 0 ? " Strg+Z nimmt es zurück." : string.Empty));
+        }
+
+        /// <summary>Area + T: Dragon map transitions in the marked area again (after painting roads, floors …).</summary>
+        public void TransitionArea()
+        {
+            if (!NeedArea())
+            {
+                return;
+            }
+            if (LandTransitions == null)
+            {
+                Message?.Invoke(this, "Übergänge: kein Regelsatz geladen.");
+                return;
+            }
+            _map.BeginLand();
+            int c = LandTransitions.Apply(_map, _area, _rnd);
+            _map.EndLand();
+            Refresh(true);
+            MapChanged?.Invoke(this, EventArgs.Empty);
+            Message?.Invoke(this, $"Übergänge neu berechnet: {c} Tile(s) – Strg+Z nimmt es zurück.");
+        }
+
         /// <summary>Key L in the area tool: write the analysis of the marked area (log file + clipboard).</summary>
         public event EventHandler AreaLogRequested;
 
@@ -1997,7 +2047,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 return;
             }
             _map.BeginLand();
-            CaveStampResult res = CaveEntranceBuilder.Stamp(_map, x, y, CaveStamp ?? new CaveStampSettings(), EntranceOptions(0x0002), _rnd, dragEnd);
+            CaveStampSettings settings = CaveStamp ?? new CaveStampSettings();
+            CaveStampResult res = CaveEntranceBuilder.Stamp(_map, x, y, settings, EntranceOptions(0x0002), _rnd, dragEnd);
+            if (res.Ok && settings.Transitions && LandTransitions != null)
+            {
+                LandTransitions.Apply(_map, res.Region, _rnd);
+            }
             int n = _map.EndLand();
             Refresh(true);
             if (n > 0)
@@ -2503,7 +2558,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         tool = L.T("Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat");
                         break;
                     case IsoTool.Area:
-                        tool = L.T("Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · M = Berg formen (Reiter Berg) · L = Bereich auswerten (Log + Zwischenablage) · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
+                        tool = L.T("Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · M = Berg formen (Reiter Berg) · L = Bereich auswerten (Log + Zwischenablage) · T = Übergänge neu berechnen · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
                                "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Esc = Markierung weg");
                         break;
                     case IsoTool.Cave:
@@ -2513,7 +2568,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         tool = L.T("Höhleneingang: am Fuß des Berges klicken / ein Stück in den Hang ziehen (mind. 2×2) – Mund 01DB (schwarz) oder 0002 (unsichtbar) liegt 'Mund-Höhe' über dem Boden und wird als steile Wand in den Hang gezogen – sichtbar nur, wenn der Eingang nach Süden / Osten zeigt; der Rand zum Berg bekommt automatisch 01D3–01DA (Reiter Höhle / Weg) · ein Zug = ein Rückgängig-Schritt");
                         break;
                     case IsoTool.CaveStamp:
-                        tool = L.T("Höhlen-Stempel: auf den Boden direkt vor einer Bergwand klicken (Süd- oder Ostseite) – Boden-Höhe vorn und Berg-Höhe dahinter werden übernommen, Vorderkante 0002, Bogen 01D3–01DA, Weg davor (Reiter Höhle / Weg) · Strg+Z = zurück");
+                        tool = L.T("Höhlen-Stempel: auf den Boden direkt vor einer Bergwand klicken (Süd- oder Ostseite) – Boden-Höhe vorn und Berg-Höhe dahinter werden übernommen, Vorderkante 0002, Bogen 01D3–01DA, Weg davor (Reiter Höhlen-Stempel) · Ziehen = Breite + Höhe · Strg+Klick = Eingang entfernen · Strg+Z = zurück");
                         break;
                     case IsoTool.Mountain:
                         tool = L.T("Berg: Ziehen baut einen Berg ab der Bodenhöhe des ersten Klicks (oder 'Fuß-Z') auf – steil, mit Kuppen und Felskanten (Reiter Berg) · Pinsel oben = Breite · mehrmals ziehen = Grat · Bereich + M = ganzer Berg");

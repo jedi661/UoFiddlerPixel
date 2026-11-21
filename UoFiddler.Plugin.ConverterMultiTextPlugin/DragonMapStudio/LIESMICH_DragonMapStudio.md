@@ -490,6 +490,24 @@ Alle Tiles haben eine eigene Textur (Textur-ID = Land-ID), am Hang zeichnet der 
 
 Der Stempel baut genau dieses Raster. **Ziehen:** unten am Rahmen anfangen und schräg nach oben zur anderen oberen Ecke ziehen. Der Abstand entlang der Wand ergibt die Breite (Start und Ende sind die Rahmen), die Höhe am Ende des Zuges die Höhe der oberen Reihe. Mund und Rahmen werden im selben Verhältnis angepasst.
 
+**Varianten** (Einstellung „Variante“, alle drei kommen in der Original-Karte vor):
+* **Original** – schwarzer Mund, Übergangsreihe `01E6/01DF/01E4`, Erdweg davor.
+* **Ohne Weg** – schwarzer Mund direkt auf dem Boden, das Gras davor bleibt.
+* **Unsichtbar** – Mund `0002` mit Höhlenboden `0245`–`0249` davor (wie innen im Dungeon).
+
+**Übergänge** (`Core/LandTransitions.cs`): Nach dem Stempeln werden die Map-Übergänge des Dragon-Regelsatzes rund um den Eingang neu gesetzt: Gras → Erde (`0083`, `0086`, `0087`, `0089`, `007E` …) und Berg → Erde (`00DF`, `06F2` …), wie im Original. Jedes Land-Tile wird dazu seiner Gruppe zugeordnet (Farbtabelle + Übergangsdateien). Das geht auch für beliebige Bereiche: Werkzeug „Bereich“, markieren, **T** – z. B. nach dem Malen einer Straße.
+
+**Entfernen:** Strg+Klick mit dem Höhlen-Stempel auf einen Eingang – Mund, Rahmen und obere Reihe werden wieder Berg (Höhe aus dem Berg drumherum), die Vorderreihe wird Boden, die NODRAW-Statics werden gelöscht, danach Übergänge neu.
+
+**Eigene Stempel:** einen fertigen Eingang mit „Bereich“ markieren und „Bereich → speichern“ (Vorlagen-Ordner `Höhleneingang`). Die Liste „Gespeicherte Stempel“ setzt ihn mit Land, Höhen (relativ zum Boden) und Statics wieder.
+
+### Höhleneingänge im 2D-Editor und im Generator
+
+* Werkzeug **„Höhle“** in der Leiste des Karten-Editors: neben einen Berg klicken, dessen Süd- oder Ostseite an Boden grenzt. Gemalt werden Farben: obere Reihe + Mund-Reihe = Gruppe „Höhleneingang schwarz (01DB)“ (Höhe Boden + 20), davor Höhlenboden (Gruppe 03), daneben und davor Erde (Gruppe 09). **Umschalt+Klick** = unsichtbare Variante (Gruppe 1d), **Rechtsklick** = Eingang wieder Berg.
+* Fehlt die Gruppe „Höhleneingang schwarz (01DB)“, wird sie angelegt (nächste freie Gruppe, 3 Farben mit Höhe 10 / 20 / 30, Tile `01DB`), dazu die Regeln Eingang → Berg (`map/cave-ent2mountain.txt`) und 03 → 09 (`map/cave2dirt.txt`). Mit „JSON speichern“ / „Als Dragon-Skripte exportieren“ dauerhaft machen.
+* Beim Bauen entsteht daraus genau das Original-Raster: `01D3/01D4/01D5` (+26…34), `01DA/01DB/01D6` (+20), `01E6/01DF/01E4`, daneben `00DF`, weiche Gras-Erde-Kanten. Die Build-Option **„Höhleneingang: NODRAW-Statics“** setzt das unsichtbare Static `0001` auf jedes Tile der Mund-Reihe.
+* **Generator:** „Höhleneingang wie Original“ (an) setzt die Eingänge mit diesem Stempel an geraden Bergseiten nach Süden / Osten, aus = unsichtbare 2×2-Eingänge (Gruppe 1d) wie bisher.
+
 **Bereich auswerten:** Werkzeug „Bereich“, mit der linken Maustaste ein Viereck ziehen, dann **L** drücken (oder den Knopf im Reiter). Das Log wird als Datei gespeichert **und in die Zwischenablage kopiert**.
 
 Ein Klick auf den Boden direkt vor einer Bergwand (Süd- oder Ostseite) setzt einen kompletten Eingang (`Core/CaveEntranceBuilder.cs`):
@@ -532,3 +550,23 @@ Der Höhle-Pinsel macht nur noch **Berg-Tiles** zur Wand. Gras daneben bleibt Bo
 * Danach mit „Eingang“ den Höhleneingang an der Süd- oder Ostseite setzen.
 
 Im 2D-Editor: werden Farben der Gruppe 1d von Hand gemalt, aktiviert „MUL erzeugen“ / „CGI-Karte bauen“ jetzt die Regel 1d → Berg selbst (vorher nur der Generator).
+
+## CGI-Ansicht: neue Seitenleiste
+
+* **Kartenübersicht** als aufklappbarer Abschnitt, Knöpfe im Kopf: **−** / **+** zoomen, **↕** Größe klein / mittel / groß, **⧉** in ein eigenes Fenster abdocken (Fenster schließen = wieder andocken). In der Übersicht: Mausrad = Zoom um den Mauszeiger, rechte Taste ziehen = schieben, Doppelklick rechts = ganze Karte, Klick links = hinspringen. Gezoomt folgt sie der Ansicht. Das Übersichtsbild ist jetzt bis 1024 Pixel groß (vorher 320), dadurch bleibt es beim Zoomen scharf. Gilt auch für die Übersicht im Karten-Editor.
+* **Gehe zu** aufklappbar.
+* Statt zwei Reihen Reiter: **farbige Kategorien mit Bildern** – Bauen (Items, Multis, Vorlagen), Gelände (Land, Küste / Wasser, Berg), Höhlen (Höhle / Weg, Höhlen-Stempel), Prüfen (Auswahl, Probleme). Die Bilder sind Land- / Item-Grafiken aus den Client-Dateien (ohne Client-Dateien ein farbiger Buchstabe).
+* Die Reiter **Höhle / Weg**, **Höhlen-Stempel** und **Berg** bestehen aus aufklappbaren Abschnitten (Werkzeug, Einstellungen, Ansicht, Auswerten, Gespeicherte, Hilfe). Die Hilfe ist zu Beginn zugeklappt. Welche Abschnitte offen sind, wird gespeichert.
+* **Höhlen-Stempel → Vorschau:** zeigt das Raster der gewählten Variante mit den echten Tile-Bildern, IDs und Höhen.
+* Die Seitenleiste ist breiter (der Trenner lässt sich weiter ziehen, mindestens 300 Pixel).
+
+## Karten-Editor: neue Seitenleiste
+
+* **Kartenübersicht** oben wie in der CGI-Ansicht: aufklappbar, **−** / **+** / Mausrad = Zoom, rechte Taste = schieben, **↕** Größe, **⧉** abdocken. Übersichtsbild bis 768 Pixel.
+* **Karten (Projekt-Ordner)** aufklappbar.
+* **Werkzeug „Höhle“** (zu Beginn zugeklappt): Einstellungen des Höhleneingangs im 2D-Editor (Breite, Mund über Boden, Gruppen, Weg-Länge, unsichtbar).
+* **Farben** füllen den Rest; die Kopfzeile klappt sie ein und aus.
+
+## Fehler behoben: Generator → Karten-Editor (aktuelle Karte)
+
+Mit „aktuelle Kartengröße benutzen“ wurde nur die **obere Hälfte** der erzeugten Karte in die geöffnete Karte kopiert. Unten blieb die alte Karte stehen, deshalb war eine harte Kante quer durch die Karte zu sehen. Ursache: `Buffer.BlockCopy` zählt Bytes, die Karte hat aber 2 Byte pro Pixel (16-Bit-Farbadressen). Jetzt wird mit `Array.Copy` kopiert. Derselbe Fehler steckte in **„Karte reparieren“** und ist dort auch behoben. Der Generator selbst rechnet richtig: Vorschau und volle Größe stimmen zu 96–100 % überein, die Abweichungen sind nur feine Details.
