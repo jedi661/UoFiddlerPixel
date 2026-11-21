@@ -46,7 +46,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 21.11.2026 – Höhlen 7";
+        public const string BuildMark = "Stand 21.11.2026 – Editor 8";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
@@ -355,8 +355,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             side.BackColor = Color.FromArgb(236, 239, 244);
 
             CollapsibleSection secOverview = OverviewSection(mapNavigator, "editor.overview", splitEditor.Panel1);
+            (CollapsibleSection secInfo, CollapsibleSection secCatalog, CollapsibleSection secStamps) = BuildEditorToolSections();
 
-            CollapsibleSection secMaps = NewSection("editor.maps", "Karten (Projekt-Ordner)", ColBuild, 220);
+            CollapsibleSection secMaps = NewSection("editor.maps", "Karten (Projekt-Ordner)", ColBuild, 220, true);
             grpLibrary.Text = string.Empty;
             grpLibrary.Dock = DockStyle.Fill;
             secMaps.Body.Padding = new Padding(2);
@@ -394,12 +395,39 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             side.Controls.Add(colorsHead);
             side.Controls.Add(secCave);
             side.Controls.Add(secMaps);
+            side.Controls.Add(secStamps);
+            side.Controls.Add(secCatalog);
+            side.Controls.Add(secInfo);
             side.Controls.Add(secOverview);
-            side.ResumeLayout(true);
-            if (splitEditor.SplitterDistance < 320)
+            // the colour grid is long: folded by default when the catalogue is open
+            if (!_settings.CgiCollapsed.Contains("editor.colors:open"))
             {
-                splitEditor.SplitterDistance = 330;
+                colorsHead.Collapsed = true;
             }
+            colorsHead.CollapsedChanged += (o, e) =>
+            {
+                _settings.CgiCollapsed.Remove("editor.colors:open");
+                if (!colorsHead.Collapsed)
+                {
+                    _settings.CgiCollapsed.Add("editor.colors:open");
+                }
+            };
+            side.ResumeLayout(true);
+            if (splitEditor.SplitterDistance < 340)
+            {
+                splitEditor.SplitterDistance = 350;
+            }
+            // quick preview of the marked area as CGI (nice coloured button in the editor tool bar)
+            var preview = new ToolStripButton(L.T("▶ CGI-Vorschau"))
+            {
+                ToolTipText = L.T("Den markierten Bereich (Auswahl, S) nur im Speicher bauen und als CGI-Ansicht zeigen – Taste V"),
+                BackColor = ColCave,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            preview.Click += (s, e) => ShowSelectionInCgi();
+            toolStripEditor.Items.Add(new ToolStripSeparator());
+            toolStripEditor.Items.Add(preview);
         }
 
         // ================================================================== sections in the tabs

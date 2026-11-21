@@ -570,3 +570,22 @@ Im 2D-Editor: werden Farben der Gruppe 1d von Hand gemalt, aktiviert „MUL erze
 ## Fehler behoben: Generator → Karten-Editor (aktuelle Karte)
 
 Mit „aktuelle Kartengröße benutzen“ wurde nur die **obere Hälfte** der erzeugten Karte in die geöffnete Karte kopiert. Unten blieb die alte Karte stehen, deshalb war eine harte Kante quer durch die Karte zu sehen. Ursache: `Buffer.BlockCopy` zählt Bytes, die Karte hat aber 2 Byte pro Pixel (16-Bit-Farbadressen). Jetzt wird mit `Array.Copy` kopiert. Derselbe Fehler steckte in **„Karte reparieren“** und ist dort auch behoben. Der Generator selbst rechnet richtig: Vorschau und volle Größe stimmen zu 96–100 % überein, die Abweichungen sind nur feine Details.
+
+## Karten-Editor: Pinsel-Katalog, Info, Farb-Stempel, CGI-Vorschau, Kontextmenü
+
+Seitenleiste von oben nach unten (jeder Abschnitt auf- und zuklappbar):
+
+* **Farbe unter der Maus / Pipette:** Farbfeld, Adresse, Name, Gruppe, Höhe, Tiles und die Land-Bilder dieser Tiles. Folgt der Maus. Mit der Pipette (I) bleibt die aufgenommene Farbe stehen (✔), und sie wird im Katalog markiert.
+* **Pinsel-Katalog:** alle definierten Farben nach Gruppe, mit Kategorie (Gras & Wald, Wasser & Küste, Berg & Fels, Wege & Straßen, Hausböden, Höhle & Dungeon, Sonstiges), Farbfeld und Höhe. Auswahl der Kategorie + Suche (Name, Gruppe, Hex). Links = Farbe 1, rechts = Farbe 2, Doppelklick = Pinsel. Beim Überfahren: Gruppe, Höhe, Tiles. Selbst definierte Farben erscheinen automatisch.
+* **Bereich: CGI-Vorschau & Farb-Stempel:**
+  * „Bereich markieren“ = Werkzeug Auswahl (S); die Markierung wird nicht in die Karte gemalt.
+  * **„Auswahl → CGI-Vorschau“** (auch Taste **V**, Kontextmenü oder der braune Knopf **▶ CGI-Vorschau** in der Werkzeugleiste): baut nur den markierten Bereich (+ 8 Tiles Rand für die Übergänge, höchstens 512×512) im Speicher und zeigt ihn in einem eigenen CGI-Fenster (Raster, Infos ID / Höhe / Textur, Zoom, „Neu bauen“). Die Karte und die große CGI-Ansicht bleiben unverändert. Ohne Auswahl: 128×128 um die Bildmitte.
+  * **„Auswahl → Stempel speichern“:** speichert den Ausschnitt als Farb-Stempel (`<Vorlagen-Ordner>\Farbstempel\*.dmstamp.json`). Jedes Pixel merkt sich Farbe, Gruppe und Höhe relativ zum Boden des Stempels (Median des Randes, Wasser ausgenommen).
+  * **„Stempel setzen“** / Doppelklick: der Stempel hängt an der Maus, jeder Klick setzt ihn (ein Rückgängig-Schritt je Klick), rechte Taste = fertig. Mit **„Höhen an den Boden anpassen“** bekommt jedes Pixel die Farbe seiner Gruppe mit der passenden Höhe zum Boden an der Zielstelle – ein auf Höhe 0 gebauter Hausboden passt so auch auf ein Plateau in Höhe 20.
+* Karten (Projekt-Ordner), Werkzeug „Höhle“, Farben (die lange Farbtabelle ist zu Beginn zugeklappt).
+
+**Kontextmenü:** rechte Maustaste mit Auswahl, Hand oder Pipette – oder **Umschalt + rechte Taste** mit jedem Werkzeug. Inhalt: Farbe an dieser Stelle (als Farbe 1 / 2, in der Farbtabelle zeigen), Rückgängig / Wiederholen, CGI-Vorschau, Stempel speichern, Kopieren / Ausschneiden / Einfügen / Füllen, Werkzeug wechseln, hier in der CGI-Ansicht öffnen.
+
+Rückgängig / Wiederholen gab es schon (Strg+Z / Strg+Y, Leiste, Menü Bearbeiten) – jetzt auch im Kontextmenü. Höhen: Werkzeuge „Höhe +“ / „Höhe −“ wechseln innerhalb der Gruppe die Farbe; Straßen, Wege, Hausböden und Küsten malt man mit den Farben aus dem Katalog – die Übergänge macht der Compiler (in der CGI-Vorschau sofort zu sehen).
+
+Im Fenstertitel steht jetzt `[Stand 21.11.2026 – Editor 8]`.

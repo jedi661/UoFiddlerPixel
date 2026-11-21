@@ -231,6 +231,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             mapCanvas.SetHeightLookups(raise, lower);
             mapCanvas.SetAltitudes(_rules.Palette.Select(p => p.Altitude).ToArray());
             BindRuleGrids();
+            FillBrushCatalog();
             if (_cgiTools.Count > 0)
             {
                 UpdateRuleLandColors();
@@ -755,6 +756,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     case Keys.I: SelectTool(MapTool.Picker); break;
                     case Keys.S: SelectTool(MapTool.Select); break;
                     case Keys.H: SelectTool(MapTool.Pan); break;
+                    case Keys.V: ShowSelectionInCgi(); break;
                     case Keys.OemOpenBrackets: ChangeBrushSize(-1); break;
                     case Keys.OemCloseBrackets: ChangeBrushSize(1); break;
                     case Keys.Add:
