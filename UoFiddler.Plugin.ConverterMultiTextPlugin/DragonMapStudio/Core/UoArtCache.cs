@@ -378,6 +378,41 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
+        /// <summary>Texture id (texmaps) of a land tile from the tiledata, -1 when the tiledata is not loaded.</summary>
+        public static int LandTextureId(int id)
+        {
+            try
+            {
+                return TileData.LandTable[id & 0x3FFF].TextureId;
+            }
+            catch (Exception)
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>Short list of the tiledata flags of a land tile.</summary>
+        public static string LandFlagsText(int id)
+        {
+            try
+            {
+                TileFlag f = TileData.LandTable[id & 0x3FFF].Flags;
+                var names = new List<string>();
+                foreach (TileFlag t in new[] { TileFlag.Wet, TileFlag.Impassable, TileFlag.Surface, TileFlag.Background, TileFlag.Translucent })
+                {
+                    if ((f & t) != 0)
+                    {
+                        names.Add(t.ToString());
+                    }
+                }
+                return names.Count == 0 ? "-" : string.Join(", ", names);
+            }
+            catch (Exception)
+            {
+                return "(tiledata nicht geladen)";
+            }
+        }
+
         public static string LandName(int id)
         {
             try

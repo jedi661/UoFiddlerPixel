@@ -37,9 +37,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _settings.CaveStamp ??= new CaveStampSettings();
             isoView.CaveStamp = _settings.CaveStamp;
             propCgiStamp.SelectedObject = _settings.CaveStamp;
+            tscCgiLabels.SelectedIndex = 0;
             lblCgiStampInfo.Text = L.T("Höhlen-Stempel: auf den Boden direkt vor einer Bergwand klicken, die nach Süden oder Osten zeigt. " +
                 "Boden und Berg werden am Tile erkannt (Gras darf höher liegen): die Höhe vorn wird der Höhlenboden, " +
-                "die vordere Reihe wird unsichtbar (0002), dahinter der Bogen 01D3–01DA bis zur Mund-Höhe, davor ein Weg. " +
+                "die vordere Reihe wird unsichtbar (0002), dahinter der Bogen 01D3–01DA bis zur Mund-Höhe, links und rechts der Rahmen, davor ein Weg. " +
+                "Ziehen statt klicken: von einer Seite des Mundes zur anderen = Breite, das Ende oben an der Bergwand = Höhe. " +
+                "Auswerten: einen Eingang (z. B. aus der Original-Karte) mit 'Bereich' markieren und den Knopf drücken – das Log zeigt ID, Höhe, Textur, Farbe und Muster jedes Tiles. " +
                 "Der Client zeichnet Land nur am Hang mit Textur, flach mit dem Land-Bild – die Ansicht macht es jetzt genauso.");
             _settings.Mountain ??= new MountainSettings();
             isoView.Mountain = _settings.Mountain;
@@ -393,6 +396,44 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             ApplyCaveEntranceRules();
             SelectCgiTool(IsoTool.CaveStamp);
             isoView.Focus();
+        }
+
+        private void TscCgiLabels_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            isoView.LabelMode = (IsoLabel)Math.Max(0, tscCgiLabels.SelectedIndex);
+            if (!tsbCgiHeights.Checked && tscCgiLabels.Focused)
+            {
+                tsbCgiHeights.Checked = true;
+                isoView.ShowHeights = true;
+            }
+            isoView.Refresh(true);
+        }
+
+        private void BtnCgiAreaLog_Click(object sender, EventArgs e)
+        {
+            if (_cgiMap == null || isoView.Area.IsEmpty)
+            {
+                SetStatus("Erst mit dem Werkzeug 'Bereich' (Leiste Land) z. B. einen Höhleneingang samt Rand markieren.");
+                return;
+            }
+            ApplyCaveEntranceRules();
+            string text = isoView.AnalyzeArea();
+            if (text == null)
+            {
+                return;
+            }
+            Rectangle a = isoView.Area;
+            string path = WriteLog($"cgi_bereich_{a.X}_{a.Y}_{a.Width}x{a.Height}.txt", text);
+            Log("Bereichs-Auswertung: " + path);
+            SetStatus("Auswertung gespeichert: " + path + " – die Datei kannst du mir schicken.");
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = path, UseShellExecute = true });
+            }
+            catch (Exception)
+            {
+                // no editor associated – the path is in the status line
+            }
         }
 
         private void CgiViewTextures_Changed(object sender, EventArgs e)

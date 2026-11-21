@@ -21,6 +21,15 @@ using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 {
+    /// <summary>What the "Höhen / Infos" overlay writes on every land tile.</summary>
+    public enum IsoLabel
+    {
+        Height,
+        Id,
+        IdHeight,
+        Full
+    }
+
     public enum IsoTool
     {
         Select,
@@ -181,6 +190,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Show the land height of every tile (numbers on the grid).</summary>
         [Category("Dragon"), DefaultValue(false)]
         public bool ShowHeights { get; set; }
+
+        /// <summary>Content of the overlay: height, land id (hex), id + height, id + height + texture id.</summary>
+        [Category("Dragon"), DefaultValue(IsoLabel.Height)]
+        public IsoLabel LabelMode { get; set; } = IsoLabel.Height;
+
+        private string LabelText(int x, int y)
+        {
+            ushort id = _map.LandId(x, y);
+            int z = _map.LandZ(x, y);
+            switch (LabelMode)
+            {
+                case IsoLabel.Id:
+                    return id.ToString("x4");
+                case IsoLabel.IdHeight:
+                    return id.ToString("x4") + "\n" + z;
+                case IsoLabel.Full:
+                    {
+                        int t = UoArtCache.LandTextureId(id);
+                        return id.ToString("x4") + " z" + z + "\nT " + (t < 0 ? "?" : t == 0 ? "-" : t.ToString("x4"));
+                    }
+                default:
+                    return z.ToString();
+            }
+        }
 
         /// <summary>2D view from above (land tiles as squares, no heights) instead of the client view.</summary>
         [Category("Dragon"), DefaultValue(false)]
@@ -757,7 +790,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     {
                         PointF c = Corner(x, y);
                         int z = _map.LandZ(x, y);
-                        string text = z.ToString();
+                        string text = LabelText(x, y);
                         g.DrawString(text, font, Brushes.Black, c.X + Cell / 2f + 1, c.Y + Cell / 2f + 1, sf);
                         g.DrawString(text, font, z < 0 ? Brushes.LightSkyBlue : Brushes.White, c.X + Cell / 2f, c.Y + Cell / 2f, sf);
                     }
@@ -791,7 +824,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     {
                         continue;
                     }
-                    string text = z.ToString();
+                    string text = LabelText(x, y);
                     g.DrawString(text, font, Brushes.Black, c.X + 1, c.Y + 1, sf);
                     g.DrawString(text, font, z < 0 ? Brushes.LightSkyBlue : Brushes.White, c.X, c.Y, sf);
                 }
@@ -803,17 +836,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// flat – i.e. when any of the 12 heights around it differs – and the texture exists. Otherwise the land art is drawn
         /// flat on the tile height (also on a slope!).
         /// </summary>
-        private bool NeighbourhoodFlat(int x, int y)
-        {
-            int z = _map.LandZ(x, y);
-            int Z(int dx, int dy)
-            {
-                int nx = Math.Clamp(x + dx, 0, _map.Width - 1), ny = Math.Clamp(y + dy, 0, _map.Height - 1);
-                return _map.LandZ(nx, ny);
-            }
-            return Z(0, -1) == z && Z(1, -1) == z && Z(-1, 0) == z && Z(1, 0) == z && Z(2, 0) == z && Z(-1, 1) == z &&
-                   Z(0, 1) == z && Z(1, 1) == z && Z(2, 1) == z && Z(0, 2) == z && Z(1, 2) == z;
-        }
+        private bool NeighbourhoodFlat(int x, int y) => CgiAreaAnalyzer.NeighbourhoodFlat(_map, x, y);
 
         /// <summary>Show land tiles 0–2 (the client never draws them) as a yellow outline.</summary>
         [Category("Dragon"), DefaultValue(true)]
@@ -1041,6 +1064,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Semi transparent preview of the item / multi that would be placed.</summary>
         private void DrawGhost(Graphics g)
         {
+            DrawStampDrag(g);
             var parts = new List<(ushort id, int x, int y, int z)>();
             if (Tool == IsoTool.Place)
             {
@@ -1262,7 +1286,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     PlaceTemplate(tile.X, tile.Y);
                     break;
                 case IsoTool.CaveStamp:
-                    PlaceCaveStamp(tile.X, tile.Y);
+                    // click = stamp with the settings; drag along the face = width, up the face = mouth height
+                    _stampStart = tile;
+                    _stampDragging = true;
+                    Invalidate();
                     break;
                 case IsoTool.Delete:
                     if (hit != null)
@@ -1328,6 +1355,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 _panning = false;
                 Cursor = Cursors.Default;
+            }
+            if (_stampDragging)
+            {
+                _stampDragging = false;
+                Point end = TileAt(e.Location);
+                PlaceCaveStamp(_stampStart.X, _stampStart.Y, end == _stampStart || !_map.InBounds(end.X, end.Y) ? (Point?)null : end);
             }
             if (_landStroke)
             {
@@ -1898,14 +1931,53 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         /// <summary>Cave stamp at (x, y): complete entrance, one undo step.</summary>
-        public void PlaceCaveStamp(int x, int y)
+        private bool _stampDragging;
+        private Point _stampStart;
+
+        /// <summary>While dragging the cave stamp: start and end tile, width / height text.</summary>
+        private void DrawStampDrag(Graphics g)
+        {
+            if (!_stampDragging || !_map.InBounds(_stampStart.X, _stampStart.Y))
+            {
+                return;
+            }
+            using var pen = new Pen(Color.FromArgb(230, 255, 200, 0), 2f);
+            g.DrawPolygon(pen, LandPoly(_stampStart.X, _stampStart.Y));
+            if (_map.InBounds(_hover.X, _hover.Y) && _hover != _stampStart)
+            {
+                PointF[] a = LandPoly(_stampStart.X, _stampStart.Y), b = LandPoly(_hover.X, _hover.Y);
+                g.DrawPolygon(pen, b);
+                PointF ca = new PointF((a[0].X + a[2].X) / 2, (a[0].Y + a[2].Y) / 2), cb = new PointF((b[0].X + b[2].X) / 2, (b[0].Y + b[2].Y) / 2);
+                g.DrawLine(pen, ca, cb);
+                int w = Math.Max(Math.Abs(_hover.X - _stampStart.X), Math.Abs(_hover.Y - _stampStart.Y)) + 1;
+                int h = _map.LandZ(_hover.X, _hover.Y) - _map.LandZ(_stampStart.X, _stampStart.Y);
+                string text = $"Breite {w}, Höhe {h}";
+                using var font = new Font("Segoe UI", 9f, FontStyle.Bold);
+                g.DrawString(text, font, Brushes.Black, cb.X + 9, cb.Y - 9);
+                g.DrawString(text, font, Brushes.Yellow, cb.X + 8, cb.Y - 10);
+            }
+        }
+
+        public void PlaceCaveStamp(int x, int y) => PlaceCaveStamp(x, y, null);
+
+        /// <summary>Marked area as analysis text (land ids, heights, textures, classes, entrance patterns, statics) or null.</summary>
+        public string AnalyzeArea()
+        {
+            if (!NeedArea())
+            {
+                return null;
+            }
+            return CgiAreaAnalyzer.Analyze(_map, _area, EntranceOptions(0x0002).IsMountain, _map.Source);
+        }
+
+        public void PlaceCaveStamp(int x, int y, Point? dragEnd)
         {
             if (!_map.InBounds(x, y))
             {
                 return;
             }
             _map.BeginLand();
-            CaveStampResult res = CaveEntranceBuilder.Stamp(_map, x, y, CaveStamp ?? new CaveStampSettings(), EntranceOptions(0x0002), _rnd);
+            CaveStampResult res = CaveEntranceBuilder.Stamp(_map, x, y, CaveStamp ?? new CaveStampSettings(), EntranceOptions(0x0002), _rnd, dragEnd);
             int n = _map.EndLand();
             Refresh(true);
             if (n > 0)

@@ -481,6 +481,20 @@ Ein Klick auf den Boden direkt vor einer Bergwand (Süd- oder Ostseite) setzt ei
 
 Einstellungen: Richtung (Auto / Süden / Osten), Breite, Tiefe, Mund-Höhe, Berg anheben, Weg-Länge, Weg-Tiles, Weg-Breite. Sie werden gespeichert.
 
+**Rahmen** (an): links und rechts vom Mund je eine Spalte Rahmen-Tiles (`01DA` / `01D6`, hinten die Ecken `01D3` / `01D5`). Die Vorderkante hat dann genau „Breite“ unsichtbare Tiles – wie die Reihe „NO DRAW“ im Original.
+
+**Ziehen statt Klicken:** Maus auf den Boden an einer Seite des Mundes, gedrückt halten, zur anderen Seite ziehen = Breite. Endet der Zug oben an der Bergwand, wird die Höhe des Tiles dort die Mund-Höhe. Während des Ziehens zeigt die Ansicht „Breite x, Höhe y“.
+
+**Infos einblenden:** Leiste oben „Höhen“ + Auswahl daneben: Höhe, Land-ID (hex), ID + Höhe, ID + Höhe + Textur-ID.
+
+**Bereich auswerten → Log** (Reiter Höhlen-Stempel): einen Eingang, eine Straße oder einen Bergrand mit „Bereich“ markieren und auswerten. Das Log `cgi_bereich_<x>_<y>_<b>x<h>.txt` (Log-Ordner) enthält:
+* alle Land-IDs mit Anzahl, Klasse (Berg / Boden / Eingang / unsichtbar), Textur-ID, Radar-Farbe, TileData-Flags und Name,
+* Raster mit Land-ID, Höhe, Textur-ID, Klasse und „wie gezeichnet“ (Textur am Hang / Land-Bild flach / gar nicht),
+* für jedes Eingangs- und unsichtbare Tile das 8-Nachbar-Muster wie in den Dragon-Dateien,
+* alle Statics mit Lage, Höhe über dem Land, Hue, Flags und Name.
+
+Damit kann man Eingänge, Straßen und Bergränder aus der Original-Karte auswerten und nachbauen.
+
 **Zeichnen wie der Client** (aus dem ClassicUO-Quellcode, `Land.ApplyStretch`):
 * Ein Land-Tile wird mit seiner **Textur** gezeichnet, sobald irgendeine der 12 Höhen um es herum abweicht und die Textur existiert.
 * Sonst – auch am Hang, wenn es keine Textur hat – wird das **Land-Bild flach** auf der Tile-Höhe gezeichnet. Vorher hat die Ansicht das Land-Bild am Hang verzerrt.

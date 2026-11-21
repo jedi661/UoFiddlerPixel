@@ -291,6 +291,8 @@
             chkCgiShowNoDraw = new System.Windows.Forms.CheckBox();
             lblCgiStampInfo = new System.Windows.Forms.Label();
             tsbCgiStamp = new System.Windows.Forms.ToolStripButton();
+            tscCgiLabels = new System.Windows.Forms.ToolStripComboBox();
+            btnCgiAnalyze = new System.Windows.Forms.Button();
             propCgiMountain = new System.Windows.Forms.PropertyGrid();
             panelCgiMountainBottom = new System.Windows.Forms.Panel();
             btnCgiMountainTool = new System.Windows.Forms.Button();
@@ -337,7 +339,7 @@
             btnCgiScan = new System.Windows.Forms.Button();
             btnCgiRemoveDup = new System.Windows.Forms.Button();
             btnCgiSaveLog = new System.Windows.Forms.Button();
-            btnCgiAnalyze = new System.Windows.Forms.Button();
+            btnCgiAreaLog = new System.Windows.Forms.Button();
             toolStripCgiLand = new System.Windows.Forms.ToolStrip();
             tslCgiLandTools = new System.Windows.Forms.ToolStripLabel();
             tsbCgiLandSet = new System.Windows.Forms.ToolStripButton();
@@ -2626,8 +2628,9 @@
             panelCgiStampBottom.Controls.Add(chkCgiAlwaysTextures);
             panelCgiStampBottom.Controls.Add(chkCgiShowNoDraw);
             panelCgiStampBottom.Controls.Add(lblCgiStampInfo);
+            panelCgiStampBottom.Controls.Add(btnCgiAreaLog);
             panelCgiStampBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            panelCgiStampBottom.Size = new System.Drawing.Size(290, 230);
+            panelCgiStampBottom.Size = new System.Drawing.Size(290, 300);
             panelCgiStampBottom.Name = "panelCgiStampBottom";
             // 
             // btnCgiStampTool
@@ -2659,8 +2662,17 @@
             // 
             // lblCgiStampInfo
             // 
-            lblCgiStampInfo.Location = new System.Drawing.Point(4, 86);
-            lblCgiStampInfo.Size = new System.Drawing.Size(280, 140);
+            lblCgiStampInfo.Location = new System.Drawing.Point(4, 116);
+            lblCgiStampInfo.Size = new System.Drawing.Size(280, 180);
+            // 
+            // btnCgiAreaLog
+            // 
+            btnCgiAreaLog.Location = new System.Drawing.Point(4, 84);
+            btnCgiAreaLog.Size = new System.Drawing.Size(276, 25);
+            btnCgiAreaLog.Text = "Markierten Bereich auswerten → Log";
+            btnCgiAreaLog.UseVisualStyleBackColor = true;
+            btnCgiAreaLog.Name = "btnCgiAreaLog";
+            btnCgiAreaLog.Click += BtnCgiAreaLog_Click;
             lblCgiStampInfo.Text = "-";
             lblCgiStampInfo.Name = "lblCgiStampInfo";
             // 
@@ -3326,7 +3338,7 @@
             // 
             // toolStripCgi
             // 
-            toolStripCgi.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsbCgiBuild, tsbCgiLoad, tsbCgiSave, tsbCgiSaveAs, tssCgi1, tsbCgiSelect, tsbCgiPlace, tsbCgiMulti, tsbCgiTemplate, tsbCgiDelete, tsbCgiHue, tssCgi2, tsbCgiUndo, tsbCgiRedo, tssCgi3, tsbCgiZoomIn, tsbCgiZoomOut, tsbCgiGrid, tsbCgiHeights, tsbCgi2D, tsbCgiSeeThrough, tsbCgiStatics, tsbCgiProblems, tslCgiMaxZ, tscCgiMaxZ });
+            toolStripCgi.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tsbCgiBuild, tsbCgiLoad, tsbCgiSave, tsbCgiSaveAs, tssCgi1, tsbCgiSelect, tsbCgiPlace, tsbCgiMulti, tsbCgiTemplate, tsbCgiDelete, tsbCgiHue, tssCgi2, tsbCgiUndo, tsbCgiRedo, tssCgi3, tsbCgiZoomIn, tsbCgiZoomOut, tsbCgiGrid, tsbCgiHeights, tscCgiLabels, tsbCgi2D, tsbCgiSeeThrough, tsbCgiStatics, tsbCgiProblems, tslCgiMaxZ, tscCgiMaxZ });
             toolStripCgi.Dock = System.Windows.Forms.DockStyle.Top;
             toolStripCgi.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStripCgi.Name = "toolStripCgi";
@@ -3465,6 +3477,15 @@
             tsbCgiHeights.CheckOnClick = true;
             tsbCgiHeights.Name = "tsbCgiHeights";
             tsbCgiHeights.Click += TsbCgiView_Click;
+            // 
+            // tscCgiLabels
+            // 
+            tscCgiLabels.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            tscCgiLabels.Items.AddRange(new object[] { "Höhe", "Land-ID", "ID + Höhe", "ID + Höhe + Textur" });
+            tscCgiLabels.Size = new System.Drawing.Size(130, 25);
+            tscCgiLabels.ToolTipText = "Was 'Höhen' auf jedes Land-Tile schreibt: Höhe, Land-ID (hex), beides oder dazu die Textur-ID";
+            tscCgiLabels.Name = "tscCgiLabels";
+            tscCgiLabels.SelectedIndexChanged += TscCgiLabels_SelectedIndexChanged;
             // 
             // tsbCgi2D
             // 
@@ -4965,6 +4986,8 @@
         private System.Windows.Forms.CheckBox chkCgiShowNoDraw;
         private System.Windows.Forms.Label lblCgiStampInfo;
         private System.Windows.Forms.ToolStripButton tsbCgiStamp;
+        private System.Windows.Forms.ToolStripComboBox tscCgiLabels;
+        private System.Windows.Forms.Button btnCgiAreaLog;
         private System.Windows.Forms.PropertyGrid propCgiMountain;
         private System.Windows.Forms.Panel panelCgiMountainBottom;
         private System.Windows.Forms.Button btnCgiMountainTool;
