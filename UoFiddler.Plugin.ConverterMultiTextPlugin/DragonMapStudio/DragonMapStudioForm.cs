@@ -173,7 +173,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             string name = _map == null ? "keine Karte" : (_map.FilePath == null ? "Unbenannt" : Path.GetFileName(_map.FilePath));
             string size = _map == null ? string.Empty : $" ({_map.Width}×{_map.Height}, {_map.Bits} Bit)";
             string mod = _map != null && _map.Modified ? " *" : string.Empty;
-            Text = $"Dragon Map Studio – {name}{size}{mod} – Regeln: {_rules.Name} ({_rules.ColorBits} Bit){(_rulesDirty ? " *" : string.Empty)}";
+            Text = $"Dragon Map Studio [{BuildMark}] – {name}{size}{mod} – Regeln: {_rules.Name} ({_rules.ColorBits} Bit){(_rulesDirty ? " *" : string.Empty)}";
         }
 
         private void SetStatus(string text) => lblStatus.Text = text;

@@ -44,6 +44,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private readonly List<NavEntry> _cgiNav = new List<NavEntry>();
         private readonly List<(CollapsibleSection section, Func<Image> icon)> _sectionIcons = new List<(CollapsibleSection, Func<Image>)>();
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
+
+        /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
+        public const string BuildMark = "Stand 21.11.2026 – Höhlen 7";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
