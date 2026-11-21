@@ -1,4 +1,4 @@
-﻿# Dragon Map Studio
+# Dragon Map Studio
 
 Nachbau und Erweiterung von **Dragon 1.03.62 (IMod13)** als UoFiddler-Werkzeug.
 Geöffnet wird es im Plugin *ConverterMultiText* → Reiter **Map** → Knopf **Dragon Map Studio** (unter *Uo Map*).
@@ -592,7 +592,7 @@ Im Fenstertitel steht jetzt `[Stand 21.11.2026 – Editor 8]`.
 
 ## CGI-Ansicht → Farben: Stempel aus gebauten Karten, ganze Karte zurück in Farben
 
-In der CGI-Ansicht mit den Werkzeugen Land (Land-Tiles / Texturen), Items, Multis und Vorlagen bauen – oder eine andere Karte laden (MUL / UOP) und dort etwas markieren. Reiter **Höhlen-Stempel → „In Farben umwandeln“**:
+In der CGI-Ansicht mit den Werkzeugen Land (Land-Tiles / Texturen), Items, Multis und Vorlagen bauen – oder eine andere Karte laden (MUL / UOP) und dort etwas markieren. Die beiden Knöpfe stehen ganz links in der **oberen Werkzeugleiste der CGI-Ansicht** (grün **„▣ Bereich → Farb-Stempel“**, blau **„▤ Karte → Farbkarte“**); mit dem Werkzeug „Bereich“ geht der Stempel auch mit der Taste **P**. Dieselben Knöpfe gibt es zusätzlich im Reiter Höhlen-Stempel → „In Farben umwandeln“:
 
 * **„Markierten Bereich → Farb-Stempel…“** (vorher mit „Bereich“ markieren): Name, Kategorie, Statics-Art, Art für fehlende Farben wählen. Der Stempel landet im Ordner `Farbstempel` und erscheint im Karten-Editor (Stempel-Menü, Abschnitt Stempel). Ein Bericht wird als `cgi_stempel_<Name>.txt` im Log-Ordner gespeichert.
 * **„Ganze Karte → Farbkarte (Karten-Editor)…“:** die ganze CGI-Karte wird zur Farbkarte mit Statics-Ebene (z. B. die Original-Karte zum Nachbauen oder zur Fehlersuche). Bericht: `cgi_karte_zu_farben.txt`.
@@ -622,4 +622,4 @@ Knopf **„▦ Stempel-Menü“** in der Werkzeugleiste: alle Farb-Stempel als B
 * Mit **mehreren Monitoren** öffnet es sich als **eigenes Fenster** (auf dem anderen Monitor), mit einem Monitor als **Leiste rechts** neben der Karte.
 * **⧉** im Kopf: Fenster ↔ Leiste. **Fenster schließen** = es kommt als Leiste rechts zurück. **✕** blendet es aus.
 
-Im Fenstertitel steht jetzt `[Stand 21.11.2026 – Stempel 9]`.
+Im Fenstertitel steht jetzt `[Stand 21.11.2026 – Stempel 10]`.

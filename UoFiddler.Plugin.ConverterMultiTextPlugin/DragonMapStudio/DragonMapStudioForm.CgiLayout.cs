@@ -46,7 +46,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 21.11.2026 – Stempel 9";
+        public const string BuildMark = "Stand 21.11.2026 – Stempel 10";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
@@ -121,6 +121,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             BuildMountainTab();
             UpdateCgiNav();
             RefreshCgiIcons();
+
+            // conversion to colours: always visible in the top tool bar (it has nothing to do with caves)
+            var toStamp = new ToolStripButton(L.T("▣ Bereich → Farb-Stempel"))
+            {
+                ToolTipText = L.T("Erst mit 'Bereich' (Leiste Land) markieren: Land-Tiles + Höhen + Statics als Farb-Stempel für den Karten-Editor (Name, Kategorie, Statics-Art, fehlende Farben) – Taste P"),
+                BackColor = ColTerrain,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            toStamp.Click += (s, e) => CgiAreaToColorStamp();
+            var toMap = new ToolStripButton(L.T("▤ Karte → Farbkarte"))
+            {
+                ToolTipText = L.T("Die ganze CGI-Karte als Farbkarte + Statics-Ebene in den Karten-Editor (Nachbauen, Fehlersuche)"),
+                BackColor = ColBuild,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            toMap.Click += (s, e) => CgiMapToColorMap();
+            toolStripCgi.Items.Insert(0, new ToolStripSeparator());
+            toolStripCgi.Items.Insert(0, toMap);
+            toolStripCgi.Items.Insert(0, toStamp);
+            isoView.AreaToStampRequested += (s, e) => CgiAreaToColorStamp();
         }
 
         /// <summary>Folding section; open / closed is remembered (sections that start folded remember "open").</summary>

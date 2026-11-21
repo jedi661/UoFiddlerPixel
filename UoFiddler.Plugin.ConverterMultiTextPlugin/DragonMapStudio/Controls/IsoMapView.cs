@@ -1463,6 +1463,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     case Keys.T:
                         TransitionArea();
                         break;
+                    case Keys.P:
+                        AreaToStampRequested?.Invoke(this, EventArgs.Empty);
+                        break;
                     case Keys.S:
                         SelectAreaStatics();
                         break;
@@ -2030,6 +2033,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Key L in the area tool: write the analysis of the marked area (log file + clipboard).</summary>
         public event EventHandler AreaLogRequested;
 
+        /// <summary>Key P in the area tool: marked area as colour stamp.</summary>
+        public event EventHandler AreaToStampRequested;
+
         /// <summary>Marked area as analysis text (land ids, heights, textures, classes, entrance patterns, statics) or null.</summary>
         public string AnalyzeArea()
         {
@@ -2558,7 +2564,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         tool = L.T("Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat");
                         break;
                     case IsoTool.Area:
-                        tool = L.T("Bereich: Ziehen = markieren · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · M = Berg formen (Reiter Berg) · L = Bereich auswerten (Log + Zwischenablage) · T = Übergänge neu berechnen · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
+                        tool = L.T("Bereich: Ziehen = markieren · P = als Farb-Stempel speichern · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · M = Berg formen (Reiter Berg) · L = Bereich auswerten (Log + Zwischenablage) · T = Übergänge neu berechnen · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
                                "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Esc = Markierung weg");
                         break;
                     case IsoTool.Cave:
