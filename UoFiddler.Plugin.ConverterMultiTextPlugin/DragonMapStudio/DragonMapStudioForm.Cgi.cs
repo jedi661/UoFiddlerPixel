@@ -154,6 +154,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 tabCgiSide.SelectedTab = tabCgiCave;
             }
+            else if (tool == IsoTool.CaveStamp)
+            {
+                tabCgiSide.SelectedTab = tabCgiStamp;
+            }
             else if (tool == IsoTool.Mountain)
             {
                 tabCgiSide.SelectedTab = tabCgiMountain;

@@ -33,6 +33,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _cgiTools[tsbCgiCave] = IsoTool.Cave;
             _cgiTools[tsbCgiCaveEntrance] = IsoTool.CaveEntrance;
             _cgiTools[tsbCgiMountain] = IsoTool.Mountain;
+            _cgiTools[tsbCgiStamp] = IsoTool.CaveStamp;
+            _settings.CaveStamp ??= new CaveStampSettings();
+            isoView.CaveStamp = _settings.CaveStamp;
+            propCgiStamp.SelectedObject = _settings.CaveStamp;
+            lblCgiStampInfo.Text = L.T("Höhlen-Stempel: auf den Boden direkt vor einer Bergwand klicken, die nach Süden oder Osten zeigt. " +
+                "Boden und Berg werden am Tile erkannt (Gras darf höher liegen): die Höhe vorn wird der Höhlenboden, " +
+                "die vordere Reihe wird unsichtbar (0002), dahinter der Bogen 01D3–01DA bis zur Mund-Höhe, davor ein Weg. " +
+                "Der Client zeichnet Land nur am Hang mit Textur, flach mit dem Land-Bild – die Ansicht macht es jetzt genauso.");
             _settings.Mountain ??= new MountainSettings();
             isoView.Mountain = _settings.Mountain;
             propCgiMountain.SelectedObject = _settings.Mountain;
@@ -131,6 +139,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.CaveEntrancePatterns = patterns;
             int mountain = _settings?.Generator?.MountainGroup ?? 0x06;
             isoView.CaveEntranceMountainIds = new HashSet<ushort>(_rules.EntriesOfGroup(mountain).SelectMany(e => e.GetTileIds()));
+            isoView.CaveIsMountain = MountainClassifier(isoView.CaveEntranceMountainIds);
             if (isoView.CaveEntranceMountainIds.Count > 0)
             {
                 isoView.MountainFallbackTiles = isoView.CaveEntranceMountainIds.OrderBy(i => i).ToArray();
@@ -346,6 +355,52 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         // ================================================================== mountain
+
+        private HashSet<ushort> _mountainByName;
+
+        /// <summary>
+        /// Mountain / rock tiles: the mountain group of the colour table, the mountain brush tiles and every land tile whose
+        /// tiledata name contains "mountain" or "rock". Everything else (grass, dirt, sand …) is ground, whatever its height.
+        /// </summary>
+        private Func<ushort, bool> MountainClassifier(HashSet<ushort> groupIds)
+        {
+            if (_mountainByName == null || _mountainByName.Count == 0)
+            {
+                _mountainByName = new HashSet<ushort>();
+                for (int id = 3; id <= UoArtCache.MaxLandId; id++)
+                {
+                    string name = UoArtCache.LandName(id);
+                    if (name.Contains("mountain", StringComparison.OrdinalIgnoreCase) || name.Contains("rock", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _mountainByName.Add((ushort)id);
+                    }
+                }
+            }
+            var all = new HashSet<ushort>(_mountainByName);
+            all.UnionWith(groupIds ?? new HashSet<ushort>());
+            all.UnionWith(HexList.Parse(_settings?.Mountain?.Tiles ?? string.Empty));
+            all.RemoveWhere(id => CaveEntranceBuilder.IsEntranceTile(id, 0x0002));
+            return all.Contains;
+        }
+
+        private void PropCgiStamp_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
+        {
+            isoView.CaveStamp = _settings.CaveStamp;
+        }
+
+        private void BtnCgiStampTool_Click(object sender, EventArgs e)
+        {
+            ApplyCaveEntranceRules();
+            SelectCgiTool(IsoTool.CaveStamp);
+            isoView.Focus();
+        }
+
+        private void CgiViewTextures_Changed(object sender, EventArgs e)
+        {
+            isoView.AlwaysTextures = chkCgiAlwaysTextures.Checked;
+            isoView.ShowNoDraw = chkCgiShowNoDraw.Checked;
+            isoView.Refresh(true);
+        }
 
         private void PropCgiMountain_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {

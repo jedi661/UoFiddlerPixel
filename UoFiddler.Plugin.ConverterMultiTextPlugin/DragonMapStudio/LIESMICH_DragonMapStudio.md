@@ -469,6 +469,26 @@ Die offene Seite (zum flachen Land) bekommt keinen Übergang – das ist gewollt
 
 Korrekturen am Pinsel **Höhle**: nur Land, das schon über dem Boden liegt, wird zur Wand (vorher wurde auch der Boden vor dem Eingang zu einem Wall angehoben), und Boden aus einem früheren Zug auf anderer Höhe wird nicht mehr zur Wand.
 
+## Höhlen-Stempel (Reiter „Höhlen-Stempel“)
+
+Ein Klick auf den Boden direkt vor einer Bergwand (Süd- oder Ostseite) setzt einen kompletten Eingang (`Core/CaveEntranceBuilder.cs`):
+
+1. **Boden und Berg werden am Tile erkannt**, nicht an der Höhe: Berg = Berg-Gruppe der Farbtabelle + Berg-Pinsel-Tiles + alle Land-Tiles mit „mountain“ / „rock“ im TileData-Namen. Alles andere (Gras, Erde, Sand …) ist Boden – auch wenn es höher liegt.
+2. **Höhlenboden = Höhe des Bodens davor** (Mittelwert über die Breite des Mundes).
+3. Vordere Reihe (erste Bergreihe): `0002` auf Bodenhöhe – der Client zeichnet Land `0000`–`0002` nicht.
+4. Hintere Reihe(n): Rand-Tiles `01D3`–`01DA` nach `map/cave-enti2mountain.txt`, bis zur **Mund-Höhe** angehoben. Ist der Berg dahinter zu niedrig, wird er angehoben („Berg anheben“).
+5. Davor ein Weg (Standard Erde `0071`–`0078`, 2 Tiles) auf Bodenhöhe.
+
+Einstellungen: Richtung (Auto / Süden / Osten), Breite, Tiefe, Mund-Höhe, Berg anheben, Weg-Länge, Weg-Tiles, Weg-Breite. Sie werden gespeichert.
+
+**Zeichnen wie der Client** (aus dem ClassicUO-Quellcode, `Land.ApplyStretch`):
+* Ein Land-Tile wird mit seiner **Textur** gezeichnet, sobald irgendeine der 12 Höhen um es herum abweicht und die Textur existiert.
+* Sonst – auch am Hang, wenn es keine Textur hat – wird das **Land-Bild flach** auf der Tile-Höhe gezeichnet. Vorher hat die Ansicht das Land-Bild am Hang verzerrt.
+* Land `0000`–`0002` wird nicht gezeichnet. In der Ansicht ist es gelb gestrichelt umrandet (abschaltbar).
+* „Texturen auch auf flachem Land zeigen“ ist eine reine Vorschau: so sieht man die Textur, die am Hang benutzt würde.
+
+Der Höhle-Pinsel macht nur noch **Berg-Tiles** zur Wand. Gras daneben bleibt Boden, auch wenn es höher als der Höhlenboden liegt.
+
 ## Berge in der CGI-Ansicht (Reiter „Berg“)
 
 * **Pinsel „Berg“** (Leiste Land): am Fuß klicken und ziehen. Der Berg steigt ab der Bodenhöhe des ersten Klicks (oder „Fuß-Z“, wenn „Fuß automatisch“ aus ist) um „Steilheit“ Z pro Tile bis „Gipfel-Z“. Pinsel-Größe oben = Breite. Mehrmals ziehen baut einen Grat (mit „Nur anheben“ wird nie etwas abgesenkt).

@@ -81,6 +81,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Mountain brush / area of the CGI view (tab "Berg").</summary>
         public MountainSettings Mountain { get; set; } = new MountainSettings();
 
+        /// <summary>Cave stamp of the CGI view (tab "Höhlen-Stempel").</summary>
+        public CaveStampSettings CaveStamp { get; set; } = new CaveStampSettings();
+
         [Category("1 Ordner"), DisplayName("maptrans-Datei"), Description("maptrans.txt oder maptrans105.txt …")]
         public string MapTransFile { get; set; } = "maptrans.txt";
 

@@ -283,6 +283,14 @@
             chkCgiCaveInvisible = new System.Windows.Forms.CheckBox();
             chkCgiCaveFront = new System.Windows.Forms.CheckBox();
             tabCgiMountain = new System.Windows.Forms.TabPage();
+            tabCgiStamp = new System.Windows.Forms.TabPage();
+            propCgiStamp = new System.Windows.Forms.PropertyGrid();
+            panelCgiStampBottom = new System.Windows.Forms.Panel();
+            btnCgiStampTool = new System.Windows.Forms.Button();
+            chkCgiAlwaysTextures = new System.Windows.Forms.CheckBox();
+            chkCgiShowNoDraw = new System.Windows.Forms.CheckBox();
+            lblCgiStampInfo = new System.Windows.Forms.Label();
+            tsbCgiStamp = new System.Windows.Forms.ToolStripButton();
             propCgiMountain = new System.Windows.Forms.PropertyGrid();
             panelCgiMountainBottom = new System.Windows.Forms.Panel();
             btnCgiMountainTool = new System.Windows.Forms.Button();
@@ -1787,6 +1795,7 @@
             tabCgiSide.Controls.Add(tabCgiLand);
             tabCgiSide.Controls.Add(tabCgiCoast);
             tabCgiSide.Controls.Add(tabCgiCave);
+            tabCgiSide.Controls.Add(tabCgiStamp);
             tabCgiSide.Controls.Add(tabCgiMountain);
             tabCgiSide.Controls.Add(tabCgiTemplates);
             tabCgiSide.Controls.Add(tabCgiSelection);
@@ -2592,6 +2601,69 @@
             chkCgiCaveFront.Name = "chkCgiCaveFront";
             chkCgiCaveFront.CheckedChanged += CgiCaveSettings_Changed;
             // 
+            // tabCgiStamp
+            // 
+            tabCgiStamp.Controls.Add(propCgiStamp);
+            tabCgiStamp.Controls.Add(panelCgiStampBottom);
+            tabCgiStamp.Text = "Höhlen-Stempel";
+            tabCgiStamp.UseVisualStyleBackColor = true;
+            tabCgiStamp.Padding = new System.Windows.Forms.Padding(3);
+            tabCgiStamp.Name = "tabCgiStamp";
+            tabCgiStamp.Location = new System.Drawing.Point(4, 24);
+            tabCgiStamp.Size = new System.Drawing.Size(1176, 640);
+            // 
+            // propCgiStamp
+            // 
+            propCgiStamp.Dock = System.Windows.Forms.DockStyle.Fill;
+            propCgiStamp.ToolbarVisible = false;
+            propCgiStamp.HelpVisible = true;
+            propCgiStamp.Name = "propCgiStamp";
+            propCgiStamp.PropertyValueChanged += PropCgiStamp_PropertyValueChanged;
+            // 
+            // panelCgiStampBottom
+            // 
+            panelCgiStampBottom.Controls.Add(btnCgiStampTool);
+            panelCgiStampBottom.Controls.Add(chkCgiAlwaysTextures);
+            panelCgiStampBottom.Controls.Add(chkCgiShowNoDraw);
+            panelCgiStampBottom.Controls.Add(lblCgiStampInfo);
+            panelCgiStampBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
+            panelCgiStampBottom.Size = new System.Drawing.Size(290, 230);
+            panelCgiStampBottom.Name = "panelCgiStampBottom";
+            // 
+            // btnCgiStampTool
+            // 
+            btnCgiStampTool.Location = new System.Drawing.Point(4, 4);
+            btnCgiStampTool.Size = new System.Drawing.Size(276, 25);
+            btnCgiStampTool.Text = "Höhlen-Stempel wählen";
+            btnCgiStampTool.UseVisualStyleBackColor = true;
+            btnCgiStampTool.Name = "btnCgiStampTool";
+            btnCgiStampTool.Click += BtnCgiStampTool_Click;
+            // 
+            // chkCgiAlwaysTextures
+            // 
+            chkCgiAlwaysTextures.AutoSize = true;
+            chkCgiAlwaysTextures.Location = new System.Drawing.Point(4, 36);
+            chkCgiAlwaysTextures.Text = "Texturen auch auf flachem Land zeigen";
+            chkCgiAlwaysTextures.Name = "chkCgiAlwaysTextures";
+            chkCgiAlwaysTextures.CheckedChanged += CgiViewTextures_Changed;
+            // 
+            // chkCgiShowNoDraw
+            // 
+            chkCgiShowNoDraw.AutoSize = true;
+            chkCgiShowNoDraw.Checked = true;
+            chkCgiShowNoDraw.CheckState = System.Windows.Forms.CheckState.Checked;
+            chkCgiShowNoDraw.Location = new System.Drawing.Point(4, 60);
+            chkCgiShowNoDraw.Text = "Unsichtbare Tiles (0000–0002) umranden";
+            chkCgiShowNoDraw.Name = "chkCgiShowNoDraw";
+            chkCgiShowNoDraw.CheckedChanged += CgiViewTextures_Changed;
+            // 
+            // lblCgiStampInfo
+            // 
+            lblCgiStampInfo.Location = new System.Drawing.Point(4, 86);
+            lblCgiStampInfo.Size = new System.Drawing.Size(280, 140);
+            lblCgiStampInfo.Text = "-";
+            lblCgiStampInfo.Name = "lblCgiStampInfo";
+            // 
             // tabCgiMountain
             // 
             tabCgiMountain.Controls.Add(propCgiMountain);
@@ -3129,7 +3201,7 @@
             // 
             // toolStripCgiLand
             // 
-            toolStripCgiLand.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tslCgiLandTools, tsbCgiLandSet, tsbCgiRaise, tsbCgiLower, tsbCgiSetHeight, tsbCgiSmooth, tsbCgiCoast, tsbCgiCave, tsbCgiCaveEntrance, tsbCgiMountain, tsbCgiWater, tsbCgiArea, tssCgiLand1, tslCgiBrush, tscCgiBrush });
+            toolStripCgiLand.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { tslCgiLandTools, tsbCgiLandSet, tsbCgiRaise, tsbCgiLower, tsbCgiSetHeight, tsbCgiSmooth, tsbCgiCoast, tsbCgiCave, tsbCgiCaveEntrance, tsbCgiStamp, tsbCgiMountain, tsbCgiWater, tsbCgiArea, tssCgiLand1, tslCgiBrush, tscCgiBrush });
             toolStripCgiLand.Dock = System.Windows.Forms.DockStyle.Top;
             toolStripCgiLand.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             toolStripCgiLand.Name = "toolStripCgiLand";
@@ -3202,6 +3274,14 @@
             tsbCgiCaveEntrance.ToolTipText = "Pinsel: Höhleneingang am Bergfuß – schwarzer Mund 01DB, Rand zum Berg 01D3–01DA automatisch (Reiter Höhle / Weg)";
             tsbCgiCaveEntrance.Name = "tsbCgiCaveEntrance";
             tsbCgiCaveEntrance.Click += CgiTool_Click;
+            // 
+            // tsbCgiStamp
+            // 
+            tsbCgiStamp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbCgiStamp.Text = "Höhlen-Stempel";
+            tsbCgiStamp.ToolTipText = "Klick vor eine Bergwand: ganzer Höhleneingang, Boden- und Berg-Höhe werden übernommen (Reiter Höhlen-Stempel)";
+            tsbCgiStamp.Name = "tsbCgiStamp";
+            tsbCgiStamp.Click += CgiTool_Click;
             // 
             // tsbCgiMountain
             // 
@@ -4877,6 +4957,14 @@
         private System.Windows.Forms.CheckBox chkCgiCaveInvisible;
         private System.Windows.Forms.CheckBox chkCgiCaveFront;
         private System.Windows.Forms.TabPage tabCgiMountain;
+        private System.Windows.Forms.TabPage tabCgiStamp;
+        private System.Windows.Forms.PropertyGrid propCgiStamp;
+        private System.Windows.Forms.Panel panelCgiStampBottom;
+        private System.Windows.Forms.Button btnCgiStampTool;
+        private System.Windows.Forms.CheckBox chkCgiAlwaysTextures;
+        private System.Windows.Forms.CheckBox chkCgiShowNoDraw;
+        private System.Windows.Forms.Label lblCgiStampInfo;
+        private System.Windows.Forms.ToolStripButton tsbCgiStamp;
         private System.Windows.Forms.PropertyGrid propCgiMountain;
         private System.Windows.Forms.Panel panelCgiMountainBottom;
         private System.Windows.Forms.Button btnCgiMountainTool;
