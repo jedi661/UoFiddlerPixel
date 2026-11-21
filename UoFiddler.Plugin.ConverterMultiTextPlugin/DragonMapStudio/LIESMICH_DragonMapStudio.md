@@ -459,6 +459,76 @@ Die offene Seite (zum flachen Land) bekommt keinen Übergang – das ist gewollt
 
 **Pinsel „Eingang“** (Leiste Land, Reiter „Höhle / Weg“): am Fuß des Berges auf der Bodenhöhe klicken und 2–3 Tiles in den Hang ziehen. Jede Zelle wird Mund (`01DB`, oder `0002` mit „Eingang unsichtbar“), danach bekommt jede Eingangs-Zelle mit Berg-Nachbarn ihr Rand-Tile aus der Regel-Datei (fehlt sie: eingebaute Kopie). Als Berg zählt ein Nachbar mit Tile der Berg-Gruppe (Generator → Berg-Gruppe) oder einer, der mind. 5 höher liegt.
 
+**Mund-Höhe** (Standard 20): Der Mund liegt so viel über dem Boden des ersten Klicks. Wie im Original wird das schwarze Tile dadurch als steile Wand in den Hang gezogen (Bogen-Form) statt flach auf dem Boden zu liegen. Sichtbar ist das nur, wenn der Eingang nach **Süden oder Osten** zeigt – die Kamera schaut von Südosten.
+
+**Höhlen-Tiles (Galerie im Reiter „Höhle / Weg“):** alle Land-Tiles, deren TileData-Name „cave“ enthält, dazu die bekannten (`0002`, `01D3`–`01DE`, `0244`–`0249`) und **eigene IDs** (Feld „Eigene IDs“ oder „+ Tile“, wird in den Einstellungen gespeichert). „Texturen zeigen“ zeigt die Textur, mit der das Tile am Hang gezeichnet wird. Doppelklick = Land-Pinsel, „→ Höhlenboden“ nimmt das Tile in den Höhlen-Pinsel, „→ Eingang (Mund)“ nimmt es als Mund für den Eingang-Pinsel.
+
+**Eingangs-Muster:** einen fertigen Eingang (z. B. aus der Original-Karte) mit dem Werkzeug „Bereich“ samt etwas Boden davor markieren, „Bereich → Muster“ speichert ihn als Vorlage im Ordner `Höhleneingang` (Land-Tiles + Höhen relativ zum Anker). „Muster setzen“ / Doppelklick: Klick auf den Boden vor einem Berg setzt ihn mit allen Höhen.
+
+**Vorderkante unsichtbar** (an): Wie im Original (im Client als „NO DRAW“ zu sehen) wird die vordere Reihe des Mundes – die Zellen, die direkt an den flachen Boden grenzen – zum unsichtbaren Tile `0002` auf Bodenhöhe. Dadurch reicht die schwarze Wand dahinter bis auf den Boden. Davor am besten einen Erdweg (Reiter Land, Erde) mit „Höhe vom ersten Klick“ malen.
+
 Korrekturen am Pinsel **Höhle**: nur Land, das schon über dem Boden liegt, wird zur Wand (vorher wurde auch der Boden vor dem Eingang zu einem Wall angehoben), und Boden aus einem früheren Zug auf anderer Höhe wird nicht mehr zur Wand.
+
+## Höhlen-Stempel (Reiter „Höhlen-Stempel“)
+
+**So ist ein Eingang in der Original-Karte gebaut** (ausgewertet aus der CGI-Ansicht mit „ID + Höhe + Textur“, Höhen über dem Boden davor):
+
+Nach Süden (Berg im Norden), Spalten: Rahmen links | Mund × 3 | Rahmen rechts
+
+| Reihe | Tiles | Höhe |
+|-------|-------|------|
+| oben (2. Bergreihe) | `01D3` · `01D4 01D4 01D4` · `01D5` | +30 … +37 |
+| Mund (1. Bergreihe) | `01DA` · `01DB 01DB 01DB` · `01D6` | Rahmen +10 … +20, Mund +17 … +25 |
+| vorn (1. Bodenreihe) | `01E6` · `01DF 01DF 01DF` · `01E4` | Boden (Übergang Höhle → Erde, `cave2dirt.txt`) |
+| davor | Erde `0071`–`0078` | Boden |
+
+Auf jedem Tile der Mund-Reihe liegt ein unsichtbares Static („NO DRAW“) auf Bodenhöhe. Neben den Rahmen liegt Fels (z. B. `00DF`) mit etwa +12 … +16.
+
+Nach Osten (Berg im Westen) genauso gedreht: oben `01D3` · `01DA …` · `01D9`, Mund `01D4` · `01DB …` · `01D8`, vorn `01E7` · `01DD …` · `01E4`.
+
+Alle Tiles haben eine eigene Textur (Textur-ID = Land-ID), am Hang zeichnet der Client also die Textur.
+
+Der Stempel baut genau dieses Raster. **Ziehen:** unten am Rahmen anfangen und schräg nach oben zur anderen oberen Ecke ziehen. Der Abstand entlang der Wand ergibt die Breite (Start und Ende sind die Rahmen), die Höhe am Ende des Zuges die Höhe der oberen Reihe. Mund und Rahmen werden im selben Verhältnis angepasst.
+
+**Bereich auswerten:** Werkzeug „Bereich“, mit der linken Maustaste ein Viereck ziehen, dann **L** drücken (oder den Knopf im Reiter). Das Log wird als Datei gespeichert **und in die Zwischenablage kopiert**.
+
+Ein Klick auf den Boden direkt vor einer Bergwand (Süd- oder Ostseite) setzt einen kompletten Eingang (`Core/CaveEntranceBuilder.cs`):
+
+1. **Boden und Berg werden am Tile erkannt**, nicht an der Höhe: Berg = Berg-Gruppe der Farbtabelle + Berg-Pinsel-Tiles + alle Land-Tiles mit „mountain“ / „rock“ im TileData-Namen. Alles andere (Gras, Erde, Sand …) ist Boden – auch wenn es höher liegt.
+2. **Höhlenboden = Höhe des Bodens davor** (Mittelwert über die Breite des Mundes).
+3. Vordere Reihe (erste Bergreihe): `0002` auf Bodenhöhe – der Client zeichnet Land `0000`–`0002` nicht.
+4. Hintere Reihe(n): Rand-Tiles `01D3`–`01DA` nach `map/cave-enti2mountain.txt`, bis zur **Mund-Höhe** angehoben. Ist der Berg dahinter zu niedrig, wird er angehoben („Berg anheben“).
+5. Davor ein Weg (Standard Erde `0071`–`0078`, 2 Tiles) auf Bodenhöhe.
+
+Einstellungen: Richtung (Auto / Süden / Osten), Breite, Tiefe, Mund-Höhe, Berg anheben, Weg-Länge, Weg-Tiles, Weg-Breite. Sie werden gespeichert.
+
+**Rahmen** (an): links und rechts vom Mund je eine Spalte Rahmen-Tiles (`01DA` / `01D6`, hinten die Ecken `01D3` / `01D5`). Die Vorderkante hat dann genau „Breite“ unsichtbare Tiles – wie die Reihe „NO DRAW“ im Original.
+
+**Ziehen statt Klicken:** Maus auf den Boden an einer Seite des Mundes, gedrückt halten, zur anderen Seite ziehen = Breite. Endet der Zug oben an der Bergwand, wird die Höhe des Tiles dort die Mund-Höhe. Während des Ziehens zeigt die Ansicht „Breite x, Höhe y“.
+
+**Infos einblenden:** Leiste oben „Höhen“ + Auswahl daneben: Höhe, Land-ID (hex), ID + Höhe, ID + Höhe + Textur-ID.
+
+**Bereich auswerten → Log** (Reiter Höhlen-Stempel): einen Eingang, eine Straße oder einen Bergrand mit „Bereich“ markieren und auswerten. Das Log `cgi_bereich_<x>_<y>_<b>x<h>.txt` (Log-Ordner) enthält:
+* alle Land-IDs mit Anzahl, Klasse (Berg / Boden / Eingang / unsichtbar), Textur-ID, Radar-Farbe, TileData-Flags und Name,
+* Raster mit Land-ID, Höhe, Textur-ID, Klasse und „wie gezeichnet“ (Textur am Hang / Land-Bild flach / gar nicht),
+* für jedes Eingangs- und unsichtbare Tile das 8-Nachbar-Muster wie in den Dragon-Dateien,
+* alle Statics mit Lage, Höhe über dem Land, Hue, Flags und Name.
+
+Damit kann man Eingänge, Straßen und Bergränder aus der Original-Karte auswerten und nachbauen.
+
+**Zeichnen wie der Client** (aus dem ClassicUO-Quellcode, `Land.ApplyStretch`):
+* Ein Land-Tile wird mit seiner **Textur** gezeichnet, sobald irgendeine der 12 Höhen um es herum abweicht und die Textur existiert.
+* Sonst – auch am Hang, wenn es keine Textur hat – wird das **Land-Bild flach** auf der Tile-Höhe gezeichnet. Vorher hat die Ansicht das Land-Bild am Hang verzerrt.
+* Land `0000`–`0002` wird nicht gezeichnet. In der Ansicht ist es gelb gestrichelt umrandet (abschaltbar).
+* „Texturen auch auf flachem Land zeigen“ ist eine reine Vorschau: so sieht man die Textur, die am Hang benutzt würde.
+
+Der Höhle-Pinsel macht nur noch **Berg-Tiles** zur Wand. Gras daneben bleibt Boden, auch wenn es höher als der Höhlenboden liegt.
+
+## Berge in der CGI-Ansicht (Reiter „Berg“)
+
+* **Pinsel „Berg“** (Leiste Land): am Fuß klicken und ziehen. Der Berg steigt ab der Bodenhöhe des ersten Klicks (oder „Fuß-Z“, wenn „Fuß automatisch“ aus ist) um „Steilheit“ Z pro Tile bis „Gipfel-Z“. Pinsel-Größe oben = Breite. Mehrmals ziehen baut einen Grat (mit „Nur anheben“ wird nie etwas abgesenkt).
+* **Bereich + M** (oder Knopf „Markierten Bereich zum Berg formen“): die ganze markierte Fläche wird ein Berg – der Rand ausgefranst, innen Kuppen und Täler, Felskanten durch „Rauheit“.
+* Einstellungen: Gipfel-Z (Standard 90 wie Dragon-Gruppe 06), Steilheit, Hügel-Größe / -Stärke, Rauheit, Rand ausfransen, Berg-Tiles (Standard `022c`–`022f`, leer = Berg-Gruppe der Farbtabelle), optional Fuß-Tiles für die äußerste Reihe, Zufalls-Zahl. Werden in den Einstellungen gespeichert.
+* Danach mit „Eingang“ den Höhleneingang an der Süd- oder Ostseite setzen.
 
 Im 2D-Editor: werden Farben der Gruppe 1d von Hand gemalt, aktiviert „MUL erzeugen“ / „CGI-Karte bauen“ jetzt die Regel 1d → Berg selbst (vorher nur der Generator).
