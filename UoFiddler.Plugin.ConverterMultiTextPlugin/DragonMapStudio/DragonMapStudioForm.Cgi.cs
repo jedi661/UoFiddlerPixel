@@ -150,7 +150,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 tabCgiSide.SelectedTab = tabCgiCoast;
             }
-            else if (tool == IsoTool.Cave)
+            else if (tool == IsoTool.Cave || tool == IsoTool.CaveEntrance)
             {
                 tabCgiSide.SelectedTab = tabCgiCave;
             }
@@ -274,6 +274,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 return;
             }
+            EnsureCaveRule(_map);
             BuildOptions o = CurrentBuildOptions();
             DragonRuleSet rules = _rules;
             IndexedMap copy = _map.Clone();

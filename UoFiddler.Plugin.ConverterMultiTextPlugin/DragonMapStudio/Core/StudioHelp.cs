@@ -143,6 +143,10 @@ Zeigt die gebaute Karte wie der Client (Land-Art, Texturen an Hängen, Statics m
 * Bereich + Taste S: alle Statics darin auswählen (verschieben, kopieren, löschen).
 * Pinsel ""Höhle"": am Fuß eines Berges anfangen und hineinziehen – Höhlenboden auf einer Höhe,
   der Rand wird zur Wand angehoben (der Client zeigt die Fels-Textur dahinter). Reiter ""Höhle / Weg"".
+  Nur Land, das schon höher als der Boden liegt (der Berg), wird zur Wand – der Boden vor dem Eingang bleibt frei.
+* Pinsel ""Eingang"": Höhleneingang am Bergfuß – auf der Bodenhöhe davor klicken, 2–3 Tiles in den Hang ziehen.
+  Mund = 01DB (schwarz) oder 0002 (unsichtbar), der Rand zum Berg bekommt 01D3–01DA wie Dragon
+  (map/cave-enti2mountain.txt). Dahinter mit ""Höhle"" weitergraben oder auf dem Server einen Teleporter setzen.
 * Wege / Gebäude-Böden: Reiter Land -> ""Aus der Farbtabelle"" (cobblestones, marble, Holzboden …),
   dazu ""Höhe vom ersten Klick übernehmen"". Mehrere IDs im Feld = zufällig gemischt.
 
@@ -334,6 +338,10 @@ Shows the built map like the client (land art, textures on slopes, statics with 
 * Area + key S: select all statics inside (move, copy, delete).
 * Brush ""Höhle"" (cave): start at the foot of a mountain and drag into it – cave floor at one height,
   the edge is raised to a wall (the client shows the rock texture behind). Tab ""Höhle / Weg"".
+  Only land that is already above the floor (the mountain) becomes wall – the ground in front of the entrance stays open.
+* Brush ""Eingang"" (cave entrance): click at the foot of a mountain on the ground height, drag 2–3 tiles into the slope.
+  Mouth = 01DB (black) or 0002 (invisible), the edge to the mountain gets 01D3–01DA like Dragon
+  (map/cave-enti2mountain.txt). Dig on with ""Höhle"" or put a teleporter on the server.
 * Roads / building floors: tab Land -> ""Aus der Farbtabelle"" (cobblestones, marble, wood floor …),
   plus ""Höhe vom ersten Klick übernehmen"". Several ids in the field = mixed at random.
 

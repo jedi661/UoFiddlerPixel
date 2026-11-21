@@ -60,16 +60,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void BtnGenPreview_Click(object sender, EventArgs e) => GeneratePreview();
 
-        /// <summary>Cave entrances need the rule 1d -> mountain (map/cave-enti2mountain.txt); activate it once.</summary>
-        private void EnsureCaveRule()
+        /// <summary>
+        /// Cave entrances need the rule 1d -> mountain (map/cave-enti2mountain.txt); activate it once –
+        /// for the generator, and before a build when the map contains colours of the cave entrance group (painted by hand).
+        /// </summary>
+        private void EnsureCaveRule(IndexedMap map = null)
         {
             GeneratorSettings g = _settings.Generator;
-            if (g.CaveEntrances > 0 && _rules.EnsureCaveRule(g.CaveGroup, g.MountainGroup))
+            bool needed = map == null ? g.CaveEntrances > 0 : MapUsesGroup(map, g.CaveGroup);
+            if (needed && _rules.EnsureCaveRule(g.CaveGroup, g.MountainGroup))
             {
                 MarkRulesDirty();
                 BindRuleGrids();
                 Log($"Regel aktiviert: {_rules.HexGroup(g.CaveGroup)} → {_rules.HexGroup(g.MountainGroup)} map/cave-enti2mountain.txt (Höhleneingänge). Mit 'JSON speichern' oder 'Als Dragon-Skripte exportieren' dauerhaft machen.");
             }
+        }
+
+        private bool MapUsesGroup(IndexedMap map, int group)
+        {
+            var indices = new HashSet<int>(_rules.EntriesOfGroup(group).Select(e => e.Index));
+            if (indices.Count == 0)
+            {
+                return false;
+            }
+            foreach (ushort p in map.Pixels)
+            {
+                if (indices.Contains(p))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void GeneratePreview()
@@ -843,6 +864,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void StartBuild(IndexedMap map, string sourceName)
         {
+            EnsureCaveRule(map);
             BuildOptions o = CurrentBuildOptions();
             DragonRuleSet rules = _rules;
             tabMain.SelectedTab = tabBuild;

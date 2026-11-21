@@ -44,6 +44,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Brush: digs a cave floor at one height into the mountain, the edge becomes a wall.</summary>
         Cave,
 
+        /// <summary>Brush: cave entrance in the mountain side – black (01DB) or invisible (0002) mouth, the edge gets the entrance tiles 01D3–01DA.</summary>
+        CaveEntrance,
+
         /// <summary>Places a template (building / floor pattern) from the library.</summary>
         Template
     }
@@ -215,6 +218,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Cave floor at <see cref="TargetHeight"/> instead of the height where the stroke starts.</summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool CaveUseTargetHeight { get; set; }
+
+        /// <summary>Cave entrance brush: land tile of the mouth (01DB = black entrance, 0002 = invisible entrance like Dragon group 1d).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ushort CaveEntranceFillId { get; set; } = 0x01DB;
+
+        /// <summary>
+        /// Cave entrance brush: patterns of map/cave-enti2mountain.txt by mask (A = entrance, B = mountain, order NW N NE E SE S SW W).
+        /// Empty = built-in table (same tiles as the Dragon file).
+        /// </summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public IReadOnlyDictionary<byte, TransitionPattern> CaveEntrancePatterns { get; set; }
+
+        /// <summary>Cave entrance brush: land tiles that count as mountain (B) – e.g. the tiles of the mountain group of the colour table.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public HashSet<ushort> CaveEntranceMountainIds { get; set; } = new HashSet<ushort>();
+
+        /// <summary>Cave entrance brush: a neighbour at least this much higher than the mouth also counts as mountain.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int CaveEntranceRise { get; set; } = 5;
 
         /// <summary>Template of the tool "Template" (building / floor pattern).</summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -931,7 +953,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth ||
-                                                     t == IsoTool.Coast || t == IsoTool.Water || t == IsoTool.Cave;
+                                                     t == IsoTool.Coast || t == IsoTool.Water || t == IsoTool.Cave || t == IsoTool.CaveEntrance;
 
         /// <summary>Outline of a map rectangle (at the land heights of its corners).</summary>
         private PointF[] AreaPoly(Rectangle r)
@@ -1006,6 +1028,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         private bool _pasteGhost;
         private int _strokeZ;
+
+        /// <summary>Cells painted by the current cave entrance stroke (their height is the stroke height + pattern offset).</summary>
+        private readonly HashSet<int> _strokeCells = new HashSet<int>();
 
         private int PlaceZ(int x, int y)
         {
@@ -1114,6 +1139,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 _landStroke = true;
                 _lastLandTile = new Point(-1, -1);
                 _strokeZ = Tool == IsoTool.Cave && CaveUseTargetHeight ? TargetHeight : _map.LandZ(tile.X, tile.Y);
+                _strokeCells.Clear();
                 ApplyLandTool(tile);
                 return;
             }
@@ -1641,6 +1667,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                                 _map.SetLand(x, y, nid, _strokeZ);
                                 break;
                             }
+                        case IsoTool.CaveEntrance:
+                            _map.SetLand(x, y, CaveEntranceFillId, _strokeZ);
+                            _strokeCells.Add(y * _map.Width + x);
+                            break;
                         case IsoTool.Raise:
                             _map.SetLand(x, y, id, z + Math.Max(1, HeightStep));
                             break;
@@ -1674,7 +1704,131 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 RaiseCaveWalls(center, r + 1);
             }
+            if (Tool == IsoTool.CaveEntrance)
+            {
+                RetileCaveEntrance(center, r + 1);
+            }
             Refresh(true);
+        }
+
+        // ------------------------------------------------------------------ cave entrance
+
+        /// <summary>
+        /// Built-in copy of map/cave-enti2mountain.txt (IMod13 / Dragon): A = entrance, B = mountain,
+        /// order NW N NE E SE S SW W. Z offset is the middle of Z1..Z2 of the file (S side +10).
+        /// </summary>
+        private static readonly (string pattern, ushort tile, int z)[] DefaultEntrancePatterns =
+        {
+            ("BBBBBBBA", 0x01DA, 0), ("BBBABBBB", 0x01D6, 0),
+            ("BAAAAABB", 0x01DA, 0), ("BAAAAAAB", 0x01DA, 0), ("AAAAAABB", 0x01DA, 0), ("AAAAAAAB", 0x01DA, 0), ("BAAAAABA", 0x01DA, 0),
+            ("AABBBAAA", 0x01D6, 0), ("AAABBAAA", 0x01D6, 0), ("AABBAAAA", 0x01D6, 0), ("AAABAAAA", 0x01D6, 0), ("AABABAAA", 0x01D6, 0),
+            ("AAAABBBA", 0x01D8, 0), ("AAAAABBA", 0x01D8, 0), ("AAAABBAA", 0x01D8, 0), ("AAAAABAA", 0x01D8, 0), ("AAAABABA", 0x01D8, 0),
+            ("BBBAAAAA", 0x01D4, 10), ("ABBAAAAA", 0x01D4, 10), ("BBAAAAAA", 0x01D4, 10), ("ABAAAAAA", 0x01D4, 10), ("BABAAAAA", 0x01D4, 10),
+            ("AAAAAABA", 0x01D5, 0), ("ABABBAAA", 0x01D5, 0),
+            ("BAAAAAAA", 0x01D7, 0), ("AAABABBA", 0x01D7, 0),
+            ("AAAABAAA", 0x01D3, 0), ("ABBAAAAB", 0x01D3, 0),
+            ("AABAAAAA", 0x01D9, 0), ("BAAAABAB", 0x01D9, 0),
+            ("AABBBBBA", 0x01D7, 0), ("AAABBBBA", 0x01D7, 0), ("AABBBBAA", 0x01D7, 0), ("AAABBBAA", 0x01D7, 0),
+            ("BBBBBAAA", 0x01D5, 10), ("BBBBAAAA", 0x01D5, 10), ("ABBBBAAA", 0x01D5, 10), ("ABBBAAAA", 0x01D5, 10),
+            ("BBBAAABB", 0x01D3, 10), ("BBAAAABB", 0x01D3, 10), ("BBBAAAAB", 0x01D3, 10), ("BBAAAAAB", 0x01D3, 10),
+            ("BAAABBBB", 0x01D9, 0), ("AAAABBBB", 0x01D9, 0), ("BAAAABBB", 0x01D9, 0), ("AAAAABBB", 0x01D9, 0)
+        };
+
+        private static Dictionary<byte, (ushort tile, int z)> _defaultEntranceTable;
+
+        private static readonly int[] NbDx = { -1, 0, 1, 1, 1, 0, -1, -1 };
+        private static readonly int[] NbDy = { -1, -1, -1, 0, 1, 1, 1, 0 };
+
+        /// <summary>Land tiles that belong to a cave entrance: 01D3–01DB and the mouth tile of the brush.</summary>
+        public bool IsCaveEntranceTile(ushort id) => (id >= 0x01D3 && id <= 0x01DB) || id == CaveEntranceFillId;
+
+        private bool TryEntrancePattern(byte mask, out ushort tile, out int z)
+        {
+            IReadOnlyDictionary<byte, TransitionPattern> file = CaveEntrancePatterns;
+            if (file != null && file.Count > 0)
+            {
+                if (file.TryGetValue(mask, out TransitionPattern p) && p.GetTileIds().Length > 0)
+                {
+                    ushort[] ids = p.GetTileIds();
+                    tile = ids[ids.Length == 1 ? 0 : _rnd.Next(ids.Length)];
+                    z = (p.Z1 + p.Z2) / 2;
+                    return true;
+                }
+                tile = 0;
+                z = 0;
+                return false;
+            }
+            if (_defaultEntranceTable == null)
+            {
+                var t = new Dictionary<byte, (ushort, int)>();
+                foreach ((string pattern, ushort tile, int z) e in DefaultEntrancePatterns)
+                {
+                    t[TransitionPattern.PatternToMask(e.pattern)] = (e.tile, e.z);
+                }
+                _defaultEntranceTable = t;
+            }
+            if (_defaultEntranceTable.TryGetValue(mask, out (ushort tile, int z) d))
+            {
+                tile = d.tile;
+                z = d.z;
+                return true;
+            }
+            tile = 0;
+            z = 0;
+            return false;
+        }
+
+        /// <summary>
+        /// Gives every entrance cell around the brush its tile like the Dragon rule "1d → mountain": an edge to the mountain
+        /// gets 01D3–01DA, the inner cells and the open side (toward the low land) stay the mouth tile.
+        /// </summary>
+        private void RetileCaveEntrance(Point center, int r)
+        {
+            for (int y = center.Y - r; y <= center.Y + r; y++)
+            {
+                for (int x = center.X - r; x <= center.X + r; x++)
+                {
+                    if (!_map.InBounds(x, y) || !IsCaveEntranceTile(_map.LandId(x, y)))
+                    {
+                        continue;
+                    }
+                    int i = y * _map.Width + x;
+                    bool painted = _strokeCells.Contains(i);
+                    int baseZ = painted ? _strokeZ : _map.LandZ(x, y);
+                    byte mask = 0;
+                    for (int k = 0; k < 8; k++)
+                    {
+                        int nx = x + NbDx[k], ny = y + NbDy[k];
+                        if (!_map.InBounds(nx, ny))
+                        {
+                            continue;
+                        }
+                        ushort nid = _map.LandId(nx, ny);
+                        if (IsCaveEntranceTile(nid))
+                        {
+                            continue;
+                        }
+                        bool mountain = (CaveEntranceMountainIds != null && CaveEntranceMountainIds.Contains(nid)) ||
+                                        _map.LandZ(nx, ny) >= baseZ + Math.Max(1, CaveEntranceRise);
+                        if (mountain)
+                        {
+                            mask |= (byte)(1 << k);
+                        }
+                    }
+                    ushort tile = CaveEntranceFillId;
+                    int dz = 0;
+                    if (mask != 0 && TryEntrancePattern(mask, out ushort t, out int pz))
+                    {
+                        tile = t;
+                        dz = pz;
+                    }
+                    int nz = painted ? baseZ + dz : _map.LandZ(x, y);
+                    if (tile != _map.LandId(x, y) || nz != _map.LandZ(x, y))
+                    {
+                        _map.SetLand(x, y, tile, Math.Clamp(nz, -128, 127));
+                    }
+                }
+            }
         }
 
         /// <summary>Cells around the dug floor that are not floor become walls: at least the wall height above the floor.</summary>
@@ -1691,8 +1845,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         continue;
                     }
                     ushort id = _map.LandId(x, y);
-                    bool isFloor = Array.IndexOf(floor, id) >= 0 && _map.LandZ(x, y) == _strokeZ;
-                    if (!isFloor && _map.LandZ(x, y) < wallZ)
+                    int z = _map.LandZ(x, y);
+                    // floor of an earlier stroke (other height) stays floor; entrance tiles stay as they are;
+                    // only ground that is already above the floor (the mountain) becomes wall – the land in front
+                    // of the entrance (same height as the floor) is not walled up
+                    bool isFloor = Array.IndexOf(floor, id) >= 0;
+                    if (!isFloor && !IsCaveEntranceTile(id) && z > _strokeZ + 2 && z < wallZ)
                     {
                         _map.SetLand(x, y, id, wallZ);
                     }
@@ -2141,6 +2299,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         break;
                     case IsoTool.Cave:
                         tool = L.T("Höhle: am Eingang anfangen und in den Berg ziehen – Boden auf der Höhe des ersten Klicks (oder 'Höhe ='), der Rand wird Wand (Reiter Höhle / Weg) · Pinsel oben · ein Zug = ein Rückgängig-Schritt");
+                        break;
+                    case IsoTool.CaveEntrance:
+                        tool = L.T("Höhleneingang: am Fuß des Berges klicken / ein Stück in den Hang ziehen (mind. 2×2) – Mund 01DB (schwarz) oder 0002 (unsichtbar), der Rand zum Berg bekommt automatisch 01D3–01DA (Reiter Höhle / Weg) · ein Zug = ein Rückgängig-Schritt");
                         break;
                     case IsoTool.Template:
                         tool = L.T("Vorlage setzen: die Vorschau folgt der Maus, Klick setzt auf die Boden-Höhe + 'Z +' · danach ausgewählt: Pfeile / Bild↑↓ verschieben, Entf löscht · Strg+Z nimmt alles zurück");
