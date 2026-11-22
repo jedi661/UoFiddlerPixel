@@ -62,6 +62,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Click: cuts a complete cave entrance into the mountain face (ground and mountain height are taken from the map).</summary>
         CaveStamp,
 
+        /// <summary>Pattern brush from a stamp: land tiles + statics, freehand like a texture (roads, rivers) or once.</summary>
+        PatternBrush,
+
         /// <summary>Places a template (building / floor pattern) from the library.</summary>
         Template
     }
@@ -1062,7 +1065,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth ||
-                                                     t == IsoTool.Coast || t == IsoTool.Water || t == IsoTool.Cave || t == IsoTool.CaveEntrance || t == IsoTool.Mountain;
+                                                     t == IsoTool.Coast || t == IsoTool.Water || t == IsoTool.Cave || t == IsoTool.CaveEntrance || t == IsoTool.Mountain || t == IsoTool.PatternBrush;
 
         /// <summary>Outline of a map rectangle (at the land heights of its corners).</summary>
         private PointF[] AreaPoly(Rectangle r)
@@ -1250,6 +1253,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 _lastLandTile = new Point(-1, -1);
                 _strokeZ = Tool == IsoTool.Cave && CaveUseTargetHeight ? TargetHeight : _map.LandZ(tile.X, tile.Y);
                 _strokeCells.Clear();
+                _patternOnce = false;
+                _patternStepCells = 0;
+                _map.StrokeGroup = Tool == IsoTool.PatternBrush && Pattern != null && Pattern.StepCells > 0 ? _map.NewGroup() : 0;
                 ApplyLandTool(tile);
                 return;
             }
@@ -1384,7 +1390,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             if (_landStroke)
             {
                 _landStroke = false;
+                if (Tool == IsoTool.PatternBrush && Pattern != null && Pattern.Transitions && Pattern.Land && LandTransitions != null && _strokeCells.Count > 0)
+                {
+                    // soft edges of the drawn road / river (Dragon transitions around the stroke)
+                    int minX = _strokeCells.Min(i => i % _map.Width), maxX = _strokeCells.Max(i => i % _map.Width);
+                    int minY = _strokeCells.Min(i => i / _map.Width), maxY = _strokeCells.Max(i => i / _map.Width);
+                    LandTransitions.Apply(_map, Rectangle.FromLTRB(minX - 1, minY - 1, maxX + 2, maxY + 2), _rnd);
+                    Refresh(true);
+                }
                 int n = _map.EndLand();
+                _map.StrokeGroup = 0;
                 if (n > 0)
                 {
                     MapChanged?.Invoke(this, EventArgs.Empty);
@@ -1539,6 +1554,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     break;
                 case Keys.V when e.Control:
                     BeginPaste();
+                    break;
+                case Keys.Z when e.Control && e.Shift:
+                    UndoWholeStroke();
                     break;
                 case Keys.Z when e.Control:
                     Undo();
@@ -1765,6 +1783,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             _lastLandTile = center;
             int r = Math.Max(0, LandRadius);
+            if (Tool == IsoTool.PatternBrush)
+            {
+                ApplyPattern(center, r);
+                Refresh(true);
+                return;
+            }
             if (Tool == IsoTool.Coast || Tool == IsoTool.Water)
             {
                 var brush = new Rectangle(center.X - r, center.Y - r, r * 2 + 1, r * 2 + 1);
@@ -2573,6 +2597,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     case IsoTool.CaveEntrance:
                         tool = L.T("Höhleneingang: am Fuß des Berges klicken / ein Stück in den Hang ziehen (mind. 2×2) – Mund 01DB (schwarz) oder 0002 (unsichtbar) liegt 'Mund-Höhe' über dem Boden und wird als steile Wand in den Hang gezogen – sichtbar nur, wenn der Eingang nach Süden / Osten zeigt; der Rand zum Berg bekommt automatisch 01D3–01DA (Reiter Höhle / Weg) · ein Zug = ein Rückgängig-Schritt");
                         break;
+                    case IsoTool.PatternBrush:
+                        tool = L.T("Muster-Pinsel: Freihand = ziehen, das Muster läuft wie eine Textur weiter (Straßen, Flüsse) · Einmal = Klick setzt das ganze Muster · Pinselgröße oben · Übergänge zum Rand danach · Strg+Z = Schritt / Strich, Strg+Umschalt+Z = ganzer Strich");
+                        break;
                     case IsoTool.CaveStamp:
                         tool = L.T("Höhlen-Stempel: auf den Boden direkt vor einer Bergwand klicken (Süd- oder Ostseite) – Boden-Höhe vorn und Berg-Höhe dahinter werden übernommen, Vorderkante 0002, Bogen 01D3–01DA, Weg davor (Reiter Höhlen-Stempel) · Ziehen = Breite + Höhe · Strg+Klick = Eingang entfernen · Strg+Z = zurück");
                         break;
@@ -2588,6 +2615,113 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 }
             }
             return tool + Environment.NewLine + view;
+        }
+
+        /// <summary>All parts of the last stroke (pattern brush drawn stepwise).</summary>
+        public void UndoWholeStroke()
+        {
+            if (_map != null && _map.UndoWholeGroup())
+            {
+                _selection.Clear();
+                Refresh(true);
+                MapChanged?.Invoke(this, EventArgs.Empty);
+                SelectionChanged?.Invoke(this, EventArgs.Empty);
+                Message?.Invoke(this, "Ganzer Strich rückgängig.");
+            }
+        }
+
+        // ------------------------------------------------------------------ pattern brush
+
+        /// <summary>Pattern of the pattern brush (from a stamp).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public TilePattern Pattern { get; set; }
+
+        private bool _patternOnce;
+        private int _patternStepCells;
+
+        private static int Mod(int a, int m) => ((a % m) + m) % m;
+
+        /// <summary>Freehand: the cells under the brush get the pattern cell of their position; once: the whole pattern at the click.</summary>
+        private void ApplyPattern(Point center, int r)
+        {
+            TilePattern p = Pattern;
+            if (p == null || p.Width <= 0 || p.Height <= 0)
+            {
+                Message?.Invoke(this, "Muster-Pinsel: erst einen Stempel wählen (Knopf 'Muster-Pinsel').");
+                return;
+            }
+            var cells = new List<(int x, int y, int k)>();
+            if (!p.Freehand)
+            {
+                if (_patternOnce)
+                {
+                    return;
+                }
+                _patternOnce = true;
+                int ox = center.X - p.Width / 2, oy = center.Y - p.Height / 2;
+                for (int py = 0; py < p.Height; py++)
+                {
+                    for (int px = 0; px < p.Width; px++)
+                    {
+                        cells.Add((ox + px, oy + py, py * p.Width + px));
+                    }
+                }
+            }
+            else
+            {
+                for (int y = center.Y - r; y <= center.Y + r; y++)
+                {
+                    for (int x = center.X - r; x <= center.X + r; x++)
+                    {
+                        if (r > 1 && (x - center.X) * (x - center.X) + (y - center.Y) * (y - center.Y) > r * r + r)
+                        {
+                            continue;
+                        }
+                        cells.Add((x, y, Mod(y, p.Height) * p.Width + Mod(x, p.Width)));
+                    }
+                }
+            }
+            var statics = new List<StaticChange>();
+            int painted = 0;
+            foreach ((int x, int y, int k) in cells)
+            {
+                if (!_map.InBounds(x, y) || !_strokeCells.Add(y * _map.Width + x))
+                {
+                    continue;
+                }
+                painted++;
+                int landZ = _map.LandZ(x, y);
+                if (p.Land && p.HasLand)
+                {
+                    landZ = Math.Clamp(landZ + p.RelativeZ[k], -128, 127);
+                    _map.SetLand(x, y, p.Tiles[k], landZ);
+                }
+                if (p.StaticsOn && p.Statics.TryGetValue(k, out List<LayerStatic> l))
+                {
+                    if (p.Land && p.HasLand)
+                    {
+                        // a new road / floor replaces what stood there
+                        statics.AddRange(_map.StaticsAt(x, y).ToList().Select(MapData.Remove));
+                    }
+                    foreach (LayerStatic s in l)
+                    {
+                        statics.Add(MapData.Add(new StaticItem { Id = s.Id, Hue = s.Hue, X = x, Y = y, Z = Math.Clamp(landZ + s.Dz, -128, 127) }));
+                    }
+                }
+            }
+            _map.ApplyStatics(statics);
+            if (p.StepCells > 0 && p.Freehand)
+            {
+                _patternStepCells += painted;
+                if (_patternStepCells >= p.StepCells)
+                {
+                    // undo per part: close this step, the stroke goes on in the next one (same group)
+                    _patternStepCells = 0;
+                    _map.EndLand();
+                    _map.BeginLand();
+                    MapChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
         }
 
         public void Undo()

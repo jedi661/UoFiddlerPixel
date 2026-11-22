@@ -45,8 +45,94 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private readonly List<(CollapsibleSection section, Func<Image> icon)> _sectionIcons = new List<(CollapsibleSection, Func<Image>)>();
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
 
+        private ToolStripDropDownButton _cgiPatternButton;
+        private ColorStamp _cgiPatternStamp;
+        private bool _cgiPatternFreehand = true;
+        private StampLayers _cgiPatternLayers = StampLayers.Both;
+        private bool _cgiPatternTransitions = true;
+        private bool _cgiPatternSteps;
+
+        /// <summary>Menu of the CGI pattern brush: stamps (with built land tiles or statics) + options.</summary>
+        private void FillCgiPatternMenu()
+        {
+            if (_cgiPatternButton == null)
+            {
+                return;
+            }
+            ToolStripItemCollection items = _cgiPatternButton.DropDownItems;
+            items.Clear();
+            var usable = _stamps.Where(s => s.CanLearn || (s.Statics?.Count ?? 0) > 0).ToList();
+            if (usable.Count == 0)
+            {
+                items.Add(new ToolStripMenuItem(L.T("Noch keine Stempel mit Land-Tiles oder Statics – in der CGI-Ansicht einen Bereich markieren und '▣ Bereich → Farb-Stempel'")) { Enabled = false });
+            }
+            foreach (IGrouping<string, ColorStamp> cat in usable.GroupBy(s => string.IsNullOrWhiteSpace(s.Category) ? L.T("ohne Kategorie") : s.Category).OrderBy(g => g.Key))
+            {
+                var sub = new ToolStripMenuItem(cat.Key);
+                foreach (ColorStamp st in cat.OrderBy(s => s.Name))
+                {
+                    ColorStamp captured = st;
+                    var it = new ToolStripMenuItem($"{st.Name}  ({st.Width}×{st.Height}{(st.CanLearn ? string.Empty : ", " + L.T("nur Statics"))})")
+                    {
+                        Checked = ReferenceEquals(_cgiPatternStamp, st) || (_cgiPatternStamp != null && _cgiPatternStamp.File == st.File)
+                    };
+                    it.Click += (s, e) =>
+                    {
+                        _cgiPatternStamp = captured;
+                        _cgiPatternFreehand = captured.DrawMode == StampDrawMode.Freehand;
+                        _cgiPatternLayers = captured.Layers;
+                        ActivateCgiPattern();
+                    };
+                    sub.DropDownItems.Add(it);
+                }
+                items.Add(sub);
+            }
+            items.Add(new ToolStripSeparator());
+            ToolStripMenuItem Opt(string text, bool on, Action click)
+            {
+                var o = new ToolStripMenuItem(L.T(text)) { Checked = on };
+                o.Click += (s, e) => { click(); ActivateCgiPattern(); };
+                return o;
+            }
+            items.Add(Opt("Freihand (durchgehend ziehen)", _cgiPatternFreehand, () => _cgiPatternFreehand = true));
+            items.Add(Opt("Einmal (Klick setzt das ganze Muster)", !_cgiPatternFreehand, () => _cgiPatternFreehand = false));
+            items.Add(new ToolStripSeparator());
+            items.Add(Opt("Land + Statics", _cgiPatternLayers == StampLayers.Both, () => _cgiPatternLayers = StampLayers.Both));
+            items.Add(Opt("Nur Land", _cgiPatternLayers == StampLayers.LandOnly, () => _cgiPatternLayers = StampLayers.LandOnly));
+            items.Add(Opt("Nur Statics", _cgiPatternLayers == StampLayers.StaticsOnly, () => _cgiPatternLayers = StampLayers.StaticsOnly));
+            items.Add(new ToolStripSeparator());
+            items.Add(Opt("Übergänge zum Rand danach berechnen", _cgiPatternTransitions, () => _cgiPatternTransitions = !_cgiPatternTransitions));
+            items.Add(Opt("Rückgängig schrittweise (je 32 Felder)", _cgiPatternSteps, () => _cgiPatternSteps = !_cgiPatternSteps));
+            var undoAll = new ToolStripMenuItem(L.T("Ganzen Strich rückgängig (Strg+Umschalt+Z)"));
+            undoAll.Click += (s, e) => isoView.UndoWholeStroke();
+            items.Add(undoAll);
+        }
+
+        private void ActivateCgiPattern()
+        {
+            if (_cgiPatternStamp == null)
+            {
+                SetStatus(L.T("Muster-Pinsel: erst einen Stempel im Menü wählen."));
+                return;
+            }
+            ApplyCaveEntranceRules();
+            TilePattern p = TilePattern.FromStamp(_cgiPatternStamp);
+            p.Freehand = _cgiPatternFreehand;
+            p.Land = _cgiPatternLayers != StampLayers.StaticsOnly && p.HasLand;
+            p.StaticsOn = _cgiPatternLayers != StampLayers.LandOnly;
+            p.Transitions = _cgiPatternTransitions;
+            p.StepCells = _cgiPatternSteps ? 32 : 0;
+            isoView.Pattern = p;
+            SelectCgiTool(IsoTool.PatternBrush);
+            isoView.Focus();
+            _cgiPatternButton.Text = "✎ " + _cgiPatternStamp.Name;
+            SetStatus($"Muster-Pinsel '{p.Name}': {(p.Freehand ? L.T("ziehen = malen") : L.T("Klick = einmal setzen"))}, " +
+                      $"{(p.Land ? L.T("Land") : string.Empty)}{(p.Land && p.StaticsOn ? " + " : string.Empty)}{(p.StaticsOn ? L.T("Statics") : string.Empty)}" +
+                      (p.HasLand ? string.Empty : L.T(" (der Stempel hat keine gebauten Land-Tiles – nur Statics)")));
+        }
+
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 22.11.2026 – Vorlagen 13";
+        public const string BuildMark = "Stand 22.11.2026 – Pinsel 14";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
@@ -161,6 +247,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             toolStripCgi.Items.Insert(0, toEditor);
             toolStripCgi.Items.Insert(0, toStamp);
             isoView.AreaToStampRequested += (s, e) => CgiAreaToColorStamp();
+
+            // pattern brush in the CGI view: stamps with built land tiles / statics
+            _cgiPatternButton = new ToolStripDropDownButton(L.T("✎ Muster-Pinsel"))
+            {
+                ToolTipText = L.T("Stempel als Pinsel in der CGI-Ansicht: Land-Tiles + Statics, Freihand (Straßen, Flüsse) oder einmal – man sieht sofort, wie es entsteht"),
+                BackColor = Color.FromArgb(126, 34, 206),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            _cgiPatternButton.DropDownOpening += (s, e) => FillCgiPatternMenu();
+            toolStripCgiLand.Items.Add(new ToolStripSeparator());
+            toolStripCgiLand.Items.Add(_cgiPatternButton);
+            FillCgiPatternMenu();
         }
 
         /// <summary>Folding section; open / closed is remembered (sections that start folded remember "open").</summary>

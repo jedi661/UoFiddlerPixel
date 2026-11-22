@@ -38,7 +38,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Pan,
 
         /// <summary>Click: cave entrance like the original (colours), right click: remove it again.</summary>
-        CaveStamp
+        CaveStamp,
+
+        /// <summary>Freehand: the chosen stamp is painted as a continuous texture along the mouse (roads, rivers …).</summary>
+        PatternBrush
     }
 
     public sealed class MapClickEventArgs : EventArgs
@@ -143,6 +146,100 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public bool PasteRepeat { get; set; }
 
         public bool PasteActive => _pasteMode && _pasteBuffer != null;
+
+        // ------------------------------------------------------------------ pattern brush
+
+        /// <summary>
+        /// Pattern brush: new colour for a cell (x, y, current colour) or -1 = keep the colour (statics only / transparent).
+        /// Every cell is asked once per stroke (no drift of the heights).
+        /// </summary>
+        [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public Func<int, int, ushort, int> PatternColour { get; set; }
+
+        /// <summary>Cells the pattern brush reached for the first time in this stroke (inside the undo step) – the form adds statics there.</summary>
+        public event EventHandler<List<Point>> PatternCellsPainted;
+
+        /// <summary>Stroke ended (mouse up) – e.g. for the live CGI preview.</summary>
+        public event EventHandler StrokeEnded;
+
+        /// <summary>
+        /// Undo per part of a stroke: after this many painted cells a new undo step begins (0 = the whole stroke is one step).
+        /// The parts of one stroke form a group: "Ganzen Strich rückgängig" takes them back together.
+        /// </summary>
+        [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public int StrokeStepCells { get; set; }
+
+        private readonly HashSet<int> _patternDone = new HashSet<int>();
+        private int _strokeGroup;
+        private int _stepCells;
+
+        /// <summary>Last map position of the mouse (for the live preview).</summary>
+        public Point CursorTile => _cursor;
+
+        private void PatternStamp(int cx, int cy)
+        {
+            int size = Math.Max(1, BrushSize);
+            int half = size / 2;
+            var r = new Rectangle(cx - half, cy - half, size, size);
+            r.Intersect(_map.Bounds);
+            if (r.Width <= 0 || r.Height <= 0 || PatternColour == null)
+            {
+                return;
+            }
+            _history?.Touch(r);
+            bool round = !SquareBrush && size > 2;
+            double radius = size / 2.0;
+            double ccx = cx - half + radius, ccy = cy - half + radius;
+            var cells = new List<Point>();
+            for (int y = r.Top; y < r.Bottom; y++)
+            {
+                for (int x = r.Left; x < r.Right; x++)
+                {
+                    if (round)
+                    {
+                        double ddx = x + 0.5 - ccx, ddy = y + 0.5 - ccy;
+                        if (ddx * ddx + ddy * ddy > radius * radius)
+                        {
+                            continue;
+                        }
+                    }
+                    int i = y * _map.Width + x;
+                    if (!_patternDone.Add(i))
+                    {
+                        continue;
+                    }
+                    int c = PatternColour(x, y, _map.Pixels[i]);
+                    if (c >= 0)
+                    {
+                        _map.Pixels[i] = (ushort)c;
+                    }
+                    cells.Add(new Point(x, y));
+                }
+            }
+            if (cells.Count > 0)
+            {
+                PatternCellsPainted?.Invoke(this, cells);
+            }
+            Changed(r);
+            SplitStrokeStep(cells.Count);
+        }
+
+        /// <summary>Stepwise undo: closes the current step after StrokeStepCells cells and opens the next one of the same stroke.</summary>
+        private void SplitStrokeStep(int painted)
+        {
+            if (StrokeStepCells <= 0 || _history == null)
+            {
+                return;
+            }
+            _stepCells += painted;
+            if (_stepCells >= StrokeStepCells)
+            {
+                _stepCells = 0;
+                _history.End();
+                MapEdited?.Invoke(this, EventArgs.Empty);
+                _history.Begin(ToolName(_tool) + " (Teil)", _strokeGroup);
+            }
+        }
 
         /// <summary>After a paste / stamp was written, still inside its undo step (the form adds the statics of the stamp).</summary>
         public event EventHandler<MapPointEventArgs> PasteApplied;
@@ -649,7 +746,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             return c;
         }
 
-        private static bool UsesBrush(MapTool t) => t == MapTool.Brush || t == MapTool.Eraser || t == MapTool.Spray || t == MapTool.Raise || t == MapTool.Lower;
+        private static bool UsesBrush(MapTool t) => t == MapTool.Brush || t == MapTool.Eraser || t == MapTool.Spray || t == MapTool.Raise || t == MapTool.Lower || t == MapTool.PatternBrush;
 
         private static bool IsShapeTool(MapTool t) =>
             t == MapTool.Line || t == MapTool.Rectangle || t == MapTool.FilledRectangle || t == MapTool.Ellipse || t == MapTool.FilledEllipse;
@@ -748,8 +845,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             if (!IsShapeTool(_tool))
             {
-                _history?.Begin(ToolName(_tool));
-                Stamp(p.X, p.Y, color, e.Button);
+                _strokeGroup = _history?.NewGroup() ?? 0;
+                _stepCells = 0;
+                _patternDone.Clear();
+                _history?.Begin(ToolName(_tool), StrokeStepCells > 0 ? _strokeGroup : 0);
+                if (_tool == MapTool.PatternBrush)
+                {
+                    PatternStamp(p.X, p.Y);
+                }
+                else
+                {
+                    Stamp(p.X, p.Y, color, e.Button);
+                }
             }
             Invalidate();
         }
@@ -821,6 +928,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 DrawShape(_start, p, color);
             }
             EndEdit();
+            _patternDone.Clear();
+            StrokeEnded?.Invoke(this, EventArgs.Empty);
         }
 
         protected override void OnMouseLeave(EventArgs e)
@@ -914,6 +1023,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 case MapTool.Raise: return "Höhe +";
                 case MapTool.Lower: return "Höhe −";
                 case MapTool.CaveStamp: return "Höhleneingang";
+                case MapTool.PatternBrush: return "Muster-Pinsel";
                 default: return t.ToString();
             }
         }
@@ -942,14 +1052,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 return;
             }
+            Action<int, int> dab = _tool == MapTool.PatternBrush ? (x, y) => PatternStamp(x, y) : (x, y) => Stamp(x, y, color, button);
             for (int s = spacing; s <= steps; s += spacing)
             {
                 int x = a.X + (b.X - a.X) * s / steps, y = a.Y + (b.Y - a.Y) * s / steps;
-                Stamp(x, y, color, button);
+                dab(x, y);
             }
             if (steps % spacing != 0)
             {
-                Stamp(b.X, b.Y, color, button);
+                dab(b.X, b.Y);
             }
         }
 
@@ -994,6 +1105,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 }
             }
             Changed(r);
+            if (_drawing)
+            {
+                SplitStrokeStep(r.Width * r.Height);
+            }
         }
 
         private void SetPixel(int x, int y, ushort color)

@@ -128,6 +128,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private sealed class Step
         {
             public string Name;
+            public int Group;
             public Action ExtraUndo;
             public Action ExtraRedo;
             public readonly Dictionary<int, ushort[]> Before = new Dictionary<int, ushort[]>();
@@ -166,7 +167,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
-        public void Begin(string name)
+        public void Begin(string name) => Begin(name, 0);
+
+        /// <summary>Starts a step; steps with the same group (> 0) belong to one stroke and can be undone together.</summary>
+        public void Begin(string name, int group)
         {
             if (_map == null)
             {
@@ -176,7 +180,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 End();
             }
-            _current = new Step { Name = name };
+            _current = new Step { Name = name, Group = group };
+        }
+
+        private int _nextGroup;
+
+        public int NewGroup() => ++_nextGroup;
+
+        /// <summary>Group of the step that Undo would take back (0 = a single step).</summary>
+        public int UndoGroup => _undo.Count > 0 ? _undo.Last.Value.Group : 0;
+
+        /// <summary>Undoes the whole stroke of the last step (all following steps of its group).</summary>
+        public Rectangle UndoWholeGroup()
+        {
+            int g = UndoGroup;
+            Rectangle area = Undo();
+            while (g > 0 && UndoGroup == g)
+            {
+                Rectangle r = Undo();
+                area = area.IsEmpty ? r : Rectangle.Union(area, r);
+            }
+            return area;
         }
 
         /// <summary>Call before pixels inside the rectangle are changed.</summary>

@@ -21,8 +21,30 @@ using System.Text.Json;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 {
+    public enum StampDrawMode
+    {
+        /// <summary>Click = the whole stamp once.</summary>
+        Once,
+
+        /// <summary>Drawn as a continuous texture along the mouse (roads, rivers).</summary>
+        Freehand
+    }
+
+    public enum StampLayers
+    {
+        Both,
+        LandOnly,
+        StaticsOnly
+    }
+
     public sealed class ColorStamp
     {
+        /// <summary>How the stamp is drawn by default (can be changed in the stamp menu).</summary>
+        public StampDrawMode DrawMode { get; set; } = StampDrawMode.Once;
+
+        /// <summary>What the stamp draws: land (colours / tiles), statics or both.</summary>
+        public StampLayers Layers { get; set; } = StampLayers.Both;
+
         public string Name { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
         public int Width { get; set; }

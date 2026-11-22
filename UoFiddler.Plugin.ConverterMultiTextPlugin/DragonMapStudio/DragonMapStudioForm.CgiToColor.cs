@@ -95,6 +95,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             CgiToColor.Finish(conv, _cgiMap, _rules, engine);
             ColorStamp stamp = CgiToColor.ToStamp(conv, _rules, _settings.Generator.WaterGroup, dlg.StampName, dlg.Category, dlg.Statics, log, _cgiMap);
+            stamp.DrawMode = dlg.DrawMode;
+            stamp.Layers = dlg.Statics == StaticsMode.Layer ? StampLayers.Both : StampLayers.LandOnly;
             if (dlg.Statics == StaticsMode.ItemRule && conv.Statics.Count > 0)
             {
                 MarkRulesDirty();
