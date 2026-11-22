@@ -23,6 +23,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private readonly ComboBox _category;
         private readonly ComboBox _statics;
         private readonly ComboBox _colors;
+        private readonly ComboBox _draw;
 
         public CgiStampDialog(string title, string summary, IEnumerable<string> categories, bool askName, string defaultName)
         {
@@ -30,7 +31,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = MinimizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
-            ClientSize = new Size(520, askName ? 300 : 230);
+            ClientSize = new Size(520, askName ? 336 : 230);
             Font = new Font("Segoe UI", 9f);
             int y = 12;
             Label L1(string t) => new Label { Text = L.T(t), Location = new Point(12, y + 3), AutoSize = true };
@@ -46,6 +47,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 Controls.Add(L1("Kategorie:"));
                 Controls.Add(_category);
                 y += 40;
+            }
+            _draw = new ComboBox { Location = new Point(170, y), Width = 330, DropDownStyle = ComboBoxStyle.DropDownList };
+            _draw.Items.AddRange(new object[] { L.T("Einmal (Stempel, Klick)"), L.T("Freihand (Pinsel, durchgehend – Straßen, Flüsse)") });
+            _draw.SelectedIndex = 0;
+            if (askName)
+            {
+                Controls.Add(L1("Zeichnen:"));
+                Controls.Add(_draw);
+                y += 34;
             }
             Controls.Add(L1("Statics:"));
             _statics = EnumCombo(typeof(StaticsMode), new Point(170, y));
@@ -81,6 +91,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         public string Category => _category.Text.Trim();
 
         public StaticsMode Statics => (StaticsMode)Math.Max(0, _statics.SelectedIndex);
+
+        public StampDrawMode DrawMode => (StampDrawMode)Math.Max(0, _draw.SelectedIndex);
 
         public MissingColorMode Colors => (MissingColorMode)Math.Max(0, _colors.SelectedIndex);
     }

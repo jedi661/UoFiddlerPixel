@@ -674,3 +674,27 @@ Die Statics behalten ihre Höhe über dem Boden; beim Setzen im Karten-Editor pa
 Test mit den mitgelieferten Vorlagen: 556 Vorlagen gelesen, z. B. `Arenasand03` (5.804 Statics, ohne Land) → Stempel 49×51 mit 5.804 Statics; mit Boden „unter den Statics“ auf Boden 20 gesetzt bekommt der Boden die Höhe 20, der Rest bleibt durchsichtig.
 
 Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Vorlagen 13]`.
+
+## Muster-Pinsel: Stempel einmal oder freihand (Straßen, Wege, Flüsse)
+
+Ablauf: eine fremde Karte in der CGI-Ansicht laden (MUL / UOP), ein Stück Straße / Fluss / Weg mit „Bereich“ markieren, **„▣ Bereich → Farb-Stempel“**. Im Dialog jetzt auch **„Zeichnen: Einmal (Stempel) / Freihand (Pinsel)“**. Der Stempel speichert Farben, gebaute Land-Tiles mit Höhen und Statics.
+
+**Freihand** heißt: der Stempel ist ein Muster, das wie eine Textur lückenlos weiterläuft – jede Zelle unter dem Pinsel bekommt die Muster-Zelle ihrer Position (x mod Breite, y mod Höhe). So entstehen beliebig lange Straßen oder Flüsse. Jede Zelle wird pro Strich nur einmal gemalt (die Höhen wandern nicht).
+
+### Im Karten-Editor (Farben)
+Stempel-Menü: unter der Liste **Zeichnen** (Einmal / Freihand) und **Ebene** (Land + Statics / nur Land / nur Statics) – wird im Stempel gespeichert. „Setzen“:
+* **Einmal:** der Stempel hängt an der Maus (wie bisher, „Mehrfach setzen“, „Abbrechen“). Nur Land = ohne Statics, nur Statics = Farben durchsichtig.
+* **Freihand:** Werkzeug „Muster-Pinsel“ – ziehen = malen, Pinselgröße in der Leiste. Mit „Höhen an den Boden anpassen“ bekommt jede Zelle die Farbe ihrer Gruppe mit der Höhe des Bodens dort + Höhe im Muster (eine Straße folgt dem Gelände). Statics des Musters kommen in die Statics-Ebene (vorhandene Ebene-Statics an diesen Zellen werden ersetzt).
+* **Live-CGI beim Zeichnen** (Häkchen, Standard an): ein kleines CGI-Fenster baut die Umgebung der Maus (etwas größer als das Muster, höchstens 96×96) im Hintergrund nach jedem Abschnitt neu – man sieht beim Zeichnen, wie die Straße im Spiel aussieht. Die Maus / Tastatur bleiben im Karten-Editor.
+* **Rückgängig schrittweise** (Häkchen): ein Strich wird in Teile zu je 32 Feldern zerlegt – Strg+Z nimmt Teil für Teil zurück. **Strg+Umschalt+Z** (auch Kontextmenü „Ganzen Strich rückgängig“) nimmt den ganzen Strich zurück. Ohne Häkchen ist ein Strich ein Schritt. Gilt auch für Pinsel, Radierer, Sprühen, Höhe ±.
+
+### In der CGI-Ansicht (echte Tiles + Statics)
+Leiste Land: violetter Knopf **„✎ Muster-Pinsel“** – Menü mit den Stempeln (nach Kategorie; Stempel ohne gebaute Land-Tiles nur mit Statics) und den Optionen:
+* **Freihand** (durchgehend ziehen) oder **Einmal** (Klick setzt das ganze Muster mittig).
+* **Land + Statics / nur Land / nur Statics.** Land: Tile des Musters, Höhe = Gelände + Höhe im Muster (Straße bleibt auf dem Gelände, ein Flussbett wird eingegraben). Statics: Höhe über dem neuen Land; auf neu gemalten Land-Zellen werden die alten Statics ersetzt.
+* **Übergänge zum Rand danach berechnen:** nach dem Strich weiche Kanten nach den Dragon-Regeln.
+* **Rückgängig schrittweise (je 32 Felder)** und **Ganzen Strich rückgängig** (Strg+Umschalt+Z).
+
+Die CGI-Ansicht zeigt jeden Abschnitt sofort, während man zieht. Danach mit „▧ Bereich → in Farbkarte“ in die Farbkarte übernehmen oder als neuen Stempel speichern.
+
+Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Pinsel 14]`.

@@ -520,7 +520,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 SetStatus(L.T("Erst einen Stempel in der Liste wählen."));
                 return;
             }
-            PlaceStamp(s, _stampAdapt.Checked, _stampRepeat?.Checked ?? false);
+            UseStamp(s, _stampAdapt.Checked, _stampRepeat?.Checked ?? false, false, false);
         }
 
         /// <summary>Stamp / paste leaves the mouse.</summary>
@@ -599,7 +599,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             _stampBrowser = new StampBrowser { Dock = DockStyle.Fill, Thumbnail = StampThumbnail };
-            _stampBrowser.PlaceRequested += (s, st) => PlaceStamp(st, _stampBrowser.AdaptHeights, _stampBrowser.PlaceRepeated);
+            _stampBrowser.PlaceRequested += (s, st) => UseStamp(st, _stampBrowser.AdaptHeights, _stampBrowser.PlaceRepeated, _stampBrowser.StepUndo, _stampBrowser.LivePreview);
+            _stampBrowser.StampChanged += (s, st) =>
+            {
+                try
+                {
+                    if (!string.IsNullOrEmpty(st.File))
+                    {
+                        System.IO.File.WriteAllText(st.File, System.Text.Json.JsonSerializer.Serialize(st, new System.Text.Json.JsonSerializerOptions { IncludeFields = true }));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log("Stempel speichern: " + ex.Message);
+                }
+            };
             _stampBrowser.CancelRequested += (s, e) => CancelStamp();
             _stampBrowser.LearnRequested += (s, st) => LearnRulesFromStamp(st);
             _stampBrowser.ChooseFolderRequested += (s, e) => ChooseColorStampFolder();
@@ -845,7 +859,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             });
         }
 
-        private void ShowPreviewWindow(MapData data, Rectangle source, Rectangle inner)
+        private void ShowPreviewWindow(MapData data, Rectangle source, Rectangle inner, bool activate = true)
         {
             if (_previewWindow == null || _previewWindow.IsDisposed)
             {
@@ -880,13 +894,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 _previewWindow.Controls.Add(_previewView);
                 _previewWindow.Controls.Add(bar);
                 _previewWindow.Show(this);
+                if (!activate)
+                {
+                    // live preview while drawing: the map editor keeps the mouse / keyboard
+                    Activate();
+                    mapCanvas.Focus();
+                }
             }
             _previewView.SetMap(data);
             _previewView.CenterOn(inner.X + inner.Width / 2.0, inner.Y + inner.Height / 2.0);
             _previewWindow.Text = $"{L.T("CGI-Vorschau")} – x {source.X + inner.X}…{source.X + inner.Right - 1}, y {source.Y + inner.Y}…{source.Y + inner.Bottom - 1} " +
                                   L.T("(nur dieser Bereich gebaut, die Karte bleibt unverändert)");
-            _previewWindow.Activate();
-            _previewView.Focus();
+            if (activate)
+            {
+                _previewWindow.Activate();
+                _previewView.Focus();
+            }
+            else
+            {
+                _previewWindow.Text = L.T("Live-CGI beim Zeichnen") + $" – x {source.X + inner.X}, y {source.Y + inner.Y}";
+            }
         }
 
         // ================================================================== context menu
@@ -914,6 +941,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             _editorMenu.Items.Add(mnuUndo.Text.Replace("&", string.Empty), null, (s, a) => MnuUndo_Click(s, a)).Enabled = _history.CanUndo;
             _editorMenu.Items.Add(mnuRedo.Text.Replace("&", string.Empty), null, (s, a) => MnuRedo_Click(s, a)).Enabled = _history.CanRedo;
+            _editorMenu.Items.Add(L.T("Ganzen Strich rückgängig (Strg+Umschalt+Z)"), null, (s, a) => UndoWholeStroke()).Enabled = _history.CanUndo && _history.UndoGroup > 0;
             _editorMenu.Items.Add(new ToolStripSeparator());
             bool sel = !mapCanvas.Selection.IsEmpty;
             _editorMenu.Items.Add(L.T("Auswahl → CGI-Vorschau (V)"), null, (s, a) => ShowSelectionInCgi());

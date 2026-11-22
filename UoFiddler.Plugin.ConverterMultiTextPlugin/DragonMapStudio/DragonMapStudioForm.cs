@@ -734,6 +734,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 switch (e.KeyCode)
                 {
+                    case Keys.Z when e.Shift: UndoWholeStroke(); break;
                     case Keys.Z: MnuUndo_Click(sender, e); break;
                     case Keys.Y: MnuRedo_Click(sender, e); break;
                     case Keys.C: MnuCopy_Click(sender, e); break;

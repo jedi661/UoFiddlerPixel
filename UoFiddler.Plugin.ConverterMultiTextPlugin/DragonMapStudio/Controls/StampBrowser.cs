@@ -32,6 +32,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private readonly ImageList _images;
         private readonly CheckBox _adapt;
         private readonly CheckBox _repeat;
+        private readonly ComboBox _mode;
+        private readonly ComboBox _layers;
+        private readonly CheckBox _stepUndo;
+        private readonly CheckBox _live;
+        private bool _filling;
         private readonly Button _dock;
         private readonly Label _info;
         private List<ColorStamp> _all = new List<ColorStamp>();
@@ -71,6 +76,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             _list.DoubleClick += (s, e) => RaisePlace();
             _list.SelectedIndexChanged += (s, e) => ShowInfo();
 
+            // how the selected stamp is drawn (stored in the stamp)
+            var drawPanel = new TableLayoutPanel { Dock = DockStyle.Bottom, ColumnCount = 2, RowCount = 3, AutoSize = true, Padding = new Padding(0, 4, 0, 0) };
+            drawPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            drawPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            _mode = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill };
+            _mode.Items.AddRange(new object[] { L.T("Einmal (Stempel, Klick)"), L.T("Freihand (Pinsel, durchgehend)") });
+            _layers = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill };
+            _layers.Items.AddRange(new object[] { L.T("Land + Statics"), L.T("Nur Land (Farben)"), L.T("Nur Statics") });
+            drawPanel.Controls.Add(new Label { Text = L.T("Zeichnen:"), AutoSize = true, Margin = new Padding(3, 7, 3, 3) }, 0, 0);
+            drawPanel.Controls.Add(_mode, 1, 0);
+            drawPanel.Controls.Add(new Label { Text = L.T("Ebene:"), AutoSize = true, Margin = new Padding(3, 7, 3, 3) }, 0, 1);
+            drawPanel.Controls.Add(_layers, 1, 1);
+            var opts = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true, Margin = new Padding(0) };
+            _stepUndo = new CheckBox { Text = L.T("Rückgängig schrittweise"), AutoSize = true, Margin = new Padding(3, 3, 3, 3) };
+            _live = new CheckBox { Text = L.T("Live-CGI beim Zeichnen"), AutoSize = true, Checked = true, Margin = new Padding(3, 3, 3, 3) };
+            new ToolTip().SetToolTip(_stepUndo, L.T("Ein Freihand-Strich wird in Teile zu je 32 Feldern zerlegt: Strg+Z nimmt Teil für Teil zurück, 'Ganzen Strich rückgängig' (Strg+Umschalt+Z) alles."));
+            new ToolTip().SetToolTip(_live, L.T("Beim Zeichnen zeigt ein kleines CGI-Fenster die Umgebung der Maus gebaut – wie es im Spiel aussieht."));
+            opts.Controls.Add(_stepUndo);
+            opts.Controls.Add(_live);
+            drawPanel.Controls.Add(opts, 0, 2);
+            drawPanel.SetColumnSpan(opts, 2);
+            _mode.SelectedIndexChanged += (s, e) => ModeChanged();
+            _layers.SelectedIndexChanged += (s, e) => ModeChanged();
+
             _info = new Label { Dock = DockStyle.Bottom, Height = 48, Font = new Font("Segoe UI", 8f), ForeColor = Color.FromArgb(51, 65, 85) };
             var bottom = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = true, Padding = new Padding(0, 2, 0, 0) };
             _adapt = new CheckBox { Text = L.T("Höhen an den Boden anpassen"), Checked = true, AutoSize = true, Margin = new Padding(3, 6, 3, 3) };
@@ -95,6 +124,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
             Controls.Add(_list);
             Controls.Add(_info);
+            Controls.Add(drawPanel);
             Controls.Add(bottom);
             Controls.Add(filter);
             Controls.Add(head);
@@ -112,6 +142,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public event EventHandler ImportRequested;
 
         public bool PlaceRepeated => _repeat.Checked;
+
+        public bool StepUndo => _stepUndo.Checked;
+
+        public bool LivePreview => _live.Checked;
+
+        /// <summary>Draw mode / layers of the selected stamp were changed (the form saves the stamp).</summary>
+        public event EventHandler<ColorStamp> StampChanged;
+
+        private void ModeChanged()
+        {
+            ColorStamp s = Selected;
+            if (_filling || s == null)
+            {
+                return;
+            }
+            var mode = (StampDrawMode)Math.Max(0, _mode.SelectedIndex);
+            var layers = (StampLayers)Math.Max(0, _layers.SelectedIndex);
+            if (s.DrawMode != mode || s.Layers != layers)
+            {
+                s.DrawMode = mode;
+                s.Layers = layers;
+                StampChanged?.Invoke(this, s);
+                ShowInfo();
+            }
+        }
 
         /// <summary>Folder of the stamps (shown in the info line).</summary>
         public string Folder { get; set; } = string.Empty;
@@ -183,9 +238,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private void ShowInfo()
         {
             ColorStamp s = Selected;
+            _filling = true;
+            _mode.Enabled = _layers.Enabled = s != null;
+            if (s != null)
+            {
+                _mode.SelectedIndex = (int)s.DrawMode;
+                _layers.SelectedIndex = (int)s.Layers;
+            }
+            _filling = false;
             _info.Text = s == null
                 ? L.T("Doppelklick oder 'Setzen': Stempel hängt an der Maus, Klick setzt (einmal oder 'Mehrfach setzen'), Abbrechen / Esc = fertig.") + "\r\n" + Folder
-                : $"{s.Name}: {s.Width}×{s.Height}, Boden Z {s.BaseAltitude}, {s.Statics?.Count ?? 0} Statics";
+                : $"{s.Name}: {s.Width}×{s.Height}, Boden Z {s.BaseAltitude}, {s.Statics?.Count ?? 0} Statics" +
+                  (s.DrawMode == StampDrawMode.Freehand ? L.T(" · Freihand: Pinselgröße in der Leiste, ziehen = malen") : string.Empty) +
+                  (s.CanLearn ? L.T(" · mit Land-Tiles (auch in der CGI-Ansicht als Pinsel)") : string.Empty);
         }
 
         private void RaisePlace()

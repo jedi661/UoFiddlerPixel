@@ -43,6 +43,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     /// <summary>One undo step: statics and / or land.</summary>
     public sealed class EditStep
     {
+        /// <summary>Steps with the same group (> 0) belong to one stroke.</summary>
+        public int Group;
         public List<StaticChange> Statics = new List<StaticChange>();
         public List<LandChange> Land = new List<LandChange>();
     }
@@ -217,6 +219,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         // ------------------------------------------------------------------ land strokes (mouse drag = one undo step)
 
+        /// <summary>Group of the next stroke steps (BeginLand … EndLand); 0 = none.</summary>
+        public int StrokeGroup { get; set; }
+
+        private int _nextGroup;
+
+        public int NewGroup() => ++_nextGroup;
+
+        public int UndoGroup => _undo.Count > 0 ? _undo.Peek().Group : 0;
+
+        /// <summary>Undoes all steps of the stroke of the last step.</summary>
+        public bool UndoWholeGroup()
+        {
+            int g = UndoGroup;
+            bool any = Undo();
+            while (g > 0 && UndoGroup == g)
+            {
+                Undo();
+            }
+            return any;
+        }
+
         public void BeginLand()
         {
             _pendingLand = new Dictionary<int, LandChange>();
@@ -288,7 +311,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 return 0;
             }
-            var step = new EditStep { Land = pending?.Values.ToList() ?? new List<LandChange>(), Statics = statics };
+            var step = new EditStep { Land = pending?.Values.ToList() ?? new List<LandChange>(), Statics = statics, Group = StrokeGroup };
             _undo.Push(step);
             _redo.Clear();
             LandModified |= step.Land.Count > 0;
