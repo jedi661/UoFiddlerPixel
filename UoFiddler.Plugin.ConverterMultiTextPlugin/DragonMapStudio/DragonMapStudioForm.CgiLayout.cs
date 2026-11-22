@@ -42,6 +42,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         private readonly List<NavEntry> _cgiNav = new List<NavEntry>();
+        private readonly Dictionary<CollapsibleSection, string> _sectionKeys = new Dictionary<CollapsibleSection, string>();
         private readonly List<(CollapsibleSection section, Func<Image> icon)> _sectionIcons = new List<(CollapsibleSection, Func<Image>)>();
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
 
@@ -174,7 +175,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 22.11.2026 – Pinsel 21";
+        public const string BuildMark = "Stand 22.11.2026 – Werkstatt 26";
         private PictureBox _picStampPreview;
         private ToolStripButton _tsbStaticIds;
         private bool _cgiLayoutBuilt;
@@ -315,6 +316,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private CollapsibleSection NewSection(string key, string title, Color color, int bodyHeight, bool startCollapsed = false)
         {
             var s = new CollapsibleSection(L.T(title), color, bodyHeight) { Dock = DockStyle.Top };
+            _sectionKeys[s] = key;
             string mark = startCollapsed ? key + ":open" : key;
             bool stored = _settings.CgiCollapsed.Contains(mark);
             s.Collapsed = startCollapsed ? !stored : stored;

@@ -168,6 +168,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 tabCgiSide.SelectedTab = tabCgiTemplates;
                 EnsureTemplateLibrary();
             }
+            else if (_tabCgiBrushes != null && (tool == IsoTool.Bridge || tool == IsoTool.Cellar || tool == IsoTool.Dungeon || tool == IsoTool.Course || tool == IsoTool.MountainWall))
+            {
+                tabCgiSide.SelectedTab = _tabCgiBrushes;
+                OpenBrushSection(tool == IsoTool.Bridge ? "build.bridge" : tool == IsoTool.Cellar ? "build.cellar" : tool == IsoTool.Dungeon ? "build.dungeon" :
+                    tool == IsoTool.MountainWall ? "build.mountainwall" : "build.course");
+            }
             else if (_tabCgiBrushes != null && tool >= IsoTool.Scatter)
             {
                 tabCgiSide.SelectedTab = _tabCgiBrushes;

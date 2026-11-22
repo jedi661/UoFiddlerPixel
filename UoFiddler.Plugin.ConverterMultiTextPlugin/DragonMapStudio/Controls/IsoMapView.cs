@@ -108,7 +108,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Lasso,
 
         /// <summary>Click: connected cells of the same land (mask).</summary>
-        MagicWand
+        MagicWand,
+
+        /// <summary>Drag: bridge of statics over water (deck, railings, posts, arch).</summary>
+        Bridge,
+
+        /// <summary>Drag a rectangle: cellar under the map (NoDraw land, floor, walls, stairs).</summary>
+        Cellar,
+
+        /// <summary>Drag a rectangle: dungeon generator (cave, built or under the map).</summary>
+        Dungeon,
+
+        /// <summary>Drag A → B: natural river course.</summary>
+        Course,
+
+        /// <summary>Drag a rectangle: labyrinth of raised rock walls (the former "cave" dungeon).</summary>
+        MountainWall,
+
+        /// <summary>Round brush: deletes statics (and / or land to void) under it – size like every brush.</summary>
+        Eraser,
+
+        /// <summary>Click: stairs down in the chosen direction (stair set), filled down to the ground.</summary>
+        Stairs
     }
 
     public sealed class StaticPickEventArgs : EventArgs
@@ -582,7 +603,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         public void ZoomStep(int dir)
         {
-            double[] steps = { 0.25, 0.375, 0.5, 0.75, 1, 1.5, 2, 3, 4 };
+            // below 1:4 the view is drawn as a fast overview (colours of land + statics), not with the art
+            double[] steps = { 0.03125, 0.0625, 0.09375, 0.125, 0.1875, 0.25, 0.375, 0.5, 0.75, 1, 1.5, 2, 3, 4 };
             int i = Array.FindIndex(steps, s => s >= _zoom - 1e-6);
             i = Math.Clamp((i < 0 ? steps.Length - 1 : i) + dir, 0, steps.Length - 1);
             _zoom = steps[i];
@@ -663,8 +685,93 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         // ------------------------------------------------------------------ rendering
 
+        private bool _sceneIsScreen;
+
+        /// <summary>Zoom below 1:4: one colour per tile (land, or the highest static), drawn directly in screen pixels.</summary>
+        private void RenderOverview()
+        {
+            int w = Math.Max(1, Width), h = Math.Max(1, Height);
+            if (_scene == null || _scene.Width != w || _scene.Height != h || !_sceneIsScreen)
+            {
+                _scene?.Dispose();
+                _scene = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+            }
+            _sceneIsScreen = true;
+            _sceneDirty = false;
+            _placed.Clear();
+            int bg = BackColor.ToArgb();
+            var buffer = new int[w * h];
+            var cache = new Dictionary<long, int>();
+            int sw = SceneW, sh = SceneH;
+            for (int py = 0; py < h; py++)
+            {
+                for (int px = 0; px < w; px++)
+                {
+                    double sx = px / _zoom, sy = py / _zoom;
+                    int tx, ty;
+                    if (_topDown)
+                    {
+                        tx = (int)Math.Floor((sx - sw / 2.0) / Cell + _camX + 0.5);
+                        ty = (int)Math.Floor((sy - sh / 2.0) / Cell + _camY + 0.5);
+                    }
+                    else
+                    {
+                        double u = (sx - sw / 2.0) / Half + (_camX - _camY);
+                        double v = (sy - sh / 2.0 + Half) / Half + (_camX + _camY);
+                        tx = (int)Math.Floor((u + v) / 2);
+                        ty = (int)Math.Floor((v - u) / 2);
+                    }
+                    if (!_map.InBounds(tx, ty))
+                    {
+                        buffer[py * w + px] = bg;
+                        continue;
+                    }
+                    long key = ((long)tx << 32) | (uint)ty;
+                    if (!cache.TryGetValue(key, out int c))
+                    {
+                        Color col = UoArtCache.LandColor(_map.LandId(tx, ty));
+                        if (ShowStatics)
+                        {
+                            StaticItem top = null;
+                            foreach (StaticItem st in _map.StaticsAt(tx, ty))
+                            {
+                                if (st.Z <= MaxZ && !Hidden(st.Id) && (top == null || st.Z >= top.Z))
+                                {
+                                    top = st;
+                                }
+                            }
+                            if (top != null)
+                            {
+                                col = UoArtCache.ItemColor(top.Id);
+                            }
+                        }
+                        c = cache[key] = col.ToArgb() | unchecked((int)0xFF000000);
+                    }
+                    buffer[py * w + px] = c;
+                }
+            }
+            BitmapData data = _scene.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            try
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    System.Runtime.InteropServices.Marshal.Copy(buffer, y * w, data.Scan0 + y * data.Stride, w);
+                }
+            }
+            finally
+            {
+                _scene.UnlockBits(data);
+            }
+        }
+
         private void RenderScene()
         {
+            if (_zoom < 0.24 && _map != null)
+            {
+                RenderOverview();
+                return;
+            }
+            _sceneIsScreen = false;
             int sw = SceneW, sh = SceneH;
             if (_scene == null || _scene.Width != sw || _scene.Height != sh)
             {
@@ -687,6 +794,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
 
             var drawables = new List<(int depth, int prio, int order, Action draw)>(4096);
+            var below = new List<(int depth, int prio, int order, Action draw)>();
             int order = 0;
             double cs = _camX + _camY, cd = _camX - _camY;
             int sMin = (int)Math.Floor(cs - sh / (double)Tile) - 8;
@@ -752,7 +860,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         bool seeThrough = IsSeeThrough(st.Id);
                         bool noDraw = CaveEntranceBuilder.IsNoDrawStatic(st.Id, UoArtCache.ItemName(st.Id));
                         PointF floor = new PointF(top.X, top.Y + Half - st.Z * ZStep);
-                        drawables.Add((x + y, (st.Z + threshold) * 4 + threshold, order++, () =>
+                        // "unter der Karte": statics below the land are drawn after everything (else the land hides them)
+                        List<(int depth, int prio, int order, Action draw)> target = UnderView && st.Z < zMin && !CaveEntranceBuilder.IsNoDraw(landId) ? below : drawables;
+                        target.Add((x + y, (st.Z + threshold) * 4 + threshold, order++, () =>
                         {
                             if (noDraw)
                             {
@@ -799,7 +909,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
             g.SmoothingMode = SmoothingMode.None;
             g.PixelOffsetMode = PixelOffsetMode.Half;
-            foreach (var d in drawables.OrderBy(d => d.depth).ThenBy(d => d.prio).ThenBy(d => d.order))
+            foreach (var d in drawables.OrderBy(d => d.depth).ThenBy(d => d.prio).ThenBy(d => d.order).Concat(below.OrderBy(d => d.depth).ThenBy(d => d.prio).ThenBy(d => d.order)))
             {
                 try
                 {
@@ -1140,7 +1250,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             g.InterpolationMode = _zoom >= 1 ? InterpolationMode.NearestNeighbor : InterpolationMode.Bilinear;
             g.PixelOffsetMode = PixelOffsetMode.Half;
-            g.DrawImage(_scene, new Rectangle(0, 0, (int)(_scene.Width * _zoom), (int)(_scene.Height * _zoom)));
+            if (_sceneIsScreen)
+            {
+                g.DrawImageUnscaled(_scene, 0, 0);
+            }
+            else
+            {
+                g.DrawImage(_scene, new Rectangle(0, 0, (int)(_scene.Width * _zoom), (int)(_scene.Height * _zoom)));
+            }
 
             g.ScaleTransform((float)_zoom, (float)_zoom);
             g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -1198,6 +1315,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             g.ResetTransform();
             DrawBand(g);
+            DrawUnderBanner(g);
         }
 
         private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth ||
@@ -1270,6 +1388,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 using var pen = new Pen(Color.FromArgb(200, 255, 170, 0), 2) { DashStyle = DashStyle.Dash };
                 g.DrawPolygon(pen, AreaPoly(new Rectangle(_hover.X + b.X, _hover.Y + b.Y, b.Width, b.Height)));
             }
+            else if (Tool == IsoTool.Stairs && StairSet != null)
+            {
+                foreach (StaticChange c in Builders.BuildStairs(_map, _hover, PlaceZ(_hover.X, _hover.Y), BrushSettings.StairDirection, BrushSettings.StairSteps, BrushSettings.StairWidth, StairSet)
+                             .OrderBy(c => c.After.X + c.After.Y).ThenBy(c => c.After.Z))
+                {
+                    parts.Add((c.After.Id, c.After.X, c.After.Y, c.After.Z));
+                }
+            }
+            else if (Tool == IsoTool.Bridge && _dragStart.HasValue && _dragStart.Value != _dragEnd)
+            {
+                // the real pieces of the bridge while dragging
+                BridgeTemplate plan = CurrentBridgePlan(out _);
+                foreach (StaticChange c in BridgeKit.Build(_map, _dragStart.Value, _dragEnd, plan, BrushSettings.Bridge, new Random(1))
+                             .OrderBy(c => c.After.X + c.After.Y).ThenBy(c => c.After.Z).Take(3000))
+                {
+                    parts.Add((c.After.Id, c.After.X, c.After.Y, c.After.Z));
+                }
+            }
             else if (_pasteGhost && _clipboard.Count > 0)
             {
                 StaticItem a = _clipboard[0];
@@ -1309,7 +1445,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private int PlaceZ(int x, int y)
         {
             int baseZ = StackOnStatics ? _map.TopZ(x, y, id => UoArtCache.ItemHeight(id)) : _map.LandZ(x, y);
-            return Math.Clamp(baseZ + ZOffset, -128, 127);
+            return Math.Clamp(baseZ + ZOffset + (UnderView && !StackOnStatics ? BrushSettings.UnderOffset : 0), -128, 127);
         }
 
         // ------------------------------------------------------------------ hit test

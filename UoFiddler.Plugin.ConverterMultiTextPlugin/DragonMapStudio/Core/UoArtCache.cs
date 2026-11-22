@@ -212,6 +212,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
+        /// <summary>Tiledata flag of an item (false without tiledata).</summary>
+        public static bool ItemHas(int id, TileFlag flag)
+        {
+            try
+            {
+                return (TileData.ItemTable[id].Flags & flag) != 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         /// <summary>Kind of a static for the view filter (from the tiledata flags and the name).</summary>
         public static StaticKind ItemKind(int id)
         {

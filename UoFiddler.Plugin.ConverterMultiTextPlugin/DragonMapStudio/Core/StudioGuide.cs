@@ -526,6 +526,260 @@ Measure | drag: distance, steps, Δz and slope (z per tile).
             },
             new GuideTopic
             {
+                Key = "shapes", Group = "Karten-Editor|Map editor", TitleDe = "Formen, Neigung, natürlicher Lauf, Dungeon", TitleEn = "Shapes, slope, natural course, dungeon",
+                De = @"# Formen im Karten-Editor
+Alle Formen malen mit der gewählten Farbe (linke Maus = Farbe 1, rechte = Farbe 2) und beachten „Höhe behalten“.
+Linie, Rechteck, Ellipse | wie bisher (Dicke = Pinselgröße), auch gefüllt.
+Halbkreis | von der Mitte der geraden Seite zur Rundung ziehen – die Richtung bestimmt, wohin der Bogen zeigt. „Gefüllt“ oben, sonst nur der Rand.
+Dreieck | von der Mitte der Grundseite zur Spitze ziehen. „Gefüllt“ oder Rand.
+Neigungs-Linie | eine Linie mit Pinselbreite, deren Höhe von der Höhe am Start zur Höhe am Ende läuft: jede Zelle bekommt die Farbe der Gruppe von Farbe 1 in der passenden Höhe – fehlt sie, merkt sich die Höhen-Ebene die Höhe. Für Rampen, Straßen und Flüsse am Hang.
+Natürlicher Lauf | von A (Quelle) nach B (Mündung) ziehen: ein geschlängelter Lauf mit Pinselgröße, zum Ende breiter. „mit Muster-Stempel (Statics)“ malt ihn mit dem gewählten Muster-Pinsel (Land + Statics). „Schlängeln …“: wie stark, wie viele Bögen, Breite wächst. Die Vorschau zeigt genau den Lauf, der gemalt wird.
+Dungeon | Rechteck aufziehen: Räume und Gänge, Farbe 1 = Boden (z. B. Höhlenboden), Farbe 2 = Wand / Fels. „Dungeon-Einstellungen …“: Räume, Größen, Gang-Breite, Schleifen, höhlige Ränder, Zufalls-Zahl, Fels ganz füllen.
+## Tipps
+- Fluss: Farbe 1 = Wasser, Pinsel 4–8, „Natürlicher Lauf“ – danach Küste glätten in der CGI-Ansicht.
+- Straße am Hang: Farbe 1 = Weg, „Neigungs-Linie“ vom Tal zum Pass.
+- Dungeon-Bereich der Karte (Felucca / Trammel x > 5119): mit Schwarz füllen, dann Dungeon aufziehen.",
+                En = @"# Shapes in the map editor
+All shapes paint with the chosen colour (left mouse = colour 1, right = colour 2) and respect “Keep height”.
+Line, rectangle, ellipse | as before (thickness = brush size), also filled.
+Half circle | drag from the middle of the straight side to the round side – the direction decides where the arc points. “Filled” at the top, otherwise only the outline.
+Triangle | drag from the middle of the base to the tip. “Filled” or outline.
+Slope line | a line with brush width whose height runs from the height at the start to the height at the end: every cell gets the colour of the group of colour 1 at the matching height – if it is missing, the height layer remembers the height. For ramps, roads and rivers on slopes.
+Natural course | drag from A (source) to B (mouth): a winding course with the brush size, wider towards the end. “with pattern stamp (statics)” paints it with the chosen pattern brush (land + statics). “Meander …”: how strong, how many bends, width grows. The preview shows exactly the course that is painted.
+Dungeon | drag a rectangle: rooms and corridors, colour 1 = floor (e.g. cave floor), colour 2 = wall / rock. “Dungeon settings …”: rooms, sizes, corridor width, loops, rough edges, random number, fill all rock.
+## Tips
+- River: colour 1 = water, brush 4–8, “Natural course” – then smooth the coast in the CGI view.
+- Road on a slope: colour 1 = road, “Slope line” from the valley to the pass.
+- Dungeon area of the map (Felucca / Trammel x > 5119): fill with black, then drag the dungeon."
+            },
+            new GuideTopic
+            {
+                Key = "build", Group = "CGI-Ansicht|CGI view", TitleDe = "Bauen: Brücke, Keller, unter der Karte, Dungeon", TitleEn = "Building: bridge, cellar, under the map, dungeon",
+                De = @"# Bauen in der CGI-Ansicht
+Die Werkzeuge stehen in der Palette (Gruppe Bauen), die Einstellungen im Reiter Pinsel. Jeder Bau ist ein Rückgängig-Schritt.
+## Brücke
+Von Ufer zu Ufer ziehen (West-Ost oder Nord-Süd). Bretter auf der ganzen Breite, Geländer an beiden Seiten, Pfosten an den Enden, die Mitte um „Bogen“ höher. Höhe = höheres Ende + „Z +“.
+Brücken-Set | „Neu …“, dann im Reiter Items das Stück wählen und „← Brett W-O“, „← Brett N-S“, „← Geländer …“, „← Pfosten“ klicken. Mehrere IDs werden gemischt.
+## Keller
+Rechteck aufziehen. So entsteht ein begehbarer Keller wie auf Freeshards:
+- Das Land im Rechteck wird zum unsichtbaren Tile NoDraw (0002) auf Boden − Tiefe (Standard 20) – der Client zeichnet dann, was darunter liegt.
+- Der Rand bekommt Wände (Wand-Set, Name unter „Wände“), innen liegt der Kellerboden (Statics).
+- Eine Treppe führt von der Bodenhöhe in Schritten zu 5 Z hinunter, in die Richtung „Treppe hinunter nach“ (Nord, Ost, Süd, West), so breit wie eingestellt.
+- „Boden oben“ legt den Hausboden auf Bodenhöhe darüber (außer über der Treppe).
+Treppen-Set | je Richtung die passende Stufe: „← ab Nord“ usw. mit dem gewählten Item.
+## Unter der Karte bauen
+Schalter in der Palette, in der Leiste (⬇ Unter der Karte), im Reiter Pinsel und unter Ansicht:
+- Statics, die unter dem Boden liegen, werden über dem Land gezeigt – man sieht, was man unten baut.
+- Ein violettes Banner oben zeigt: man baut gerade unter der Karte, mit der Bau-Ebene.
+- Static setzen und Wand bauen setzen auf Boden + Bau-Ebene (Standard −20).
+## Dungeon-Werkstatt (eigenes Fenster)
+Platz mit „Bereich“ markieren (zum Markieren großer Plätze weit herauszoomen – unter 1:4 zeigt die Ansicht eine schnelle Farb-Übersicht), dann Palette → Dungeon-Werkstatt oder Keller (Werkstatt), oder Kontextmenü → Bereich.
+- Alles geschieht erst in einer Arbeitskopie: OBEN die Karte, UNTEN die gewählte Etage (Statics unter dem Boden sichtbar, darüber ausgeblendet). Mit den Werkzeugen der Leiste (Auswahl, Static setzen, Löschen, Wand, Loch, Land setzen, Messen) in beiden Ansichten weiterbauen.
+- Art: Klassischer Dungeon (Boden-Textur + Wand-Statics, Stil), Keller (nur Statics unter der Karte, Loch auf Kartenhöhe), Berg-Dungeon (Fels-Wände im Gitter), Bergwall (Fels-Labyrinth).
+- Etage: Regler in 20er-Schritten von der ermittelten Kartenhöhe (0, −20, −40 … und nach oben) oder z genau.
+- Leere außen: NoDraw 0002, Schwarz 0244 oder „Wählen …“ aus dem Land-Katalog (z. B. Schwarz mit Sternen).
+- Generieren leert den Platz zuerst (Statics weg, Land = Leere auf seiner Höhe – keine Löcher in die Tiefe) und baut dann. Liegt die Etage unter der Karte, bleibt das Land oben NoDraw und der Dungeon liegt darunter aus Statics.
+- 2D-Plan: der Grundriss zum Nachzeichnen (links Boden, rechts Fels, Umschalt Innenwand, Strg Gang) → „Aus Plan bauen“.
+- Skript / Stil: der Stil als JSON ansehen, ändern, übernehmen oder als neuen Stil speichern.
+- Scannen: einen Dungeon der Karte im Studio markieren → „Bereich scannen + Stil lernen“ (mit Log) oder „1:1 hierher kopieren“.
+- Rückgängig / Wiederholen (auch Strg+Z / Strg+Y), Alles zurück, Verschieben N S W O, Höhe ±1 / ±5 / ± Etage, Schnell löschen (Statics, Land, beides).
+- „In die Karte übernehmen“ schreibt alles als EINEN Schritt in die Karte (dort Strg+Z).
+## Dungeon-Generator
+Echte UO-Dungeons (Deceit, Doom, Shame …) bestehen aus Boden-Land mit Dungeon-Textur, schwarzem Void-Land drumherum und Wand-Statics an der Grenze Boden ↔ Leere in Bodenhöhe, dazu Deko (Spinnweben, Knochen, Fackeln). Genau so baut der Generator – nur mit Textur und Statics.
+- Stil lernen: auf einer Karte mit Dungeons einen Dungeon mit „Bereich“ markieren (mit etwas schwarzem Rand), Kontextmenü → Bereich → „Dungeon-Stil aus dem Bereich lernen …“ oder Reiter Pinsel → Dungeon. Gelernt werden Boden-Textur, Void-Land, welche Wand-Stapel (id + Höhe) in welcher Lage stehen (Nachbarn N O S W und Außenecken) und die Deko mit Häufigkeit.
+- Log: „Dungeon analysieren (Log)“ schreibt alles in eine Datei und in die Zwischenablage: Land und Texturen, Boden-Höhen, jedes Static mit Höhe über dem Boden und Rolle (Wand, Boden, Deko), die Wand-Regeln und einen Plan.
+- Rollen im Log: Wand (Wand-Flag oder auf der Leere), Wand-Deko (Fackeln, Bilder, Teppiche – hängen an Wänden), Deko (lose: Schutt, Blut, Knochen, Spinnweben), Einrichtung (Tische, Stühle, Steine, Treppen – wird nicht zufällig gesetzt), Boden.
+- UO-Regel (aus map0 gelesen): Nord- und Westwände stehen auf der Leere außen, Süd- und Ostwände auf dem letzten Bodenfeld innen; Wände zwischen zwei Räumen stehen auf Boden-Land (Innenwände) – alles wird gelernt.
+- Bauen: Werkzeug Dungeon, Rechteck aufziehen (mindestens 10×10). Grundriss „Gitter“ (Standard, wie Deceit): der Bereich wird in Räume geteilt, eine Wand-Zeile auf Boden-Land dazwischen (Wand-Dicke 1) und eine Tür (Tür-Breite), manchmal eine zweite. Grundriss „Räume + Gänge“: verstreute Räume, verbunden über einen minimalen Spannbaum + „Schleifen“ %, Gänge in L-Form. Mit gelerntem Stil steht jedes Wandstück wie im Original, Fackeln hängen an den Wänden, lose Deko liegt auf dem freien Boden; ohne Stil nimmt er das Wand-Set.
+- Unter der Karte | wie ein Keller: NoDraw-Land auf Boden − Tiefe, Statics darunter.
+- Zufalls-Zahl 0 = jedes Mal neu; die benutzte Zahl steht in der Statuszeile.
+## Bergwall
+Rechteck aufziehen: dieselben Räume und Gänge, aber die Wände sind hohes Fels-Land (Berg-Tiles) – ein Labyrinth aus Bergwänden mit unregelmäßigen Rändern (der frühere „Höhle“-Dungeon).
+## Fluss-Lauf
+Von der Quelle zur Mündung ziehen: geschlängelter Fluss mit den Fluss-Einstellungen (Tiefe, Ufer, Übergänge), zum Ende breiter. Breite am Anfang / Ende in Tiles („Fluss: Breite / Schlängeln …“, 0 = Pinselgröße). Die Mitte des Flusses bleibt immer Wasser (auch nach den Übergängen), „Wasser-Statics dazu“ legt zusätzlich Wasser-Statics darauf.",
+                En = @"# Building in the CGI view
+The tools are in the palette (group Build), the settings in the tab Brushes. Every build is one undo step.
+## Bridge
+Drag from bank to bank (west – east or north – south). Planks over the whole width, railings on both sides, posts at the ends, the middle higher by “arch”. Height = higher end + “Z +”.
+Bridge set | “New …”, then choose the piece in the tab Items and click “← Plank W-E”, “← Plank N-S”, “← Railing …”, “← Post”. Several ids are mixed.
+## Cellar
+Drag a rectangle. This makes a walkable cellar like on free shards:
+- The land in the rectangle becomes the invisible tile NoDraw (0002) at ground − depth (default 20) – the client then draws what lies below.
+- The border gets walls (wall set, name under “Walls”), inside lies the cellar floor (statics).
+- Stairs lead from the ground down in steps of 5 Z, in the direction “stairs down towards” (north, east, south, west), as wide as set.
+- “Floor above” puts the house floor at ground height on top (except above the stairs).
+Stair set | for every direction the matching step: “← down N” etc. with the chosen item.
+## Building under the map
+Switch in the palette, in the bar (⬇ Under the map), in the tab Brushes and under View:
+- Statics below the ground are shown above the land – you see what you build down there.
+- A violet banner at the top shows that you are building under the map, with the building level.
+- Place static and build wall put things at ground + building level (default −20).
+## Dungeon workshop (own window)
+Mark a place with “Area” (zoom far out to mark big places – below 1:4 the view shows a fast colour overview), then palette → Dungeon workshop or Cellar (workshop), or context menu → Area.
+- Everything happens in a working copy first: ABOVE the map, BELOW the chosen level (statics below the ground visible, above it hidden). Keep building in both views with the tools of the bar (select, place static, delete, wall, hole, set land, measure).
+- Kind: classic dungeon (floor texture + wall statics, style), cellar (only statics under the map, hole at map height), mountain dungeon (rock walls in a grid), mountain wall (rock labyrinth).
+- Level: slider in steps of 20 from the detected map height (0, −20, −40 … and up) or exact z.
+- Void outside: NoDraw 0002, black 0244 or “Choose …” from the land catalogue (e.g. black with stars).
+- Generate empties the place first (statics away, land = void at its own height – no holes into the depth) and then builds. If the level is under the map the land above stays NoDraw and the dungeon lies below as statics.
+- 2D plan: the floor plan to draw by hand (left floor, right rock, Shift inner wall, Ctrl corridor) → “Build from plan”.
+- Script / style: see the style as JSON, change it, apply it or save it as a new style.
+- Scan: mark a dungeon of the map in the studio → “Scan area + learn style” (with log) or “Copy 1:1 to here”.
+- Undo / redo (also Ctrl+Z / Ctrl+Y), all back, move N S W E, height ±1 / ±5 / ± level, quick delete (statics, land, both).
+- “Apply to the map” writes everything as ONE step into the map (Ctrl+Z there).
+## Dungeon generator
+Real UO dungeons (Deceit, Doom, Shame …) consist of floor land with a dungeon texture, black void land around it and wall statics at the border floor ↔ void at floor height, plus decoration (webs, bones, torches). The generator builds exactly like that – only texture and statics.
+- Learn a style: on a map with dungeons mark a dungeon with “Area” (with some black border), context menu → Area → “Learn dungeon style from the area …” or tab Brushes → Dungeon. Learned are the floor texture, the void land, which wall stacks (id + height) stand in which situation (neighbours N E S W and outer corners) and the decoration with its frequency.
+- Log: “Analyse dungeon (log)” writes everything into a file and the clipboard: land and textures, floor heights, every static with its height above the floor and its role (wall, floor, decor), the wall rules and a plan.
+- Roles in the log: wall (wall flag or on the void), wall decor (torches, paintings, tapestries – hang on walls), decor (loose: garbage, blood, bones, webs), furniture (tables, chairs, stones, stairs – not placed at random), floor.
+- UO rule (read from map0): north and west walls stand on the void outside, south and east walls on the last floor cell inside; walls between two rooms stand on floor land (inner walls) – all of it is learned.
+- Build: tool Dungeon, drag a rectangle (at least 10×10). Layout “grid” (default, like Deceit): the area is split into rooms, a wall line on floor land between them (wall thickness 1) and a door (door width), sometimes a second one. Layout “rooms + corridors”: scattered rooms, connected by a minimum spanning tree + “loops” %, L-shaped corridors. With a learned style every wall piece stands like in the original, torches hang on the walls, loose decor lies on the free floor; without a style it uses the wall set.
+- Under the map | like a cellar: NoDraw land at ground − depth, statics below.
+- Random number 0 = new every time; the number used is shown in the status line.
+## Mountain wall
+Drag a rectangle: the same rooms and corridors, but the walls are high rock land (mountain tiles) – a labyrinth of mountain walls with rough edges (the former “cave” dungeon).
+## River course
+Drag from the source to the mouth: winding river with the river settings (depth, banks, transitions), wider towards the end. Width at the start / end in tiles (“River: width / winding …”, 0 = brush size). The middle of the river always stays water (also after the transitions), “Add water statics” puts water statics on it as well."
+            },
+            new GuideTopic
+            {
+                Key = "bridge", Group = "Bauen|Building", TitleDe = "Brücken und Brücken-Designer", TitleEn = "Bridges and bridge designer",
+                De = @"# Brücken aus Statics
+Eine Brücke besteht nur aus Statics: Bretter (Boden), Geländer an beiden Seiten, Pfosten, Laternen, Pfeiler bis zum Wasser und Treppen an den Enden.
+
+## Schnell: Werkzeug Brücke
+- Palette → Brücke, von Ufer zu Ufer ziehen (West-Ost oder Nord-Süd). Beim Ziehen sieht man die echten Teile.
+- Ohne Plan und ohne Set sucht das Studio die Teile selbst in der TileData (Namen wie bridge, plank, railing, post, pillar, stairs) und erkennt am Bild, ob ein Geländer West-Ost oder Nord-Süd läuft.
+- Höhe = höheres Ufer + „Z +“, die Mitte um „Bogen“ höher. „Treppen an den Enden“ setzt Stufen, wenn die Brücke höher liegt als das Ufer.
+
+## Brücken-Designer (eigenes Fenster)
+- 1 Plan: gespeicherte Pläne nach Kategorie (Holz, Stein, Dungeon …), Speichern, Löschen.
+- 2 Teile: Knopf (Bretter, Geländer W-O, Geländer N-S, Pfosten, Pfeiler, Lampe, Treppe N/O/S/W) zeigt unten im Katalog alle passenden Teile der TileData als Bild – Doppelklick ordnet zu. „Aus Teilen erzeugen“ baut den Plan neu.
+- 3 Testfeld: zwei Ufer und Wasser. „Muster“ = die Brücke einmal, flach, zum Bearbeiten; „Vorschau lang“ = so lang wie eingestellt, mit Bogen, Pfeilern und Treppen; „W-O / N-S“ dreht.
+- 4 Von Hand: im Muster mit Katalog + Static setzen / Löschen / Radierer bauen, dann „Muster übernehmen“. „Andere Richtung ableiten“ macht aus West-Ost die Nord-Süd-Version. „Brücke aus der Karte“ übernimmt eine echte Brücke (in der CGI-Ansicht mit Bereich markiert). „Multi laden“ macht eine Multi zum Plan.
+- Anfang / Ende (Plan): so viele Tiles am Anfang und Ende werden einmal gebaut, die Mitte wird bei langen Brücken wiederholt (z. B. Pfosten alle 2 Tiles, Laterne alle 6).
+- 5 „Im Studio benutzen“: der Plan wird im Brücken-Werkzeug gewählt (Reiter Pinsel → Brücke → Plan).",
+                En = @"# Bridges of statics
+A bridge consists of statics only: planks (deck), railings on both sides, posts, lamps, pillars down to the water and stairs at the ends.
+
+## Quick: tool Bridge
+- Palette → Bridge, drag from bank to bank (west – east or north – south). While dragging you see the real pieces.
+- Without a plan and without a set the studio finds the pieces in the tiledata (names like bridge, plank, railing, post, pillar, stairs) and tells from the art whether a railing runs west – east or north – south.
+- Height = higher bank + “Z +”, the middle higher by “Arch”. “Stairs at the ends” places steps when the bridge lies higher than the bank.
+
+## Bridge designer (own window)
+- 1 Plan: saved plans by category (wood, stone, dungeon …), save, delete.
+- 2 Pieces: a button (planks, railing W-E, railing N-S, post, pillar, lamp, stairs N/E/S/W) shows all fitting pieces of the tiledata as pictures in the catalog below – double click assigns. “Generate from pieces” rebuilds the plan.
+- 3 Test field: two banks and water. “Sample” = the bridge once, flat, for editing; “Long preview” = as long as set, with arch, pillars and stairs; “W-E / N-S” turns.
+- 4 By hand: build in the sample with catalog + place static / delete / eraser, then “Take sample”. “Derive other direction” makes the north – south version. “Bridge from the map” takes a real bridge (marked with Area in the CGI view). “Load multi” turns a multi into a plan.
+- Start / end (plan): these tiles are built once, the middle repeats on long bridges (e.g. a post every 2 tiles, a lamp every 6).
+- 5 “Use in studio”: the plan is chosen in the bridge tool (tab Brushes → Bridge → Plan)."
+            },
+            new GuideTopic
+            {
+                Key = "ws-generate", Group = "Bauen|Building", TitleDe = "Werkstatt: Generieren", TitleEn = "Workshop: generate",
+                De = @"# Dungeon-Werkstatt: Generieren
+- 1. In der CGI-Ansicht mit „Bereich“ den Platz markieren (gern großzügig), dann Palette → Dungeon-Werkstatt (oder Keller).
+- 2. Art wählen: Klassischer Dungeon (nur Boden-Textur + Wand-Statics), Keller (nur Statics unter der Karte), Berg-Dungeon, Bergwall.
+- 3. Etage: Regler 0 / −20 / −40 … oder nach oben, „z genau“. Unter der Karte bleibt das Land oben NoDraw auf Kartenhöhe, gebaut wird darunter.
+- 4. Leere außen: NoDraw (0002), Schwarz (0244) oder Wählen (z. B. Schwarz mit Sternen).
+- 5. Stil: „Klassisch (map0-Log)“ oder ein gelernter Stil (Bereich scannen + Stil lernen).
+- 6. Grundriss: Räume + Gänge oder Gitter, Raumgröße min / max, Türbreite, Zufalls-Zahl.
+- 7. ▶ Generieren: der Platz wird geleert und neu gebaut. 🎲 = neue Zufalls-Zahl. Rückgängig / Wiederholen, „Alles zurück“.
+- 8. ✔ In die Karte übernehmen – ein Schritt, in der Karte mit Strg+Z zurück.
+
+## Vorlagen
+- Fremde Karte öffnen: eine andere map#.mul (z. B. Original-Felucca) im eigenen Fenster, zum Dungeon springen, Bereich markieren, „Bereich in die Werkstatt“.
+- Platz als Vorlage speichern (Kategorie + Name) und später mit „Vorlage laden“ auf jeder Etage wieder einsetzen.",
+                En = @"# Dungeon workshop: generate
+- 1. Mark the place with “Area” in the CGI view (with some margin), then palette → Dungeon workshop (or Cellar).
+- 2. Choose the kind: classic dungeon (floor texture + wall statics only), cellar (statics under the map only), mountain dungeon, mountain wall.
+- 3. Level: slider 0 / −20 / −40 … or upwards, “exact z”. Under the map the land above stays NoDraw at map height, the building is below.
+- 4. Void outside: NoDraw (0002), black (0244) or choose (e.g. black with stars).
+- 5. Style: “Classic (map0 log)” or a learned style (scan area + learn style).
+- 6. Layout: rooms + corridors or grid, room size min / max, door width, random number.
+- 7. ▶ Generate: the place is cleared and built anew. 🎲 = new random number. Undo / redo, “Reset all”.
+- 8. ✔ Apply to map – one step, Ctrl+Z in the map undoes it.
+
+## Templates
+- Open other map: another map#.mul (e.g. original Felucca) in its own window, jump to the dungeon, mark an area, “Area into workshop”.
+- Save place as template (category + name) and insert it later on any level with “Load template”."
+            },
+            new GuideTopic
+            {
+                Key = "ws-2d", Group = "Bauen|Building", TitleDe = "Werkstatt: 2D-Plan", TitleEn = "Workshop: 2D plan",
+                De = @"# Dungeon-Werkstatt: im 2D-Plan bauen
+Der Reiter „2D-Plan“ zeigt den Grundriss von oben: jedes Kästchen ist ein Tile.
+
+Links | Raum (Boden)
+Rechts | Fels / Leere
+Umschalt + Links | Innenwand (Wandlinie auf dem Boden zwischen zwei Räumen)
+Strg + Links | Gang
+Pinsel 1–3 | Größe des Stifts
+
+- „Leerer Plan“ beginnt ohne Räume, „Neu generieren“ macht einen zufälligen Plan zum Nacharbeiten.
+- „Aus Plan bauen“ baut den Plan im gewählten Stil: Boden-Textur, Wände an den Rändern (Nord / West auf der Leere, Süd / Ost auf dem letzten Boden-Tile wie im Original), Ecken, Innenwände, Deko.
+- Räume vergrößern: einfach mit Links weitermalen und neu bauen.",
+                En = @"# Dungeon workshop: build in the 2D plan
+The tab “2D plan” shows the layout from above: every square is a tile.
+
+Left | room (floor)
+Right | rock / void
+Shift + left | inner wall (wall line on the floor between two rooms)
+Ctrl + left | corridor
+Brush 1–3 | pen size
+
+- “Empty plan” starts without rooms, “Generate new” makes a random plan to rework.
+- “Build from plan” builds the plan in the chosen style: floor texture, walls at the edges (north / west on the void, south / east on the last floor tile like the original), corners, inner walls, decoration.
+- Enlarge rooms: simply paint on with left and build again."
+            },
+            new GuideTopic
+            {
+                Key = "ws-3d", Group = "Bauen|Building", TitleDe = "Werkstatt: 3D bauen (Ansichten, Katalog)", TitleEn = "Workshop: build in 3D (views, catalog)",
+                De = @"# Dungeon-Werkstatt: in den CGI-Ansichten bauen
+Oben die Karte, unten die gewählte Etage (Statics unter dem Boden sichtbar, darüber ausgeblendet). Beide Ansichten bearbeiten dieselbe Arbeitskopie.
+
+## Werkzeuge (Leiste über den Ansichten)
+Auswahl / Bereich | wählen, kleineren Bereich für Schnell-Löschen markieren
+Static setzen | das Teil aus dem Katalog setzen (unten auf der Etage, oben auf der Karte)
+Löschen | Klick löscht ein Static
+Radierer | Pinsel löscht alle Statics darunter – Größe mit „Pinsel“ (1 … 17); Strg = Land zur Leere
+Wand / Zaun | von Ende zu Ende ziehen (Wand-Set)
+Loch (NoDraw) | Land unsichtbar auf seiner Höhe – einzeln oder in einem Zug, Größe mit „Pinsel“
+Land setzen | Land / Textur aus dem Katalog malen
+Höhe + / Höhe − / Rampe / Glätten | Gefälle und Steigungen
+Treppe | Klick: Stufen nach unten (R dreht die Richtung, „Treppe …“ = Stufen und Breite)
+Multi setzen | Multi aus dem Katalog
+Gitter / Statics | Gitter ein / aus, Statics ein- / ausblenden
+Katalog | unten ein- / ausblenden
+
+## Katalog
+- Statics, Land / Textur oder Multis, Suche nach Name oder Hex-ID.
+- Kategorien: eigene (z. B. „Dungeon (map0)“, Rechtsklick → In Kategorie …, + Kategorie) und eingebaute (◆ Wände, Böden, Treppen, Brücke, Geländer, Licht, Dungeon-Deko …).
+- Klick wählt das Teil und das passende Werkzeug.",
+                En = @"# Dungeon workshop: build in the CGI views
+Above the map, below the chosen level (statics under the ground visible, above hidden). Both views edit the same working copy.
+
+## Tools (bar above the views)
+Select / Area | select, mark a smaller area for quick clear
+Place static | place the piece from the catalog (below on the level, above on the map)
+Delete | click deletes a static
+Eraser | brush deletes every static under it – size with “Brush” (1 … 17); Ctrl = land to void
+Wall / fence | drag from end to end (wall set)
+Hole (NoDraw) | land invisible at its height – one by one or in one stroke, size with “Brush”
+Set land | paint land / texture from the catalog
+Height + / Height − / Ramp / Smooth | slopes
+Stairs | click: steps down (R turns the direction, “Stairs …” = steps and width)
+Place multi | multi from the catalog
+Grid / Statics | grid on / off, show / hide statics
+Catalog | show / hide below
+
+## Catalog
+- Statics, land / texture or multis, search by name or hex id.
+- Categories: own (e.g. “Dungeon (map0)”, right click → Into category …, + Category) and built-in (◆ walls, floors, stairs, bridge, railings, light, dungeon decoration …).
+- A click chooses the piece and the fitting tool."
+            },
+            new GuideTopic
+            {
                 Key = "keys", Group = "Übersicht|Overview", TitleDe = "Alle Tasten", TitleEn = "All keys",
                 De = @"# Alle Tasten
 ## Überall

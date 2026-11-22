@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Drawing;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 {
@@ -165,6 +166,138 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             Block(s.X, s.Y, true).Add(s);
             StaticCount++;
+        }
+
+        // ------------------------------------------------------------------ working copies (dungeon workshop)
+
+        /// <summary>
+        /// Copy of a part of the map (land + statics, no history). The rectangle is widened to whole 8×8 blocks;
+        /// <paramref name="origin"/> is its top left corner in the big map.
+        /// </summary>
+        public MapData CopyRegion(Rectangle r, out Point origin)
+        {
+            int x0 = Math.Max(0, r.Left / 8 * 8), y0 = Math.Max(0, r.Top / 8 * 8);
+            int x1 = Math.Min(Width, (r.Right + 7) / 8 * 8), y1 = Math.Min(Height, (r.Bottom + 7) / 8 * 8);
+            int w = Math.Max(8, x1 - x0), h = Math.Max(8, y1 - y0);
+            var tiles = new ushort[w * h];
+            var z = new sbyte[w * h];
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    int sx = x0 + x, sy = y0 + y;
+                    if (InBounds(sx, sy))
+                    {
+                        tiles[y * w + x] = Tiles[sy * Width + sx];
+                        z[y * w + x] = Z[sy * Width + sx];
+                    }
+                }
+            }
+            var copy = new MapData(w, h, tiles, z) { Source = Source, MapNumber = MapNumber };
+            for (int y = y0; y < y0 + h; y += 8)
+            {
+                for (int x = x0; x < x0 + w; x += 8)
+                {
+                    List<StaticItem> list = InBounds(x, y) ? Block(x, y, false) : null;
+                    if (list == null)
+                    {
+                        continue;
+                    }
+                    foreach (StaticItem s in list)
+                    {
+                        StaticItem c = s.Copy();
+                        c.X -= x0;
+                        c.Y -= y0;
+                        copy.AddRaw(c);
+                    }
+                }
+            }
+            origin = new Point(x0, y0);
+            return copy;
+        }
+
+        /// <summary>
+        /// Writes a working copy back (land + statics of its whole area) as ONE undo step of this map:
+        /// changed land tiles, the old statics of the area removed and the statics of the copy added.
+        /// </summary>
+        public int WriteBack(MapData copy, Point origin)
+        {
+            var land = new List<LandChange>();
+            for (int y = 0; y < copy.Height; y++)
+            {
+                for (int x = 0; x < copy.Width; x++)
+                {
+                    int mx = origin.X + x, my = origin.Y + y;
+                    if (!InBounds(mx, my))
+                    {
+                        continue;
+                    }
+                    int i = my * Width + mx, j = y * copy.Width + x;
+                    if (Tiles[i] != copy.Tiles[j] || Z[i] != copy.Z[j])
+                    {
+                        land.Add(new LandChange { Index = i, OldId = Tiles[i], OldZ = Z[i], NewId = copy.Tiles[j], NewZ = copy.Z[j] });
+                    }
+                }
+            }
+            var statics = new List<StaticChange>();
+            var area = new Rectangle(origin.X, origin.Y, copy.Width, copy.Height);
+            var before = new List<StaticItem>();
+            for (int y = area.Top; y < area.Bottom; y += 8)
+            {
+                for (int x = area.Left; x < area.Right; x += 8)
+                {
+                    List<StaticItem> list = InBounds(x, y) ? Block(x, y, false) : null;
+                    if (list != null)
+                    {
+                        before.AddRange(list.Where(s => area.Contains(s.X, s.Y)));
+                    }
+                }
+            }
+            var after = copy.AllStatics().Select(s =>
+            {
+                StaticItem c = s.Copy();
+                c.X += origin.X;
+                c.Y += origin.Y;
+                return c;
+            }).Where(s => InBounds(s.X, s.Y)).ToList();
+            // unchanged statics stay (no churn in the undo step)
+            var key = new Dictionary<(int, int, int, ushort, ushort), int>();
+            foreach (StaticItem s in after)
+            {
+                var k = (s.X, s.Y, s.Z, s.Id, s.Hue);
+                key[k] = key.TryGetValue(k, out int n) ? n + 1 : 1;
+            }
+            foreach (StaticItem s in before)
+            {
+                var k = (s.X, s.Y, s.Z, s.Id, s.Hue);
+                if (key.TryGetValue(k, out int n) && n > 0)
+                {
+                    key[k] = n - 1;
+                    continue;
+                }
+                statics.Add(Remove(s));
+            }
+            foreach (StaticItem s in after)
+            {
+                var k = (s.X, s.Y, s.Z, s.Id, s.Hue);
+                if (key.TryGetValue(k, out int n) && n > 0)
+                {
+                    key[k] = n - 1;
+                    statics.Add(Add(s));
+                }
+            }
+            HashSet<int> mask = EditMask;
+            EditMask = null;
+            Apply(statics, land);
+            EditMask = mask;
+            return statics.Count + land.Count;
+        }
+
+        /// <summary>Forgets undo / redo (a fresh working copy).</summary>
+        public void ClearHistory()
+        {
+            _undo.Clear();
+            _redo.Clear();
         }
 
         private void RemoveRaw(StaticItem s)

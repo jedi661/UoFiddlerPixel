@@ -15,6 +15,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Windows.Forms;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core;
 
@@ -41,7 +42,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         CaveStamp,
 
         /// <summary>Freehand: the chosen stamp is painted as a continuous texture along the mouse (roads, rivers …).</summary>
-        PatternBrush
+        PatternBrush,
+
+        /// <summary>Drag from the middle of the flat side to the round side: half circle.</summary>
+        HalfCircle,
+
+        /// <summary>Drag from the middle of the base to the tip: triangle.</summary>
+        Triangle,
+
+        /// <summary>Line whose height runs from the height at the start to the height at the end (colours of the group + height layer).</summary>
+        SlopeLine,
+
+        /// <summary>Natural course from A to B (river, road) with the brush or the pattern stamp.</summary>
+        Course,
+
+        /// <summary>Drag a rectangle: the dungeon generator fills it (colour 1 = floor, colour 2 = walls).</summary>
+        Dungeon
     }
 
     public sealed class MapClickEventArgs : EventArgs
@@ -229,6 +245,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             return _altitudes[c];
         }
+
+        /// <summary>Half circle / triangle: filled (true) or only the outline with the brush size as thickness.</summary>
+        [Category("Dragon"), DefaultValue(true)]
+        public bool ShapeFilled { get; set; } = true;
+
+        /// <summary>Slope line: colour of a cell at 0..1 along the line from a to b (x, y, current, chosen, t, a, b). Null = chosen colour.</summary>
+        [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public Func<int, int, ushort, ushort, double, Point, Point, ushort> SlopeColour { get; set; }
+
+        /// <summary>Settings of the natural course.</summary>
+        [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public CourseSettings Course { get; set; } = new CourseSettings();
+
+        /// <summary>Natural course with the pattern stamp (statics) instead of the colour brush.</summary>
+        [Category("Dragon"), DefaultValue(false)]
+        public bool CourseWithPattern { get; set; }
+
+        /// <summary>Tool "Dungeon": the rectangle was dragged – the form builds the dungeon.</summary>
+        public event EventHandler<Rectangle> DungeonRequested;
 
         /// <summary>Colour written into a cell by the colour tools (see <see cref="CellColour"/>).</summary>
         private ushort PaintCell(int x, int y, ushort current, ushort chosen) => CellColour == null ? chosen : CellColour(x, y, current, chosen);
@@ -811,9 +846,39 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 switch (_tool)
                 {
                     case MapTool.Line:
+                    case MapTool.SlopeLine:
                         PointF s = MapToScreen(_start.X + 0.5, _start.Y + 0.5), t = MapToScreen(_cursor.X + 0.5, _cursor.Y + 0.5);
                         g.DrawLine(pen, s, t);
+                        if (_tool == MapTool.SlopeLine)
+                        {
+                            using var arrow = new Pen(Color.Orange, 2) { EndCap = LineCap.ArrowAnchor };
+                            g.DrawLine(arrow, s, t);
+                        }
                         break;
+                    case MapTool.HalfCircle:
+                    case MapTool.Triangle:
+                        {
+                            PointF[] poly = ShapeOutline(_start, _cursor).Select(p => MapToScreen(p.X, p.Y)).ToArray();
+                            if (poly.Length > 2)
+                            {
+                                g.DrawPolygon(pen, poly);
+                            }
+                            break;
+                        }
+                    case MapTool.Course:
+                        {
+                            var pts = Builders.Course(new PointF(_start.X + 0.5f, _start.Y + 0.5f), new PointF(_cursor.X + 0.5f, _cursor.Y + 0.5f), Course, new Random(_previewSeed))
+                                              .Select(p => MapToScreen(p.x, p.y)).ToArray();
+                            if (pts.Length > 1)
+                            {
+                                for (int i = 1; i < pts.Length; i++)
+                                {
+                                    using var wide = new Pen(Color.FromArgb(120, 80, 160, 255), (float)Math.Max(2, Course.WidthAt(i / (double)(pts.Length - 1), BrushSize) * _zoom)) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+                                    g.DrawLine(wide, pts[i - 1], pts[i]);
+                                }
+                            }
+                            break;
+                        }
                     case MapTool.Ellipse:
                     case MapTool.FilledEllipse:
                         g.DrawEllipse(pen, a.X, a.Y, b.X - a.X, b.Y - a.Y);
@@ -866,7 +931,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private static bool UsesBrush(MapTool t) => t == MapTool.Brush || t == MapTool.Eraser || t == MapTool.Spray || t == MapTool.Raise || t == MapTool.Lower || t == MapTool.PatternBrush;
 
         private static bool IsShapeTool(MapTool t) =>
-            t == MapTool.Line || t == MapTool.Rectangle || t == MapTool.FilledRectangle || t == MapTool.Ellipse || t == MapTool.FilledEllipse;
+            t == MapTool.Line || t == MapTool.Rectangle || t == MapTool.FilledRectangle || t == MapTool.Ellipse || t == MapTool.FilledEllipse ||
+            t == MapTool.HalfCircle || t == MapTool.Triangle || t == MapTool.SlopeLine || t == MapTool.Course || t == MapTool.Dungeon;
 
         private static Rectangle NormRect(Point a, Point b) =>
             Rectangle.FromLTRB(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
@@ -1162,6 +1228,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 case MapTool.Lower: return "Höhe −";
                 case MapTool.CaveStamp: return "Höhleneingang";
                 case MapTool.PatternBrush: return "Muster-Pinsel";
+                case MapTool.HalfCircle: return "Halbkreis";
+                case MapTool.Triangle: return "Dreieck";
+                case MapTool.SlopeLine: return "Neigungs-Linie";
+                case MapTool.Course: return "Natürlicher Lauf";
+                case MapTool.Dungeon: return "Dungeon";
                 default: return t.ToString();
             }
         }
@@ -1267,6 +1338,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             _history?.Touch(touch);
             int thick = Math.Max(1, _tool == MapTool.Line ? BrushSize : Math.Min(BrushSize, 64));
 
+            if (_tool == MapTool.Dungeon)
+            {
+                Rectangle d = Rectangle.FromLTRB(r.Left, r.Top, r.Right + 1, r.Bottom + 1);
+                d.Intersect(_map.Bounds);
+                if (d.Width >= 8 && d.Height >= 8)
+                {
+                    DungeonRequested?.Invoke(this, d);
+                }
+                return;
+            }
+            if (_tool == MapTool.HalfCircle || _tool == MapTool.Triangle)
+            {
+                Rectangle box = DrawPolygonShape(a, b, color, thick);
+                _history?.Touch(box);
+                Changed(box);
+                return;
+            }
+            if (_tool == MapTool.SlopeLine)
+            {
+                DrawSlopeLine(a, b, color);
+                Changed(touch);
+                return;
+            }
+            if (_tool == MapTool.Course)
+            {
+                Rectangle box = DrawCourse(a, b, color);
+                Changed(box);
+                return;
+            }
             switch (_tool)
             {
                 case MapTool.Line:
@@ -1329,6 +1429,166 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     }
             }
             Changed(touch);
+        }
+
+        private int _previewSeed = Environment.TickCount;
+
+        /// <summary>Corners of the half circle (A = middle of the flat side, B = top of the round side) or of the triangle (A = middle of the base, B = tip).</summary>
+        private List<PointF> ShapeOutline(Point a, Point b)
+        {
+            var pts = new List<PointF>();
+            double ax = a.X + 0.5, ay = a.Y + 0.5, dx = b.X - a.X, dy = b.Y - a.Y, len = Math.Sqrt(dx * dx + dy * dy);
+            if (len < 1)
+            {
+                return pts;
+            }
+            double ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
+            if (_tool == MapTool.HalfCircle)
+            {
+                for (int k = 0; k <= 32; k++)
+                {
+                    double ang = Math.PI * k / 32 - Math.PI / 2;
+                    double c = Math.Cos(ang), si = Math.Sin(ang);
+                    pts.Add(new PointF((float)(ax + (ux * c + nx * si) * len), (float)(ay + (uy * c + ny * si) * len)));
+                }
+            }
+            else
+            {
+                double half = len * 0.58;
+                pts.Add(new PointF((float)(ax + nx * half), (float)(ay + ny * half)));
+                pts.Add(new PointF((float)(b.X + 0.5), (float)(b.Y + 0.5)));
+                pts.Add(new PointF((float)(ax - nx * half), (float)(ay - ny * half)));
+            }
+            return pts;
+        }
+
+        /// <summary>Fills the half circle / triangle (or its outline with the given thickness). Returns the touched box.</summary>
+        private Rectangle DrawPolygonShape(Point a, Point b, ushort color, int thick)
+        {
+            List<PointF> poly = ShapeOutline(a, b);
+            if (poly.Count < 3)
+            {
+                return Rectangle.Empty;
+            }
+            var box = Rectangle.FromLTRB((int)Math.Floor(poly.Min(p => p.X)) - 1, (int)Math.Floor(poly.Min(p => p.Y)) - 1,
+                (int)Math.Ceiling(poly.Max(p => p.X)) + 2, (int)Math.Ceiling(poly.Max(p => p.Y)) + 2);
+            box.Intersect(_map.Bounds);
+            _history?.Touch(box);
+            for (int y = box.Top; y < box.Bottom; y++)
+            {
+                for (int x = box.Left; x < box.Right; x++)
+                {
+                    double px = x + 0.5, py = y + 0.5;
+                    if (!Inside(poly, px, py))
+                    {
+                        continue;
+                    }
+                    if (!ShapeFilled && EdgeDistance(poly, px, py) >= Math.Max(1, thick))
+                    {
+                        continue;
+                    }
+                    SetPixel(x, y, color);
+                }
+            }
+            return box;
+        }
+
+        private static bool Inside(List<PointF> poly, double px, double py)
+        {
+            bool inside = false;
+            for (int i = 0, j = poly.Count - 1; i < poly.Count; j = i++)
+            {
+                if ((poly[i].Y > py) != (poly[j].Y > py) && px < (poly[j].X - poly[i].X) * (py - poly[i].Y) / (poly[j].Y - poly[i].Y) + poly[i].X)
+                {
+                    inside = !inside;
+                }
+            }
+            return inside;
+        }
+
+        private static double EdgeDistance(List<PointF> poly, double px, double py)
+        {
+            double best = double.MaxValue;
+            for (int i = 0, j = poly.Count - 1; i < poly.Count; j = i++)
+            {
+                double ex = poly[i].X - poly[j].X, ey = poly[i].Y - poly[j].Y, l2 = ex * ex + ey * ey;
+                double t = l2 == 0 ? 0 : Math.Clamp(((px - poly[j].X) * ex + (py - poly[j].Y) * ey) / l2, 0, 1);
+                double qx = poly[j].X + ex * t - px, qy = poly[j].Y + ey * t - py;
+                best = Math.Min(best, Math.Sqrt(qx * qx + qy * qy));
+            }
+            return best;
+        }
+
+        /// <summary>Line with brush width whose colour follows the height from a to b (see <see cref="SlopeColour"/>).</summary>
+        private void DrawSlopeLine(Point a, Point b, ushort color)
+        {
+            int size = Math.Max(1, BrushSize);
+            double half = size / 2.0;
+            double dx = b.X - a.X, dy = b.Y - a.Y, l2 = Math.Max(1e-9, dx * dx + dy * dy);
+            var box = Rectangle.FromLTRB(Math.Min(a.X, b.X) - size, Math.Min(a.Y, b.Y) - size, Math.Max(a.X, b.X) + size + 1, Math.Max(a.Y, b.Y) + size + 1);
+            box.Intersect(_map.Bounds);
+            _history?.Touch(box);
+            for (int y = box.Top; y < box.Bottom; y++)
+            {
+                for (int x = box.Left; x < box.Right; x++)
+                {
+                    double t = Math.Clamp(((x - a.X) * dx + (y - a.Y) * dy) / l2, 0, 1);
+                    double qx = a.X + dx * t - x, qy = a.Y + dy * t - y;
+                    if (qx * qx + qy * qy > half * half + 0.25)
+                    {
+                        continue;
+                    }
+                    int i = y * _map.Width + x;
+                    ushort cur = _map.Pixels[i];
+                    _map.Pixels[i] = SlopeColour?.Invoke(x, y, cur, color, t, a, b) ?? PaintCell(x, y, cur, color);
+                }
+            }
+        }
+
+        /// <summary>Natural course from a to b: brush dabs (or pattern stamp dabs) along a winding line, wider towards the end.</summary>
+        private Rectangle DrawCourse(Point a, Point b, ushort color)
+        {
+            var pts = Builders.Course(new PointF(a.X + 0.5f, a.Y + 0.5f), new PointF(b.X + 0.5f, b.Y + 0.5f), Course, new Random(Course.Seed != 0 ? Course.Seed : _previewSeed));
+            int baseSize = BrushSize;
+            bool pattern = CourseWithPattern && PatternColour != null;
+            MapTool saveTool = _tool;
+            _tool = pattern ? MapTool.PatternBrush : MapTool.Brush;
+            _patternDone.Clear();
+            var box = Rectangle.Empty;
+            Point last = new Point(int.MinValue, int.MinValue);
+            try
+            {
+                foreach ((float x, float y, float t) in pts)
+                {
+                    int cx = (int)Math.Floor(x), cy = (int)Math.Floor(y);
+                    BrushSize = Math.Max(1, (int)Math.Round(Course.WidthAt(t, baseSize)));
+                    int step = Math.Max(1, BrushSize / 4);
+                    if (Math.Abs(cx - last.X) < step && Math.Abs(cy - last.Y) < step)
+                    {
+                        continue;
+                    }
+                    last = new Point(cx, cy);
+                    if (pattern)
+                    {
+                        PatternStamp(cx, cy);
+                    }
+                    else
+                    {
+                        Stamp(cx, cy, color, MouseButtons.Left);
+                    }
+                    var dab = new Rectangle(cx - BrushSize, cy - BrushSize, BrushSize * 2 + 1, BrushSize * 2 + 1);
+                    box = box.IsEmpty ? dab : Rectangle.Union(box, dab);
+                }
+            }
+            finally
+            {
+                BrushSize = baseSize;
+                _tool = saveTool;
+                _patternDone.Clear();
+            }
+            _previewSeed = Environment.TickCount; // next preview / course: a new random course
+            box.Intersect(_map.Bounds);
+            return box;
         }
 
         /// <summary>Scanline flood fill (4 neighbours) of the area with the same palette index.</summary>
