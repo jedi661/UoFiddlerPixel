@@ -66,7 +66,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         PatternBrush,
 
         /// <summary>Places a template (building / floor pattern) from the library.</summary>
-        Template
+        Template,
+
+        /// <summary>Round brush: coast without saw teeth – soft shore heights, straight shore line, statics along.</summary>
+        CoastSmooth
     }
 
     public sealed class StaticPickEventArgs : EventArgs
@@ -345,6 +348,70 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Values of the coast and water brushes.</summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public CoastSettings Coast { get; set; } = new CoastSettings();
+
+        /// <summary>Settings of "Küste glätten" (brush, area J, whole map).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public CoastSmoothSettings CoastSmooth { get; set; } = new CoastSmoothSettings();
+
+        /// <summary>Right click (with Auswahl / Bereich, or Umschalt + right click with any tool) or the menu key: the form shows its menu.</summary>
+        public event EventHandler<MapPointEventArgs> ContextMenuRequested;
+
+        /// <summary>Static under a screen point (for the context menu).</summary>
+        public StaticItem StaticAt(Point screen) => _map == null ? null : HitStatic(screen);
+
+        /// <summary>Selects exactly this static (context menu).</summary>
+        public void SelectStatic(StaticItem s)
+        {
+            _selection.Clear();
+            if (s != null)
+            {
+                _selection.Add(s);
+            }
+            SelectionChanged?.Invoke(this, EventArgs.Empty);
+            Invalidate();
+        }
+
+        /// <summary>Tile under a screen point.</summary>
+        public Point TileAtScreen(Point screen) => TileAt(screen);
+
+        /// <summary>Tile under the mouse.</summary>
+        public Point HoverTile => _hover;
+
+        /// <summary>A coast edit found by the form (whole map, errors) as one undo step.</summary>
+        public void ApplyCoastEdit(CoastEdit edit, string message)
+        {
+            if (_map == null || edit == null)
+            {
+                return;
+            }
+            edit.ApplyTo(_map);
+            Refresh(true);
+            MapChanged?.Invoke(this, EventArgs.Empty);
+            Message?.Invoke(this, message);
+        }
+
+        /// <summary>Removes the marked area.</summary>
+        public void ClearArea()
+        {
+            _area = Rectangle.Empty;
+            _areaPaste = false;
+            Invalidate();
+        }
+
+        /// <summary>"Küste glätten" for the marked area (J): soft heights, straight shore line, statics along.</summary>
+        public void SmoothCoastArea()
+        {
+            if (!NeedArea())
+            {
+                return;
+            }
+            CoastEdit edit = CoastSmoother.Smooth(_map, _area, Coast, CoastSmooth, _rnd);
+            edit.ApplyTo(_map);
+            Refresh(true);
+            MapChanged?.Invoke(this, EventArgs.Empty);
+            Message?.Invoke(this, edit.Count == 0 ? L.T("Küste glätten: nichts zu ändern (keine Küste im Bereich oder schon glatt).")
+                : L.T("Küste geglättet") + $": {edit.Land.Count} " + L.T("Land-Tiles") + $", {edit.Statics.Count} Statics – Strg+Z " + L.T("nimmt es zurück") + ".");
+        }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ushort PlaceLandId { get; set; } = 0x0003;
@@ -1069,7 +1136,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             if (IsLandTool(Tool) && LandRadius > 0 && _map.InBounds(_hover.X, _hover.Y))
             {
                 using var pen = new Pen(Color.FromArgb(160, 255, 255, 0));
-                g.DrawPolygon(pen, AreaPoly(new Rectangle(_hover.X - LandRadius, _hover.Y - LandRadius, LandRadius * 2 + 1, LandRadius * 2 + 1)));
+                if (IsRoundBrush(Tool))
+                {
+                    g.DrawPolygon(pen, CirclePoly(_hover.X, _hover.Y, LandRadius));
+                }
+                else
+                {
+                    g.DrawPolygon(pen, AreaPoly(new Rectangle(_hover.X - LandRadius, _hover.Y - LandRadius, LandRadius * 2 + 1, LandRadius * 2 + 1)));
+                }
             }
             if (_map.InBounds(_hover.X, _hover.Y))
             {
@@ -1080,7 +1154,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         }
 
         private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth ||
-                                                     t == IsoTool.Coast || t == IsoTool.Water || t == IsoTool.Cave || t == IsoTool.CaveEntrance || t == IsoTool.Mountain || t == IsoTool.PatternBrush;
+                                                     t == IsoTool.Coast || t == IsoTool.Water || t == IsoTool.Cave || t == IsoTool.CaveEntrance || t == IsoTool.Mountain || t == IsoTool.PatternBrush ||
+                                                     t == IsoTool.CoastSmooth;
+
+        /// <summary>Round brushes: the outline is a circle.</summary>
+        private static bool IsRoundBrush(IsoTool t) => t == IsoTool.Coast || t == IsoTool.CoastSmooth;
+
+        /// <summary>Outline of a round brush (circle of tiles) at the land heights.</summary>
+        private PointF[] CirclePoly(int cx, int cy, int r)
+        {
+            var pts = new List<PointF>();
+            double rr = r + 0.5;
+            for (int k = 0; k < 48; k++)
+            {
+                double a = k * Math.PI * 2 / 48;
+                double mx = cx + 0.5 + Math.Cos(a) * rr, my = cy + 0.5 + Math.Sin(a) * rr;
+                int ix = (int)Math.Floor(mx), iy = (int)Math.Floor(my);
+                // corner of the cell plus the rest along its two edges (screen units, at the land heights)
+                PointF a0 = Corner(Math.Clamp(ix, 0, _map.Width - 1), Math.Clamp(iy, 0, _map.Height - 1));
+                PointF ax = Corner(Math.Clamp(ix + 1, 0, _map.Width), Math.Clamp(iy, 0, _map.Height - 1));
+                PointF ay = Corner(Math.Clamp(ix, 0, _map.Width - 1), Math.Clamp(iy + 1, 0, _map.Height));
+                double fx = mx - ix, fy = my - iy;
+                pts.Add(new PointF((float)(a0.X + (ax.X - a0.X) * fx + (ay.X - a0.X) * fy), (float)(a0.Y + (ax.Y - a0.Y) * fx + (ay.Y - a0.Y) * fy)));
+            }
+            return pts.ToArray();
+        }
 
         /// <summary>Outline of a map rectangle (at the land heights of its corners).</summary>
         private PointF[] AreaPoly(Rectangle r)
@@ -1233,6 +1331,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 {
                     _pasteGhost = false;
                     Invalidate();
+                    return;
+                }
+                // context menu: Umschalt + right click with every tool; with tools that have no own right click a plain right click
+                bool menuTool = Tool == IsoTool.Select || Tool == IsoTool.Area || Tool == IsoTool.Delete || Tool == IsoTool.Hue ||
+                                Tool == IsoTool.Multi || Tool == IsoTool.Template || Tool == IsoTool.CaveStamp;
+                if (ContextMenuRequested != null && !_areaPaste && ((ModifierKeys & Keys.Shift) != 0 || menuTool))
+                {
+                    ContextMenuRequested(this, new MapPointEventArgs(tile.X, tile.Y, -1));
                     return;
                 }
                 if (IsLandTool(Tool) && _map.InBounds(tile.X, tile.Y))
@@ -1490,6 +1596,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     case Keys.K:
                         ShapeCoastArea();
                         break;
+                    case Keys.J:
+                        SmoothCoastArea();
+                        break;
                     case Keys.W:
                         WaterArea(e.Shift);
                         break;
@@ -1607,6 +1716,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     {
                         ItemPicked?.Invoke(this, new StaticPickEventArgs(_selection.First()));
                     }
+                    break;
+                case Keys.Apps:
+                    ContextMenuRequested?.Invoke(this, new MapPointEventArgs(_hover.X, _hover.Y, -1));
                     break;
                 case Keys.T:
                     TopDown = !TopDown;
@@ -1822,6 +1934,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 CoastEdit edit = Tool == IsoTool.Coast
                     ? CoastShaper.Shape(_map, brush, Coast, _rnd)
                     : CoastShaper.Water(_map, brush, Coast, _rnd, (ModifierKeys & Keys.Control) != 0);
+                if (Tool == IsoTool.Coast && r > 1)
+                {
+                    // round brush: only the cells inside the circle
+                    bool Inside(int x, int y) => (x - center.X) * (x - center.X) + (y - center.Y) * (y - center.Y) <= r * r + r;
+                    edit.Land.RemoveAll(l => !Inside(l.x, l.y));
+                    edit.Statics.RemoveAll(c => !Inside(c.Item.X, c.Item.Y));
+                }
+                edit.ApplyTo(_map);
+                Refresh(true);
+                return;
+            }
+            if (Tool == IsoTool.CoastSmooth)
+            {
+                int rr = Math.Max(1, r);
+                var brush = new Rectangle(center.X - rr, center.Y - rr, rr * 2 + 1, rr * 2 + 1);
+                bool Inside(int x, int y) => (x - center.X) * (x - center.X) + (y - center.Y) * (y - center.Y) <= rr * rr + rr;
+                // the shore line of a cell is straightened once per stroke (no creeping when the brush passes again)
+                CoastEdit edit = CoastSmoother.Smooth(_map, brush, Coast, CoastSmooth, _rnd, Inside, (x, y) => !_strokeCells.Contains(y * _map.Width + x));
+                for (int y = brush.Top; y < brush.Bottom; y++)
+                {
+                    for (int x = brush.Left; x < brush.Right; x++)
+                    {
+                        if (_map.InBounds(x, y) && Inside(x, y))
+                        {
+                            _strokeCells.Add(y * _map.Width + x);
+                        }
+                    }
+                }
                 edit.ApplyTo(_map);
                 Refresh(true);
                 return;
@@ -2565,7 +2705,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public string KeyHelp()
         {
             string view = L.T(_topDown ? "2D-Ansicht" : "CGI-Ansicht") + L.T(
-                          ": Mausrad = Zoom · mittlere Maus oder Leertaste + Ziehen = verschieben · Pfeile ohne Auswahl = Ansicht (Umschalt = 8 Tiles) · T = 2D / CGI · Strg+Z / Strg+Y = Rückgängig / Wiederholen");
+                          ": Mausrad = Zoom · mittlere Maus oder Leertaste + Ziehen = verschieben · Pfeile ohne Auswahl = Ansicht (Umschalt = 8 Tiles) · T = 2D / CGI · Strg+Z / Strg+Y = Rückgängig / Wiederholen") +
+                          L.T(" · Umschalt+Rechtsklick / Menütaste = Menü · F1 = Hilfe");
             string tool;
             if (_pasteGhost)
             {
@@ -2581,7 +2722,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 {
                     case IsoTool.Select:
                         tool = L.T("Auswahl: Klick = wählen · Strg+Klick = dazu · Umschalt+Klick / Strg+A = alles auf dem Tile · Pfeile = verschieben · Strg+Pfeil = Kopie daneben · " +
-                               "Bild↑/↓ = Z ±1 (Umschalt ±5) · Entf = löschen · H = färben · I = im Item-Katalog zeigen · Strg+C / Strg+V = kopieren / einfügen · Rechtsklick = Item aufnehmen · Esc = Auswahl weg");
+                               "Bild↑/↓ = Z ±1 (Umschalt ±5) · Entf = löschen · H = färben · I = im Item-Katalog zeigen · Strg+C / Strg+V = kopieren / einfügen · Rechtsklick = Menü (Item aufnehmen, Ansicht, Werkzeuge …) · Esc = Auswahl weg");
                         break;
                     case IsoTool.Place:
                         tool = L.T("Static setzen: Klick setzt das Item aus dem Katalog (Reiter Items) · Z + und 'auf Statics stapeln' rechts · Rechtsklick auf ein Static = ID + Hue aufnehmen");
@@ -2611,12 +2752,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     case IsoTool.Coast:
                         tool = L.T("Küste: Ziehen über die Küste formt sie wie das Original – Meeresgrund, Wasser-Statics, Strand-Höhen (Reiter Küste / Wasser) · Pinsel oben · ein Zug = ein Rückgängig-Schritt");
                         break;
+                    case IsoTool.CoastSmooth:
+                        tool = L.T("Küste glätten: runder Pinsel – Ziehen über die Küste macht die Ufer-Höhen weich (keine Sand-Zacken), begradigt Spitzen und 1-Tile-Buchten, Statics gehen mit (Reiter Küste / Wasser) · Pinsel oben · Bereich + J = ganzer Bereich · ein Zug = ein Rückgängig-Schritt");
+                        break;
                     case IsoTool.Water:
                         tool = L.T("Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat");
                         break;
                     case IsoTool.Area:
-                        tool = L.T("Bereich: Ziehen = markieren · P = als Farb-Stempel speichern · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · M = Berg formen (Reiter Berg) · L = Bereich auswerten (Log + Zwischenablage) · T = Übergänge neu berechnen · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
-                               "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Esc = Markierung weg");
+                        tool = L.T("Bereich: Ziehen = markieren · P = als Farb-Stempel speichern · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · J = Küste glätten (ohne Zacken) · M = Berg formen (Reiter Berg) · L = Bereich auswerten (Log + Zwischenablage) · T = Übergänge neu berechnen · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
+                               "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Rechtsklick = Menü mit allen Befehlen · Esc = Markierung weg");
                         break;
                     case IsoTool.Cave:
                         tool = L.T("Höhle: am Eingang anfangen und in den Berg ziehen – Boden auf der Höhe des ersten Klicks (oder 'Höhe ='), der Rand wird Wand (Reiter Höhle / Weg) · Pinsel oben · ein Zug = ein Rückgängig-Schritt");

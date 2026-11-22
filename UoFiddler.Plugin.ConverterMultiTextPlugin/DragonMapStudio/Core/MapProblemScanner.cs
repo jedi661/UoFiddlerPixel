@@ -21,7 +21,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         MissingStaticArt,
         Cliff,
         StaticBelowGround,
-        DuplicateStatic
+        DuplicateStatic,
+
+        /// <summary>Coast: saw tooth, single spike or 1-tile notch ("Küste glätten" fixes it).</summary>
+        Coast
     }
 
     public sealed class MapProblem

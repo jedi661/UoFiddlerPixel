@@ -115,6 +115,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             RefreshLibrary();
             UpdateRecentMenu();
             InitCgi();
+            InitHeightBrush();
+            InitWorkspace();
             ApplyLanguage(_settings.Language, false);
 
             if (!string.IsNullOrWhiteSpace(_settings.LastMap) && File.Exists(_settings.LastMap))
@@ -623,6 +625,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 kv.Key.Checked = kv.Value == tool;
             }
+            UpdateEditorOptions();
         }
 
         private void ToolButton_Click(object sender, EventArgs e)

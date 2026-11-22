@@ -133,6 +133,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("6 Küste"), DisplayName("Küsten-Profil an"), Description("Küste wie die Original-Karte (map0 ausgewertet): Meeresgrund-Tiles auf -15 mit Wasser-Statics auf -5 darüber, äußerer Rand auf -5, Strand flach zum Wasser. Ersetzt die zufälligen -10/0-Höhen der Skripte.")]
         public bool CoastProfile { get; set; } = true;
 
+        [Category("6 Küste"), DisplayName("Küste weich (ohne Zacken)"), Description("Die Höhen am Ufer folgen dem echten Abstand zur Küstenlinie statt den Zell-Stufen: schräge und unruhige Küsten bekommen keine Sand-Zacken mehr, der Meeresgrund fällt über 'Abfall-Breite' Tiles auf seine Tiefe. Wie 'Küste glätten' in der CGI-Ansicht.")]
+        public bool CoastSoft { get; set; }
+
+        [Category("6 Küste"), DisplayName("Küste weich: Abfall-Breite"), Description("Tiles von der Wasserlinie bis zur vollen Tiefe des Meeresgrunds (Standard 3).")]
+        public double CoastSoftDrop { get; set; } = 3;
+
+        [Category("6 Küste"), DisplayName("Küste weich: Weichheit"), Description("Glättungs-Durchgänge des Abstands (0–4, Standard 1).")]
+        public int CoastSoftPasses { get; set; } = 1;
+
         [Category("6 Küste"), DisplayName("Land-Höhen zum Wasser"), Description("Höchste Höhe der Land-Tiles in 1, 2, 3 … Tiles Abstand zum Wasser (Leerzeichen getrennt).")]
         public string CoastLandHeights { get; set; } = "-3 -1 0";
 
@@ -375,6 +384,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 (long land, long water) = ApplyCoastProfile(cancel);
                 _log($"Küsten-Profil: {land:N0} Land-Tiles, {water:N0} Wasser-Tiles angepasst.");
+                if (_o.CoastSoft)
+                {
+                    long soft = ApplySoftCoast(cancel);
+                    _log($"Küste weich: {soft:N0} Tile-Höhen angepasst (keine Zacken).");
+                }
             }
             else if (_o.SmoothCoast)
             {
@@ -986,6 +1000,39 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
             }
             return (landChanged, waterChanged);
+        }
+
+        /// <summary>Soft shore heights after the coast profile (see <see cref="CoastSmoother"/>); the colour groups decide land / water.</summary>
+        private long ApplySoftCoast(CancellationToken cancel)
+        {
+            var heights = new List<int>();
+            foreach (string t in (_o.CoastLandHeights ?? string.Empty).Split(new[] { ' ', ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (int.TryParse(t, NumberStyles.Integer, CultureInfo.InvariantCulture, out int v))
+                {
+                    heights.Add(v);
+                }
+            }
+            var p = new ShoreProfile
+            {
+                LandHeights = heights,
+                MaxLandZ = _o.CoastMaxLandZ,
+                SurfaceZ = _o.WaterSurfaceZ,
+                FloorZ = _o.CoastWaterZ,
+                WaterWidth = _o.CoastWaterWidth,
+                DropWidth = Math.Max(0.5, _o.CoastSoftDrop),
+                BlurPasses = Math.Clamp(_o.CoastSoftPasses, 0, 4)
+            };
+            int water = WaterGroup;
+            var changes = new List<(int i, sbyte z)>();
+            CoastSmoother.Profile(_w, _h, new System.Drawing.Rectangle(0, 0, _w, _h), (x, y) => _group[y * _w + x] == water, (x, y) => _z[y * _w + x],
+                null, p, (x, y, z) => changes.Add((y * _w + x, ClampZ(z))), null, null, cancel);
+            // written afterwards: every cell is computed from the same (unchanged) heights
+            foreach ((int i, sbyte z) in changes)
+            {
+                _z[i] = z;
+            }
+            return changes.Count;
         }
 
         /// <summary>Land cells next to water get the average height of the shore cells around them.</summary>

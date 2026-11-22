@@ -757,3 +757,95 @@ In der Werkzeugleiste des Karten-Editors gibt es neben „◉ Live-CGI“ und �
 4. **⌖ Sprung → Belegung löschen** nimmt die Belegung wieder weg.
 
 So kannst du Stellen, die du auf der Karte markiert hast, nacheinander anklicken und dir jeweils im CGI ansehen.
+
+## Werkzeuge, Hilfe, Kontextmenü und Küste glätten (seit „Werkzeuge 20“)
+
+Im Fenstertitel steht jetzt `Stand 22.11.2026 – Werkzeuge 20`.
+
+### Werkzeug-Palette links (wie Photoshop)
+
+Im Karten-Editor und in der CGI-Ansicht liegen die Werkzeuge jetzt als Bilder in einer schmalen Spalte links neben der Karte, in Gruppen (Malen, Formen, Höhen, Auswahl bzw. Statics, Land, Gelände, Höhlen).
+
+* **Linksklick** wählt das Werkzeug. Der kleine Buchstabe unten rechts ist seine Taste.
+* **Maus darüber** zeigt Name, Taste und eine Kurz-Hilfe.
+* **Rechtsklick** öffnet die Hilfe zu diesem Werkzeug.
+* **⧉** oben in der Palette öffnet sie in einem eigenen Fenster, z. B. auf dem zweiten Monitor. Fenster schließen oder **⇤** dockt sie wieder links an. Die Lage wird gemerkt und beim nächsten Start wiederhergestellt.
+* Im Karten-Editor gibt es in der Palette auch den Schalter **Höhe behalten** (Berg-Bild mit Pfeil).
+
+### Optionsleiste oben
+
+Oben steht nur noch, was das gewählte Werkzeug hat: Bild und Name des Werkzeugs, Pinselgröße / eckig, **⛰ Höhe behalten**, bei „Auswahl“ Kopieren, Ausschneiden, Einfügen, Füllen, Löschen und → Stempel, dazu eine kurze Maus-Hilfe.
+
+* Zoom, Raster, Höhen und Höhen-Ebene stecken im Menü **👁 Ansicht**.
+* In der CGI-Ansicht enthält **👁 Ansicht** Statics, Raster, Höhen / IDs, Beschriftung, Static-IDs, 2D, Wasser durchsichtig, Probleme und Zoom. Der Knopf **Statics** bleibt zusätzlich sichtbar.
+* In der zweiten CGI-Leiste stehen beim Werkzeug „Bereich“ die Befehle F K J W G M T P als Knöpfe, bei „Küste“ / „Küste glätten“ die Knöpfe Ganze Karte glätten, Nur Fehlerstellen und Fehler zeigen.
+* **?** ganz rechts öffnet die Hilfe.
+
+### Höhen-Ebene beim normalen Farb-Pinsel (Punkt 1)
+
+**⛰ Höhe behalten** (Optionsleiste, Palette oder Kontextmenü → Höhen-Ebene):
+
+* **An:** Pinsel, Radierer, Sprühen, Linie, Rechteck, Ellipse, Füllen und „Auswahl füllen“ nehmen die Farbe der gleichen Gruppe auf der Höhe des Bodens. Gibt es die Farbe in dieser Höhe nicht (Holzboden 1f nur Z 0 auf Gras Z 4), merkt sich die Höhen-Ebene Z 4.
+* **Aus:** wie bisher, jede Farbe hat ihre eigene Höhe. Übermalt man eine Zelle mit einem Eintrag der Höhen-Ebene, wird der Eintrag entfernt. Sonst käme die alte Höhe zurück, wenn man später wieder dieselbe Farbe malt.
+* Alles ist ein Rückgängig-Schritt zusammen mit den Pixeln.
+
+### Höhen-Ebene im 2D-Editor anzeigen (Punkt 2)
+
+* **👁 Ansicht → Höhen-Ebene zeigen:** Zellen mit Eintrag werden **türkis** (die Höhe gilt) oder **grau** (alter Eintrag, die Farbe wurde übermalt, er zählt nicht). Ab Zoom 12 steht die Höhe darin.
+* **Höhen** (ab Zoom 12) schreibt Werte aus der Höhen-Ebene **gelb**.
+* Die Statuszeile zeigt die Höhe unter der Maus, z. B. „Z 4 (Höhen-Ebene)“.
+* **Kontextmenü → Höhen-Ebene:** Eintrag hier, in der Auswahl oder auf der ganzen Karte löschen (mit Strg+Z).
+
+### Kontextmenü in der CGI-Ansicht (Punkt 3)
+
+**Rechtsklick** mit Auswahl, Bereich, Löschen, Färben, Multi, Vorlage oder Höhlen-Stempel. Bei den anderen Werkzeugen nimmt der Rechtsklick weiter Land oder Item auf, dort öffnet **Umschalt+Rechtsklick** das Menü. Auch die **Menütaste** öffnet es.
+
+* Oben: Static und Land unter der Maus mit **Item übernehmen**, **Static auswählen**, **Static löschen**, **Land-Tile + Höhe übernehmen**.
+* **Werkzeug:** alle Werkzeuge mit Bild.
+* **Ansicht** und **Statics zeigen** (Statics ein / aus).
+* **Bereich:** alle Bereich-Befehle (füllen, Küste, Küste glätten, Wasser, glätten, heben / senken, Berg, Übergänge, kopieren / einfügen, Statics wählen / löschen, → Farb-Stempel, → Farbkarte, Regeln lernen, auswerten).
+* **Küste:** Pinsel, im Bereich, ganze Karte, nur Fehlerstellen, Fehler zeigen.
+* **Karte:** bauen, laden, speichern, Karte → Farbkarte, prüfen, **Diese Stelle im Karten-Editor zeigen**.
+* Rückgängig, Wiederholen, ganzer Strich, Hilfe.
+
+### Hilfe (Punkt 4)
+
+**F1** (überall), **?** in den Leisten, „Hilfe“ im Kontextmenü oder Rechtsklick auf ein Werkzeug öffnet das Hilfe-Fenster. Es öffnet sich beim passenden Thema.
+
+* Links stehen die Themen: Erste Karte in 10 Schritten, Aufbau des Fensters, Karten-Editor, Höhen und Höhen-Ebene, Stempel und Muster-Pinsel, Live-CGI und Sprungtaste, CGI-Werkzeuge, CGI-Kontextmenü, Bereich-Befehle, Küste und Strand, Höhlen und Berge, CGI ↔ Farbkarte, Alle Tasten und die bisherige ausführliche Anleitung.
+* **Deutsch / English** oben umschaltbar, die Wahl wird gemerkt.
+* **Suche** (Strg+F) filtert die Themen und markiert die Treffer gelb.
+* **HTML …** speichert alles als eine HTML-Seite (zum Drucken oder Weitergeben).
+* Die Inhalte liegen in `Core/StudioGuide.cs`, neue Funktionen bitte dort ergänzen.
+
+### Küste glätten – ohne Sand-Zacken (Punkt 6)
+
+**Ursache der Zacken:** Eine schräge oder unruhige Küste ist in der Farbkarte eine Treppe aus Land- und Wasser-Zellen. Mit dem klassischen Profil liegt der Strand auf -3, direkt daneben der Meeresgrund auf -15. Jedes Strand-Tile bekommt eine Ecke auf -15 gezogen, und der Client zeichnet eine Reihe von Sand-Zacken.
+
+**Lösung:** Die Höhen folgen dem echten (euklidischen, leicht geglätteten) Abstand zur Küstenlinie statt den Zell-Stufen. Der Strand sinkt weich zur Wasserlinie, der Meeresgrund fällt über einige Tiles auf seine Tiefe. Die Tiefe bleibt also, sie verschiebt sich nur mit der Küste. Klippen über „Klippe ab z“ bleiben.
+
+Getestet ohne Oberfläche (`CoastSmoother`):
+
+* Schräge Küste: 95 Fehlerstellen vorher, 0 danach. Ein zweiter Durchlauf ändert nichts mehr.
+* Unruhige Insel 2048×2048: ganze Karte in etwa 0,5 s.
+* Der Pinsel ändert nichts außerhalb seines Kreises.
+
+Bedienung:
+
+* **Pinsel „Küste glätten“** (CGI-Palette, Gruppe Gelände): **rund**, Größe oben. Zum Überarbeiten von Hand, ein Zug ist ein Rückgängig-Schritt. Auch der klassische Pinsel **„Küste“** ist jetzt rund.
+* **Bereich markieren + J** glättet den ganzen Bereich.
+* **Ganze Karte glätten:** alle Küsten, oder nur der markierte Bereich, falls einer markiert ist. Läuft im Hintergrund und ist ein Rückgängig-Schritt.
+* **Nur Fehlerstellen:** sucht Zacken (Abfall zum Wasser ≥ „Höhensprung ab“), einzelne Land-Spitzen und 1-Tile-Buchten und glättet nur im Umkreis darum.
+* **Fehler zeigen:** markiert die Stellen rot und listet sie unter Prüfen → Probleme (Art „Küste“, Doppelklick springt hin).
+* **Statics** gehen mit dem Boden mit. Wasser-Statics bleiben auf der Wasserhöhe, neues Wasser bekommt Wasser-Statics, neues Land verliert sie.
+
+Einstellungen im Reiter **Küste / Wasser**, oben im Kasten „Küste glätten (ohne Zacken)“:
+
+* **Abfall-Breite** (Standard 3)
+* **Weichheit** (1)
+* **Küstenlinie begradigen** (1 Durchgang; 0 = Land / Wasser bleibt, nur die Höhen werden weich)
+* **Statics mitnehmen**
+* **Fehler: Höhensprung ab** (7)
+* **Fehler: Umkreis** (3)
+
+**Beim Bauen:** In den Build-Optionen unter **6 Küste** gibt es **„Küste weich (ohne Zacken)“** mit Abfall-Breite und Weichheit. Damit macht der Compiler dasselbe für die ganze Karte. Ab Werk ist das **aus**, damit bestehende Karten gleich bleiben, bis du es in der Oberfläche geprüft hast.
