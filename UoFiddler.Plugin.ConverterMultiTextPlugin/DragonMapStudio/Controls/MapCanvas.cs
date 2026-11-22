@@ -195,6 +195,44 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Last map position of the mouse (for the live preview).</summary>
         public Point CursorTile => _cursor;
 
+        /// <summary>
+        /// Brush, eraser, spray, line, shapes, fill and "fill selection": the colour that really goes into a cell
+        /// (x, y, colour there, chosen colour) – e.g. the same group at the height of the ground ("Höhe behalten").
+        /// Null = the chosen colour.
+        /// </summary>
+        [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public Func<int, int, ushort, ushort, ushort> CellColour { get; set; }
+
+        /// <summary>An undo step of the canvas is about to close – the form adds what belongs to it (height layer).</summary>
+        public event EventHandler StepClosing;
+
+        /// <summary>Height layer of the map (x, y) → (z, colour): the height counts while the cell still has that colour.</summary>
+        [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public Func<IReadOnlyDictionary<(int x, int y), (sbyte z, ushort colour)>> HeightLayer { get; set; }
+
+        /// <summary>Show the cells of the height layer (cyan = active, grey = old entry whose colour was painted over).</summary>
+        [Category("Dragon"), DefaultValue(false)]
+        public bool ShowHeightLayer { get; set; }
+
+        /// <summary>Height of a cell: the height layer when its colour still matches, else the altitude of the colour.</summary>
+        public int AltitudeAt(int x, int y)
+        {
+            if (_map == null || !_map.InBounds(x, y))
+            {
+                return 0;
+            }
+            ushort c = _map[x, y];
+            IReadOnlyDictionary<(int x, int y), (sbyte z, ushort colour)> layer = HeightLayer?.Invoke();
+            if (layer != null && layer.TryGetValue((x, y), out (sbyte z, ushort colour) h) && h.colour == c)
+            {
+                return h.z;
+            }
+            return _altitudes[c];
+        }
+
+        /// <summary>Colour written into a cell by the colour tools (see <see cref="CellColour"/>).</summary>
+        private ushort PaintCell(int x, int y, ushort current, ushort chosen) => CellColour == null ? chosen : CellColour(x, y, current, chosen);
+
         private void PatternStamp(int cx, int cy)
         {
             int size = Math.Max(1, BrushSize);
@@ -254,6 +292,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             if (_stepCells >= StrokeStepCells)
             {
                 _stepCells = 0;
+                StepClosing?.Invoke(this, EventArgs.Empty);
                 _history.End();
                 MapEdited?.Invoke(this, EventArgs.Empty);
                 _history.Begin(ToolName(_tool) + " (Teil)", _strokeGroup);
@@ -612,6 +651,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             g.DrawImageUnscaled(_view, 0, 0);
 
             DrawGrid(g);
+            DrawHeightLayer(g);
             DrawHeights(g);
             DrawOverlay(g);
         }
@@ -646,6 +686,52 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
         }
 
+        /// <summary>
+        /// Cells of the height layer: cyan frame = the height counts (the cell still has the colour), grey = old entry
+        /// (painted over with another colour, ignored by the build). From zoom 12 with the height inside.
+        /// </summary>
+        private void DrawHeightLayer(Graphics g)
+        {
+            IReadOnlyDictionary<(int x, int y), (sbyte z, ushort colour)> layer = HeightLayer?.Invoke();
+            if (!ShowHeightLayer || layer == null || layer.Count == 0 || _zoom < 1)
+            {
+                return;
+            }
+            RectangleF v = ViewRect;
+            float cell = (float)_zoom;
+            using var active = new SolidBrush(Color.FromArgb(90, 0, 220, 255));
+            using var stale = new SolidBrush(Color.FromArgb(70, 160, 160, 160));
+            using var frame = new Pen(Color.FromArgb(200, 0, 200, 255));
+            using var font = _zoom >= 12 ? new Font("Segoe UI", Math.Min(8f, (float)(_zoom * 0.26)), FontStyle.Bold) : null;
+            using var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Far };
+            int drawn = 0;
+            foreach (KeyValuePair<(int x, int y), (sbyte z, ushort colour)> kv in layer)
+            {
+                (int x, int y) = kv.Key;
+                if (x < v.Left - 1 || y < v.Top - 1 || x > v.Right || y > v.Bottom || !_map.InBounds(x, y))
+                {
+                    continue;
+                }
+                bool on = _map[x, y] == kv.Value.colour;
+                PointF a = MapToScreen(x, y);
+                g.FillRectangle(on ? active : stale, a.X, a.Y, cell, cell);
+                if (on && cell >= 4)
+                {
+                    g.DrawRectangle(frame, a.X + 0.5f, a.Y + 0.5f, cell - 1, cell - 1);
+                }
+                if (font != null && !ShowHeights)
+                {
+                    string t = "z" + kv.Value.z;
+                    g.DrawString(t, font, Brushes.Black, new RectangleF(a.X + 1, a.Y + 1, cell, cell - 1), sf);
+                    g.DrawString(t, font, on ? Brushes.Gold : Brushes.Silver, new RectangleF(a.X, a.Y, cell, cell - 1), sf);
+                }
+                if (++drawn > 60000)
+                {
+                    break;
+                }
+            }
+        }
+
         private void DrawHeights(Graphics g)
         {
             if (!ShowHeights || _zoom < 12)
@@ -657,15 +743,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             int y0 = Math.Max(0, (int)Math.Floor(v.Top)), y1 = Math.Min(_map.Height - 1, (int)Math.Ceiling(v.Bottom));
             using var font = new Font("Segoe UI", Math.Min(9f, (float)(_zoom * 0.32)), FontStyle.Bold);
             using var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+            IReadOnlyDictionary<(int x, int y), (sbyte z, ushort colour)> layer = HeightLayer?.Invoke();
+            if (layer != null && layer.Count == 0)
+            {
+                layer = null;
+            }
             for (int y = y0; y <= y1; y++)
             {
                 for (int x = x0; x <= x1; x++)
                 {
-                    int z = _altitudes[_map[x, y]];
+                    ushort colour = _map[x, y];
+                    int z = _altitudes[colour];
+                    bool fromLayer = false;
+                    if (layer != null && layer.TryGetValue((x, y), out (sbyte z, ushort colour) h) && h.colour == colour)
+                    {
+                        z = h.z;
+                        fromLayer = true;
+                    }
                     PointF c = MapToScreen(x + 0.5, y + 0.5);
                     string t = z.ToString();
                     g.DrawString(t, font, Brushes.Black, c.X + 1, c.Y + 1, sf);
-                    g.DrawString(t, font, Brushes.White, c.X, c.Y, sf);
+                    g.DrawString(t, font, fromLayer ? Brushes.Gold : Brushes.White, c.X, c.Y, sf);
                 }
             }
         }
@@ -1070,6 +1168,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         private void EndEdit()
         {
+            StepClosing?.Invoke(this, EventArgs.Empty);
             _history?.End();
             MapEdited?.Invoke(this, EventArgs.Empty);
         }
@@ -1141,7 +1240,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         continue;
                     }
                     int i = y * _map.Width + x;
-                    _map.Pixels[i] = heightTable != null ? heightTable[_map.Pixels[i]] : value;
+                    _map.Pixels[i] = heightTable != null ? heightTable[_map.Pixels[i]] : PaintCell(x, y, _map.Pixels[i], value);
                 }
             }
             Changed(r);
@@ -1156,7 +1255,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             if (_map.InBounds(x, y))
             {
-                _map.Pixels[y * _map.Width + x] = color;
+                int i = y * _map.Width + x;
+                _map.Pixels[i] = PaintCell(x, y, _map.Pixels[i], color);
             }
         }
 
@@ -1297,7 +1397,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 for (int k = x0; k <= x1; k++)
                 {
-                    px[y * w + k] = color;
+                    px[y * w + k] = PaintCell(k, y, px[y * w + k], color);
                 }
             }
             Changed(bounds);
@@ -1331,7 +1431,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 for (int x = _selection.Left; x < _selection.Right; x++)
                 {
-                    _map.Pixels[y * _map.Width + x] = color;
+                    int i = y * _map.Width + x;
+                    _map.Pixels[i] = PaintCell(x, y, _map.Pixels[i], color);
                 }
             }
             Changed(_selection);

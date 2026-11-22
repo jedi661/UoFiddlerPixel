@@ -136,6 +136,12 @@
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.Pattern.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.HeightLayer.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.Workspace.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.RulesUi.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>

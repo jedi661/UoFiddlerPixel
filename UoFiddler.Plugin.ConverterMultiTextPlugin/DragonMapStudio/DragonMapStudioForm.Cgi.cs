@@ -147,7 +147,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 tabCgiSide.SelectedTab = tabCgiLand;
                 EnsureLandList();
             }
-            else if (tool == IsoTool.Coast || tool == IsoTool.Water)
+            else if (tool == IsoTool.Coast || tool == IsoTool.Water || tool == IsoTool.CoastSmooth)
             {
                 tabCgiSide.SelectedTab = tabCgiCoast;
             }
@@ -172,6 +172,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.ZOffset = tool == IsoTool.Template ? (int)numCgiTplZ.Value : (int)numCgiZOffset.Value;
             isoView.Invalidate();
             UpdateCgiKeys();
+            UpdateCgiOptions();
         }
 
         private void CgiTool_Click(object sender, EventArgs e)
@@ -940,6 +941,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 case MapProblemKind.MissingStaticArt: return "Static ohne Grafik";
                 case MapProblemKind.Cliff: return "Steilkanten";
                 case MapProblemKind.StaticBelowGround: return "im Boden";
+                case MapProblemKind.Coast: return "Küste";
                 default: return "doppelt";
             }
         }

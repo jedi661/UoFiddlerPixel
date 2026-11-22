@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – map editor: brush catalogue, colour info, colour stamps,
  *  * CGI preview of a marked area, context menu
@@ -1015,6 +1015,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _editorMenu.Items.Add(L.T("Einfügen (Strg+V)"), null, (s, a) => MnuPaste_Click(s, a));
             _editorMenu.Items.Add(L.T("Auswahl mit Farbe 1 füllen (Strg+F)"), null, (s, a) => MnuFillSelection_Click(s, a)).Enabled = sel;
             _editorMenu.Items.Add(new ToolStripSeparator());
+            var heights = new ToolStripMenuItem(L.T("Höhen-Ebene"));
+            heights.DropDownItems.Add(new ToolStripMenuItem(L.T("Höhe behalten (Pinsel, Linie, Formen, Füllen)"), null, (s, a) => ToggleKeepHeight(!_settings.BrushKeepHeight)) { Checked = _settings.BrushKeepHeight });
+            heights.DropDownItems.Add(new ToolStripMenuItem(L.T("Höhen-Ebene zeigen"), null, (s, a) => ToggleHeightLayerView(!_settings.ShowHeightLayer)) { Checked = _settings.ShowHeightLayer });
+            heights.DropDownItems.Add(new ToolStripSeparator());
+            heights.DropDownItems.Add(L.T("Eintrag hier löschen"), null, (s, a) => ClearHeightLayer(new Rectangle(e.X, e.Y, 1, 1)))
+                   .Enabled = _staticsLayer.Heights.ContainsKey((e.X, e.Y));
+            heights.DropDownItems.Add(L.T("In der Auswahl löschen"), null, (s, a) => ClearHeightLayer(mapCanvas.Selection)).Enabled = sel;
+            heights.DropDownItems.Add(L.T("Ganze Karte löschen …"), null, (s, a) =>
+            {
+                if (_map != null && MessageBox.Show(this, L.T("Alle Einträge der Höhen-Ebene löschen? (Strg+Z geht)"), Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    ClearHeightLayer(new Rectangle(0, 0, _map.Width, _map.Height));
+                }
+            }).Enabled = _staticsLayer.Heights.Count > 0;
+            _editorMenu.Items.Add(heights);
             var tools = new ToolStripMenuItem(L.T("Werkzeug"));
             foreach ((string text, MapTool tool) in new[]
                      {
@@ -1031,6 +1046,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 _editorMenu.Items.Insert(0, new ToolStripMenuItem(L.T("Stempeln / Einfügen beenden"), null, (s, a) => CancelStamp()));
             }
+            _editorMenu.Items.Add(new ToolStripSeparator());
+            _editorMenu.Items.Add(L.T("Hilfe (F1)"), null, (s, a) => ShowHelp("editor"));
             _editorMenu.Show(mapCanvas, mapCanvas.PointToClient(Control.MousePosition));
         }
     }

@@ -59,6 +59,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public bool LiveJumpStopsFollow { get; set; }
 
+        /// <summary>Map editor colour tools: keep the height of the ground (same group at that height, else the height layer).</summary>
+        [Browsable(false)]
+        public bool BrushKeepHeight { get; set; }
+
+        /// <summary>Map editor: show the cells of the height layer.</summary>
+        [Browsable(false)]
+        public bool ShowHeightLayer { get; set; }
+
+        /// <summary>Tool palette of the map editor in its own window: "x,y,w,h", empty = docked at the left.</summary>
+        [Browsable(false)]
+        public string EditorPaletteWindow { get; set; } = string.Empty;
+
+        /// <summary>Tool palette of the CGI view in its own window: "x,y,w,h", empty = docked at the left.</summary>
+        [Browsable(false)]
+        public string CgiPaletteWindow { get; set; } = string.Empty;
+
+        /// <summary>"Küste glätten" of the CGI view.</summary>
+        [Browsable(false)]
+        public CoastSmoothSettings CoastSmooth { get; set; } = new CoastSmoothSettings();
+
+        /// <summary>Language of the help window: "de", "en", empty = like the user interface.</summary>
+        [Browsable(false)]
+        public string HelpLanguage { get; set; } = string.Empty;
+
         [Category("1 Ordner"), DisplayName("Projekt-Ordner (Karten)"), Description("Hier speichert der Editor die Karten-BMPs; die Kartenliste zeigt diesen Ordner.")]
         [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
         public string ProjectFolder { get; set; } = string.Empty;

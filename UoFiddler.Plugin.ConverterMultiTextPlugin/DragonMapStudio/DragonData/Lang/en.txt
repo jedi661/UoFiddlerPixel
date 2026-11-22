@@ -707,3 +707,203 @@ keine Gruppe	no group
 nicht definiert	not defined
 vorhanden	present
 Übergang zwischen zwei Gruppen, auf Wunsch mit Beispiel-Datei (12 Standard-Muster)	Transition between two groups, optionally with an example file (12 standard patterns)
+# Dragon Map Studio – Werkzeuge 20 (palette, options bar, CGI menu, height layer, smooth coast)
+ · Umschalt+Rechtsklick / Menütaste = Menü · F1 = Hilfe	 · Shift+right click / menu key = menu · F1 = help
+2D-Ansicht (T)	2D view (T)
+Alle Einträge der Höhen-Ebene löschen? (Strg+Z geht)	Delete all entries of the height layer? (Ctrl+Z works)
+Alle Küsten der Karte ohne Zacken (ein Rückgängig-Schritt)	Every coast of the map without teeth (one undo step)
+Ansicht	View
+Ansicht verschieben (auch Leertaste oder mittlere Maus)	Pan the view (also space or middle mouse)
+Ausschneiden	Cut
+Auswahl als Farb-Stempel speichern	Save the selection as colour stamp
+Auswahl mit Farbe 1 füllen (Strg+F)	Fill the selection with colour 1 (Ctrl+F)
+Auswahl mit Farbe 2 füllen (Entf)	Fill the selection with colour 2 (Del)
+Bereich als Farb-Stempel	Area as colour stamp
+Bereich aufziehen · Strg+C / X / V · Entf · Strg+F · V = CGI-Vorschau · Rechtsklick = Menü	Drag an area · Ctrl+C / X / V · Del · Ctrl+F · V = CGI preview · right click = menu
+Bereich auswerten (Log)	Analyse the area (log)
+Bereich markieren (Werkzeug)	Mark an area (tool)
+Bereich mit dem Land-Tile füllen	Fill the area with the land tile
+Berg	Mountain
+Berg (M)	Mountain (M)
+Berg ab der Bodenhöhe aufbauen (Reiter Berg)	Build a mountain from the ground height (tab Mountain)
+Berg formen (M)	Form a mountain (M)
+Berg formen (Reiter Berg)	Form a mountain (tab Mountain)
+Beschriftung	Labels
+Die CGI-Karte wurde inzwischen gewechselt – nichts geändert.	The CGI map was changed in the meantime – nothing changed.
+Diese Stelle im Karten-Editor zeigen	Show this place in the map editor
+Ein Stempel als Pinsel (Straßen, Flüsse) – ohne gewählten Stempel öffnet sich das Stempel-Menü	A stamp as brush (roads, rivers) – without a chosen stamp the stamp menu opens
+Einfügen	Paste
+Eingang	Entrance
+Einstellungen (Reiter Küste / Wasser)	Settings (tab Coast / water)
+Eintrag hier löschen	Delete the entry here
+Einträge entfernt (Strg+Z holt sie zurück).	entries removed (Ctrl+Z brings them back).
+Einzelne Punkte im Pinsel	Single dots inside the brush
+Ellipse gefüllt	Filled ellipse
+Fehler zeigen	Show errors
+Fehlerstellen geglättet	error places smoothed
+Füllen (F)	Fill (F)
+Füllt die zusammenhängende gleiche Farbe	Fills the connected cells of the same colour
+Ganze Karte	Whole map
+Ganze Karte glätten	Smooth whole map
+Ganze Karte löschen …	Delete on the whole map …
+Ganze Karte prüfen (Probleme)	Check the whole map (problems)
+Ganzen Strich rückgängig (Strg+Umschalt+Z)	Undo the whole stroke (Ctrl+Shift+Z)
+Gebäude / Böden aus dem Reiter Vorlagen	Buildings / floors from the tab Templates
+Gefülltes Rechteck	Filled rectangle
+Glätten (G)	Smooth (G)
+Heben (Bild↑)	Raise (Page↑)
+Herauszoomen	Zoom out
+Herauszoomen (−)	Zoom out (−)
+Hier gibt es keine Einträge der Höhen-Ebene.	There are no entries of the height layer here.
+Hilfe (F1)	Help (F1)
+Hineinzoomen	Zoom in
+Hineinzoomen (+)	Zoom in (+)
+Höhe behalten	Keep height
+Höhe behalten (Pinsel, Linie, Formen, Füllen)	Keep height (brush, line, shapes, fill)
+Höhe behalten (an / aus)	Keep height (on / off)
+Höhe behalten: an – Pinsel, Linie, Formen und Füllen nehmen die Farbe der Gruppe auf der Höhe des Bodens; fehlt sie (z. B. Holzboden nur Z 0), merkt sich die Höhen-Ebene die Höhe.	Keep height: on – brush, line, shapes and fill take the colour of the group at the height of the ground; if there is none (e.g. wood floor only Z 0) the height layer remembers the height.
+Höhe behalten: aus – jede Farbe hat ihre eigene Höhe.	Keep height: off – every colour has its own height.
+Höhen (ab Zoom 12)	Heights (from zoom 12)
+Höhen / IDs einblenden	Show heights / ids
+Höhen an die Nachbarn angleichen	Make the heights like the neighbours
+Höhen glätten	Smooth heights
+Höhen glätten (G)	Smooth heights (G)
+Höhen-Ebene	Height layer
+Höhen-Ebene ausgeblendet.	Height layer hidden.
+Höhen-Ebene löschen	Delete height layer
+Höhen-Ebene zeigen	Show height layer
+Höhlen-Stempel	Cave stamp
+Höhleneingang	Cave entrance
+Höhleneingang am Bergfuß malen	Paint a cave entrance at the foot of the mountain
+Im Bereich glätten (J)	Smooth in the area (J)
+In den Berg ziehen: Boden auf einer Höhe, Rand wird Wand	Drag into the mountain: floor at one height, the edge becomes wall
+In der Auswahl löschen	Delete in the selection
+Item aus dem Katalog (Reiter Items) setzen · Rechtsklick auf ein Static = aufnehmen	Place the item from the catalogue (tab Items) · right click on a static = take it
+Item übernehmen (zum Setzen)	Take the item (to place it)
+Karte	Map
+Karte → Farbkarte	Map → colour map
+Kein Werkzeug, ein Schalter: Pinsel, Linie, Formen und Füllen behalten die Höhe des Bodens – fehlt die Farbe auf dieser Höhe, merkt sie sich die Höhen-Ebene	Not a tool, a switch: brush, line, shapes and fill keep the height of the ground – if the colour does not exist at that height, the height layer remembers it
+Keine CGI-Karte geladen.	No CGI map loaded.
+Keine Küsten-Fehler gefunden	No coast errors found
+Keine Küsten-Fehler gefunden.	No coast errors found.
+Klick färbt das Static mit der Hue (Reiter Items)	Click colours the static with the hue (tab Items)
+Klick füllt die gleiche Farbe	Click fills the same colour
+Klick löscht ein Static	Click deletes a static
+Klick neben den Berg = Eingang · Umschalt = unsichtbar (1d) · Rechtsklick = wieder Berg	Click next to the mountain = entrance · Shift = invisible (1d) · right click = mountain again
+Klick neben den Berg · Umschalt = unsichtbar · Rechts = Berg	Click next to the mountain · Shift = invisible · right = mountain
+Klick vor eine Bergwand = ganzer Eingang · Strg+Klick = entfernen	Click in front of a mountain face = complete entrance · Ctrl+click = remove
+Kopieren	Copy
+Küste (K)	Coast (K)
+Küste anpassen (K)	Shape the coast (K)
+Küste geglättet	Coast smoothed
+Küste glätten (J)	Smooth coast (J)
+Küste glätten (ohne Zacken)	Smooth coast (no teeth)
+Küste glätten fehlgeschlagen	Smoothing the coast failed
+Küste glätten – ohne Zacken (J)	Smooth coast – no teeth (J)
+Küste glätten: nichts zu ändern (keine Küste im Bereich oder schon glatt).	Smooth coast: nothing to change (no coast in the area or already smooth).
+Küste glätten: runder Pinsel – Ziehen über die Küste macht die Ufer-Höhen weich (keine Sand-Zacken), begradigt Spitzen und 1-Tile-Buchten, Statics gehen mit (Reiter Küste / Wasser) · Pinsel oben · Bereich + J = ganzer Bereich · ein Zug = ein Rückgängig-Schritt	Smooth coast: round brush – dragging over the coast makes the shore heights soft (no sand teeth), straightens spikes and 1-tile notches, statics go along (tab Coast / water) · brush at the top · area + J = whole area · one stroke = one undo step
+Küste wie das Original	Coast like the original
+Küste: Zacke / Spitze / Bucht	Coast: tooth / spike / notch
+Küste: glätte die ganze Karte …	Coast: smoothing the whole map …
+Küste: nichts zu ändern	Coast: nothing to change
+Küste: suche Fehlerstellen …	Coast: looking for error places …
+Küsten-Fehler rot markieren und unter Prüfen → Probleme auflisten	Mark coast errors red and list them under Check → Problems
+Küsten-Fehler zeigen	Show coast errors
+Küsten-Fehlerstellen (rot, Liste unter Prüfen → Probleme, Doppelklick = hinspringen).	coast error places (red, list under Check → Problems, double click = jump there).
+Land anheben (Schritt im Reiter Land)	Raise land (step in the tab Land)
+Land-Tile + Höhe übernehmen	Take land tile + height
+Land-Tile malen (Reiter Land) · Rechtsklick = ID + Höhe aufnehmen	Paint a land tile (tab Land) · right click = take id + height
+Links = Farbe 1, rechts = Farbe 2 · [ ] = Größe · rund / eckig und 'Höhe behalten' oben	Left = colour 1, right = colour 2 · [ ] = size · round / square and 'Keep height' at the top
+MUL / UOP laden …	Load MUL / UOP …
+Malt Farbe 2	Paints colour 2
+Malt Farbe 2 · [ ] = Größe	Paints colour 2 · [ ] = size
+Markierten Bereich glätten (J)	Smooth the marked area (J)
+Markierung entfernen (Esc)	Remove the mark (Esc)
+Mit Land-Tile füllen (F)	Fill with land tile (F)
+Multi aus dem Reiter Multis als Statics setzen	Place a multi from the tab Multis as statics
+Muster-Pinsel	Pattern brush
+Nur Fehlerstellen	Only error places
+Nur Fehlerstellen glätten	Smooth only error places
+Nächste Farbe der Gruppe höher (rechte Maus: tiefer)	Next colour of the group higher (right mouse: lower)
+Nächste Farbe der Gruppe tiefer (rechte Maus: höher)	Next colour of the group lower (right mouse: higher)
+Pinsel 'Küste glätten'	Brush 'Smooth coast'
+Pinsel 'Küste glätten' wählen	Choose brush 'Smooth coast'
+Pinsel, Radierer, Sprühen, Linie, Formen und Füllen behalten die Höhe des Bodens: die Farbe der Gruppe auf dieser Höhe – fehlt sie (z. B. Holzboden nur Z 0), merkt sich die Höhen-Ebene die Höhe	Brush, eraser, spray, line, shapes and fill keep the height of the ground: the colour of the group at that height – if there is none (e.g. wood floor only Z 0) the height layer remembers the height
+Probleme markieren	Mark problems
+Raster, Höhen, Beschriftung, 2D, Wasser, Probleme, Static-IDs, Zoom	Grid, heights, labels, 2D, water, problems, static ids, zoom
+Rechte Maus = umgekehrt	Right mouse = the other way
+Rechteck gefüllt	Filled rectangle
+Rechteck markieren: F K J W G M T L P S · Rechtsklick = alle Befehle	Mark a rectangle: F K J W G M T L P S · right click = all commands
+Rechtsklick = Hilfe	Right click = help
+Regeln lernen	Learn rules
+Runder Pinsel: Küste wie das Original (Meeresgrund -15, Wasser-Statics, Strand)	Round brush: coast like the original (sea floor -15, water statics, beach)
+Runder Pinsel: Ufer ohne Sand-Zacken, Spitzen / Buchten weg, Statics gehen mit · Bereich + J · ganze Karte / nur Fehler oben	Round brush: shore without sand teeth, spikes / notches gone, statics go along · area + J · whole map / only errors at the top
+Rückgängig (Strg+Z)	Undo (Ctrl+Z)
+Senken (Bild↓)	Lower (Page↓)
+Static auswählen	Select the static
+Static löschen	Delete the static
+Statics darin auswählen (S)	Select the statics inside (S)
+Statics darin löschen (Entf)	Delete the statics inside (Del)
+Statics zeigen	Show statics
+Stempel mit Land-Tiles / Statics als Pinsel – Klick öffnet die Stempel-Auswahl	Stamp with land tiles / statics as brush – click opens the stamp choice
+Ufer ohne Zacken, Statics gehen mit	Shore without teeth, statics go along
+Ufer-Höhen folgen dem echten Abstand zur Küste: keine Sand-Zacken, die Tiefe bleibt und verschiebt sich mit der Küste. Pinsel 'Küste glätten' (rund), Bereich + J, oder:	Shore heights follow the real distance to the coast: no sand teeth, the depth stays and moves with the coast. Brush 'Smooth coast' (round), area + J, or:
+Wasser (W)	Water (W)
+Wasser-Statics entfernen (Umschalt+W)	Remove water statics (Shift+W)
+Wasser-Statics malen · Strg = entfernen	Paint water statics · Ctrl = remove
+Wasser-Statics setzen (W)	Set water statics (W)
+Werkzeug	Tool
+Werkzeug-Palette abdocken / andocken	Undock / dock the tool palette
+Werkzeuge	Tools
+Werkzeuge in einem eigenen Fenster (abdocken)	Tools in their own window (undock)
+Wieder links andocken	Dock at the left again
+Wiederholen (Strg+Y)	Redo (Ctrl+Y)
+Zacken, Spitzen und 1-Tile-Buchten suchen und nur dort glätten	Find teeth, spikes and 1-tile notches and smooth only there
+Zellen – türkis = Höhe gilt, grau = Farbe wurde übermalt (zählt nicht). Ab Zoom 12 mit Höhe.	cells – cyan = the height counts, grey = the colour was painted over (does not count). From zoom 12 with the height.
+Ziehen = Muster malen · Stempel-Menü = Optionen	Drag = paint the pattern · stamp menu = options
+Zoom 1:1	Zoom 1:1
+Zoom, Raster, Höhen, Höhen-Ebene	Zoom, grid, heights, height layer
+alter Eintrag	old entry
+auf der ganzen Karte	on the whole map
+im markierten Bereich	in the marked area
+nimmt es zurück	undoes it
+Übergänge (T)	Transitions (T)
+Übergänge neu berechnen	Compute transitions again
+Übergänge neu berechnen (T)	Compute transitions again (T)
+→ Farb-Stempel (P)	→ colour stamp (P)
+→ Stempel	→ stamp
+→ Stempel (P)	→ stamp (P)
+→ in die Farbkarte (gleiche Stelle)	→ into the colour map (same place)
+⛰ Höhe behalten	⛰ Keep height
+👁 Ansicht	👁 View
+Ganzer Strich rückgängig.	Whole stroke undone.
+Rahmen, Dicke = Pinselgröße	Outline, thickness = brush size
+Ziehen = Linie, Dicke = Pinselgröße	Drag = line, thickness = brush size
+Links = Farbe 1, rechts = Farbe 2 aufnehmen · Rechtsklick-Menü	Take left = colour 1, right = colour 2 · right click menu
+Links = Farbe 1 · Rechts = Farbe 2 · [ ] = Größe	Left = colour 1 · right = colour 2 · [ ] = size
+Ziehen · Dicke = Pinselgröße	Drag · thickness = brush size
+Ziehen · links = Farbe 1, rechts = Farbe 2	Drag · left = colour 1, right = colour 2
+Links = Farbe 1 · Rechts = Farbe 2 · Umschalt+Rechts = Menü	Left = colour 1 · right = colour 2 · Shift+right = menu
+Rechtsklick = Menü · V = CGI-Vorschau	Right click = menu · V = CGI preview
+Ziehen = verschieben	Drag = pan
+Klick = wählen · Strg = dazu · Pfeile / Bild↑↓ verschieben · Entf · Rechtsklick = Menü	Click = choose · Ctrl = add · arrows / Page↑↓ move · Del · right click = menu
+Auswahl → CGI-Vorschau (V)	Selection → CGI preview (V)
+Abfall-Breite (Tiles)	Drop width (tiles)
+Weichheit (Durchgänge)	Softness (passes)
+Küstenlinie begradigen (Durchgänge)	Straighten shore line (passes)
+Statics mitnehmen	Move statics along
+Fehler suchen	Find errors
+Fehler: Höhensprung ab	Error: height drop from
+Fehler: Umkreis (Tiles)	Error: radius (tiles)
+Auf so vielen Tiles fällt der Meeresgrund von der Wasserlinie bis zur vollen Tiefe ('Meeresgrund z'). Größer = flacher, weicher. Standard 3.	Over this many tiles the sea floor drops from the waterline to its full depth ('sea floor z'). Bigger = flatter, softer. Default 3.
+So oft wird der Abstand zur Küste geglättet: 0 = genau den Zellen folgen, 1 = keine Zacken an schrägen Küsten (Standard), 2 = noch runder.	How often the distance to the coast is smoothed: 0 = follow the cells exactly, 1 = no teeth on diagonal coasts (default), 2 = even rounder.
+Entfernt einzelne Land-Spitzen und 1-Tile-Buchten (Ecken und Kanten). 0 = Land / Wasser bleibt genau wie es ist, nur die Höhen werden weich.	Removes single land spikes and 1-tile notches (corners and edges). 0 = land / water stays exactly as it is, only the heights become soft.
+Statics auf geändertem Land gehen mit dem Boden mit; Wasser-Statics bleiben auf der Wasserhöhe, neues Wasser bekommt Wasser-Statics, neues Land verliert sie.	Statics on changed land go along with the ground; water statics stay at the water height, new water gets water statics, new land loses them.
+Ein Strand-Tile, das zu einem Nachbarn im Wasser mindestens so tief abfällt, gilt als Zacke (klassisch: -3 → -15 = 12). Standard 7.	A beach tile that drops at least this much to a neighbour in the water counts as a tooth (classic: -3 → -15 = 12). Default 7.
+'Nur Fehlerstellen': so weit um jede gefundene Stelle wird geglättet. Standard 3.	'Only error places': this far around every place found is smoothed. Default 3.
+Küste weich (ohne Zacken)	Soft coast (no teeth)
+Die Höhen am Ufer folgen dem echten Abstand zur Küstenlinie statt den Zell-Stufen: schräge und unruhige Küsten bekommen keine Sand-Zacken mehr, der Meeresgrund fällt über 'Abfall-Breite' Tiles auf seine Tiefe. Wie 'Küste glätten' in der CGI-Ansicht.	The shore heights follow the real distance to the shore line instead of the cell steps: diagonal and ragged coasts get no sand teeth any more, the sea floor drops over 'drop width' tiles to its depth. Like 'Smooth coast' in the CGI view.
+Küste weich: Abfall-Breite	Soft coast: drop width
+Tiles von der Wasserlinie bis zur vollen Tiefe des Meeresgrunds (Standard 3).	Tiles from the waterline to the full depth of the sea floor (default 3).
+Küste weich: Weichheit	Soft coast: softness
+Glättungs-Durchgänge des Abstands (0–4, Standard 1).	Smoothing passes of the distance (0–4, default 1).

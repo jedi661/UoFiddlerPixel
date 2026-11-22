@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – CGI view: side panel layout
  *  *
@@ -174,8 +174,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 22.11.2026 – Sprung 19";
+        public const string BuildMark = "Stand 22.11.2026 – Werkzeuge 20";
         private PictureBox _picStampPreview;
+        private ToolStripButton _tsbStaticIds;
         private bool _cgiLayoutBuilt;
 
         /// <summary>Builds the new side panel once (after the CGI controls are initialised).</summary>
@@ -302,6 +303,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             toolStripCgiLand.Items.Add(new ToolStripSeparator());
             toolStripCgiLand.Items.Add(_cgiPatternButton);
             var staticIds = new ToolStripButton(L.T("Static-IDs")) { CheckOnClick = true, ToolTipText = L.T("ID und Höhe jedes Statics in der CGI-Ansicht einblenden") };
+            _tsbStaticIds = staticIds;
             staticIds.Click += (s, e) => { isoView.ShowStaticIds = staticIds.Checked; isoView.Refresh(true); };
             int at = toolStripCgi.Items.IndexOf(tscCgiLabels);
             toolStripCgi.Items.Insert(at >= 0 ? at + 1 : toolStripCgi.Items.Count, staticIds);
