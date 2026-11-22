@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Bauen 22“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Dungeon 23“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -41,6 +41,7 @@
     * `MountainShaper.cs`: Berg-Pinsel.
     * `CoastSmoother.cs`: Küste ohne Zacken (weiches Ufer-Profil nach euklidischem Abstand, Küstenlinie begradigen, Fehlersuche). Arbeitet in Blöcken von 128, wird auch vom Compiler genutzt (`CoastSoft`).
     * `StudioGuide.cs`: Inhalte des Hilfe-Fensters (DE / EN, einfache Auszeichnung).
+    * `DungeonStyle.cs`: Dungeon-Stil lernen (`DungeonStyleTools.Analyze`: Lage-Schlüssel Boden/Leere + Nachbar-Maske N1 O2 S4 W8, Außenecken NO16 SO32 SW64 NW128 → Wand-Stapel 'id@dz', Deko, Void/Boden-Land) + Log, `Build` mit gelerntem Stil.
     * `Builders.cs`: Dungeon-Generator (Räume + MST + Schleifen, L-Gänge), Keller unter der Karte (NoDraw 0002), Brücke, natürlicher Lauf; Sets `BridgeSet`, `StairSet`.
     * `CgiBrushes.cs`: Logik und Einstellungen der neuen CGI-Pinsel (Streuen, Wand, Hue, Fluss, Weg-Kurve, Rampe, Plateau, Unebenheit, Varianten, Drehen/Spiegeln, Ersetzen, auf Boden, Zauberstab, Lasso).
     * `CgiAreaAnalyzer.cs`: Bereichs-Auswertung als Log.
@@ -116,8 +117,15 @@
    * **CGI-Ansicht:** Brücke, Keller unter der Karte mit Treppe, Ansicht „Unter der Karte“ mit Banner und Bau-Ebene, Dungeon-Generator (Höhle, gebaut, unter der Karte), Fluss-Lauf.
    * Der Kern ist getestet, die Oberfläche hat der Besitzer noch nicht gesehen.
 
+13. **Neu (Dungeon 23):**
+   * Der frühere „Höhle“-Dungeon heißt jetzt **Bergwall** (eigenes Werkzeug).
+   * Der Dungeon-Generator baut nur noch mit Boden-Textur, Void-Land und Wand-Statics.
+   * Stil lernen aus einem echten Dungeon und Analyse-Log (Datei + Zwischenablage).
+   * Test: 390 von 390 Wandstücken richtig nachgebaut.
+
 ## Offen / als Nächstes
 
+* Dungeon 23: Besitzer soll Deceit / Doom o. ä. lernen und den Log schicken → Regeln verfeinern (z. B. Stockwerke, Türen, Treppen zwischen Ebenen, Raumformen aus dem Original).
 * Bauen 22 testen: Keller im Client begehbar? Treppen-Richtung passend? NoDraw-Verhalten auf dem Shard prüfen.
 * Pinsel 21 in der Oberfläche testen lassen, vor allem Weg (Doppelklick), Lasso-Maske, Statics ziehen, Rahmen-Auswahl und Streu-Sets.
 * Ausbau-Ideen: Wand-Sets mit Vorlagen ausliefern, Ecken automatisch (L-Formen), Streu-Pinsel mit mehreren Sets und Rand-Ausdünnung, Drehen mit Austausch der gerichteten IDs, Lesezeichen in der Kartenübersicht anzeigen.

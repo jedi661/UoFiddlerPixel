@@ -37,10 +37,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
     public enum DungeonStyle
     {
-        [Description("Höhle (Land: Boden-Tiles, Wände = Fels)")]
+        [Description("Bergwall (Land: Boden-Tiles, Wände = Fels) – nur Werkzeug Bergwall")]
         Cave,
 
-        [Description("Gebaut (Statics: Boden + Wandstücke)")]
+        [Description("Gebaut (Boden-Textur + Wand-Statics)")]
         Built,
 
         [Description("Unter der Karte (NoDraw-Land, Statics darunter)")]
@@ -140,7 +140,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     public sealed class DungeonSettings
     {
         [Category("Dungeon"), DisplayName("Art")]
-        public DungeonStyle Style { get; set; } = DungeonStyle.Cave;
+        public DungeonStyle Style { get; set; } = DungeonStyle.Built;
+
+        [Category("Dungeon"), DisplayName("Gelernter Stil"), Description("Name eines Dungeon-Stils, der aus einer echten Karte gelernt wurde (Reiter Pinsel → Dungeon → 'Stil aus Bereich lernen'). Leer = Wand-Set + Boden-Statics unten.")]
+        public string Look { get; set; } = string.Empty;
+
+        [Category("Dungeon"), DisplayName("Leere mit Void füllen"), Description("Das ganze Rechteck außerhalb der Gänge wird Void-Land (schwarz) wie in den Original-Dungeons.")]
+        public bool FillVoid { get; set; } = true;
 
         [Category("Dungeon"), DisplayName("Räume")]
         public int Rooms { get; set; } = 8;
@@ -157,8 +163,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("Dungeon"), DisplayName("Schleifen (%)"), Description("Zusätzliche Verbindungen zwischen nahen Räumen (0 = nur ein Weg zu jedem Raum).")]
         public int Loops { get; set; } = 15;
 
-        [Category("Dungeon"), DisplayName("Höhlig (%)"), Description("Ränder der Räume unregelmäßig wie eine Höhle (0 = gerade Wände).")]
-        public int Rough { get; set; } = 30;
+        [Category("Dungeon"), DisplayName("Höhlig (%)"), Description("Ränder der Räume unregelmäßig wie eine Höhle (0 = gerade Wände wie in gebauten Dungeons; der Bergwall nimmt mindestens 30).")]
+        public int Rough { get; set; }
 
         [Category("Dungeon"), DisplayName("Zufalls-Zahl"), Description("Gleiche Zahl = gleicher Dungeon. 0 = jedes Mal neu.")]
         public int Seed { get; set; }

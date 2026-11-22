@@ -625,6 +625,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             IsoTool.Cellar => "Keller",
             IsoTool.Dungeon => "Dungeon-Generator",
             IsoTool.Course => "Fluss-Lauf",
+            IsoTool.MountainWall => "Bergwall",
             _ => t.ToString()
         };
 
@@ -777,6 +778,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             A("→ in die Farbkarte (gleiche Stelle)", CgiAreaToEditorMap);
             A("Regeln lernen", LearnRulesFromCgiArea);
             A("Bereich auswerten (Log)", () => BtnCgiAreaLog_Click(this, EventArgs.Empty));
+            A("Dungeon analysieren (Log) …", () => AnalyzeDungeonArea(false));
+            A("Dungeon-Stil aus dem Bereich lernen …", () => AnalyzeDungeonArea(true));
             A("Markierung entfernen (Esc)", () => isoView.ClearArea());
             items.Add(areaMenu);
 
@@ -1001,7 +1004,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     IsoTool.Coast or IsoTool.CoastSmooth or IsoTool.Water => "coast",
                     IsoTool.Cave or IsoTool.CaveEntrance or IsoTool.CaveStamp or IsoTool.Mountain => "caves",
                     IsoTool.PatternBrush => "stamps",
-                    IsoTool.Bridge or IsoTool.Cellar or IsoTool.Dungeon or IsoTool.Course => "build",
+                    IsoTool.Bridge or IsoTool.Cellar or IsoTool.Dungeon or IsoTool.Course or IsoTool.MountainWall => "build",
                     >= IsoTool.Scatter => "brushes",
                     _ => "cgi"
                 };

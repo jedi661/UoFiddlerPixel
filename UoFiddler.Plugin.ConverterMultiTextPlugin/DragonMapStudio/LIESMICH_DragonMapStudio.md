@@ -983,3 +983,59 @@ Im Fenstertitel steht jetzt `Stand 22.11.2026 – Bauen 22`. Alles ist in Palett
 ### Noch nicht ausgeliefert
 
 * Fertige **Wand-, Brücken- und Treppen-Sets** fehlen, weil die richtigen Item-IDs je nach Client verschieden sind. Du legst sie einmal mit „← …“ aus dem Item-Katalog an, sie werden gespeichert.
+
+## Dungeons richtig: Stil lernen, Analyse-Log, Bergwall (seit „Dungeon 23“)
+
+Im Fenstertitel steht jetzt `Stand 22.11.2026 – Dungeon 23`.
+
+Der erste Dungeon-Generator hat „Höhle“ als Standard benutzt und Fels-Land hochgezogen. Das ist kein UO-Dungeon. Dieses Fels-Labyrinth bleibt aber als eigenes Werkzeug **Bergwall** erhalten (Palette, Gruppe Bauen).
+
+**So sind UO-Dungeons gebaut** (aus deinen Screenshots ausgelesen):
+
+* Der Boden ist Land mit einer Dungeon-Textur, z. B. auf z 22.
+* Außen liegt schwarzes Void-Land (z. B. 0244) in beliebiger Höhe.
+* Die Wände sind **Statics** (z. B. 0241 / 0243) auf der Grenze Boden ↔ Leere, in Bodenhöhe.
+* Dazu kommt Deko (10ef / 10f0 Knochen und Schutt, Spinnweben, Fackeln mit Höhe +15).
+
+### Dungeon-Stil lernen und Analyse-Log
+
+1. Eine Karte mit Dungeons in der CGI-Ansicht laden (z. B. map0 bei x > 5119).
+2. Einen Dungeon mit **Bereich** markieren, mit etwas schwarzem Rand.
+3. Kontextmenü → Bereich → **„Dungeon-Stil aus dem Bereich lernen …“** (oder Reiter Pinsel → Dungeon), Name vergeben (z. B. Deceit).
+
+Gelernt wird:
+
+* **Boden-Land** (Textur) und **Void-Land** (die häufigste Kachel am Rand des Bereichs).
+* Für jede Lage einer Zelle der Wand-Stapel:
+  * ob die Zelle Boden oder Leere ist,
+  * welche Nachbarn N / O / S / W Boden sind,
+  * bei Außenecken, welche schrägen Nachbarn Boden sind.
+  * Dazu die **Wand-Stapel** dort (id + Höhe über dem Boden), als Stichprobe von bis zu 24 je Lage, und wie oft die Lage Statics hat.
+* **Boden-Statics** und **Deko** mit ihrer Häufigkeit.
+
+**„Nur analysieren (Log)“** und das Lernen schreiben `dungeon_analyse_<Name>.txt` in den Log-Ordner und in die Zwischenablage. Der Log enthält:
+
+* Boden-Land mit Textur-ID und die Boden-Höhen,
+* jedes Static mit Höhe über dem Boden und Rolle (Wand / Boden / Deko), TileData-Flags und Anzahl,
+* die Wand-Regeln (Lage → häufigste Stapel),
+* einen ASCII-Plan (`#` Wand, `.` Boden, `d` Deko).
+
+Den Log kannst du mir schicken, dann verfeinere ich die Regeln weiter.
+
+### Dungeon bauen
+
+* Werkzeug **Dungeon**, Rechteck aufziehen.
+* Räume und Gänge entstehen wie bisher (minimaler Spannbaum + Schleifen), jetzt standardmäßig mit **geraden Wänden**.
+* Mit gelerntem Stil:
+  * Boden-Textur auf Bodenhöhe, Void-Land außen (Schalter „Leere mit Void füllen“).
+  * In jede Lage kommt ein Wand-Stapel aus dem Original, in der Häufigkeit des Originals.
+  * Fehlt eine Lage im Original, nimmt er die ähnlichste.
+  * Deko kommt in der Häufigkeit des Originals dazu.
+* Ohne Stil: Wand-Set mit Pfosten an den Ecken.
+* „Unter der Karte“ baut den Dungeon unter den Boden (NoDraw-Land).
+
+### Test ohne Oberfläche
+
+* Test-Dungeon gebaut (Boden 0500 auf z 22, Void 0244, Wandstücke je Richtung, Eckpfosten, 5 % Deko).
+* Daraus den Stil gelernt, dann einen **anderen** Dungeon damit gebaut.
+* Ergebnis: **390 von 390** Wandstücken an der richtigen Stelle, Void und Boden richtig, Deko in gleicher Häufigkeit.

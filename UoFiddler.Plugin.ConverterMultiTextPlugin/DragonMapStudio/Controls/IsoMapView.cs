@@ -120,7 +120,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Dungeon,
 
         /// <summary>Drag A → B: natural river course.</summary>
-        Course
+        Course,
+
+        /// <summary>Drag a rectangle: labyrinth of raised rock walls (the former "cave" dungeon).</summary>
+        MountainWall
     }
 
     public sealed class StaticPickEventArgs : EventArgs

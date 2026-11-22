@@ -573,11 +573,14 @@ Schalter in der Palette, in der Leiste (⬇ Unter der Karte), im Reiter Pinsel u
 - Ein violettes Banner oben zeigt: man baut gerade unter der Karte, mit der Bau-Ebene.
 - Static setzen und Wand bauen setzen auf Boden + Bau-Ebene (Standard −20).
 ## Dungeon-Generator
-Rechteck aufziehen (mindestens 10×10). Wie in Roguelikes: Räume zufällig ohne Überschneidung, verbunden über einen minimalen Spannbaum, dazu „Schleifen“ % zusätzliche Wege, Gänge in L-Form, „Höhlig“ % unregelmäßige Ränder.
-Höhle | im Berg aufziehen: Boden-Tiles (Höhlen-Tiles) auf der tiefsten Höhe, die Wände werden Fels (Berg-Tiles) mindestens „Wand-Höhe“ höher.
-Gebaut | Boden-Statics und Wandstücke je Richtung (Wand-Set), Ecken bekommen den Pfosten.
-Unter der Karte | wie ein Keller: NoDraw-Land auf Boden − Tiefe, Boden- und Wand-Statics darunter.
-- Zufalls-Zahl 0 = jedes Mal ein neuer Dungeon; die benutzte Zahl steht in der Statuszeile – damit lässt er sich wieder genau so bauen.
+Echte UO-Dungeons (Deceit, Doom, Shame …) bestehen aus Boden-Land mit Dungeon-Textur, schwarzem Void-Land drumherum und Wand-Statics an der Grenze Boden ↔ Leere in Bodenhöhe, dazu Deko (Spinnweben, Knochen, Fackeln). Genau so baut der Generator – nur mit Textur und Statics.
+- Stil lernen: auf einer Karte mit Dungeons einen Dungeon mit „Bereich“ markieren (mit etwas schwarzem Rand), Kontextmenü → Bereich → „Dungeon-Stil aus dem Bereich lernen …“ oder Reiter Pinsel → Dungeon. Gelernt werden Boden-Textur, Void-Land, welche Wand-Stapel (id + Höhe) in welcher Lage stehen (Nachbarn N O S W und Außenecken) und die Deko mit Häufigkeit.
+- Log: „Dungeon analysieren (Log)“ schreibt alles in eine Datei und in die Zwischenablage: Land und Texturen, Boden-Höhen, jedes Static mit Höhe über dem Boden und Rolle (Wand, Boden, Deko), die Wand-Regeln und einen Plan.
+- Bauen: Werkzeug Dungeon, Rechteck aufziehen (mindestens 10×10). Räume zufällig ohne Überschneidung, verbunden über einen minimalen Spannbaum, dazu „Schleifen“ %, Gänge in L-Form. Mit gelerntem Stil steht jedes Wandstück wie im Original; ohne Stil nimmt er das Wand-Set (Pfosten an den Ecken).
+- Unter der Karte | wie ein Keller: NoDraw-Land auf Boden − Tiefe, Statics darunter.
+- Zufalls-Zahl 0 = jedes Mal neu; die benutzte Zahl steht in der Statuszeile.
+## Bergwall
+Rechteck aufziehen: dieselben Räume und Gänge, aber die Wände sind hohes Fels-Land (Berg-Tiles) – ein Labyrinth aus Bergwänden mit unregelmäßigen Rändern (der frühere „Höhle“-Dungeon).
 ## Fluss-Lauf
 Von der Quelle zur Mündung ziehen: geschlängelter Fluss mit den Fluss-Einstellungen (Tiefe, Ufer, Übergänge), zum Ende breiter. Pinselgröße oben = Breite.",
                 En = @"# Building in the CGI view
@@ -598,11 +601,14 @@ Switch in the palette, in the bar (⬇ Under the map), in the tab Brushes and un
 - A violet banner at the top shows that you are building under the map, with the building level.
 - Place static and build wall put things at ground + building level (default −20).
 ## Dungeon generator
-Drag a rectangle (at least 10×10). Like in roguelikes: rooms at random without overlap, connected by a minimum spanning tree, plus “loops” % extra ways, L-shaped corridors, “rough” % irregular edges.
-Cave | drag inside a mountain: floor tiles (cave tiles) at the lowest height, the walls become rock (mountain tiles) at least “wall height” higher.
-Built | floor statics and wall pieces by direction (wall set), corners get the post.
-Under the map | like a cellar: NoDraw land at ground − depth, floor and wall statics below.
-- Random number 0 = a new dungeon every time; the number used is shown in the status line – with it the dungeon can be built exactly the same again.
+Real UO dungeons (Deceit, Doom, Shame …) consist of floor land with a dungeon texture, black void land around it and wall statics at the border floor ↔ void at floor height, plus decoration (webs, bones, torches). The generator builds exactly like that – only texture and statics.
+- Learn a style: on a map with dungeons mark a dungeon with “Area” (with some black border), context menu → Area → “Learn dungeon style from the area …” or tab Brushes → Dungeon. Learned are the floor texture, the void land, which wall stacks (id + height) stand in which situation (neighbours N E S W and outer corners) and the decoration with its frequency.
+- Log: “Analyse dungeon (log)” writes everything into a file and the clipboard: land and textures, floor heights, every static with its height above the floor and its role (wall, floor, decor), the wall rules and a plan.
+- Build: tool Dungeon, drag a rectangle (at least 10×10). Rooms at random without overlap, connected by a minimum spanning tree, plus “loops” %, L-shaped corridors. With a learned style every wall piece stands like in the original; without a style it uses the wall set (posts at the corners).
+- Under the map | like a cellar: NoDraw land at ground − depth, statics below.
+- Random number 0 = new every time; the number used is shown in the status line.
+## Mountain wall
+Drag a rectangle: the same rooms and corridors, but the walls are high rock land (mountain tiles) – a labyrinth of mountain walls with rough edges (the former “cave” dungeon).
 ## River course
 Drag from the source to the mouth: winding river with the river settings (depth, banks, transitions), wider towards the end. Brush size at the top = width."
             },

@@ -49,9 +49,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                                                       t == IsoTool.Lasso || t == IsoTool.MagicWand || IsBuildTool(t);
 
         /// <summary>Drag tools of the builders: bridge (line), cellar and dungeon (rectangle), course (line).</summary>
-        private static bool IsBuildTool(IsoTool t) => t == IsoTool.Bridge || t == IsoTool.Cellar || t == IsoTool.Dungeon || t == IsoTool.Course;
+        private static bool IsBuildTool(IsoTool t) => t == IsoTool.Bridge || t == IsoTool.Cellar || t == IsoTool.Dungeon || t == IsoTool.Course || t == IsoTool.MountainWall;
 
-        private static bool IsRectTool(IsoTool t) => t == IsoTool.Cellar || t == IsoTool.Dungeon;
+        private static bool IsRectTool(IsoTool t) => t == IsoTool.Cellar || t == IsoTool.Dungeon || t == IsoTool.MountainWall;
+
+        /// <summary>Learned dungeon look by name (null = wall set + floor statics).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<string, DungeonLook> FindDungeonLook { get; set; }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public BridgeSet BridgeSet { get; set; }
@@ -301,6 +305,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 case IsoTool.Cellar:
                 case IsoTool.Dungeon:
                 case IsoTool.Course:
+                case IsoTool.MountainWall:
                     _dragStart = tile;
                     _dragEnd = tile;
                     Invalidate();
@@ -437,7 +442,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     PlaceCellar(Rectangle.FromLTRB(Math.Min(a0.X, b0.X), Math.Min(a0.Y, b0.Y), Math.Max(a0.X, b0.X) + 1, Math.Max(a0.Y, b0.Y) + 1));
                     break;
                 case IsoTool.Dungeon:
-                    PlaceDungeon(Rectangle.FromLTRB(Math.Min(a0.X, b0.X), Math.Min(a0.Y, b0.Y), Math.Max(a0.X, b0.X) + 1, Math.Max(a0.Y, b0.Y) + 1));
+                case IsoTool.MountainWall:
+                    PlaceDungeon(Rectangle.FromLTRB(Math.Min(a0.X, b0.X), Math.Min(a0.Y, b0.Y), Math.Max(a0.X, b0.X) + 1, Math.Max(a0.Y, b0.Y) + 1), Tool == IsoTool.MountainWall);
                     break;
                 case IsoTool.Course:
                     PlaceCourse(a0, b0);
@@ -653,7 +659,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
         }
 
-        private void PlaceDungeon(Rectangle r)
+        private void PlaceDungeon(Rectangle r, bool mountainWall)
         {
             if (r.Width < 10 || r.Height < 10)
             {
@@ -661,6 +667,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 return;
             }
             DungeonSettings o = BrushSettings.Dungeon;
+            if (mountainWall)
+            {
+                // Bergwall: the former "cave" dungeon – raised rock walls, rough edges
+                o = new DungeonSettings
+                {
+                    Style = DungeonStyle.Cave, Rooms = o.Rooms, RoomMin = o.RoomMin, RoomMax = o.RoomMax, CorridorWidth = o.CorridorWidth, Loops = o.Loops,
+                    Rough = Math.Max(30, o.Rough), Seed = o.Seed, FixedFloor = o.FixedFloor, FloorZ = o.FloorZ, WallHeight = o.WallHeight,
+                    FloorLand = o.FloorLand, WallLand = o.WallLand, ClearStatics = o.ClearStatics
+                };
+            }
+            else if (o.Style == DungeonStyle.Cave)
+            {
+                Message?.Invoke(this, L.T("Dungeon: Art 'Bergwall' gehört zum Werkzeug Bergwall – hier wird 'Gebaut' benutzt."));
+            }
+            DungeonLook look = mountainWall || string.IsNullOrEmpty(o.Look) ? null : FindDungeonLook?.Invoke(o.Look);
             int seed = o.Seed != 0 ? o.Seed : _rnd.Next(1, int.MaxValue);
             DungeonPlan plan = Builders.Plan(r.Width, r.Height, o, new Random(seed));
             if (plan.Rooms.Count == 0)
@@ -669,14 +690,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 return;
             }
             WallSet walls = string.IsNullOrEmpty(o.WallSet) ? null : FindWallSet?.Invoke(o.WallSet);
-            if (o.Style != DungeonStyle.Cave && walls == null)
+            if (!mountainWall && walls == null && (string.IsNullOrEmpty(o.Look) || FindDungeonLook?.Invoke(o.Look) == null))
             {
                 Message?.Invoke(this, L.T("Dungeon: für 'Gebaut' / 'Unter der Karte' ein Wand-Set wählen (Reiter Pinsel → Dungeon), sonst gibt es keine Wände."));
             }
             _map.BeginLand();
-            _map.ApplyStatics(Builders.BuildDungeon(_map, r, plan, o, walls, BrushSettings.Wall, CaveFloorIds, MountainTiles(), _rnd));
+            if (look != null)
+            {
+                int ground = int.MaxValue;
+                for (int y = r.Top; y < r.Bottom; y++)
+                {
+                    for (int x = r.Left; x < r.Right; x++)
+                    {
+                        ground = Math.Min(ground, _map.LandZ(x, y));
+                    }
+                }
+                bool under = o.Style == DungeonStyle.UnderMap;
+                int floorZ = o.FixedFloor ? o.FloorZ : under ? ground - Math.Max(1, o.Depth) : ground;
+                _map.ApplyStatics(DungeonStyleTools.Build(_map, r, plan, look, floorZ, under, o.FillVoid, o.ClearStatics, _rnd));
+            }
+            else
+            {
+                DungeonSettings use = o;
+                if (!mountainWall && o.Style == DungeonStyle.Cave)
+                {
+                    use = new DungeonSettings { Style = DungeonStyle.Built, FixedFloor = o.FixedFloor, FloorZ = o.FloorZ, Depth = o.Depth, FloorStatics = o.FloorStatics, ClearStatics = o.ClearStatics };
+                }
+                _map.ApplyStatics(Builders.BuildDungeon(_map, r, plan, use, walls, BrushSettings.Wall, CaveFloorIds, MountainTiles(), _rnd));
+            }
             int n = _map.EndLand();
-            Finished(n, L.T("Dungeon") + $": {plan.Rooms.Count} " + L.T("Räume") + $", " + L.T("Zufalls-Zahl") + $" {seed}");
+            Finished(n, (mountainWall ? L.T("Bergwall") : L.T("Dungeon")) + $": {plan.Rooms.Count} " + L.T("Räume") + $", " + L.T("Zufalls-Zahl") + $" {seed}" +
+                        (look != null ? $", " + L.T("Stil") + $" '{look.Name}'" : string.Empty));
         }
 
         private void PlaceCourse(Point a, Point b)
@@ -1012,7 +1056,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             IsoTool.Lasso => L.T("Lasso: Punkte um eine Fläche klicken · Doppelklick / Rechtsklick / Enter = schließen · Umschalt = dazu, Strg = weg · danach wirken alle Werkzeuge nur darin, Bereich-Tasten F K J W G R X Y E D · Esc = aufheben"),
             IsoTool.Bridge => L.T("Brücke: von Ufer zu Ufer ziehen (West-Ost oder Nord-Süd) – Bretter, Geländer, Pfosten, Bogen; Höhe = höheres Ende + Z + (Reiter Pinsel → Brücke)"),
             IsoTool.Cellar => L.T("Keller: Rechteck aufziehen – Land wird unsichtbar (NoDraw 0002) auf Boden − Tiefe, Kellerboden + Wände am Rand + Treppe hinunter (Richtung), Boden oben (Reiter Pinsel → Keller) · Ansicht 'Unter der Karte' zum Weiterbauen"),
-            IsoTool.Dungeon => L.T("Dungeon: Rechteck aufziehen – Räume + Gänge werden erzeugt: Höhle (Land), Gebaut (Statics) oder Unter der Karte · gleiche Zufalls-Zahl = gleicher Dungeon (Reiter Pinsel → Dungeon)"),
+            IsoTool.Dungeon => L.T("Dungeon: Rechteck aufziehen – Räume + Gänge aus Boden-Textur und Wand-Statics, am besten mit einem gelernten Stil (Bereich einer echten Dungeon-Karte → 'Stil aus Bereich lernen') · gleiche Zufalls-Zahl = gleicher Dungeon"),
+            IsoTool.MountainWall => L.T("Bergwall: Rechteck aufziehen – ein Labyrinth aus hohen Fels-Wänden (Land), Räume und Gänge dazwischen"),
             IsoTool.Course => L.T("Fluss-Lauf: von der Quelle zur Mündung ziehen – natürlich geschlängelt, breiter zum Ende, mit den Fluss-Einstellungen (Reiter Pinsel)"),
             IsoTool.MagicWand => L.T("Zauberstab: Klick wählt zusammenhängendes gleiches Land (Tile / Familie / Höhe, Reiter Pinsel) · Umschalt = dazu, Strg = weg · danach wirken alle Werkzeuge nur darin · Esc = aufheben"),
             _ => null

@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – shapes and builders (Bauen 22)
  *  *
@@ -23,6 +23,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
     public partial class DragonMapStudioForm
     {
         private ComboBox _cmbBridgeSet;
+        private ComboBox _cmbDungeonLook;
+        private PropertyGrid _propDungeonLook;
         private PropertyGrid _propBridgeSet;
         private ComboBox _cmbStairSet;
         private PropertyGrid _propStairSet;
@@ -41,6 +43,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             _buildersHooked = true;
             isoView.FindWallSet = name => BrushCfg.WallSets.FirstOrDefault(w => w.Name == name);
+            isoView.FindDungeonLook = name => BrushCfg.DungeonLooks.FirstOrDefault(l => l.Name == name);
             isoView.BridgeSet = BrushCfg.BridgeSets.FirstOrDefault(b => b.Name == BrushCfg.BridgeSet);
             isoView.StairSet = BrushCfg.StairSets.FirstOrDefault(b => b.Name == BrushCfg.StairSet);
             mapCanvas.Course = BrushCfg.Course;
@@ -293,8 +296,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             ApplyStairSet();
 
             // ---- dungeon
+            _cmbDungeonLook = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+            _cmbDungeonLook.SelectedIndexChanged += (s, e) =>
+            {
+                BrushCfg.Dungeon.Look = _cmbDungeonLook.SelectedItem is DungeonLook l ? l.Name : string.Empty;
+                if (_propDungeonLook != null)
+                {
+                    _propDungeonLook.SelectedObject = _cmbDungeonLook.SelectedItem as DungeonLook;
+                }
+            };
+            _propDungeonLook = Grid(null, 170);
             AddSection(col, "build.dungeon", "Dungeon-Generator", Color.FromArgb(68, 64, 60), () => ToolIcons.Get("dungeon"), true,
                 Row(ToolBtn("Dungeon-Werkzeug (CGI) wählen", IsoTool.Dungeon, Color.FromArgb(68, 64, 60))),
+                Row(new Label { Text = L.T("Gelernter Stil:"), AutoSize = true }, _cmbDungeonLook),
+                Row(Btn("Stil aus markiertem Bereich lernen …", ColBuild, () => AnalyzeDungeonArea(true), true)),
+                Row(Btn("Nur analysieren (Log)", ColView, () => AnalyzeDungeonArea(false)), Btn("Stil löschen", ColCheck, () =>
+                {
+                    BrushCfg.DungeonLooks.RemoveAll(l => l.Name == BrushCfg.Dungeon.Look);
+                    BrushCfg.Dungeon.Look = string.Empty;
+                    FillDungeonLooks();
+                })),
+                Row(_propDungeonLook),
+                Row(Hint(L.T("So entsteht ein echter UO-Dungeon: auf einer Karte mit Dungeons (z. B. map0 bei x > 5119: Deceit, Doom …) einen Dungeon mit 'Bereich' markieren und 'Stil lernen'. " +
+                             "Das Studio merkt sich Boden-Textur, Void-Land, welche Wandstücke in welcher Lage stehen (Nachbarn N O S W, Ecken) und die Deko – und schreibt alles als Log. " +
+                             "Der Generator baut damit neue Räume und Gänge im selben Stil."))),
                 Row(Btn("Dungeon im Karten-Editor (Farben)", ColView, () =>
                 {
                     tabMain.SelectedTab = tabEditor;
@@ -303,8 +328,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 })),
                 Row(Grid(BrushCfg.Dungeon, 330)),
                 Row(Hint(L.T("Räume werden zufällig verteilt (ohne Überschneidung), über einen minimalen Spannbaum verbunden, dazu einige Schleifen; Gänge in L-Form. " +
-                             "Höhle = Boden-Tiles + Fels-Wände (im Berg aufziehen). Gebaut = Boden- und Wand-Statics. Unter der Karte = wie ein Keller unter dem Boden. " +
-                             "Im Karten-Editor: Farbe 1 = Boden (z. B. Höhlenboden), Farbe 2 = Wand / Fels."))));
+                             "Gebaut = Boden-Textur + Wand-Statics (gelernter Stil oder Wand-Set). Unter der Karte = wie ein Keller unter dem Boden. " +
+                             "Im Karten-Editor: Farbe 1 = Boden, Farbe 2 = Wand / Void."))));
+            FillDungeonLooks();
+            AddSection(col, "build.mountainwall", "Bergwall (Fels-Labyrinth)", ColTerrain, () => ToolIcons.Get("mountainwall"), true,
+                Row(ToolBtn("Bergwall-Werkzeug wählen", IsoTool.MountainWall, ColTerrain)),
+                Row(Hint(L.T("Rechteck aufziehen: Räume und Gänge wie beim Dungeon, aber die Wände sind hohes Fels-Land (Berg-Tiles) – ein Labyrinth aus Bergwänden. " +
+                             "Räume, Gänge, Zufalls-Zahl, Boden- / Wand-Land und Wand-Höhe aus den Dungeon-Einstellungen."))));
 
             // ---- course
             AddSection(col, "build.course", "Natürlicher Lauf (Fluss / Weg)", ColBuild, () => ToolIcons.Get("course"), true,
@@ -341,6 +371,76 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
         }
 
+        private void FillDungeonLooks()
+        {
+            if (_cmbDungeonLook == null)
+            {
+                return;
+            }
+            _cmbDungeonLook.Items.Clear();
+            _cmbDungeonLook.Items.Add(L.T("(kein – Wand-Set benutzen)"));
+            foreach (DungeonLook l in BrushCfg.DungeonLooks)
+            {
+                _cmbDungeonLook.Items.Add(l);
+            }
+            int i = BrushCfg.DungeonLooks.FindIndex(l => l.Name == BrushCfg.Dungeon.Look);
+            _cmbDungeonLook.SelectedIndex = i + 1;
+        }
+
+        /// <summary>
+        /// Dungeon analysis of the marked area: log (file + clipboard) with land, heights, statics and how the walls stand;
+        /// with <paramref name="learn"/> the look is stored as a style for the generator.
+        /// </summary>
+        private void AnalyzeDungeonArea(bool learn)
+        {
+            if (_cgiMap == null || isoView.Area.IsEmpty)
+            {
+                SetStatus(L.T("Erst in der CGI-Ansicht einen Dungeon mit 'Bereich' markieren (mit etwas schwarzem Rand drumherum)."));
+                return;
+            }
+            string name = "Dungeon";
+            if (learn)
+            {
+                name = AskName("Name des Dungeon-Stils (z. B. Deceit, Doom, Schlamm-Höhle):", "Mein Dungeon");
+                if (name == null)
+                {
+                    return;
+                }
+            }
+            Rectangle area = isoView.Area;
+            Cursor = Cursors.WaitCursor;
+            DungeonLook look;
+            string report;
+            try
+            {
+                (look, report) = DungeonStyleTools.Analyze(_cgiMap, area, null, name, $"{_cgiMap.Source} ({area.X}, {area.Y}, {area.Width}×{area.Height})");
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+            string file = "dungeon_analyse_" + string.Concat(name.Select(c => char.IsLetterOrDigit(c) ? c : '_')) + ".txt";
+            string path = WriteLog(file, report);
+            try
+            {
+                Clipboard.SetText(report);
+            }
+            catch (Exception)
+            {
+                // the file is written, the clipboard is only a convenience
+            }
+            if (learn)
+            {
+                BrushCfg.DungeonLooks.RemoveAll(l => l.Name == look.Name);
+                BrushCfg.DungeonLooks.Add(look);
+                BrushCfg.Dungeon.Look = look.Name;
+                FillDungeonLooks();
+                OpenBrushSection("build.dungeon");
+            }
+            SetStatus((learn ? L.T("Dungeon-Stil gelernt") + $" '{look.Name}': {look.Walls.Count(w => w.Filled > 0)} " + L.T("Wand-Lagen") + $", {look.DecorPercent} % " + L.T("Deko") + " · " : string.Empty) +
+                      L.T("Log") + $": {path} (" + L.T("auch in der Zwischenablage") + ")");
+        }
+
         private void SetUnderView(bool on)
         {
             isoView.UnderView = on;
@@ -375,8 +475,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             p.AddSeparator();
             add(CgiTool("bridge", "Brücke", string.Empty, "Von Ufer zu Ufer ziehen: Bretter, Geländer, Pfosten, Bogen (Brücken-Set im Reiter Pinsel)", IsoTool.Bridge, ColBuild), "build");
             add(CgiTool("cellar", "Keller", string.Empty, "Rechteck: Keller unter der Karte (NoDraw-Land, Boden, Wände, Treppe)", IsoTool.Cellar, Color.FromArgb(126, 34, 206)), "build");
-            add(CgiTool("dungeon", "Dungeon-Generator", string.Empty, "Rechteck: Räume + Gänge – Höhle, gebaut oder unter der Karte", IsoTool.Dungeon, Color.FromArgb(68, 64, 60)), "build");
+            add(CgiTool("dungeon", "Dungeon-Generator", string.Empty, "Rechteck: Räume + Gänge aus Boden-Textur und Wand-Statics – im gelernten Stil eines echten Dungeons oder mit Wand-Set", IsoTool.Dungeon, Color.FromArgb(68, 64, 60)), "build");
             add(CgiTool("course", "Fluss-Lauf", string.Empty, "Von der Quelle zur Mündung ziehen: natürlich geschlängelter Fluss", IsoTool.Course, ColBuild), "build");
+            add(CgiTool("mountainwall", "Bergwall", string.Empty, "Rechteck: Labyrinth aus hohen Fels-Wänden (Land) mit Räumen und Gängen", IsoTool.MountainWall, ColTerrain), "build");
             add(new ToolPaletteEntry
             {
                 Key = "undermap",

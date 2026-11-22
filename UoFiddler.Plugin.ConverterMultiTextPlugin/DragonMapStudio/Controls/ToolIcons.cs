@@ -424,6 +424,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         }
                         break;
                     }
+                case "mountainwall":
+                    {
+                        using var rock = new SolidBrush(Rock);
+                        using var pen = new Pen(Ink, 1f) { LineJoin = LineJoin.Round };
+                        foreach (float x in new[] { 1f, 9f, 16f })
+                        {
+                            var pts = new[] { new PointF(x, 21), new PointF(x + 3.5f, 5), new PointF(x + 7, 21) };
+                            g.FillPolygon(rock, pts);
+                            g.DrawPolygon(pen, pts);
+                        }
+                        using var floor = new SolidBrush(Color.FromArgb(214, 211, 209));
+                        g.FillRectangle(floor, 1, 20, 22, 3);
+                        break;
+                    }
                 case "halfcircle":
                     using (var fill = new SolidBrush(Color.FromArgb(124, 58, 237)))
                     {

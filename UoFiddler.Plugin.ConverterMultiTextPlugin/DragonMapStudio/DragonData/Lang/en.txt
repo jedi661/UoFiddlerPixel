@@ -1318,3 +1318,43 @@ Von Ufer zu Ufer ziehen: Bretter, Geländer, Pfosten, Bogen (Brücken-Set im Rei
 Rechteck: Keller unter der Karte (NoDraw-Land, Boden, Wände, Treppe)	Rectangle: cellar under the map (NoDraw land, floor, walls, stairs)
 Rechteck: Räume + Gänge – Höhle, gebaut oder unter der Karte	Rectangle: rooms + corridors – cave, built or under the map
 Von der Quelle zur Mündung ziehen: natürlich geschlängelter Fluss	Drag from the source to the mouth: naturally winding river
+# Dragon Map Studio – Dungeon 23 (learned dungeon style, analysis log, mountain wall)
+Bergwall	Mountain wall
+Bergwall (Fels-Labyrinth)	Mountain wall (rock labyrinth)
+Bergwall-Werkzeug wählen	Choose mountain wall tool
+Bergwall (Land: Boden-Tiles, Wände = Fels) – nur Werkzeug Bergwall	Mountain wall (land: floor tiles, walls = rock) – only tool mountain wall
+Gebaut (Boden-Textur + Wand-Statics)	Built (floor texture + wall statics)
+Gelernter Stil	Learned style
+Gelernter Stil:	Learned style:
+Leere mit Void füllen	Fill the void
+Das ganze Rechteck außerhalb der Gänge wird Void-Land (schwarz) wie in den Original-Dungeons.	The whole rectangle outside the corridors becomes void land (black) like in the original dungeons.
+Name eines Dungeon-Stils, der aus einer echten Karte gelernt wurde (Reiter Pinsel → Dungeon → 'Stil aus Bereich lernen'). Leer = Wand-Set + Boden-Statics unten.	Name of a dungeon style learned from a real map (tab Brushes → Dungeon → 'Learn style from area'). Empty = wall set + floor statics below.
+Ränder der Räume unregelmäßig wie eine Höhle (0 = gerade Wände wie in gebauten Dungeons; der Bergwall nimmt mindestens 30).	Edges of the rooms irregular like a cave (0 = straight walls like built dungeons; the mountain wall uses at least 30).
+Stil aus markiertem Bereich lernen …	Learn style from the marked area …
+Nur analysieren (Log)	Only analyse (log)
+Stil löschen	Delete style
+(kein – Wand-Set benutzen)	(none – use the wall set)
+Dungeon analysieren (Log) …	Analyse dungeon (log) …
+Dungeon-Stil aus dem Bereich lernen …	Learn dungeon style from the area …
+Dungeon-Stil gelernt	Dungeon style learned
+Wand-Lagen	wall situations
+Deko	decor
+Log	Log
+auch in der Zwischenablage	also in the clipboard
+Name des Dungeon-Stils (z. B. Deceit, Doom, Schlamm-Höhle):	Name of the dungeon style (e.g. Deceit, Doom, mud cave):
+Mein Dungeon	My dungeon
+Erst in der CGI-Ansicht einen Dungeon mit 'Bereich' markieren (mit etwas schwarzem Rand drumherum).	First mark a dungeon with 'Area' in the CGI view (with some black border around it).
+Rechteck: Labyrinth aus hohen Fels-Wänden (Land) mit Räumen und Gängen	Rectangle: labyrinth of high rock walls (land) with rooms and corridors
+Rechteck: Räume + Gänge aus Boden-Textur und Wand-Statics – im gelernten Stil eines echten Dungeons oder mit Wand-Set	Rectangle: rooms + corridors of floor texture and wall statics – in the learned style of a real dungeon or with a wall set
+Dungeon: Art 'Bergwall' gehört zum Werkzeug Bergwall – hier wird 'Gebaut' benutzt.	Dungeon: kind 'mountain wall' belongs to the tool mountain wall – 'built' is used here.
+Dungeon: Rechteck aufziehen – Räume + Gänge aus Boden-Textur und Wand-Statics, am besten mit einem gelernten Stil (Bereich einer echten Dungeon-Karte → 'Stil aus Bereich lernen') · gleiche Zufalls-Zahl = gleicher Dungeon	Dungeon: drag a rectangle – rooms + corridors of floor texture and wall statics, best with a learned style (area of a real dungeon map → 'Learn style from area') · same random number = same dungeon
+Bergwall: Rechteck aufziehen – ein Labyrinth aus hohen Fels-Wänden (Land), Räume und Gänge dazwischen	Mountain wall: drag a rectangle – a labyrinth of high rock walls (land), rooms and corridors in between
+Stil	style
+Void-Land (hex)	Void land (hex)
+Schwarzes Land außerhalb der Gänge (z. B. 0244). Leer = das Land außerhalb bleibt.	Black land outside the corridors (e.g. 0244). Empty = the land outside stays.
+Boden-Statics	Floor statics
+Statics auf dem Boden als 'id@dz' (mehrere = zufällig), leer = keine (Boden ist Land).	Statics on the floor as 'id@dz' (several = random), empty = none (floor is land).
+Deko je Bodenfeld (%)	Decor per floor cell (%)
+So oft liegt auf einem Bodenfeld Deko (Spinnweben, Knochen …) wie im Original.	This often a floor cell has decoration (webs, bones …) like in the original.
+Gelernt aus	Learned from
+Land-Tiles des Bodens (Dungeon-Textur), mehrere = zufällig.	Land tiles of the floor (dungeon texture), several = random.

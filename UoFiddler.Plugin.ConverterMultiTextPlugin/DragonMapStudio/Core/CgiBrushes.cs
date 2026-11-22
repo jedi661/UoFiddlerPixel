@@ -248,6 +248,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public List<StairSet> StairSets { get; set; } = new List<StairSet>();
 
         public DungeonSettings Dungeon { get; set; } = new DungeonSettings();
+        public List<DungeonLook> DungeonLooks { get; set; } = new List<DungeonLook>();
         public CourseSettings Course { get; set; } = new CourseSettings();
 
         /// <summary>"Unter der Karte bauen": statics are placed this much below the ground (−20 = one floor).</summary>
@@ -277,6 +278,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Cellar ??= new CellarSettings();
             StairSets ??= new List<StairSet>();
             Dungeon ??= new DungeonSettings();
+            DungeonLooks ??= new List<DungeonLook>();
             Course ??= new CourseSettings();
             Hardness = Math.Clamp(Hardness, 1, 100);
         }
