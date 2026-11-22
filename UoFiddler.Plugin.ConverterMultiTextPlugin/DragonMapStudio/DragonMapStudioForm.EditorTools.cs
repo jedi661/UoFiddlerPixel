@@ -601,6 +601,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _stampBrowser = new StampBrowser { Dock = DockStyle.Fill, Thumbnail = StampThumbnail };
             _stampBrowser.PlaceRequested += (s, st) => PlaceStamp(st, _stampBrowser.AdaptHeights, _stampBrowser.PlaceRepeated);
             _stampBrowser.CancelRequested += (s, e) => CancelStamp();
+            _stampBrowser.LearnRequested += (s, st) => LearnRulesFromStamp(st);
             _stampBrowser.ChooseFolderRequested += (s, e) => ChooseColorStampFolder();
             _stampBrowser.ImportRequested += (s, e) => ImportColorStamps();
             _stampBrowser.DeleteRequested += (s, st) => DeleteStamp(st);

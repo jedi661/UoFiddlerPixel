@@ -354,13 +354,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
+        /// <summary>Land tiles and heights of an area of a built map.</summary>
+        public static (ushort[] tiles, sbyte[] z) Cut(MapData map, Rectangle a)
+        {
+            var t = new ushort[a.Width * a.Height];
+            var z = new sbyte[a.Width * a.Height];
+            for (int y = 0; y < a.Height; y++)
+            {
+                for (int x = 0; x < a.Width; x++)
+                {
+                    t[y * a.Width + x] = map.LandId(a.X + x, a.Y + y);
+                    z[y * a.Width + x] = (sbyte)map.LandZ(a.X + x, a.Y + y);
+                }
+            }
+            return (t, z);
+        }
+
         private static int ColorDistance(Color a, Color b) => Math.Abs(a.R - b.R) + Math.Abs(a.G - b.G) + Math.Abs(a.B - b.B);
 
         /// <summary>The finished conversion as a colour stamp; statics as layer, left out or as a new Dragon item rule.</summary>
-        public static ColorStamp ToStamp(CgiConversion conv, DragonRuleSet rules, int waterGroup, string name, string category, StaticsMode statics, List<string> log)
+        public static ColorStamp ToStamp(CgiConversion conv, DragonRuleSet rules, int waterGroup, string name, string category, StaticsMode statics, List<string> log,
+            MapData source = null)
         {
             var cut = new IndexedMap(conv.Area.Width, conv.Area.Height, conv.Colours, rules.ColorBits);
             ColorStamp stamp = ColorStampTools.FromMap(cut, rules, waterGroup, name, category);
+            if (source != null)
+            {
+                // the built tiles go with the stamp: rules can be learned from it later
+                (stamp.LandTiles, stamp.LandZ) = Cut(source, conv.Area);
+            }
             if (statics == StaticsMode.Layer)
             {
                 stamp.Statics = conv.Statics.ToList();

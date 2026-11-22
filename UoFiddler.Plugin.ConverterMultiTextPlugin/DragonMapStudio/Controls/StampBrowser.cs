@@ -87,9 +87,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             del.Click += (s, e) => { if (Selected != null) { DeleteRequested?.Invoke(this, Selected); } };
             Button folder = ActionButton(L.T("Ordner"), Color.FromArgb(71, 85, 105), false);
             folder.Click += (s, e) => FolderRequested?.Invoke(this, EventArgs.Empty);
+            Button learn = ActionButton(L.T("Regeln lernen…"), Color.FromArgb(22, 128, 61), false);
+            learn.Click += (s, e) => { if (Selected != null) { LearnRequested?.Invoke(this, Selected); } };
             Button reload = ActionButton(L.T("Neu laden"), Color.FromArgb(71, 85, 105), false);
             reload.Click += (s, e) => ReloadRequested?.Invoke(this, EventArgs.Empty);
-            bottom.Controls.AddRange(new Control[] { place, cancel, del, folder, chooseFolder, import, reload, _adapt, _repeat });
+            bottom.Controls.AddRange(new Control[] { place, cancel, learn, del, folder, chooseFolder, import, reload, _adapt, _repeat });
 
             Controls.Add(_list);
             Controls.Add(_info);
@@ -105,6 +107,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public event EventHandler DockToggleRequested;
         public event EventHandler CloseRequested;
         public event EventHandler CancelRequested;
+        public event EventHandler<ColorStamp> LearnRequested;
         public event EventHandler ChooseFolderRequested;
         public event EventHandler ImportRequested;
 

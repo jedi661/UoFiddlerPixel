@@ -43,6 +43,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Statics of the stamp (X / Y inside the stamp, Dz above the land) – placed into the statics layer of the map.</summary>
         public List<LayerStatic> Statics { get; set; } = new List<LayerStatic>();
 
+        /// <summary>Built land tiles of the area (only stamps made in the CGI view) – needed to learn rules from the stamp later.</summary>
+        public ushort[] LandTiles { get; set; }
+
+        /// <summary>Built land heights of the area (only stamps made in the CGI view).</summary>
+        public sbyte[] LandZ { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool CanLearn => LandTiles != null && LandZ != null && LandTiles.Length == Width * Height && LandZ.Length == Width * Height;
+
         /// <summary>File the stamp was loaded from.</summary>
         [System.Text.Json.Serialization.JsonIgnore]
         public string File { get; set; } = string.Empty;

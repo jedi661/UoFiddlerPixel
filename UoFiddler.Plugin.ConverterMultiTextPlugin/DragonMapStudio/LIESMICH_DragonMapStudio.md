@@ -638,3 +638,21 @@ Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Stempel 11]`.
 **CGI → Farbkarte, ohne die Farbkarte zu löschen:**
 * Neuer Knopf **„▧ Bereich → in Farbkarte“** in der CGI-Leiste: der markierte Bereich wird an **derselben Stelle** in die geöffnete Farbkarte geschrieben (Farben + Statics-Ebene in diesem Bereich), alles andere bleibt. Ein Rückgängig-Schritt im Karten-Editor.
 * **„▤ Karte → Farbkarte“** fragt jetzt, wenn eine gleich große Farbkarte offen ist: **Ja** = in die geöffnete Farbkarte schreiben (Rückgängig möglich), **Nein** = als neue Karte, **Abbrechen**.
+
+## Regeln und Skripte lernen (aus der CGI-Ansicht oder aus einem Stempel)
+
+Aus einem gebauten Stück Karte – z. B. aus der Original-Karte – lernt das Studio Dragon-Regeln, so wie man sie von Hand aus der Karte ablesen würde (`Core/RuleLearner.cs`):
+
+* **Map-Übergänge:** für jede Zelle am Rand zwischen zwei Gruppen (A = eigene Gruppe, B = Nachbargruppe) das 8-Nachbar-Muster und das Tile, das dort liegt, mit Höhenversatz → `map/lernen_<name>_<A>_zu_<B>.txt` + Regel in `betweentrans.txt`. Pro Muster werden nur Tiles genommen, die mindestens 15 % der Beispiele ausmachen (der Rest stammt von anderen Regeln). Gibt es für das Paar schon eine Regel, behält sie Vorrang – die gelernte füllt nur die fehlenden Muster. Ein neues Paar kommt vor die allgemeinen Regeln seiner Gruppe.
+* **Items:** Statics auf Zellen mitten in einer Gruppe (alle 8 Nachbarn gleiche Gruppe), pro Zelle als Gruppe gestapelter Statics mit Häufigkeit → `items/lernen_<name>_<A>.txt` + Zeile in `items.txt` mit der gemessenen Dichte (Promille).
+* **Static-Übergänge:** Statics auf Randzellen → `statics/lernen_<name>_<A>_zu_<B>.txt` + Regel in `statbetweentrans.txt` (Höhe wie der Compiler: tiefstes Land der Gruppe A drumherum).
+
+**Wo:**
+* CGI-Ansicht: mit „Bereich“ markieren, violetter Knopf **„✦ Regeln lernen“** ganz links in der oberen Leiste. Land-Tiles ohne Farbe werden vorher als neue Farben vorgeschlagen (damit ihre Gruppe mitgelernt werden kann).
+* Karten-Editor: Stempel-Menü → Stempel wählen → **„Regeln lernen…“** (nur Stempel, die ab „Lernen 12“ in der CGI-Ansicht erstellt wurden – sie speichern die gebauten Land-Tiles mit).
+
+**Dialog:** Auswahl **Beides / Nur Land / Nur Statics / Eigene** (Map-Übergänge, Items, Static-Übergänge einzeln), „Mindestens Beispiele je Muster“, Name der Dateien, „Lernen“. Die Liste zeigt jede gelernte Datei mit Anzahl der Muster / Beispiele; darunter der Inhalt (Muster, Tiles, Z, Item-Zeilen). Angehakte werden mit „Angehakte übernehmen“ in den Regelsatz übernommen. Danach **„Als Dragon-Skripte exportieren“** (oder „JSON speichern“) – dann gelten sie für MUL erzeugen, die CGI-Ansicht und den Generator. Bericht: `gelernt_<name>.txt` im Log-Ordner.
+
+**Test** mit dem Regelsatz im Repo: Regel Gras → Sand (`map/grass2sand.txt`) aus dem Regelsatz entfernt, aus einer gebauten Karte neu gelernt, neu gebaut: **99,8 %** der Gras-Sand-Randzellen bekommen wieder ein Tile aus dem Original-Muster (ohne die Regel: 0 %). Export als Dragon-Skripte und erneutes Einlesen: alle gelernten Dateien und Regeln kommen wieder an.
+
+Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Lernen 12]`.
