@@ -117,8 +117,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             mapCanvas.PatternCellsPainted += (o, cells) =>
             {
                 _strokePainted.AddRange(cells);
+                ApplyPendingHeights();
                 MarkLiveDirty();
             };
+            mapCanvas.PasteApplied += (o, e) => ApplyPendingHeights();
             mapCanvas.StrokeFinishing += (o, e) => FixStrokeAltitudes();
             mapCanvas.StrokeEnded += (o, e) => MarkLiveDirty();
             mapCanvas.MapEdited += (o, e) => MarkLiveDirty();
@@ -151,7 +153,63 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 return c;
             }
-            return StampPixelForHeight(s, i, current);
+            int colour = StampPixelForHeight(s, i, current, out int want);
+            NoteHeight(x, y, colour, want);
+            return colour;
+        }
+
+        /// <summary>Heights the colours cannot hold, collected while painting; written into the height layer in the same undo step.</summary>
+        private readonly Dictionary<(int x, int y), (sbyte z, ushort colour)?> _pendingHeights = new Dictionary<(int, int), (sbyte, ushort)?>();
+
+        /// <summary>
+        /// The colour got the closest height of its group – if that is not the wanted height (e.g. wood floor only Z 0, ground Z 5),
+        /// the wanted height goes into the height layer; otherwise an old entry of the cell is removed.
+        /// </summary>
+        private void NoteHeight(int x, int y, int colour, int want)
+        {
+            if (colour < 0 || colour >= _rules.Palette.Count)
+            {
+                return;
+            }
+            int have = _rules.Palette[colour].Altitude;
+            _pendingHeights[(x, y)] = Math.Abs(have - want) > 1 ? ((sbyte)Math.Clamp(want, -128, 127), (ushort)colour) : null;
+        }
+
+        /// <summary>Writes the collected heights into the height layer (undo / redo with the pixels).</summary>
+        private void ApplyPendingHeights()
+        {
+            if (_pendingHeights.Count == 0)
+            {
+                return;
+            }
+            var before = new Dictionary<(int, int), (sbyte, ushort)?>();
+            var after = new Dictionary<(int, int), (sbyte, ushort)?>(_pendingHeights);
+            foreach ((int, int) k in _pendingHeights.Keys)
+            {
+                before[k] = _staticsLayer.Heights.TryGetValue(k, out (sbyte z, ushort colour) v) ? v : null;
+            }
+            _pendingHeights.Clear();
+            void Set(Dictionary<(int, int), (sbyte, ushort)?> values)
+            {
+                foreach (KeyValuePair<(int, int), (sbyte, ushort)?> kv in values)
+                {
+                    if (kv.Value.HasValue)
+                    {
+                        _staticsLayer.Heights[kv.Key] = kv.Value.Value;
+                    }
+                    else
+                    {
+                        _staticsLayer.Heights.Remove(kv.Key);
+                    }
+                }
+                _staticsLayer.Modified = true;
+                if (_map != null)
+                {
+                    _map.Modified = true;
+                }
+            }
+            Set(after);
+            _history.AddExtra(() => Set(before), () => Set(after));
         }
 
         private readonly Dictionary<int, List<DragonPaletteEntry>> _groupEntries = new Dictionary<int, List<DragonPaletteEntry>>();
@@ -160,9 +218,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         /// Stamp pixel i on a cell whose colour is <paramref name="current"/>: the colour of its group at the wanted height –
         /// Original = height there + height in the stamp, Terrain = height there, Fixed = the fixed height; + offset.
         /// </summary>
-        private int StampPixelForHeight(ColorStamp s, int i, ushort current)
+        private int StampPixelForHeight(ColorStamp s, int i, ushort current) => StampPixelForHeight(s, i, current, out _);
+
+        private int StampPixelForHeight(ColorStamp s, int i, ushort current, out int want)
         {
             ushort c = s.Pixels[i];
+            want = c < _rules.Palette.Count ? _rules.Palette[c].Altitude : 0;
             if (c == ColorStampTools.Transparent)
             {
                 return current;
@@ -173,7 +234,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return c;
             }
             int here = current < _rules.Palette.Count ? _rules.Palette[current].Altitude : s.BaseAltitude;
-            int want = _settings.PatternHeight switch
+            want = _settings.PatternHeight switch
             {
                 PatternHeightMode.Original => here + (i < s.RelativeAltitudes.Length ? s.RelativeAltitudes[i] : 0),
                 PatternHeightMode.Fixed => _settings.PatternHeightValue,
@@ -183,7 +244,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 _groupEntries[g] = entries = _rules.EntriesOfGroup(g).Where(e => e.Defined).ToList();
             }
-            return entries.Count == 0 ? c : entries.OrderBy(e => Math.Abs(e.Altitude - want)).ThenBy(e => e.Index == c ? 0 : 1).First().Index;
+            int target = want;
+            return entries.Count == 0 ? c : entries.OrderBy(e => Math.Abs(e.Altitude - target)).ThenBy(e => e.Index == c ? 0 : 1).First().Index;
         }
 
         private readonly List<Point> _strokePainted = new List<Point>();
@@ -205,7 +267,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             box.Intersect(new Rectangle(0, 0, _map.Width, _map.Height));
             _history.Touch(box);
             var before = (ushort[])_map.Pixels.Clone();
-            int Alt(int x, int y) => before[y * _map.Width + x] < _rules.Palette.Count ? _rules.Palette[before[y * _map.Width + x]].Altitude : 0;
+            int Alt(int x, int y)
+            {
+                ushort c = before[y * _map.Width + x];
+                // the height layer counts: a floor of Z 0 painted on Z 5 stands at Z 5
+                if (_staticsLayer.Heights.TryGetValue((x, y), out (sbyte z, ushort colour) h) && h.colour == c)
+                {
+                    return h.z;
+                }
+                return c < _rules.Palette.Count ? _rules.Palette[c].Altitude : 0;
+            }
             int n = 0;
             for (int y = box.Top; y < box.Bottom; y++)
             {
@@ -408,6 +479,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             IndexedMap crop = _map.Crop(r);
             BuildOptions o = CurrentBuildOptions();
             o.ExtraStatics = _staticsLayer.Crop(r);
+            o.ExtraHeights = _staticsLayer.CropHeights(r);
             o.ExtraStaticsComplete = _staticsLayer.Complete;
             DragonRuleSet rules = _rules;
             var inner = new Rectangle(area.X - r.X, area.Y - r.Y, area.Width, area.Height);

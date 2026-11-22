@@ -36,6 +36,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         public List<LayerStatic> Items { get; } = new List<LayerStatic>();
 
+        /// <summary>
+        /// Height layer: cells whose colour has no colour of the wanted height in its group (e.g. a wood floor that only
+        /// exists with Z 0 painted on grass with Z 5). Key = (x, y); the height is used while the cell still has that colour.
+        /// </summary>
+        public Dictionary<(int x, int y), (sbyte z, ushort colour)> Heights { get; } = new Dictionary<(int, int), (sbyte, ushort)>();
+
+        /// <summary>Height overrides inside <paramref name="r"/> as index (y * r.Width + x, relative to r) -> (z, colour) for a cut-out build.</summary>
+        public Dictionary<int, (sbyte z, ushort colour)> CropHeights(System.Drawing.Rectangle r)
+        {
+            var d = new Dictionary<int, (sbyte, ushort)>();
+            foreach (KeyValuePair<(int x, int y), (sbyte z, ushort colour)> kv in Heights)
+            {
+                if (r.Contains(kv.Key.x, kv.Key.y))
+                {
+                    d[(kv.Key.y - r.Y) * r.Width + kv.Key.x - r.X] = kv.Value;
+                }
+            }
+            return d;
+        }
+
         public bool Modified { get; set; }
 
         /// <summary>The layer holds all statics of the map (converted from a built map): the compiler adds none of its own.</summary>
@@ -64,6 +84,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 s.Absolute = (r.ReadUInt16() & 1) != 0; // flags
                 layer.Items.Add(s);
             }
+            // height layer (since "Höhen 17"): count, then x, y, z, colour
+            if (r.BaseStream.Position + 4 <= r.BaseStream.Length)
+            {
+                int hn = r.ReadInt32();
+                for (int i = 0; i < hn && r.BaseStream.Position + 7 <= r.BaseStream.Length; i++)
+                {
+                    int x = r.ReadUInt16(), y = r.ReadUInt16();
+                    sbyte z = r.ReadSByte();
+                    ushort c = r.ReadUInt16();
+                    layer.Heights[(x, y)] = (z, c);
+                }
+            }
             return layer;
         }
 
@@ -73,7 +105,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 return;
             }
-            if (Items.Count == 0)
+            if (Items.Count == 0 && Heights.Count == 0)
             {
                 if (File.Exists(file))
                 {
@@ -95,6 +127,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     w.Write(s.Id);
                     w.Write(s.Hue);
                     w.Write((ushort)(s.Absolute ? 1 : 0));
+                }
+                w.Write(Heights.Count);
+                foreach (KeyValuePair<(int x, int y), (sbyte z, ushort colour)> kv in Heights)
+                {
+                    w.Write((ushort)kv.Key.x);
+                    w.Write((ushort)kv.Key.y);
+                    w.Write(kv.Value.z);
+                    w.Write(kv.Value.colour);
                 }
             }
             Modified = false;

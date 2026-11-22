@@ -521,6 +521,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             IndexedMap crop = _map.Crop(r8);
             BuildOptions o = CurrentBuildOptions();
             o.ExtraStatics = _staticsLayer.Crop(r8);
+            o.ExtraHeights = _staticsLayer.CropHeights(r8);
             o.ExtraStaticsComplete = _staticsLayer.Complete;
             DragonRuleSet rules = _rules;
             List<LayerStatic> layer = _staticsLayer.Items.Where(st => sel.Contains(st.X, st.Y)).ToList();
@@ -586,12 +587,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 {
                     return buffer;
                 }
-                if (_settings.PatternHeight == PatternHeightMode.Original)
-                {
-                    int ground = ColorStampTools.GroundAltitude(_map, new Rectangle(p.X, p.Y, s.Width, s.Height), _rules, _settings.Generator.WaterGroup);
-                    return ColorStampTools.Realize(s, _rules, ground + _settings.PatternHeightOffset, true, _map.Bits);
-                }
-                // terrain / fixed height: every pixel the colour of its group at the height of the map there (or the fixed height)
+                // every pixel: the colour of its group at the wanted height (heights the colours do not have -> height layer)
                 var outMap = new IndexedMap(s.Width, s.Height, 0, _map.Bits);
                 for (int y = 0; y < s.Height; y++)
                 {
@@ -600,7 +596,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                         int i = y * s.Width + x;
                         int mx = p.X + x, my = p.Y + y;
                         ushort current = _map.InBounds(mx, my) ? _map[mx, my] : (ushort)0;
-                        outMap.Pixels[i] = (ushort)StampPixelForHeight(s, i, current);
+                        int colour = StampPixelForHeight(s, i, current, out int want);
+                        outMap.Pixels[i] = (ushort)colour;
+                        if (s.Pixels[i] != ColorStampTools.Transparent && _map.InBounds(mx, my))
+                        {
+                            NoteHeight(mx, my, colour, want);
+                        }
                     }
                 }
                 return outMap;
@@ -905,6 +906,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             IndexedMap crop = _map.Crop(r);
             BuildOptions o = CurrentBuildOptions();
             o.ExtraStatics = _staticsLayer.Crop(r);
+            o.ExtraHeights = _staticsLayer.CropHeights(r);
             o.ExtraStaticsComplete = _staticsLayer.Complete;
             DragonRuleSet rules = _rules;
             EnsureCaveRule(crop);

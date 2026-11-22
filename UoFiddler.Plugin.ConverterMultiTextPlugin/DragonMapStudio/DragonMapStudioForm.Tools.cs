@@ -845,7 +845,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 MessageBox.Show(this, "Keine Karte geöffnet.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            StartBuild(_map.Clone(), _map.FilePath ?? "aktuelle Karte", _staticsLayer.Items.ToList(), _staticsLayer.Complete);
+            StartBuild(_map.Clone(), _map.FilePath ?? "aktuelle Karte", _staticsLayer.Items.ToList(), _staticsLayer.Complete,
+                _staticsLayer.CropHeights(new Rectangle(0, 0, _map.Width, _map.Height)));
         }
 
         private void BtnBuildFromFile_Click(object sender, EventArgs e)
@@ -868,17 +869,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
         }
 
-        private void StartBuild(IndexedMap map, string sourceName, List<LayerStatic> statics = null, bool complete = false)
+        private void StartBuild(IndexedMap map, string sourceName, List<LayerStatic> statics = null, bool complete = false,
+            Dictionary<int, (sbyte z, ushort colour)> heights = null)
         {
             EnsureCaveRule(map);
             BuildOptions o = CurrentBuildOptions();
-            // statics layer of the colour map (<map>.statics.bin)
+            // statics + height layer of the colour map (<map>.statics.bin)
             if (statics == null)
             {
                 StaticsLayer layer = StaticsLayer.Load(StaticsLayer.PathFor(sourceName));
                 statics = layer.Items;
                 complete = layer.Complete;
+                heights = layer.CropHeights(new Rectangle(0, 0, map.Width, map.Height));
             }
+            o.ExtraHeights = heights;
             o.ExtraStatics = statics;
             o.ExtraStaticsComplete = complete;
             DragonRuleSet rules = _rules;

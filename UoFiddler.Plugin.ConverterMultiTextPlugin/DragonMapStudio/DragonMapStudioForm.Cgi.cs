@@ -274,6 +274,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             EnsureCaveRule(_map);
             BuildOptions o = CurrentBuildOptions();
             o.ExtraStatics = _staticsLayer.Items.ToList();
+            o.ExtraHeights = _staticsLayer.CropHeights(new Rectangle(0, 0, _map.Width, _map.Height));
             o.ExtraStaticsComplete = _staticsLayer.Complete;
             DragonRuleSet rules = _rules;
             IndexedMap copy = _map.Clone();

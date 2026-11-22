@@ -111,6 +111,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false), System.Text.Json.Serialization.JsonIgnore]
         public bool ExtraStaticsComplete { get; set; }
 
+        /// <summary>Height layer of the colour map: index (y * width + x) -> height, used while the cell still has the colour.</summary>
+        [Browsable(false), System.Text.Json.Serialization.JsonIgnore]
+        public Dictionary<int, (sbyte z, ushort colour)> ExtraHeights { get; set; }
+
         [Category("3 Details"), DisplayName("Höhleneingang: NODRAW-Statics"), Description("Wie im Original: auf jedes Tile der Mund-Reihe eines Höhleneingangs (01DA/01DB/01D6 vor 01DC–01E7, nach Osten 01D4/01DB/01D8) ein unsichtbares Static 0001 auf Bodenhöhe.")]
         public bool CaveNoDrawStatics { get; set; } = true;
 
@@ -331,6 +335,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     cancel.ThrowIfCancellationRequested();
                     progress?.Report((int)(i * 10L / n));
                 }
+            }
+            if (_o.ExtraHeights != null && _o.ExtraHeights.Count > 0)
+            {
+                // height layer: the colour has no colour of this height in its group (e.g. a floor painted on higher ground)
+                int srcW = source.Width;
+                long applied = 0;
+                foreach (KeyValuePair<int, (sbyte z, ushort colour)> kv in _o.ExtraHeights)
+                {
+                    int x = kv.Key % srcW, y = kv.Key / srcW;
+                    if (x < _w && y < _h && map.Pixels[y * _w + x] == kv.Value.colour)
+                    {
+                        _z[y * _w + x] = kv.Value.z;
+                        applied++;
+                    }
+                }
+                _log($"Höhen-Ebene: {applied:N0} Zellen auf ihre gemalte Höhe gesetzt.");
             }
             if (result.UnknownColors > 0)
             {
