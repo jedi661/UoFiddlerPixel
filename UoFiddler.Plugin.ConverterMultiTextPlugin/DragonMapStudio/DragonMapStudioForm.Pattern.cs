@@ -37,6 +37,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void UseStamp(ColorStamp s, bool adapt, bool repeat, bool stepUndo, bool live)
         {
             _liveEnabled = live;
+            _groupEntries.Clear();
             HookPatternEvents();
             mapCanvas.StrokeStepCells = stepUndo ? StepCells : 0;
             if (s.DrawMode == StampDrawMode.Freehand)
@@ -106,6 +107,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             _patternHooked = true;
             mapCanvas.PatternCellsPainted += MapCanvas_PatternCellsPainted;
+            // live while drawing (not only after letting go)
+            mapCanvas.PatternCellsPainted += (o, cells) =>
+            {
+                _strokePainted.AddRange(cells);
+                MarkLiveDirty();
+            };
+            mapCanvas.StrokeFinishing += (o, e) => FixStrokeAltitudes();
             mapCanvas.StrokeEnded += (o, e) => MarkLiveDirty();
             mapCanvas.MapEdited += (o, e) => MarkLiveDirty();
         }
@@ -133,14 +141,107 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 return -1;
             }
-            int g = i < s.Groups.Length ? s.Groups[i] : -1;
-            if (!_patternAdapt || g < 0 || current >= _rules.Palette.Count)
+            if (!_patternAdapt)
             {
                 return c;
             }
-            int want = _rules.Palette[current].Altitude + (i < s.RelativeAltitudes.Length ? s.RelativeAltitudes[i] : 0);
-            List<DragonPaletteEntry> entries = _rules.EntriesOfGroup(g).Where(e => e.Defined).ToList();
+            return StampPixelForHeight(s, i, current);
+        }
+
+        private readonly Dictionary<int, List<DragonPaletteEntry>> _groupEntries = new Dictionary<int, List<DragonPaletteEntry>>();
+
+        /// <summary>
+        /// Stamp pixel i on a cell whose colour is <paramref name="current"/>: the colour of its group at the wanted height –
+        /// Original = height there + height in the stamp, Terrain = height there, Fixed = the fixed height; + offset.
+        /// </summary>
+        private int StampPixelForHeight(ColorStamp s, int i, ushort current)
+        {
+            ushort c = s.Pixels[i];
+            if (c == ColorStampTools.Transparent)
+            {
+                return current;
+            }
+            int g = i < s.Groups.Length ? s.Groups[i] : -1;
+            if (g < 0)
+            {
+                return c;
+            }
+            int here = current < _rules.Palette.Count ? _rules.Palette[current].Altitude : s.BaseAltitude;
+            int want = _settings.PatternHeight switch
+            {
+                PatternHeightMode.Original => here + (i < s.RelativeAltitudes.Length ? s.RelativeAltitudes[i] : 0),
+                PatternHeightMode.Fixed => _settings.PatternHeightValue,
+                _ => here
+            } + _settings.PatternHeightOffset;
+            if (!_groupEntries.TryGetValue(g, out List<DragonPaletteEntry> entries))
+            {
+                _groupEntries[g] = entries = _rules.EntriesOfGroup(g).Where(e => e.Defined).ToList();
+            }
             return entries.Count == 0 ? c : entries.OrderBy(e => Math.Abs(e.Altitude - want)).ThenBy(e => e.Index == c ? 0 : 1).First().Index;
+        }
+
+        private readonly List<Point> _strokePainted = new List<Point>();
+
+        /// <summary>
+        /// Automatic repair after a pattern stroke (still in its undo step): painted cells and their border whose altitude lies more
+        /// than 10 away from the average of the 8 neighbours get the colour of their group closest to that average.
+        /// </summary>
+        private void FixStrokeAltitudes()
+        {
+            if (!_settings.PatternAutoFix || _strokePainted.Count == 0 || _map == null)
+            {
+                _strokePainted.Clear();
+                return;
+            }
+            int minX = _strokePainted.Min(p => p.X) - 1, maxX = _strokePainted.Max(p => p.X) + 1;
+            int minY = _strokePainted.Min(p => p.Y) - 1, maxY = _strokePainted.Max(p => p.Y) + 1;
+            var box = Rectangle.FromLTRB(minX, minY, maxX + 1, maxY + 1);
+            box.Intersect(new Rectangle(0, 0, _map.Width, _map.Height));
+            _history.Touch(box);
+            var before = (ushort[])_map.Pixels.Clone();
+            int Alt(int x, int y) => before[y * _map.Width + x] < _rules.Palette.Count ? _rules.Palette[before[y * _map.Width + x]].Altitude : 0;
+            int n = 0;
+            for (int y = box.Top; y < box.Bottom; y++)
+            {
+                for (int x = box.Left; x < box.Right; x++)
+                {
+                    int sum = 0, cnt = 0;
+                    for (int dy = -1; dy <= 1; dy++)
+                    {
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            if ((dx != 0 || dy != 0) && _map.InBounds(x + dx, y + dy))
+                            {
+                                sum += Alt(x + dx, y + dy);
+                                cnt++;
+                            }
+                        }
+                    }
+                    int avg = cnt == 0 ? Alt(x, y) : (int)Math.Round(sum / (double)cnt);
+                    ushort cur = before[y * _map.Width + x];
+                    if (cur >= _rules.Palette.Count || Math.Abs(_rules.Palette[cur].Altitude - avg) <= 10)
+                    {
+                        continue;
+                    }
+                    int g = _rules.Palette[cur].Group;
+                    if (!_groupEntries.TryGetValue(g, out List<DragonPaletteEntry> entries))
+                    {
+                        _groupEntries[g] = entries = _rules.EntriesOfGroup(g).Where(e => e.Defined).ToList();
+                    }
+                    if (entries.Count == 0)
+                    {
+                        continue;
+                    }
+                    _map.Pixels[y * _map.Width + x] = (ushort)entries.OrderBy(e => Math.Abs(e.Altitude - avg)).First().Index;
+                    n++;
+                }
+            }
+            _strokePainted.Clear();
+            if (n > 0)
+            {
+                mapCanvas.InvalidateMap();
+                SetStatus($"Nachbesserung: {n} Höhen-Spitzen am Strich angeglichen.");
+            }
         }
 
         /// <summary>Statics of the pattern for the newly painted cells – in the statics layer, in the same undo step.</summary>

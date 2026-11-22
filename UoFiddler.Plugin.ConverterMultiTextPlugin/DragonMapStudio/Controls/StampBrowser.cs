@@ -36,6 +36,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private readonly ComboBox _layers;
         private readonly CheckBox _stepUndo;
         private readonly CheckBox _live;
+        private readonly ComboBox _height;
+        private readonly NumericUpDown _heightValue;
+        private readonly NumericUpDown _heightOffset;
+        private readonly CheckBox _autoFix;
         private bool _filling;
         private readonly Button _dock;
         private readonly Label _info;
@@ -77,7 +81,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             _list.SelectedIndexChanged += (s, e) => ShowInfo();
 
             // how the selected stamp is drawn (stored in the stamp)
-            var drawPanel = new TableLayoutPanel { Dock = DockStyle.Bottom, ColumnCount = 2, RowCount = 3, AutoSize = true, Padding = new Padding(0, 4, 0, 0) };
+            var drawPanel = new TableLayoutPanel { Dock = DockStyle.Bottom, ColumnCount = 2, RowCount = 5, AutoSize = true, Padding = new Padding(0, 4, 0, 0) };
             drawPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             drawPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             _mode = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill };
@@ -95,8 +99,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             new ToolTip().SetToolTip(_live, L.T("Beim Zeichnen zeigt ein kleines CGI-Fenster die Umgebung der Maus gebaut – wie es im Spiel aussieht."));
             opts.Controls.Add(_stepUndo);
             opts.Controls.Add(_live);
-            drawPanel.Controls.Add(opts, 0, 2);
+            drawPanel.Controls.Add(opts, 0, 4);
             drawPanel.SetColumnSpan(opts, 2);
+            // heights: terrain of the map / original from the stamp / fixed, plus an offset
+            _height = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill };
+            _height.Items.AddRange(new object[] { L.T("Original (Höhen aus dem Stempel)"), L.T("Gelände der Karte behalten"), L.T("Feste Höhe") });
+            drawPanel.Controls.Add(new Label { Text = L.T("Höhe:"), AutoSize = true, Margin = new Padding(3, 7, 3, 3) }, 0, 2);
+            drawPanel.Controls.Add(_height, 1, 2);
+            var hrow = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true, Margin = new Padding(0) };
+            hrow.Controls.Add(new Label { Text = L.T("fest Z"), AutoSize = true, Margin = new Padding(3, 7, 2, 3) });
+            _heightValue = new NumericUpDown { Minimum = -128, Maximum = 127, Width = 52 };
+            hrow.Controls.Add(_heightValue);
+            hrow.Controls.Add(new Label { Text = "±", AutoSize = true, Margin = new Padding(6, 7, 2, 3) });
+            _heightOffset = new NumericUpDown { Minimum = -60, Maximum = 60, Width = 52 };
+            hrow.Controls.Add(_heightOffset);
+            _autoFix = new CheckBox { Text = L.T("Nachbessern"), AutoSize = true, Margin = new Padding(8, 5, 3, 3) };
+            new ToolTip().SetToolTip(_autoFix, L.T("Nach dem Strich Höhen-Spitzen, Stufen und Löcher am Rand an die Nachbarn angleichen (im selben Rückgängig-Schritt)."));
+            hrow.Controls.Add(_autoFix);
+            drawPanel.Controls.Add(hrow, 0, 3);
+            drawPanel.SetColumnSpan(hrow, 2);
+            _height.SelectedIndexChanged += (s, e) => RaiseHeight();
+            _heightValue.ValueChanged += (s, e) => RaiseHeight();
+            _heightOffset.ValueChanged += (s, e) => RaiseHeight();
+            _autoFix.CheckedChanged += (s, e) => RaiseHeight();
             _mode.SelectedIndexChanged += (s, e) => ModeChanged();
             _layers.SelectedIndexChanged += (s, e) => ModeChanged();
 
@@ -146,6 +171,39 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public bool StepUndo => _stepUndo.Checked;
 
         public bool LivePreview => _live.Checked;
+
+        private bool _settingHeight;
+
+        /// <summary>Height options changed (the form stores them in the settings).</summary>
+        public event EventHandler HeightOptionsChanged;
+
+        public PatternHeightMode HeightMode => (PatternHeightMode)Math.Max(0, _height.SelectedIndex);
+
+        public int HeightValue => (int)_heightValue.Value;
+
+        public int HeightOffset => (int)_heightOffset.Value;
+
+        public bool AutoFix => _autoFix.Checked;
+
+        public void SetHeightOptions(PatternHeightMode mode, int value, int offset, bool autoFix)
+        {
+            _settingHeight = true;
+            _height.SelectedIndex = (int)mode;
+            _heightValue.Value = Math.Clamp(value, -128, 127);
+            _heightOffset.Value = Math.Clamp(offset, -60, 60);
+            _autoFix.Checked = autoFix;
+            _heightValue.Enabled = mode == PatternHeightMode.Fixed;
+            _settingHeight = false;
+        }
+
+        private void RaiseHeight()
+        {
+            _heightValue.Enabled = _height.SelectedIndex == (int)PatternHeightMode.Fixed;
+            if (!_settingHeight)
+            {
+                HeightOptionsChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         /// <summary>Draw mode / layers of the selected stamp were changed (the form saves the stamp).</summary>
         public event EventHandler<ColorStamp> StampChanged;

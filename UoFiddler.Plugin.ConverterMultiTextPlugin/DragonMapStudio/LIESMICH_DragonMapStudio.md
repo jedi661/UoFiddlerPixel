@@ -698,3 +698,24 @@ Leiste Land: violetter Knopf **„✎ Muster-Pinsel“** – Menü mit den Stemp
 Die CGI-Ansicht zeigt jeden Abschnitt sofort, während man zieht. Danach mit „▧ Bereich → in Farbkarte“ in die Farbkarte übernehmen oder als neuen Stempel speichern.
 
 Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Pinsel 14]`.
+
+## Muster-Pinsel: Höhen, Nachbesserung, Live während des Zeichnens, Stempel aus der 2D-Ansicht
+
+**Warum die Straße auf den Bildern Stufen und helle Schrägen hatte:** der Pinsel hat die Höhen der Quellkarte mitgenommen (Höhe im Muster relativ zu seiner Mitte). Jetzt ist das wählbar – Standard ist **„Gelände der Karte behalten“**:
+
+| Höhe | Karten-Editor (Farben) | CGI-Ansicht (Tiles) |
+|------|------------------------|---------------------|
+| **Gelände der Karte** (Standard) | Farbe der Gruppe mit der Höhe, die dort schon ist | Land-Höhe bleibt |
+| **Original** | Höhe dort + Höhe im Stempel | Höhe dort + Höhe im Stempel |
+| **Fest** | Farbe der Gruppe mit der festen Höhe | feste Höhe |
+| **±** (alle Modi) | wird addiert (z. B. −3 für ein Flussbett) | wird addiert |
+
+Einstellen: Stempel-Menü (Zeile „Höhe“, „fest Z“, „±“) bzw. CGI-Menü „✎ Muster-Pinsel → Höhe“. Gilt für Freihand und für „Einmal“-Stempel; wird in den Einstellungen gespeichert.
+
+**Automatisch nachbessern** (an/aus, Standard an): nach dem Strich werden Zellen des Strichs und seines Randes, die stark von ihren 8 Nachbarn abweichen (CGI: mehr als 6 Z, Farben: mehr als 10), an den Durchschnitt angeglichen – keine Spitzen, Stufen oder Löcher am Rand. Statics darauf wandern mit. Gehört zum selben Rückgängig-Schritt. In der CGI-Ansicht danach die Übergänge zum Rand.
+
+**Live-CGI direkt beim Zeichnen:** das Live-Fenster wird jetzt schon während des Ziehens nach jedem Abschnitt neu gebaut (nicht erst nach dem Loslassen). Leiste des Fensters: Raster, Infos (Höhe / Land-ID / ID + Höhe / ID + Höhe + Textur), **Statics** ein / aus, **Static-IDs** (ID und Höhe jedes Statics), Zoom. „Static-IDs“ gibt es auch in der großen CGI-Ansicht (neben der Infos-Auswahl).
+
+**Stempel in der 2D-Ansicht erstellen:** „Auswahl → Stempel speichern“ fragt jetzt Name, Kategorie, **Zeichnen (Einmal / Freihand)** und Statics. Die Auswahl wird zusätzlich im Speicher gebaut – der Stempel bekommt die echten Land-Tiles mit Höhen und die Statics der Statics-Ebene. Damit taugt er auch als Pinsel in der CGI-Ansicht und zum Regeln lernen.
+
+Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Pinsel 15]`.

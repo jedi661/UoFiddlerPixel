@@ -162,6 +162,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Stroke ended (mouse up) – e.g. for the live CGI preview.</summary>
         public event EventHandler StrokeEnded;
 
+        /// <summary>Mouse up of a pattern stroke, before its undo step closes (automatic repair belongs into the same step).</summary>
+        public event EventHandler StrokeFinishing;
+
         /// <summary>
         /// Undo per part of a stroke: after this many painted cells a new undo step begins (0 = the whole stroke is one step).
         /// The parts of one stroke form a group: "Ganzen Strich rückgängig" takes them back together.
@@ -926,6 +929,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 _history?.Begin(ToolName(_tool));
                 DrawShape(_start, p, color);
+            }
+            if (_tool == MapTool.PatternBrush)
+            {
+                StrokeFinishing?.Invoke(this, EventArgs.Empty);
             }
             EndEdit();
             _patternDone.Clear();

@@ -502,15 +502,47 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 SetStatus(L.T("Erst mit 'Auswahl' (S) einen Bereich markieren – z. B. einen Hausboden, eine Kreuzung oder einen Höhleneingang."));
                 return;
             }
-            string name = Microsoft.VisualBasic.Interaction.InputBox(L.T("Name des Stempels:"), Text, $"Stempel {cut.Width}x{cut.Height}");
-            if (string.IsNullOrWhiteSpace(name))
+            IEnumerable<string> cats = _stamps.Select(s => s.Category).Where(c => !string.IsNullOrWhiteSpace(c)).Concat(ColorStampTools.Categories.Skip(1));
+            using var dlg = new Dialogs.CgiStampDialog("Auswahl → Farb-Stempel",
+                L.T("Die Auswahl wird zusätzlich im Speicher gebaut: der Stempel bekommt die Land-Tiles mit Höhen (damit ist er auch ein Pinsel in der CGI-Ansicht und man kann Regeln daraus lernen). " +
+                    "Statics: die der Statics-Ebene in der Auswahl."), cats, true, $"Stempel {cut.Width}x{cut.Height}");
+            if (dlg.ShowDialog(this) != DialogResult.OK || dlg.StampName.Length == 0)
             {
                 return;
             }
-            ColorStamp stamp = ColorStampTools.FromMap(cut, _rules, _settings.Generator.WaterGroup, name.Trim(), string.Empty);
-            string file = ColorStampTools.Save(stamp, ColorStampFolder);
-            LoadColorStamps(file);
-            SetStatus($"Stempel gespeichert: {file} (Boden-Höhe {stamp.BaseAltitude}).");
+            ColorStamp stamp = ColorStampTools.FromMap(cut, _rules, _settings.Generator.WaterGroup, dlg.StampName, dlg.Category);
+            stamp.DrawMode = dlg.DrawMode;
+            stamp.Layers = dlg.Statics == StaticsMode.LandOnly ? StampLayers.LandOnly : StampLayers.Both;
+            Rectangle sel = mapCanvas.Selection;
+            // build the selection (+ 8 tiles border) to know the real land tiles and heights
+            int x0 = Math.Max(0, (sel.Left - 8) / 8 * 8), y0 = Math.Max(0, (sel.Top - 8) / 8 * 8);
+            int x1 = Math.Min(_map.Width, (sel.Right + 8 + 7) / 8 * 8), y1 = Math.Min(_map.Height, (sel.Bottom + 8 + 7) / 8 * 8);
+            var r8 = Rectangle.FromLTRB(x0, y0, x1, y1);
+            IndexedMap crop = _map.Crop(r8);
+            BuildOptions o = CurrentBuildOptions();
+            o.ExtraStatics = _staticsLayer.Crop(r8);
+            o.ExtraStaticsComplete = _staticsLayer.Complete;
+            DragonRuleSet rules = _rules;
+            List<LayerStatic> layer = _staticsLayer.Items.Where(st => sel.Contains(st.X, st.Y)).ToList();
+            RunBusy("Stempel bauen", (progress, token) => new DragonCompiler(rules, o, s => { }).BuildInMemory(crop, progress, token), built =>
+            {
+                var inner = new Rectangle(sel.X - r8.X, sel.Y - r8.Y, sel.Width, sel.Height);
+                (stamp.LandTiles, stamp.LandZ) = CgiToColor.Cut(built, inner);
+                if (dlg.Statics != StaticsMode.LandOnly)
+                {
+                    stamp.Statics = layer.Select(st => new LayerStatic
+                    {
+                        X = st.X - sel.X,
+                        Y = st.Y - sel.Y,
+                        Id = st.Id,
+                        Hue = st.Hue,
+                        Dz = st.Absolute ? st.Dz - built.LandZ(st.X - r8.X, st.Y - r8.Y) : st.Dz
+                    }).ToList();
+                }
+                string file = ColorStampTools.Save(stamp, ColorStampFolder);
+                LoadColorStamps(file);
+                SetStatus($"Stempel gespeichert: {file} (Boden-Höhe {stamp.BaseAltitude}, {stamp.Statics.Count} Statics, mit Land-Tiles – auch als CGI-Pinsel nutzbar).");
+            });
         }
 
         private void PlaceSelectedStamp()
@@ -554,8 +586,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 {
                     return buffer;
                 }
-                int ground = ColorStampTools.GroundAltitude(_map, new Rectangle(p.X, p.Y, s.Width, s.Height), _rules, _settings.Generator.WaterGroup);
-                return ColorStampTools.Realize(s, _rules, ground, true, _map.Bits);
+                if (_settings.PatternHeight == PatternHeightMode.Original)
+                {
+                    int ground = ColorStampTools.GroundAltitude(_map, new Rectangle(p.X, p.Y, s.Width, s.Height), _rules, _settings.Generator.WaterGroup);
+                    return ColorStampTools.Realize(s, _rules, ground + _settings.PatternHeightOffset, true, _map.Bits);
+                }
+                // terrain / fixed height: every pixel the colour of its group at the height of the map there (or the fixed height)
+                var outMap = new IndexedMap(s.Width, s.Height, 0, _map.Bits);
+                for (int y = 0; y < s.Height; y++)
+                {
+                    for (int x = 0; x < s.Width; x++)
+                    {
+                        int i = y * s.Width + x;
+                        int mx = p.X + x, my = p.Y + y;
+                        ushort current = _map.InBounds(mx, my) ? _map[mx, my] : (ushort)0;
+                        outMap.Pixels[i] = (ushort)StampPixelForHeight(s, i, current);
+                    }
+                }
+                return outMap;
             };
             mapCanvas.Focus();
             SetStatus($"Stempel '{s.Name}': Klick setzt ihn {(repeat ? "(mehrmals – rechte Taste / Esc / Abbrechen = fertig)" : "(einmal)")}{(adapt ? ", Höhen passen sich dem Boden an" : string.Empty)}. Danach im Karten-Editor 'CGI aktualisieren'.");
@@ -615,6 +663,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
             };
             _stampBrowser.CancelRequested += (s, e) => CancelStamp();
+            _stampBrowser.SetHeightOptions(_settings.PatternHeight, _settings.PatternHeightValue, _settings.PatternHeightOffset, _settings.PatternAutoFix);
+            _stampBrowser.HeightOptionsChanged += (s, e) =>
+            {
+                _settings.PatternHeight = _stampBrowser.HeightMode;
+                _settings.PatternHeightValue = _stampBrowser.HeightValue;
+                _settings.PatternHeightOffset = _stampBrowser.HeightOffset;
+                _settings.PatternAutoFix = _stampBrowser.AutoFix;
+            };
             _stampBrowser.LearnRequested += (s, st) => LearnRulesFromStamp(st);
             _stampBrowser.ChooseFolderRequested += (s, e) => ChooseColorStampFolder();
             _stampBrowser.ImportRequested += (s, e) => ImportColorStamps();
@@ -884,13 +940,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     _previewView.LabelMode = (IsoLabel)Math.Max(0, labels.SelectedIndex - 1);
                     _previewView.Refresh(true);
                 };
+                var stat = new ToolStripButton(L.T("Statics")) { CheckOnClick = true, Checked = true };
+                stat.Click += (s, e) => { _previewView.ShowStatics = stat.Checked; _previewView.Refresh(true); };
+                var statIds = new ToolStripButton(L.T("Static-IDs")) { CheckOnClick = true };
+                statIds.ToolTipText = L.T("ID und Höhe jedes Statics einblenden");
+                statIds.Click += (s, e) => { _previewView.ShowStaticIds = statIds.Checked; _previewView.Refresh(true); };
                 var zin = new ToolStripButton("Zoom +");
                 zin.Click += (s, e) => _previewView.ZoomStep(1);
                 var zout = new ToolStripButton("Zoom −");
                 zout.Click += (s, e) => _previewView.ZoomStep(-1);
                 var again = new ToolStripButton(L.T("Neu bauen (Auswahl)"));
                 again.Click += (s, e) => ShowSelectionInCgi();
-                bar.Items.AddRange(new ToolStripItem[] { again, new ToolStripSeparator(), grid, labels, new ToolStripSeparator(), zin, zout });
+                bar.Items.AddRange(new ToolStripItem[] { again, new ToolStripSeparator(), grid, labels, stat, statIds, new ToolStripSeparator(), zin, zout });
                 _previewWindow.Controls.Add(_previewView);
                 _previewWindow.Controls.Add(bar);
                 _previewWindow.Show(this);
