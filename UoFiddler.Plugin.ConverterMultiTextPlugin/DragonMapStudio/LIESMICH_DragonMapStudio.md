@@ -750,8 +750,10 @@ In der Werkzeugleiste des Karten-Editors gibt es neben „◉ Live-CGI“ und �
    * **Strg + Mitteltaste** oder **Alt + Mitteltaste** (die Mitteltaste allein verschiebt die Karte)
 
    Bei einer belegten Taste (links, rechts, Mitte allein) kommt ein Hinweis, und die alte Belegung bleibt. Die Belegung wird gespeichert und steht danach im Knopf.
-2. Klickst du mit dieser Taste auf eine Stelle der Karte, springt das Live-CGI dorthin und baut die Stelle. War Live-CGI aus, wird es eingeschaltet. „folgt Maus“ wird dabei ausgeschaltet, damit die Ansicht stehen bleibt.
-3. Das Live-CGI bleibt dort, bis du wieder zeichnest. Dann folgt es wieder dem Stift.
+2. Klickst du mit dieser Taste auf eine Stelle der Karte, springt das Live-CGI dorthin und baut die Stelle. War Live-CGI aus, wird es eingeschaltet. **Live-Zeichnen und „folgt Maus“ bleiben dabei an** (seit „Sprung 19“).
+3. Sobald du zeichnest (mit jedem Werkzeug) oder mit eingeschaltetem „folgt Maus“ die Maus weiterbewegst, zeigt das Live-CGI wieder die Stelle am Stift bzw. an der Maus.
+
+   Möchtest du, dass die Ansicht nach dem Sprung stehen bleibt, schalte **⌖ Sprung → Sprung schaltet 'folgt Maus' aus** ein. Ab Werk ist das aus.
 4. **⌖ Sprung → Belegung löschen** nimmt die Belegung wieder weg.
 
 So kannst du Stellen, die du auf der Karte markiert hast, nacheinander anklicken und dir jeweils im CGI ansehen.

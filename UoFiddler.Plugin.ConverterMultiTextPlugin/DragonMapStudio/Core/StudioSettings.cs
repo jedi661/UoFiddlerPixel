@@ -55,6 +55,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public int LiveJumpModifiers { get; set; }
 
+        /// <summary>A jump also switches "folgt Maus" off (default: no, drawing and following stay as they are).</summary>
+        [Browsable(false)]
+        public bool LiveJumpStopsFollow { get; set; }
+
         [Category("1 Ordner"), DisplayName("Projekt-Ordner (Karten)"), Description("Hier speichert der Editor die Karten-BMPs; die Kartenliste zeigt diesen Ordner.")]
         [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
         public string ProjectFolder { get; set; } = string.Empty;

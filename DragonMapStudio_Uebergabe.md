@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Sprung 18“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Sprung 19“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -78,9 +78,11 @@
 
 9. **Neu (Sprung 18), Sprung ins Live-CGI:** In der Editor-Werkzeugleiste gibt es den Knopf „⌖ Sprung“ mit „Maustaste belegen …“ und „Belegung löschen“. Belegt werden dürfen nur freie Tasten: Maustaste 4 und 5 sowie Strg oder Alt + Mitteltaste.
    * Speicherort: `StudioSettings.LiveJumpButton` und `LiveJumpModifiers`.
-   * Ein Klick mit dieser Taste setzt `_livePin`: Live-CGI wird eingeschaltet, „folgt Maus“ ausgeschaltet. Erst beim nächsten Zeichnen folgt das Live-CGI wieder dem Stift.
+   * Ein Klick mit dieser Taste setzt `_livePin` und schaltet Live-CGI ein. Live-Zeichnen und „folgt Maus“ bleiben dabei an (Wunsch des Besitzers, „Sprung 19“).
+   * `_livePin` wird gelöscht bei `MapEdited`, `StrokeEnded`, `Painting` und bei Mausbewegung mit „folgt Maus“.
+   * Die Option „Sprung schaltet 'folgt Maus' aus“ (`StudioSettings.LiveJumpStopsFollow`, Standard aus) lässt die Ansicht stehen.
    * Code: `MapCanvas` hat `JumpButton`, `JumpModifiers`, `JumpClicked`, `CaptureNextButton` und `ButtonCaptured`, das Formular `AddLiveJumpButton` in `DragonMapStudioForm.Pattern.cs`.
-   * Nur kompiliert, in der Oberfläche noch nicht getestet.
+   * Getestet vom Besitzer: Springen geht. „Sprung 18“ hatte Live-Zeichnen und „folgt Maus“ abgeschaltet, das ist in „Sprung 19“ behoben. Der Fix selbst ist nur kompiliert, in der Oberfläche noch nicht getestet.
 
 ## Offen / als Nächstes
 
