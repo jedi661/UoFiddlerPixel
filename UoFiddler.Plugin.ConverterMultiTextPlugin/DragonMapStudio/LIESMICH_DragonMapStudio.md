@@ -929,3 +929,57 @@ Die Einstellungen liegen im neuen Reiter **Pinsel** (Kategorie PINSEL rechts). E
   * Ersetzen und „auf Boden“ arbeiten richtig.
   * Zauberstab und Lasso liefern die richtigen Felder, die Maske sperrt Änderungen außerhalb.
   * Die Einstellungen überstehen Speichern und Laden (JSON).
+
+## Formen, natürlicher Lauf, Brücke, Keller, unter der Karte, Dungeon-Generator (seit „Bauen 22“)
+
+Im Fenstertitel steht jetzt `Stand 22.11.2026 – Bauen 22`. Alles ist in Palette, Optionsleiste, Kontextmenü und Hilfe eingetragen (F1: „Formen …“ und „Bauen …“). Die Logik liegt in `Core/Builders.cs`.
+
+### Karten-Editor (Farbkarte)
+
+* **Halbkreis:** von der Mitte der geraden Seite zur Rundung ziehen.
+* **Dreieck:** von der Mitte der Grundseite zur Spitze ziehen.
+* Beide Formen sind **gefüllt** oder nur Rand (Schalter oben, Dicke = Pinselgröße).
+* **Neigungs-Linie:** Die Höhe läuft von der Höhe am Start zur Höhe am Ende. Jede Zelle bekommt die Farbe der Gruppe von Farbe 1 in der passenden Höhe, fehlt sie, merkt sich die Höhen-Ebene die Höhe. Für Rampen sowie Straßen und Flüsse am Hang.
+* **Natürlicher Lauf:** von der Quelle zur Mündung ziehen, geschlängelt und zum Ende breiter.
+  * Gemalt wird mit Farbe 1 und Pinselgröße, oder mit dem Muster-Stempel (Land + Statics), Schalter oben.
+  * „Schlängeln …“ stellt Stärke, Bögen und Breite ein.
+  * Die Vorschau zeigt genau den Lauf, der gemalt wird.
+* **Dungeon:** Rechteck aufziehen ergibt Räume und Gänge. Farbe 1 = Boden, Farbe 2 = Wand / Fels, optional den ganzen Rest mit Fels füllen.
+
+### CGI-Ansicht
+
+* **Brücke:** von Ufer zu Ufer ziehen (West-Ost oder Nord-Süd).
+  * Bretter, Geländer an den Seiten, Pfosten an den Enden, Bogen in der Mitte.
+  * Brücken-Set: „Neu …“, dann die Stücke im Reiter Items wählen und **← Brett W-O / N-S**, **← Geländer …**, **← Pfosten** klicken.
+* **Keller:** Rechteck aufziehen.
+  * Das Land wird **NoDraw (0002)** auf Boden − Tiefe (20), damit zeichnet der Client darunter.
+  * Wände am Rand (Wand-Set), innen der Kellerboden (Statics).
+  * Treppe in 5er-Stufen hinunter nach Nord, Ost, Süd oder West.
+  * Optional der Hausboden oben, außer über der Treppe.
+  * Treppen-Set: **← ab Nord / Ost / Süd / West** mit dem gewählten Item.
+* **Unter der Karte bauen:** Schalter in Palette, Leiste, Ansicht und Reiter.
+  * Statics unter dem Boden werden über dem Land gezeigt.
+  * Ein **violettes Banner** zeigt, dass du unter der Karte baust, mit der Bau-Ebene.
+  * Static setzen und Wand bauen setzen auf Boden + Bau-Ebene (−20).
+* **Dungeon-Generator:** Rechteck aufziehen (mindestens 10×10). Das Vorgehen kommt aus den Roguelike-Generatoren:
+  * Räume liegen zufällig ohne Überschneidung.
+  * Sie sind über einen **minimalen Spannbaum** verbunden, dazu kommen „Schleifen“ % Extrawege.
+  * Gänge sind L-förmig, „höhlige“ Ränder sind einstellbar.
+  * Drei Arten:
+    * **Höhle** (im Berg: Höhlen-Boden-Tiles, Wände = Fels).
+    * **Gebaut** (Boden-Statics + Wandstücke je Richtung, Ecken = Pfosten).
+    * **Unter der Karte** (wie ein Keller).
+  * Die benutzte Zufalls-Zahl steht in der Statuszeile. Mit ihr lässt sich derselbe Dungeon noch einmal bauen.
+* **Fluss-Lauf:** von der Quelle zur Mündung ziehen, ein natürlich geschlängelter Fluss mit den Fluss-Einstellungen.
+
+### Getestet ohne Oberfläche
+
+* Dungeon: alle Böden sind zusammenhängend erreichbar (276 von 276).
+* Unter der Karte: NoDraw auf −20, Wände nach Richtung.
+* Keller-Treppe: z 0 / −5 / −10 / −15 nach Norden.
+* Brücke: Bogen −5 → −1 → −5, Geländer und Pfosten.
+* Lauf: endet genau auf A und B.
+
+### Noch nicht ausgeliefert
+
+* Fertige **Wand-, Brücken- und Treppen-Sets** fehlen, weil die richtigen Item-IDs je nach Client verschieden sind. Du legst sie einmal mit „← …“ aus dem Item-Katalog an, sie werden gespeichert.

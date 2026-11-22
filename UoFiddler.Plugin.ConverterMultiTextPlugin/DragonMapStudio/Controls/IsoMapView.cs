@@ -108,7 +108,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Lasso,
 
         /// <summary>Click: connected cells of the same land (mask).</summary>
-        MagicWand
+        MagicWand,
+
+        /// <summary>Drag: bridge of statics over water (deck, railings, posts, arch).</summary>
+        Bridge,
+
+        /// <summary>Drag a rectangle: cellar under the map (NoDraw land, floor, walls, stairs).</summary>
+        Cellar,
+
+        /// <summary>Drag a rectangle: dungeon generator (cave, built or under the map).</summary>
+        Dungeon,
+
+        /// <summary>Drag A → B: natural river course.</summary>
+        Course
     }
 
     public sealed class StaticPickEventArgs : EventArgs
@@ -687,6 +699,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
 
             var drawables = new List<(int depth, int prio, int order, Action draw)>(4096);
+            var below = new List<(int depth, int prio, int order, Action draw)>();
             int order = 0;
             double cs = _camX + _camY, cd = _camX - _camY;
             int sMin = (int)Math.Floor(cs - sh / (double)Tile) - 8;
@@ -752,7 +765,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         bool seeThrough = IsSeeThrough(st.Id);
                         bool noDraw = CaveEntranceBuilder.IsNoDrawStatic(st.Id, UoArtCache.ItemName(st.Id));
                         PointF floor = new PointF(top.X, top.Y + Half - st.Z * ZStep);
-                        drawables.Add((x + y, (st.Z + threshold) * 4 + threshold, order++, () =>
+                        // "unter der Karte": statics below the land are drawn after everything (else the land hides them)
+                        List<(int depth, int prio, int order, Action draw)> target = UnderView && st.Z < zMin && !CaveEntranceBuilder.IsNoDraw(landId) ? below : drawables;
+                        target.Add((x + y, (st.Z + threshold) * 4 + threshold, order++, () =>
                         {
                             if (noDraw)
                             {
@@ -799,7 +814,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
             g.SmoothingMode = SmoothingMode.None;
             g.PixelOffsetMode = PixelOffsetMode.Half;
-            foreach (var d in drawables.OrderBy(d => d.depth).ThenBy(d => d.prio).ThenBy(d => d.order))
+            foreach (var d in drawables.OrderBy(d => d.depth).ThenBy(d => d.prio).ThenBy(d => d.order).Concat(below.OrderBy(d => d.depth).ThenBy(d => d.prio).ThenBy(d => d.order)))
             {
                 try
                 {
@@ -1198,6 +1213,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             g.ResetTransform();
             DrawBand(g);
+            DrawUnderBanner(g);
         }
 
         private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth ||
@@ -1309,7 +1325,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private int PlaceZ(int x, int y)
         {
             int baseZ = StackOnStatics ? _map.TopZ(x, y, id => UoArtCache.ItemHeight(id)) : _map.LandZ(x, y);
-            return Math.Clamp(baseZ + ZOffset, -128, 127);
+            return Math.Clamp(baseZ + ZOffset + (UnderView && !StackOnStatics ? BrushSettings.UnderOffset : 0), -128, 127);
         }
 
         // ------------------------------------------------------------------ hit test

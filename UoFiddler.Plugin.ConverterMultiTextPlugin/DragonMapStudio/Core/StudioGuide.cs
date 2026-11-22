@@ -526,6 +526,88 @@ Measure | drag: distance, steps, Δz and slope (z per tile).
             },
             new GuideTopic
             {
+                Key = "shapes", Group = "Karten-Editor|Map editor", TitleDe = "Formen, Neigung, natürlicher Lauf, Dungeon", TitleEn = "Shapes, slope, natural course, dungeon",
+                De = @"# Formen im Karten-Editor
+Alle Formen malen mit der gewählten Farbe (linke Maus = Farbe 1, rechte = Farbe 2) und beachten „Höhe behalten“.
+Linie, Rechteck, Ellipse | wie bisher (Dicke = Pinselgröße), auch gefüllt.
+Halbkreis | von der Mitte der geraden Seite zur Rundung ziehen – die Richtung bestimmt, wohin der Bogen zeigt. „Gefüllt“ oben, sonst nur der Rand.
+Dreieck | von der Mitte der Grundseite zur Spitze ziehen. „Gefüllt“ oder Rand.
+Neigungs-Linie | eine Linie mit Pinselbreite, deren Höhe von der Höhe am Start zur Höhe am Ende läuft: jede Zelle bekommt die Farbe der Gruppe von Farbe 1 in der passenden Höhe – fehlt sie, merkt sich die Höhen-Ebene die Höhe. Für Rampen, Straßen und Flüsse am Hang.
+Natürlicher Lauf | von A (Quelle) nach B (Mündung) ziehen: ein geschlängelter Lauf mit Pinselgröße, zum Ende breiter. „mit Muster-Stempel (Statics)“ malt ihn mit dem gewählten Muster-Pinsel (Land + Statics). „Schlängeln …“: wie stark, wie viele Bögen, Breite wächst. Die Vorschau zeigt genau den Lauf, der gemalt wird.
+Dungeon | Rechteck aufziehen: Räume und Gänge, Farbe 1 = Boden (z. B. Höhlenboden), Farbe 2 = Wand / Fels. „Dungeon-Einstellungen …“: Räume, Größen, Gang-Breite, Schleifen, höhlige Ränder, Zufalls-Zahl, Fels ganz füllen.
+## Tipps
+- Fluss: Farbe 1 = Wasser, Pinsel 4–8, „Natürlicher Lauf“ – danach Küste glätten in der CGI-Ansicht.
+- Straße am Hang: Farbe 1 = Weg, „Neigungs-Linie“ vom Tal zum Pass.
+- Dungeon-Bereich der Karte (Felucca / Trammel x > 5119): mit Schwarz füllen, dann Dungeon aufziehen.",
+                En = @"# Shapes in the map editor
+All shapes paint with the chosen colour (left mouse = colour 1, right = colour 2) and respect “Keep height”.
+Line, rectangle, ellipse | as before (thickness = brush size), also filled.
+Half circle | drag from the middle of the straight side to the round side – the direction decides where the arc points. “Filled” at the top, otherwise only the outline.
+Triangle | drag from the middle of the base to the tip. “Filled” or outline.
+Slope line | a line with brush width whose height runs from the height at the start to the height at the end: every cell gets the colour of the group of colour 1 at the matching height – if it is missing, the height layer remembers the height. For ramps, roads and rivers on slopes.
+Natural course | drag from A (source) to B (mouth): a winding course with the brush size, wider towards the end. “with pattern stamp (statics)” paints it with the chosen pattern brush (land + statics). “Meander …”: how strong, how many bends, width grows. The preview shows exactly the course that is painted.
+Dungeon | drag a rectangle: rooms and corridors, colour 1 = floor (e.g. cave floor), colour 2 = wall / rock. “Dungeon settings …”: rooms, sizes, corridor width, loops, rough edges, random number, fill all rock.
+## Tips
+- River: colour 1 = water, brush 4–8, “Natural course” – then smooth the coast in the CGI view.
+- Road on a slope: colour 1 = road, “Slope line” from the valley to the pass.
+- Dungeon area of the map (Felucca / Trammel x > 5119): fill with black, then drag the dungeon."
+            },
+            new GuideTopic
+            {
+                Key = "build", Group = "CGI-Ansicht|CGI view", TitleDe = "Bauen: Brücke, Keller, unter der Karte, Dungeon", TitleEn = "Building: bridge, cellar, under the map, dungeon",
+                De = @"# Bauen in der CGI-Ansicht
+Die Werkzeuge stehen in der Palette (Gruppe Bauen), die Einstellungen im Reiter Pinsel. Jeder Bau ist ein Rückgängig-Schritt.
+## Brücke
+Von Ufer zu Ufer ziehen (West-Ost oder Nord-Süd). Bretter auf der ganzen Breite, Geländer an beiden Seiten, Pfosten an den Enden, die Mitte um „Bogen“ höher. Höhe = höheres Ende + „Z +“.
+Brücken-Set | „Neu …“, dann im Reiter Items das Stück wählen und „← Brett W-O“, „← Brett N-S“, „← Geländer …“, „← Pfosten“ klicken. Mehrere IDs werden gemischt.
+## Keller
+Rechteck aufziehen. So entsteht ein begehbarer Keller wie auf Freeshards:
+- Das Land im Rechteck wird zum unsichtbaren Tile NoDraw (0002) auf Boden − Tiefe (Standard 20) – der Client zeichnet dann, was darunter liegt.
+- Der Rand bekommt Wände (Wand-Set, Name unter „Wände“), innen liegt der Kellerboden (Statics).
+- Eine Treppe führt von der Bodenhöhe in Schritten zu 5 Z hinunter, in die Richtung „Treppe hinunter nach“ (Nord, Ost, Süd, West), so breit wie eingestellt.
+- „Boden oben“ legt den Hausboden auf Bodenhöhe darüber (außer über der Treppe).
+Treppen-Set | je Richtung die passende Stufe: „← ab Nord“ usw. mit dem gewählten Item.
+## Unter der Karte bauen
+Schalter in der Palette, in der Leiste (⬇ Unter der Karte), im Reiter Pinsel und unter Ansicht:
+- Statics, die unter dem Boden liegen, werden über dem Land gezeigt – man sieht, was man unten baut.
+- Ein violettes Banner oben zeigt: man baut gerade unter der Karte, mit der Bau-Ebene.
+- Static setzen und Wand bauen setzen auf Boden + Bau-Ebene (Standard −20).
+## Dungeon-Generator
+Rechteck aufziehen (mindestens 10×10). Wie in Roguelikes: Räume zufällig ohne Überschneidung, verbunden über einen minimalen Spannbaum, dazu „Schleifen“ % zusätzliche Wege, Gänge in L-Form, „Höhlig“ % unregelmäßige Ränder.
+Höhle | im Berg aufziehen: Boden-Tiles (Höhlen-Tiles) auf der tiefsten Höhe, die Wände werden Fels (Berg-Tiles) mindestens „Wand-Höhe“ höher.
+Gebaut | Boden-Statics und Wandstücke je Richtung (Wand-Set), Ecken bekommen den Pfosten.
+Unter der Karte | wie ein Keller: NoDraw-Land auf Boden − Tiefe, Boden- und Wand-Statics darunter.
+- Zufalls-Zahl 0 = jedes Mal ein neuer Dungeon; die benutzte Zahl steht in der Statuszeile – damit lässt er sich wieder genau so bauen.
+## Fluss-Lauf
+Von der Quelle zur Mündung ziehen: geschlängelter Fluss mit den Fluss-Einstellungen (Tiefe, Ufer, Übergänge), zum Ende breiter. Pinselgröße oben = Breite.",
+                En = @"# Building in the CGI view
+The tools are in the palette (group Build), the settings in the tab Brushes. Every build is one undo step.
+## Bridge
+Drag from bank to bank (west – east or north – south). Planks over the whole width, railings on both sides, posts at the ends, the middle higher by “arch”. Height = higher end + “Z +”.
+Bridge set | “New …”, then choose the piece in the tab Items and click “← Plank W-E”, “← Plank N-S”, “← Railing …”, “← Post”. Several ids are mixed.
+## Cellar
+Drag a rectangle. This makes a walkable cellar like on free shards:
+- The land in the rectangle becomes the invisible tile NoDraw (0002) at ground − depth (default 20) – the client then draws what lies below.
+- The border gets walls (wall set, name under “Walls”), inside lies the cellar floor (statics).
+- Stairs lead from the ground down in steps of 5 Z, in the direction “stairs down towards” (north, east, south, west), as wide as set.
+- “Floor above” puts the house floor at ground height on top (except above the stairs).
+Stair set | for every direction the matching step: “← down N” etc. with the chosen item.
+## Building under the map
+Switch in the palette, in the bar (⬇ Under the map), in the tab Brushes and under View:
+- Statics below the ground are shown above the land – you see what you build down there.
+- A violet banner at the top shows that you are building under the map, with the building level.
+- Place static and build wall put things at ground + building level (default −20).
+## Dungeon generator
+Drag a rectangle (at least 10×10). Like in roguelikes: rooms at random without overlap, connected by a minimum spanning tree, plus “loops” % extra ways, L-shaped corridors, “rough” % irregular edges.
+Cave | drag inside a mountain: floor tiles (cave tiles) at the lowest height, the walls become rock (mountain tiles) at least “wall height” higher.
+Built | floor statics and wall pieces by direction (wall set), corners get the post.
+Under the map | like a cellar: NoDraw land at ground − depth, floor and wall statics below.
+- Random number 0 = a new dungeon every time; the number used is shown in the status line – with it the dungeon can be built exactly the same again.
+## River course
+Drag from the source to the mouth: winding river with the river settings (depth, banks, transitions), wider towards the end. Brush size at the top = width."
+            },
+            new GuideTopic
+            {
                 Key = "keys", Group = "Übersicht|Overview", TitleDe = "Alle Tasten", TitleEn = "All keys",
                 De = @"# Alle Tasten
 ## Überall

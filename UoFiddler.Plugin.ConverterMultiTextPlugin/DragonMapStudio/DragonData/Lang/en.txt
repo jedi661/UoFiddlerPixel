@@ -1160,3 +1160,161 @@ Dragon-Übergänge nur unter dem Pinsel neu berechnen	Compute the Dragon transit
 Punkte um eine Fläche klicken – danach wirken alle Werkzeuge nur darin · Esc = aufheben	Click points around an area – then all tools work only inside · Esc = clear
 Klick wählt gleiches zusammenhängendes Land · Umschalt = dazu, Strg = weg	Click selects equal connected land · Shift = add, Ctrl = remove
 Ziehen: Abstand, Höhenunterschied, Steigung	Drag: distance, height difference, slope
+# Dragon Map Studio – Bauen 22 (shapes, slope line, course, dungeon, bridge, cellar, under the map)
+0 = jedes Mal ein anderer Lauf.	0 = a different course every time.
+Alte Statics entfernen	Remove old statics
+An = 'Boden-Z' benutzen. Aus = tiefste Bodenhöhe im Bereich (Höhle im Berg) bzw. Boden − Tiefe (unter der Karte).	On = use 'Floor Z'. Off = lowest ground height in the area (cave in the mountain) or ground − depth (under the map).
+An = der Lauf wird mit dem gewählten Muster-Stempel gemalt (Land + Statics), aus = mit Farbe 1 und Pinselgröße	On = the course is painted with the chosen pattern stamp (land + statics), off = with colour 1 and the brush size
+Art 'Unter der Karte': so tief unter dem Boden liegt der Dungeon-Boden.	Kind 'Under the map': the dungeon floor lies this deep below the ground.
+Art Gebaut / Unter der Karte: Statics des Bodens (mehrere = zufällig).	Kind built / under the map: statics of the floor (several = random).
+Art Gebaut / Unter der Karte: Wand-Set aus dem Reiter Pinsel → Wand.	Kind built / under the map: wall set of the tab Brushes → Wall.
+Art Höhle: Land-Tiles der Wände. Leer = Berg-Tiles.	Kind cave: land tiles of the walls. Empty = mountain tiles.
+Art Höhle: Land-Tiles des Bodens. Leer = die Höhlen-Tiles aus dem Reiter Höhle / Weg.	Kind cave: land tiles of the floor. Empty = the cave tiles of the tab Cave / path.
+Art Höhle: so hoch über dem Boden werden die Fels-Wände (mindestens).	Kind cave: the rock walls become at least this high above the floor.
+Bau-Ebene (Z unter dem Boden):	Building level (Z below the ground):
+Bau-Ebene: Boden	Building level: ground
+Boden oben (hex)	Floor above (hex)
+Boden-Land (hex)	Floor land (hex)
+Boden-Statics (hex)	Floor statics (hex)
+Boden-Z	Floor Z
+Boden-Z fest	Fixed floor Z
+Bodenbretter einer Brücke Nord-Süd (hex).	Planks of a bridge north – south (hex).
+Bodenbretter einer Brücke West-Ost (hex, mehrere = zufällig).	Planks of a bridge west – east (hex, several = random).
+Bogen (Z)	Arch (Z)
+Breite wächst	Width grows
+Bretter Nord-Süd	planks north – south
+Bretter West-Ost	planks west – east
+Brücke	Bridge
+Brücke (Statics über Wasser)	Bridge (statics over water)
+Brücke: erst ein Brücken-Set mit Bodenbrettern anlegen (Reiter Pinsel → Brücke).	Bridge: first create a bridge set with planks (tab Brushes → Bridge).
+Brücke: von Ufer zu Ufer ziehen (West-Ost oder Nord-Süd) – Bretter, Geländer, Pfosten, Bogen; Höhe = höheres Ende + Z + (Reiter Pinsel → Brücke)	Bridge: drag from bank to bank (west – east or north – south) – planks, railings, posts, arch; height = higher end + Z + (tab Brushes → Bridge)
+Brücke: von Ufer zu Ufer ziehen (West-Ost oder Nord-Süd).	Bridge: drag from bank to bank (west – east or north – south).
+Brücken-Einstellungen …	Bridge settings …
+Brücken-Werkzeug wählen	Choose bridge tool
+Bögen je 20 Tiles	Bends per 20 tiles
+Dreieck	Triangle
+Dungeon	Dungeon
+Dungeon im Karten-Editor (Farben)	Dungeon in the map editor (colours)
+Dungeon-Einstellungen …	Dungeon settings …
+Dungeon-Generator	Dungeon generator
+Dungeon-Werkzeug (CGI) wählen	Choose dungeon tool (CGI)
+Dungeon: Rechteck aufziehen – Räume + Gänge werden erzeugt: Höhle (Land), Gebaut (Statics) oder Unter der Karte · gleiche Zufalls-Zahl = gleicher Dungeon (Reiter Pinsel → Dungeon)	Dungeon: drag a rectangle – rooms + corridors are generated: cave (land), built (statics) or under the map · same random number = same dungeon (tab Brushes → Dungeon)
+Dungeon: für 'Gebaut' / 'Unter der Karte' ein Wand-Set wählen (Reiter Pinsel → Dungeon), sonst gibt es keine Wände.	Dungeon: for 'built' / 'under the map' choose a wall set (tab Brushes → Dungeon), otherwise there are no walls.
+Dungeon: kein Raum passt – größer aufziehen oder kleinere Räume einstellen.	Dungeon: no room fits – drag bigger or set smaller rooms.
+Dungeon: mindestens 10×10 Felder aufziehen.	Dungeon: drag at least 10×10 cells.
+Einstellungen des Laufs (Schlängeln, Bögen, Breite wächst)	Settings of the course (meander, bends, width grows)
+Erst ein Set anlegen ('Neu …').	First create a set ('New …').
+Erst im Stempel-Menü einen Stempel als Muster-Pinsel wählen (Freihand), dann wieder 'Natürlicher Lauf'.	First choose a stamp as pattern brush (freehand) in the stamp menu, then 'Natural course' again.
+Felder Boden (Farbe 1), Wände Farbe 2	cells floor (colour 1), walls colour 2
+Fels ganz füllen	Fill all rock
+Fluss-Lauf	River course
+Fluss-Lauf (CGI) wählen	Choose river course (CGI)
+Fluss-Lauf: von der Quelle zur Mündung ziehen – natürlich geschlängelt, breiter zum Ende, mit den Fluss-Einstellungen (Reiter Pinsel)	River course: drag from the source to the mouth – naturally winding, wider towards the end, with the river settings (tab Brushes)
+Gang-Breite	Corridor width
+Gebaut (Statics: Boden + Wandstücke)	Built (statics: floor + wall pieces)
+Gefüllt	Filled
+Geländer	Railings
+Geländer Nord-Süd	railing north – south
+Geländer West-Ost	railing west – east
+Geländer an den Seiten einer Brücke Nord-Süd (hex), leer = keins.	Railing at the sides of a bridge north – south (hex), empty = none.
+Geländer an den Seiten einer Brücke West-Ost (hex), leer = keins.	Railing at the sides of a bridge west – east (hex), empty = none.
+Gleiche Zahl = gleicher Dungeon. 0 = jedes Mal neu.	Same number = same dungeon. 0 = new every time.
+Halbkreis	Half circle
+Halbkreis / Dreieck gefüllt – aus = nur der Rand (Dicke = Pinselgröße)	Half circle / triangle filled – off = only the outline (thickness = brush size)
+Höhle (Land: Boden-Tiles, Wände = Fels)	Cave (land: floor tiles, walls = rock)
+Höhlig (%)	Rough (%)
+In diese Richtung geht man die Treppe hinunter. Die Treppe liegt an der gegenüberliegenden Innenkante.	In this direction you walk down the stairs. The stairs lie at the opposite inner edge.
+Karten-Editor: der ganze Rest des Rechtecks wird Farbe 2 (sonst nur ein Ring Wand um Räume und Gänge).	Map editor: the whole rest of the rectangle becomes colour 2 (otherwise only a ring of wall around rooms and corridors).
+Kein Werkzeug, ein Schalter: Statics unter dem Boden werden gezeigt, Static setzen / Wände auf der Bau-Ebene (Boden − 20)	Not a tool, a switch: statics below the ground are shown, place static / walls on the building level (ground − 20)
+Keller	Cellar
+Keller / unter der Karte bauen	Cellar / build under the map
+Keller gebaut – Ansicht → 'Unter der Karte' zeigt ihn von oben, Statics setzen dann auf Boden	Cellar built – View → 'Under the map' shows it from above, placing statics then uses ground
+Keller-Einstellungen …	Cellar settings …
+Keller-Werkzeug wählen	Choose cellar tool
+Keller: Rechteck aufziehen – Land wird unsichtbar (NoDraw 0002) auf Boden − Tiefe, Kellerboden + Wände am Rand + Treppe hinunter (Richtung), Boden oben (Reiter Pinsel → Keller) · Ansicht 'Unter der Karte' zum Weiterbauen	Cellar: drag a rectangle – land becomes invisible (NoDraw 0002) at ground − depth, cellar floor + walls at the border + stairs down (direction), floor above (tab Brushes → Cellar) · view 'Under the map' to keep building
+Keller: mindestens 3×3 Felder aufziehen (Rand = Wände, innen Boden und Treppe).	Cellar: drag at least 3×3 cells (border = walls, inside floor and stairs).
+Kellerboden (hex)	Cellar floor (hex)
+Lauf	Course
+Lauf im Karten-Editor (Farbe / Stempel)	Course in the map editor (colour / stamp)
+Name des Brücken-Sets:	Name of the bridge set:
+Name des Treppen-Sets:	Name of the stair set:
+Natürlicher Lauf	Natural course
+Natürlicher Lauf (Fluss / Weg)	Natural course (river / road)
+Neigungs-Linie	Slope line
+Neu …	New …
+Neues Treppen-Set …	New stair set …
+Nord	North
+Ost	East
+Pfosten	post
+Pfosten an den Enden des Geländers (hex), leer = keine.	Posts at the ends of the railing (hex), empty = none.
+Raum größte Seite	Room largest side
+Raum kleinste Seite	Room smallest side
+Rechteck aufziehen · Farbe 1 = Boden, Farbe 2 = Wand	Drag a rectangle · colour 1 = floor, colour 2 = wall
+Ränder der Räume unregelmäßig wie eine Höhle (0 = gerade Wände).	Edges of the rooms irregular like a cave (0 = straight walls).
+Räume	Rooms
+Schleifen (%)	Loops (%)
+Schlängeln (%)	Meander (%)
+Schlängeln …	Meander …
+Schmal am Anfang (Quelle), breiter zum Ende (Mündung).	Narrow at the start (source), wider towards the end (mouth).
+So tief unter dem Boden liegt der Kellerboden (UO: 20 = ein Stockwerk).	The cellar floor lies this deep below the ground (UO: 20 = one floor).
+So viel höher liegt die Mitte (0 = flach).	The middle lies this much higher (0 = flat).
+Statics des Bodens darüber auf Bodenhöhe (Hausboden), außer über der Treppe. Leer = keiner (z. B. wenn ein Haus darauf kommt).	Statics of the floor above at ground height (house floor), except above the stairs. Empty = none (e.g. when a house comes on top).
+Statics des Kellerbodens (mehrere = zufällig), leer = keiner.	Statics of the cellar floor (several = random), empty = none.
+Statics im Dungeon-Bereich vorher entfernen.	Remove the statics in the dungeon area first.
+Statics unter dem Boden werden darüber gezeigt · Static setzen / Wand bauen auf dieser Ebene	Statics below the ground are shown on top · place static / build wall on this level
+Stufe, wenn man nach Norden hinuntergeht (hex).	Step when walking down to the north (hex).
+Stufe, wenn man nach Osten hinuntergeht (hex).	Step when walking down to the east (hex).
+Stufe, wenn man nach Süden hinuntergeht (hex).	Step when walking down to the south (hex).
+Stufe, wenn man nach Westen hinuntergeht (hex).	Step when walking down to the west (hex).
+Süd	South
+Tiefe (Z)	Depth (Z)
+Tiefe unter der Karte	Depth under the map
+Treppe hinunter nach	Stairs down towards
+Treppen-Breite	Stair width
+UNTER DER KARTE	UNDER THE MAP
+Unter der Karte (NoDraw-Land, Statics darunter)	Under the map (NoDraw land, statics below)
+Unter der Karte bauen (Ansicht + Bau-Ebene)	Build under the map (view + building level)
+Unter der Karte bauen (Bau-Ebene)	Build under the map (building level)
+Unter der Karte bauen (an / aus)	Build under the map (on / off)
+Unter der Karte bauen: Statics unter dem Boden werden gezeigt, Static setzen und Wände auf Boden	Build under the map: statics below the ground are shown, place static and walls on ground
+Unter der Karte bauen: Statics unter dem Boden zeigen, Bau-Ebene Boden − 20	Build under the map: show statics below the ground, building level ground − 20
+Von Ufer zu Ufer ziehen. Die Stücke im Reiter Items wählen und '← …' klicken. Höhe = höheres Ende + Z +, die Mitte um 'Bogen' höher.	Drag from bank to bank. Choose the pieces in the tab Items and click '← …'. Height = higher end + Z +, the middle higher by 'arch'.
+Von der Mitte der Grundseite zur Spitze ziehen	Drag from the middle of the base to the tip
+Von der Mitte der Grundseite zur Spitze ziehen · gefüllt / Rand oben	Drag from the middle of the base to the tip · filled / outline at the top
+Von der Mitte der geraden Seite zur Rundung ziehen	Drag from the middle of the straight side to the round side
+Von der Mitte der geraden Seite zur Rundung ziehen · gefüllt / Rand oben	Drag from the middle of the straight side to the round side · filled / outline at the top
+Von der Quelle zur Mündung ziehen · Breite = Pinsel	Drag from the source to the mouth · width = brush
+Von der Quelle zur Mündung ziehen. CGI: Wasser mit den Fluss-Einstellungen. Karten-Editor: mit Farbe 1 und Pinselgröße – oder mit dem Muster-Stempel (Statics), Schalter oben.	Drag from the source to the mouth. CGI: water with the river settings. Map editor: with colour 1 and the brush size – or with the pattern stamp (statics), switch at the top.
+Wand-Höhe (Höhle)	Wall height (cave)
+Wand-Land (hex)	Wall land (hex)
+Wand-Set (Reiter Pinsel → Wand) für die Kellerwände am Rand, leer = keine.	Wall set (tab Brushes → Wall) for the cellar walls at the border, empty = none.
+West	West
+Wie weit der Lauf seitlich ausschwingt (0 = gerade, 25 = Fluss, 10 = Weg).	How far the course swings sideways (0 = straight, 25 = river, 10 = road).
+Wieder über der Karte.	Above the map again.
+Wände	Walls
+Wände (Wand-Set)	Walls (wall set)
+Z je Treppenstufe (UO-Treppen: 5).	Z per stair step (UO stairs: 5).
+Ziehen: Höhe läuft vom Start zum Ende (Farbe 1, sonst Höhen-Ebene)	Drag: height runs from the start to the end (colour 1, otherwise height layer)
+Zusätzliche Verbindungen zwischen nahen Räumen (0 = nur ein Weg zu jedem Raum).	Extra connections between near rooms (0 = only one way to every room).
+hinunter nach Norden	down to the north
+hinunter nach Osten	down to the east
+hinunter nach Süden	down to the south
+hinunter nach Westen	down to the west
+mit Muster-Stempel (Statics)	with pattern stamp (statics)
+Über der höheren Seite der beiden Enden.	Above the higher of the two ends.
+← Brett N-S	← Plank N-S
+← Brett W-O	← Plank W-E
+← Geländer N-S	← Railing N-S
+← Geländer W-O	← Railing W-E
+← ab Nord	← down N
+← ab Ost	← down E
+← ab Süd	← down S
+← ab West	← down W
+⬇ Unter der Karte	⬇ Under the map
+Linie, deren Höhe von der Höhe am Start zur Höhe am Ende läuft (Farbe 1 in der passenden Höhe, sonst Höhen-Ebene) – Rampen, Straßen am Hang	Line whose height runs from the height at the start to the height at the end (colour 1 at the matching height, otherwise height layer) – ramps, roads on slopes
+Von A nach B ziehen: geschlängelter Fluss / Weg mit Pinselgröße – oder mit dem Muster-Stempel (Statics)	Drag from A to B: winding river / road with the brush size – or with the pattern stamp (statics)
+Rechteck aufziehen: Räume + Gänge, Farbe 1 = Boden, Farbe 2 = Wand	Drag a rectangle: rooms + corridors, colour 1 = floor, colour 2 = wall
+Von Ufer zu Ufer ziehen: Bretter, Geländer, Pfosten, Bogen (Brücken-Set im Reiter Pinsel)	Drag from bank to bank: planks, railings, posts, arch (bridge set in the tab Brushes)
+Rechteck: Keller unter der Karte (NoDraw-Land, Boden, Wände, Treppe)	Rectangle: cellar under the map (NoDraw land, floor, walls, stairs)
+Rechteck: Räume + Gänge – Höhle, gebaut oder unter der Karte	Rectangle: rooms + corridors – cave, built or under the map
+Von der Quelle zur Mündung ziehen: natürlich geschlängelter Fluss	Drag from the source to the mouth: naturally winding river

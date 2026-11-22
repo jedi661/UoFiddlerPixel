@@ -60,11 +60,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.CoastSmooth = _settings.CoastSmooth;
             ToolPalette.Translate = L.T;
             InitCgiBrushes();
+            InitBuilders();
             BuildEditorPalette();
             BuildEditorOptionsBar();
             BuildCgiPalette();
             BuildCgiOptionsBar();
             BuildBrushOptionItems();
+            BuildBuilderOptionItems();
             BuildCoastSmoothUi();
             isoView.ContextMenuRequested += IsoView_ContextMenuRequested;
             UpdateEditorOptions();
@@ -131,6 +133,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             p.Add(EdTool("rectfill", "Rechteck gefüllt", "R", "Gefülltes Rechteck", MapTool.FilledRectangle, AccShape));
             p.Add(EdTool("ellipse", "Ellipse", string.Empty, "Rahmen, Dicke = Pinselgröße", MapTool.Ellipse, AccShape));
             p.Add(EdTool("ellipsefill", "Ellipse gefüllt", string.Empty, "Gefüllte Ellipse", MapTool.FilledEllipse, AccShape));
+            AddEditorShapeEntries(p);
             p.AddSeparator();
             p.Add(EdTool("raise", "Höhe +", string.Empty, "Nächste Farbe der Gruppe höher (rechte Maus: tiefer)", MapTool.Raise, AccHeight));
             p.Add(EdTool("lower", "Höhe −", string.Empty, "Nächste Farbe der Gruppe tiefer (rechte Maus: höher)", MapTool.Lower, AccHeight));
@@ -228,6 +231,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             Add(CgiTool("cave", "Höhle", string.Empty, "In den Berg ziehen: Boden auf einer Höhe, Rand wird Wand", IsoTool.Cave, AccCave), "caves");
             Add(CgiTool("caveentrance", "Eingang", string.Empty, "Höhleneingang am Bergfuß malen", IsoTool.CaveEntrance, AccCave), "caves");
             Add(CgiTool("cavestamp", "Höhlen-Stempel", string.Empty, "Klick vor eine Bergwand = ganzer Eingang · Strg+Klick = entfernen", IsoTool.CaveStamp, AccCave), "caves");
+            AddCgiBuilderEntries(p, Add);
             p.AddSeparator();
             Add(CgiTool("lasso", "Lasso", string.Empty, "Punkte um eine Fläche klicken – danach wirken alle Werkzeuge nur darin · Esc = aufheben", IsoTool.Lasso, AccSelect), "brushes");
             Add(CgiTool("magicwand", "Zauberstab", string.Empty, "Klick wählt gleiches zusammenhängendes Land · Umschalt = dazu, Strg = weg", IsoTool.MagicWand, AccSelect), "brushes");
@@ -277,11 +281,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         // ================================================================== editor options bar
 
-        private static readonly MapTool[] BrushTools = { MapTool.Brush, MapTool.Eraser, MapTool.Spray, MapTool.Line, MapTool.Rectangle, MapTool.Ellipse, MapTool.Raise, MapTool.Lower, MapTool.PatternBrush };
+        private static readonly MapTool[] BrushTools =
+        {
+            MapTool.Brush, MapTool.Eraser, MapTool.Spray, MapTool.Line, MapTool.Rectangle, MapTool.Ellipse, MapTool.Raise, MapTool.Lower, MapTool.PatternBrush,
+            MapTool.HalfCircle, MapTool.Triangle, MapTool.SlopeLine, MapTool.Course
+        };
 
         private static readonly MapTool[] ColourTools =
         {
-            MapTool.Brush, MapTool.Eraser, MapTool.Spray, MapTool.Line, MapTool.Rectangle, MapTool.FilledRectangle, MapTool.Ellipse, MapTool.FilledEllipse, MapTool.Fill, MapTool.Select
+            MapTool.Brush, MapTool.Eraser, MapTool.Spray, MapTool.Line, MapTool.Rectangle, MapTool.FilledRectangle, MapTool.Ellipse, MapTool.FilledEllipse, MapTool.Fill, MapTool.Select,
+            MapTool.HalfCircle, MapTool.Triangle, MapTool.Course
         };
 
         private void BuildEditorOptionsBar()
@@ -395,6 +404,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             MapTool.Pan => "Hand",
             MapTool.CaveStamp => "Höhleneingang",
             MapTool.PatternBrush => "Muster-Pinsel",
+            MapTool.HalfCircle => "Halbkreis",
+            MapTool.Triangle => "Dreieck",
+            MapTool.SlopeLine => "Neigungs-Linie",
+            MapTool.Course => "Natürlicher Lauf",
+            MapTool.Dungeon => "Dungeon",
             _ => t.ToString()
         };
 
@@ -421,6 +435,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             MapTool.Pan => "Ziehen = verschieben",
             MapTool.CaveStamp => "Klick neben den Berg · Umschalt = unsichtbar · Rechts = Berg",
             MapTool.PatternBrush => "Ziehen = Muster malen · Stempel-Menü = Optionen",
+            MapTool.HalfCircle => "Von der Mitte der geraden Seite zur Rundung ziehen",
+            MapTool.Triangle => "Von der Mitte der Grundseite zur Spitze ziehen",
+            MapTool.SlopeLine => "Ziehen: Höhe läuft vom Start zum Ende (Farbe 1, sonst Höhen-Ebene)",
+            MapTool.Course => "Von der Quelle zur Mündung ziehen · Breite = Pinsel",
+            MapTool.Dungeon => "Rechteck aufziehen · Farbe 1 = Boden, Farbe 2 = Wand",
             _ => string.Empty
         };
 
@@ -449,6 +468,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 i.Visible = sel;
             }
             _edHint.Text = L.T(ToolHint(t));
+            UpdateBuilderEditorItems(t);
             _editorPalette?.RefreshState();
         }
 
@@ -548,6 +568,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             items.Add(Toggle("2D-Ansicht (T)", tsbCgi2D));
             items.Add(Toggle("Wasser durchsichtig", tsbCgiSeeThrough));
             items.Add(Toggle("Probleme markieren", tsbCgiProblems));
+            items.Add(new ToolStripMenuItem(L.T("Unter der Karte bauen (Bau-Ebene)"), ToolIcons.Get("undermap"), (s, e) => SetUnderView(!isoView.UnderView)) { Checked = isoView.UnderView });
             items.Add(new ToolStripSeparator());
             items.Add(L.T("Hineinzoomen"), null, (s, e) => isoView.ZoomStep(1));
             items.Add(L.T("Herauszoomen"), null, (s, e) => isoView.ZoomStep(-1));
@@ -600,6 +621,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             IsoTool.Lasso => "Lasso",
             IsoTool.MagicWand => "Zauberstab",
             IsoTool.Measure => "Messen",
+            IsoTool.Bridge => "Brücke",
+            IsoTool.Cellar => "Keller",
+            IsoTool.Dungeon => "Dungeon-Generator",
+            IsoTool.Course => "Fluss-Lauf",
             _ => t.ToString()
         };
 
@@ -976,13 +1001,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     IsoTool.Coast or IsoTool.CoastSmooth or IsoTool.Water => "coast",
                     IsoTool.Cave or IsoTool.CaveEntrance or IsoTool.CaveStamp or IsoTool.Mountain => "caves",
                     IsoTool.PatternBrush => "stamps",
+                    IsoTool.Bridge or IsoTool.Cellar or IsoTool.Dungeon or IsoTool.Course => "build",
                     >= IsoTool.Scatter => "brushes",
                     _ => "cgi"
                 };
             }
             if (tabMain.SelectedTab == tabEditor)
             {
-                return mapCanvas.Tool == MapTool.PatternBrush ? "stamps" : "editor";
+                return mapCanvas.Tool switch
+                {
+                    MapTool.PatternBrush => "stamps",
+                    MapTool.HalfCircle or MapTool.Triangle or MapTool.SlopeLine or MapTool.Course or MapTool.Dungeon => "shapes",
+                    _ => "editor"
+                };
             }
             return "start";
         }

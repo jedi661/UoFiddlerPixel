@@ -1035,7 +1035,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             foreach ((string text, MapTool tool) in new[]
                      {
                          ("Pinsel (B)", MapTool.Brush), ("Pipette (I)", MapTool.Picker), ("Füllen (F)", MapTool.Fill), ("Auswahl (S)", MapTool.Select),
-                         ("Höhe +", MapTool.Raise), ("Höhe −", MapTool.Lower), ("Höhleneingang", MapTool.CaveStamp), ("Hand (H)", MapTool.Pan)
+                         ("Höhe +", MapTool.Raise), ("Höhe −", MapTool.Lower), ("Höhleneingang", MapTool.CaveStamp), ("Hand (H)", MapTool.Pan),
+                         ("Halbkreis", MapTool.HalfCircle), ("Dreieck", MapTool.Triangle), ("Neigungs-Linie", MapTool.SlopeLine),
+                         ("Natürlicher Lauf", MapTool.Course), ("Dungeon", MapTool.Dungeon)
                      })
             {
                 tools.DropDownItems.Add(L.T(text), null, (s, a) => SelectTool(tool)).Enabled = mapCanvas.Tool != tool;

@@ -424,6 +424,88 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         }
                         break;
                     }
+                case "halfcircle":
+                    using (var fill = new SolidBrush(Color.FromArgb(124, 58, 237)))
+                    {
+                        g.FillPie(fill, 2, 5, 20, 20, 180, 180);
+                    }
+                    g.DrawPie(ink, 2, 5, 20, 20, 180, 180);
+                    break;
+                case "triangle":
+                    {
+                        var pts = new[] { new PointF(12, 3), new PointF(22, 20), new PointF(2, 20) };
+                        using var fill = new SolidBrush(Color.FromArgb(124, 58, 237));
+                        g.FillPolygon(fill, pts);
+                        g.DrawPolygon(ink, pts);
+                        break;
+                    }
+                case "slopeline":
+                    {
+                        using var lg = new LinearGradientBrush(new Rectangle(2, 2, 20, 20), Color.FromArgb(22, 128, 61), Color.FromArgb(161, 98, 7), 45f);
+                        using var p = new Pen(lg, 5f) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+                        g.DrawLine(p, 4, 20, 20, 4);
+                        using var a = new Pen(Ink, 1.4f) { EndCap = LineCap.ArrowAnchor };
+                        g.DrawLine(a, 6, 22, 21, 7);
+                        break;
+                    }
+                case "course":
+                    {
+                        using var p = new Pen(Sea, 3.2f) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+                        g.DrawBezier(p, 2, 4, 20, 2, 2, 22, 22, 20);
+                        using var dot = new SolidBrush(Red);
+                        g.FillEllipse(dot, 0, 2, 5, 5);
+                        g.FillEllipse(dot, 19, 17, 5, 5);
+                        break;
+                    }
+                case "dungeon":
+                    {
+                        using var rock = new SolidBrush(Color.FromArgb(68, 64, 60));
+                        g.FillRectangle(rock, 2, 2, 20, 20);
+                        using var floor = new SolidBrush(Color.FromArgb(214, 211, 209));
+                        g.FillRectangle(floor, 4, 4, 6, 6);
+                        g.FillRectangle(floor, 13, 12, 7, 7);
+                        g.FillRectangle(floor, 6, 9, 2, 6);
+                        g.FillRectangle(floor, 6, 14, 8, 2);
+                        break;
+                    }
+                case "bridge":
+                    {
+                        using var sea = new SolidBrush(Sea);
+                        g.FillRectangle(sea, 2, 14, 20, 8);
+                        using var wood = new Pen(Color.FromArgb(146, 64, 14), 3f);
+                        g.DrawArc(wood, 2, 8, 20, 14, 180, 180);
+                        using var rail = new Pen(Color.FromArgb(120, 53, 15), 1.4f);
+                        g.DrawArc(rail, 2, 4, 20, 14, 180, 180);
+                        for (int x = 5; x <= 19; x += 7)
+                        {
+                            g.DrawLine(rail, x, 9, x, 13);
+                        }
+                        break;
+                    }
+                case "cellar":
+                    {
+                        using var grass = new SolidBrush(Grass);
+                        g.FillRectangle(grass, 1, 3, 22, 4);
+                        using var dark = new SolidBrush(Color.FromArgb(41, 37, 36));
+                        g.FillRectangle(dark, 4, 7, 16, 15);
+                        using var step = new Pen(Color.FromArgb(214, 211, 209), 1.6f);
+                        for (int k = 0; k < 4; k++)
+                        {
+                            g.DrawLine(step, 6 + k * 3, 9 + k * 3, 10 + k * 3, 9 + k * 3);
+                            g.DrawLine(step, 10 + k * 3, 9 + k * 3, 10 + k * 3, 12 + k * 3);
+                        }
+                        break;
+                    }
+                case "undermap":
+                    {
+                        using var grass = new SolidBrush(Color.FromArgb(140, Grass));
+                        g.FillRectangle(grass, 1, 3, 22, 6);
+                        using var p = new Pen(Color.FromArgb(126, 34, 206), 2.4f) { EndCap = LineCap.ArrowAnchor };
+                        g.DrawLine(p, 12, 4, 12, 21);
+                        using var dash = new Pen(Ink, 1f) { DashStyle = DashStyle.Dash };
+                        g.DrawLine(dash, 1, 17, 23, 17);
+                        break;
+                    }
                 default:
                     {
                         using var c = new SolidBrush(Color.FromArgb(71, 85, 105));

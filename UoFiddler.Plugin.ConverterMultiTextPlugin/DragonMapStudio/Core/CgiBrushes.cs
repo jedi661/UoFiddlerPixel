@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – more brushes and edits of the CGI view (pure logic, no user interface)
  *  *
@@ -239,6 +239,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public NoiseSettings Noise { get; set; } = new NoiseSettings();
         public WandSettings Wand { get; set; } = new WandSettings();
 
+        public BridgeSettings Bridge { get; set; } = new BridgeSettings();
+        public string BridgeSet { get; set; } = string.Empty;
+        public List<BridgeSet> BridgeSets { get; set; } = new List<BridgeSet>();
+
+        public CellarSettings Cellar { get; set; } = new CellarSettings();
+        public string StairSet { get; set; } = string.Empty;
+        public List<StairSet> StairSets { get; set; } = new List<StairSet>();
+
+        public DungeonSettings Dungeon { get; set; } = new DungeonSettings();
+        public CourseSettings Course { get; set; } = new CourseSettings();
+
+        /// <summary>"Unter der Karte bauen": statics are placed this much below the ground (−20 = one floor).</summary>
+        public int UnderOffset { get; set; } = -20;
+
         /// <summary>Kinds of statics hidden in the view.</summary>
         public StaticKind HiddenKinds { get; set; }
 
@@ -258,6 +272,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Noise ??= new NoiseSettings();
             Wand ??= new WandSettings();
             Bookmarks ??= new List<string>();
+            Bridge ??= new BridgeSettings();
+            BridgeSets ??= new List<BridgeSet>();
+            Cellar ??= new CellarSettings();
+            StairSets ??= new List<StairSet>();
+            Dungeon ??= new DungeonSettings();
+            Course ??= new CourseSettings();
             Hardness = Math.Clamp(Hardness, 1, 100);
         }
     }
