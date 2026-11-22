@@ -230,6 +230,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     CgiBrushes.NoiseBrush(_map, center.X, center.Y, r, BrushSettings.Noise, BrushSettings.Hardness, _visited, GroundBefore, _rnd);
                     break;
                 case IsoTool.Variants:
+                    {
+                        VariantSet vs = string.IsNullOrEmpty(BrushSettings.VariantSet) ? null : BrushSettings.VariantSets.FirstOrDefault(v => v.Name == BrushSettings.VariantSet);
+                        if (vs != null)
+                        {
+                            CgiBrushes.VariantsFromSet(_map, center.X, center.Y, r, vs, _visited, _rnd);
+                            break;
+                        }
+                    }
                     if (LandFamily == null)
                     {
                         break;
@@ -243,13 +251,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     {
                         EraserSettings o = BrushSettings.Eraser;
                         ushort[] voids = HexList.Parse(o.VoidTile);
+                        var onlyIds = new HashSet<ushort>(HexList.Parse(o.OnlyIds));
                         ushort vt = voids.Length > 0 ? voids[0] : (ushort)0x0002;
                         var del = new List<StaticChange>();
                         foreach ((int x, int y, double _) in CgiBrushes.Circle(_map, center.X, center.Y, r))
                         {
                             if (o.Statics && !ctrl)
                             {
-                                del.AddRange(_map.StaticsAt(x, y).Where(s => !o.OnlyVisible || (!Hidden(s.Id) && s.Z <= MaxZ)).ToList().Select(MapData.Remove));
+                                del.AddRange(_map.StaticsAt(x, y).Where(s => (!o.OnlyVisible || (!Hidden(s.Id) && s.Z <= MaxZ)) && (onlyIds.Count == 0 || onlyIds.Contains(s.Id))).ToList().Select(MapData.Remove));
                             }
                             if (o.Land || ctrl)
                             {
@@ -327,6 +336,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 return IsClickTool(Tool);
             }
+            if (Tool == IsoTool.Wall && BrushSettings.Wall.PointMode)
+            {
+                if (e.Clicks >= 2)
+                {
+                    FinishPoints();
+                    return true;
+                }
+                _points.Add(tile);
+                Message?.Invoke(this, $"{_points.Count} " + L.T("Punkte – weiter klicken · Doppelklick, Rechtsklick oder Enter = fertig · Rücktaste = letzten Punkt weg · Esc = abbrechen"));
+                Invalidate();
+                return true;
+            }
             switch (Tool)
             {
                 case IsoTool.Wall:
@@ -382,7 +403,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Right click with a point tool: finish. True = handled.</summary>
         private bool ToolRightClick()
         {
-            if ((Tool == IsoTool.Road || Tool == IsoTool.Lasso) && _points.Count > 0)
+            if ((Tool == IsoTool.Road || Tool == IsoTool.Lasso || Tool == IsoTool.Wall) && _points.Count > 0)
             {
                 FinishPoints();
                 return true;
@@ -500,7 +521,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 Invalidate();
                 return true;
             }
-            if ((Tool == IsoTool.Road || Tool == IsoTool.Lasso) && _points.Count > 0)
+            if ((Tool == IsoTool.Road || Tool == IsoTool.Lasso || Tool == IsoTool.Wall) && _points.Count > 0)
             {
                 switch (e.KeyCode)
                 {
@@ -582,6 +603,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 SetMask(CgiBrushes.Polygon(_map, poly), ModifierKeys, L.T("Lasso"));
                 return;
             }
+            if (Tool == IsoTool.Wall)
+            {
+                var wp = _points.ToList();
+                _points.Clear();
+                if (wp.Count < 2)
+                {
+                    Message?.Invoke(this, L.T("Wand: mindestens 2 Punkte."));
+                    Invalidate();
+                    return;
+                }
+                PlaceWallPath(wp);
+                return;
+            }
+            if (Tool == IsoTool.Road && !string.IsNullOrEmpty(BrushSettings.RoadStamp))
+            {
+                var rp = _points.ToList();
+                _points.Clear();
+                TilePattern pat = FindStampPattern?.Invoke(BrushSettings.RoadStamp);
+                if (pat == null || rp.Count < 2)
+                {
+                    Message?.Invoke(this, L.T("Weg mit Stempel: Stempel nicht gefunden oder weniger als 2 Punkte."));
+                    Invalidate();
+                    return;
+                }
+                RoadWithStamp(rp, pat);
+                return;
+            }
             if (Tool == IsoTool.Road)
             {
                 var pts = _points.ToList();
@@ -623,13 +671,59 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
         }
 
-        private void PlaceWall(Point a, Point b)
+        /// <summary>Stamp of the road (file name) as pattern; set by the form.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<string, TilePattern> FindStampPattern { get; set; }
+
+        /// <summary>Road from a stamp: the pattern runs along the smooth curve like the freehand pattern brush (land + statics).</summary>
+        private void RoadWithStamp(List<Point> pts, TilePattern pat)
         {
-            if (WallSet == null || (HexList.Parse(WallSet.AlongX).Length == 0 && HexList.Parse(WallSet.AlongY).Length == 0 && HexList.Parse(WallSet.Post).Length == 0))
+            TilePattern keep = Pattern;
+            pat.Freehand = true;
+            Pattern = pat;
+            _strokeCells.Clear();
+            int r = Math.Max(0, (BrushSettings.Road.Width - 1) / 2);
+            _map.BeginLand();
+            var box = Rectangle.Empty;
+            try
+            {
+                foreach (PointF c in CgiBrushes.Spline(pts))
+                {
+                    var center = new Point((int)Math.Floor(c.X), (int)Math.Floor(c.Y));
+                    ApplyPattern(center, r);
+                    var dab = new Rectangle(center.X - r - 1, center.Y - r - 1, r * 2 + 3, r * 2 + 3);
+                    box = box.IsEmpty ? dab : Rectangle.Union(box, dab);
+                }
+                if (pat.Transitions && LandTransitions != null && !box.IsEmpty && pat.Land)
+                {
+                    LandTransitions.Apply(_map, box, _rnd);
+                }
+            }
+            finally
+            {
+                Pattern = keep;
+                _strokeCells.Clear();
+            }
+            int n = _map.EndLand();
+            Finished(n, L.T("Weg mit Stempel") + $" '{pat.Name}' ({pts.Count} " + L.T("Punkte") + ")");
+        }
+
+        private void PlaceWallPath(List<Point> pts)
+        {
+            if (WallSet == null)
             {
                 Message?.Invoke(this, L.T("Wand: erst ein Wand-Set mit IDs anlegen (Reiter Pinsel → Wand)."));
                 return;
             }
+            WallSettings ws = WallFor();
+            List<StaticChange> changes = CgiBrushes.WallPath(_map, pts, WallSet, ws, _rnd);
+            int before = _map.UndoCount;
+            _map.Apply(changes);
+            Finished(_map.UndoCount > before ? changes.Count : 0, L.T("Wand") + $" '{WallSet.Name}' ({pts.Count} " + L.T("Punkte") + $", " + L.T("Dicke") + $" {ws.Thickness})");
+        }
+
+        private WallSettings WallFor()
+        {
             WallSettings ws = BrushSettings.Wall;
             if (UnderView)
             {
@@ -637,10 +731,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 ws = new WallSettings
                 {
                     Levels = ws.Levels, LevelHeight = ws.LevelHeight, ZOffset = ws.ZOffset + BrushSettings.UnderOffset,
-                    PostsAtEnds = ws.PostsAtEnds, ReplaceExisting = ws.ReplaceExisting, Level = ws.Level
+                    PostsAtEnds = ws.PostsAtEnds, ReplaceExisting = ws.ReplaceExisting, Level = ws.Level, Thickness = ws.Thickness
                 };
             }
-            List<StaticChange> changes = CgiBrushes.Wall(_map, a, b, WallSet, ws, _rnd);
+            return ws;
+        }
+
+        private void PlaceWall(Point a, Point b)
+        {
+            if (WallSet == null || (HexList.Parse(WallSet.AlongX).Length == 0 && HexList.Parse(WallSet.AlongY).Length == 0 && HexList.Parse(WallSet.Post).Length == 0))
+            {
+                Message?.Invoke(this, L.T("Wand: erst ein Wand-Set mit IDs anlegen (Reiter Pinsel → Wand)."));
+                return;
+            }
+            WallSettings ws = WallFor();
+            // drag: straight along X or Y, with the thickness
+            Point end = Math.Abs(b.X - a.X) >= Math.Abs(b.Y - a.Y) ? new Point(b.X, a.Y) : new Point(a.X, b.Y);
+            List<StaticChange> changes = CgiBrushes.WallPath(_map, new List<Point> { a, end }, WallSet, ws, _rnd);
             int before = _map.UndoCount;
             _map.Apply(changes);
             Finished(_map.UndoCount > before ? changes.Count : 0, L.T("Wand") + $" '{WallSet.Name}'");
@@ -1021,7 +1128,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 {
                     pts.Add(Middle(_hover.X, _hover.Y));
                 }
-                using var pen = new Pen(Tool == IsoTool.Lasso ? Color.Cyan : Color.Orange, 2) { DashStyle = DashStyle.Dash };
+                using var pen = new Pen(Tool == IsoTool.Lasso ? Color.Cyan : Tool == IsoTool.Wall ? Color.SandyBrown : Color.Orange, 2) { DashStyle = DashStyle.Dash };
                 if (Tool == IsoTool.Road && _points.Count >= 1)
                 {
                     var all = _points.ToList();

@@ -1177,3 +1177,29 @@ Brücken, Geländer und Treppen mit Teilen, die automatisch aus TileData (Namen,
 * **4b Vorlagen und fremde Karten:** „Fremde Karte öffnen …“ lädt eine andere map#.mul / .uop mit Statics in ein eigenes CGI-Fenster. Dort zum Dungeon springen (X / Y), mit „Bereich“ markieren und „✔ Bereich in die Werkstatt“. Die fremde Karte wird nie verändert.
 * „Platz als Vorlage speichern …“ (Kategorie + Name) und „Vorlage laden“ setzt sie auf der gewählten Etage wieder ein.
 * **Hilfe-Knöpfe:** Generieren, 2D-Plan, 3D bauen (auch im Hilfe-Fenster unter „Bauen“).
+
+## Werkzeug-Einstellungen, Seitenleiste, Hue, Lauf-Arten (seit „Werkstatt 27“)
+
+### Natürlicher Lauf im Karten-Editor: was er malt
+* Oben bei „Natürlicher Lauf“ gibt es jetzt **Art**: Fluss, Bach, Berg-Kamm, Weg, Eigene, Stempel.
+* Fluss / Berg / Weg suchen ihre Farben beim ersten Mal selbst in der Farbtabelle (Wasser + Sand-Ufer, Fels oben + Fels unten, Weg / Erde).
+* **„Lauf-Arten …“**: eigene Arten anlegen, kopieren, löschen. Je Art: **Kern-Farbe** (Mitte), **Rand-Farbe** + Breite, **Außen-Farbe** + Breite, Breite am Anfang / Ende, Schlängeln, Bögen. Farbe links als Farbe 1 wählen, dann „Farbe 1 → Kern / Rand / Außen“.
+* Art „Stempel“ malt den Lauf mit dem gewählten Muster-Stempel (Land + Statics).
+
+### CGI-Ansicht: Seitenleiste und Palette
+* **⧉ Seite lösen** (oben rechts): die ganze Seitenleiste (Items-Katalog, Multis, Land, Pinsel …) als eigenes Fenster – frei zur Seite schieben. Oben im Fenster **↶ Rückgängig / ↷ Wiederholen** (auch Strg+Z / Strg+Y). Schließen = wieder andocken.
+* **◨ Seite** oder **F8**: Seitenleiste ein- / ausblenden. **◧ Werkzeuge** oder **F7**: Werkzeug-Palette links ein- / ausblenden (auch im Karten-Editor).
+
+### Jedes Werkzeug: Werte direkt oben in der Leiste
+* Die wichtigsten Werte stehen sofort in der Optionsleiste, **⚙** öffnet alle Einstellungen.
+* **Küste:** Wasserspiegel, Meeresgrund, Wasser-Breite, höchstes Land, Grund setzen. **Küste glätten:** dazu Abfall-Breite, Weichheit, Statics mitnehmen.
+* **Fluss / Fluss-Lauf:** Tiefe, Ufer-Breite, Ufer-Steigung, **Grund tiefer** (wie an der Meeresküste: Grund unter den Wasser-Statics, „Grund-Tiles“ z. B. Sand), Wasser-Statics; beim Lauf Breite am Anfang / Ende und Schlängeln.
+* **Weg:** **Weg-Vorlage** (gespeicherte Wege mit allen Einstellungen, „Jetzige Einstellungen als Vorlage speichern“, „Vorlagen bearbeiten“) und **womit** gebaut wird: Weg-Tiles oder ein **Stempel** (auch aus der Karte gelernt: Bereich → „→ Stempel (P)“) – der Stempel läuft dann entlang der Kurve.
+* **Unebenheit:** **Muster** (weiche Wellen, Hügel, Mulden, Grate, Rillen mit Richtung, Stufen, grob), Stärke, Größe, Feinheit – mit kleinem Vorschau-Bild.
+* **Varianten:** eigene **Muster** aus Land-Tiles („Neu aus Bereich“ nimmt die Tiles eines markierten Bodens mit ihrer Häufigkeit, „Muster bearbeiten“: Tiles, nur auf bestimmten Tiles, Chance) oder wie bisher die Familie der Farbtabelle.
+* **Wand:** Set wählen, **Sets bearbeiten** (Teile West-Ost / Nord-Süd / Pfosten, auch „Aus Auswahl“ mit Richtungs-Erkennung), **Dicke** (mehrere Reihen), Stockwerke, **Punkt zu Punkt** (Punkte klicken, Ecken als L, Doppelklick / Enter = fertig).
+* **Färben / Hue-Pinsel:** Hue-Nummer mit **Farbfeld und Name**, **🎨 Wählen …** (alle Hues mit Farbverlauf, Suche nach Nummer oder Name), **☆ merken** und **★ Favoriten**.
+* **Radierer:** Statics / Land, nur sichtbare, **nur bestimmte IDs** – „Auswahl merken“ übernimmt die IDs der gewählten Statics, „alle“ hebt das auf. Beim Werkzeug Löschen führt ein Knopf zum Radierer mit Pinselgröße.
+* **Multi setzen:** „✖ Multi-Auswahl löschen“. Im Reiter Multis erscheint das Bild sofort (auch beim Tippen der ID), darunter ein **Katalog aller Multis** mit Suche.
+* **Berg, Brücke, Treppe, Rampe, Plateau, Streuen:** die wichtigsten Werte ebenso oben.
+

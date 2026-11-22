@@ -68,6 +68,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             BuildBrushOptionItems();
             BuildBuilderOptionItems();
             BuildCoastSmoothUi();
+            BuildToolOptions();
             isoView.ContextMenuRequested += IsoView_ContextMenuRequested;
             UpdateEditorOptions();
             UpdateCgiOptions();
@@ -677,6 +678,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 i.Visible = t == IsoTool.CoastSmooth || t == IsoTool.Coast;
             }
+            UpdateQuickOptions(t);
             _cgiPalette?.RefreshState();
         }
 
@@ -1041,6 +1043,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
+            if (keyData == Keys.F7 || keyData == Keys.F8)
+            {
+                bool cgi = tabMain?.SelectedTab == tabCgi;
+                if (keyData == Keys.F8)
+                {
+                    ToggleSidePanel();
+                }
+                else if (cgi)
+                {
+                    ToggleCgiPalette();
+                }
+                else
+                {
+                    ToggleEditorPalette();
+                }
+                return true;
+            }
             if (keyData == Keys.F1)
             {
                 ShowHelp(HelpTopicNow());

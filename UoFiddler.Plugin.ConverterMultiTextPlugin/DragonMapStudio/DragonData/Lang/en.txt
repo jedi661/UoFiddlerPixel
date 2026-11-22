@@ -1604,3 +1604,122 @@ Pinsel: alle Statics darunter löschen (Größe wie jeder Pinsel) · Strg = Land
 Klick: Stufen nach unten in die Richtung (R dreht), bis zum Boden gefüllt (Treppen-Set)	Click: steps down in the direction (R turns), filled down to the ground (stair set)
 Eigenes Fenster: Brücken aus Statics entwerfen (Teile aus der TileData mit Bild, Testfeld, Muster von Hand, aus Karte / Multi), nach Kategorie speichern	Own window: design bridges of statics (pieces from the tiledata with pictures, test field, sample by hand, from map / multi), save by category
 Von der Quelle zur Mündung ziehen: natürlich geschlängelter Fluss mit Wasser, Breite am Anfang / Ende einstellbar	Drag from the source to the mouth: natural winding river with water, width at start / end adjustable
+# Werkstatt 27: Werkzeug-Einstellungen, Seitenleiste, Hue, Lauf-Arten
+◧ Werkzeuge	◧ Tools
+Werkzeug-Palette links ein- / ausblenden (F7)	Tool palette on the left on / off (F7)
+◨ Seite	◨ Side
+Seitenleiste rechts ein- / ausblenden (F8)	Side panel on the right on / off (F8)
+⧉ Seite lösen	⧉ Detach side
+Die Seitenleiste (Items, Multis, Land, Pinsel …) in ein eigenes Fenster – frei verschieben, mit Rückgängig / Wiederholen. Schließen = wieder andocken.	The side panel (items, multis, land, brushes …) in its own window – move it freely, with undo / redo. Closing docks it back.
+✖ Auswahl löschen	✖ Clear choice
+Seitenleiste	Side panel
+Wieder andocken	Dock again
+Vorschau des Musters (hell = höher, dunkel = tiefer)	Preview of the pattern (light = higher, dark = lower)
+Erst mit 'Auswahl' Statics wählen (Strg = mehrere), dann 'Auswahl merken'.	First select statics with 'Select' (Ctrl = several), then 'Remember selection'.
+Radierer löscht nur noch	The eraser now only deletes
+Alle Einstellungen dieses Werkzeugs	All settings of this tool
+Farbe der Hue	Colour of the hue
+Original	original
+Favoriten	Favourites
+Gemerkte Hues	Remembered hues
+Noch keine – eine Hue wählen und '☆ merken'	None yet – choose a hue and '☆ remember'
+Keine Multi gewählt – im Katalog unten eine wählen oder die ID eingeben.	No multi chosen – choose one in the catalog below or enter the id.
+Multi-Auswahl gelöscht.	Multi choice cleared.
+Weg-Vorlage	Road preset
+Gespeicherte Wege: Einstellungen + Stempel	Saved roads: settings + stamp
+Punkte klicken, Doppelklick = bauen	click points, double click = build
+Jetzige Einstellungen als Vorlage speichern …	Save current settings as preset …
+Vorlagen bearbeiten …	Edit presets …
+Weg-Vorlagen	Road presets
+Neuer Weg	New road
+Ein Weg = die Weg-Einstellungen (Breite, Tiles, Höhe) und auf Wunsch ein Stempel, der entlang der Kurve gemalt wird.	A road = the road settings (width, tiles, height) and optionally a stamp painted along the curve.
+aus Tiles	from tiles
+Womit der Weg gebaut wird: Weg-Tiles oder ein Stempel (Land + Statics, z. B. aus der Karte gelernt)	What the road is built with: road tiles or a stamp (land + statics, e.g. learned from the map)
+Weg-Tiles (Einstellung 'Weg-Tiles' / Reiter Land)	Road tiles (setting 'road tiles' / tab Land)
+ohne Kategorie	no category
+Weg mit Stempel	Road with stamp
+Breite = Weg-Breite	width = road width
+Neuen Stempel aus der Karte: Bereich markieren → '→ Stempel (P)'	New stamp from the map: mark an area → '→ Stamp (P)'
+Muster:	Pattern:
+(Familie der Farbtabelle)	(family of the colour table)
+Erst mit 'Bereich' ein Stück Boden markieren, das als Muster dienen soll.	First mark a piece of ground with 'Area' to serve as the pattern.
+verschiedene Tiles	different tiles
+mit dem Varianten-Pinsel malen	paint with the variants brush
+Varianten-Muster	Variant patterns
+Neues Muster	New pattern
+Ein Muster = Land-Tiles, die der Pinsel zufällig setzt (ein Tile mehrfach = öfter). 'Nur auf' begrenzt es auf bestimmte Tiles, Chance < 100 = einzelne Tupfer.	A pattern = land tiles the brush sets at random (a tile several times = more often). 'Only on' limits it to certain tiles, chance < 100 = single dabs.
+Set:	Set:
+Wand-Sets	Wall sets
+Neue Wand	New wall
+Im Reiter Items ein Stück wählen und hier '+ …' klicken. Mehrere IDs = zufällig gemischt.	Choose a piece in the tab Items and click '+ …' here. Several ids = mixed at random.
+Was der Lauf malt: Fluss, Berg-Kamm, Weg, eigene Farben oder Stempel	What the course paints: river, mountain ridge, road, own colours or stamp
+Lauf-Arten …	Course kinds …
+Lauf-Arten anlegen und ändern: Farben (Kern, Rand, Außen), Breiten, Schlängeln	Add and change course kinds: colours (core, edge, outer), widths, winding
+Art:	Kind:
+Farbe 1	colour 1
+mit dem Muster-Stempel	with the pattern stamp
+Kern	core
+Rand	edge
+Außen	outer
+Lauf-Arten (natürlicher Lauf)	Course kinds (natural course)
+Neue Art	New kind
+Farben sind Nummern der Farbtabelle: links die Farbe wählen (Farbe 1) und hier 'Farbe 1 → …' klicken. Kern = Mitte, Rand = beidseitig daneben, Außen = noch weiter außen.	Colours are numbers of the colour table: choose the colour on the left (colour 1) and click 'Colour 1 → …' here. Core = middle, edge = on both sides, outer = further out.
+nur Favoriten	only favourites
+Hue wählen	Choose hue
+Hue 0 (Original)	Hue 0 (original)
+merken / vergessen	remember / forget
+Fertig	Done
+Wand: mindestens 2 Punkte.	Wall: at least 2 points.
+Weg mit Stempel: Stempel nicht gefunden oder weniger als 2 Punkte.	Road with stamp: stamp not found or fewer than 2 points.
+Dicke	thickness
+Dicke (Tiles)	Thickness (tiles)
+Punkt zu Punkt	Point to point
+Wasser-Statics dazu	Add water statics
+Grund tiefer (Z)	Deeper bed (Z)
+Grund-Tiles (hex)	Bed tiles (hex)
+Richtung (nach unten)	Direction (down)
+Statics löschen	Delete statics
+Land löschen	Delete land
+Leere (hex)	Void (hex)
+Nur sichtbare	Only visible
+Nur diese IDs (hex)	Only these ids (hex)
+Feinheit (Lagen)	Detail (layers)
+Richtung (Grad)	Direction (degrees)
+Höchstes Land (Z)	Highest land (Z)
+Meeresgrund (Z)	Sea floor (Z)
+Wasser-Breite (Tiles)	Water width (tiles)
+Wasserspiegel (Z)	Water level (Z)
+Grund setzen	Set floor
+Treppen an den Enden	Stairs at the ends
+Pfeiler alle … Tiles	Pillar every … tiles
+Kern-Farbe	Core colour
+Rand-Farbe	Edge colour
+Rand-Breite (Tiles)	Edge width (tiles)
+Außen-Farbe	Outer colour
+Außen-Breite (Tiles)	Outer width (tiles)
+Breite am Anfang (Tiles)	Width at the start (tiles)
+Breite am Ende (Tiles)	Width at the end (tiles)
+Auswahl merken	Remember selection
+alle	all
+→ Radierer (mit Pinselgröße)	→ Eraser (with brush size)
+✖ Multi-Auswahl löschen	✖ Clear multi choice
+🎨 Wählen …	🎨 Choose …
+☆ merken	☆ remember
+★ vergessen	★ forget
+Neu aus Bereich	New from area
+Muster bearbeiten …	Edit patterns …
+Sets bearbeiten …	Edit sets …
++ Land-Tile aus Reiter Land	+ land tile from tab Land
++ Item → West-Ost	+ item → west – east
++ Item → Nord-Süd	+ item → north – south
+Item → Pfosten	item → post
+Aus Auswahl (X / Y / Pfosten raten)	From selection (guess X / Y / post)
+Farbe 1 → Kern	Colour 1 → core
+Farbe 1 → Rand	Colour 1 → edge
+Farbe 1 → Außen	Colour 1 → outer
+Rand / Außen weg	No edge / outer
+Farben neu suchen	Find colours again
+Neu	New
+Kopie	Copy
+Name des Wegs:	Name of the road:
+Name des Musters:	Name of the pattern:

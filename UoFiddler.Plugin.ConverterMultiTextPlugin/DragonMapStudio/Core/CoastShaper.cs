@@ -24,15 +24,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public string LandHeights { get; set; } = "-3 -1 0";
 
         /// <summary>Land higher than this stays (cliff coast).</summary>
+        [System.ComponentModel.DisplayName("Höchstes Land (Z)"), System.ComponentModel.Description("Land höher als das bleibt (Steilküste).")]
         public int MaxLandZ { get; set; } = 10;
 
+        [System.ComponentModel.DisplayName("Meeresgrund (Z)"), System.ComponentModel.Description("Tiefe des Meeresgrunds unter den Wasser-Statics (Original −15).")]
         public int FloorZ { get; set; } = -15;
+
+        [System.ComponentModel.DisplayName("Wasser-Breite (Tiles)"), System.ComponentModel.Description("So weit vom Ufer fällt der Grund bis zur vollen Tiefe.")]
         public int WaterWidth { get; set; } = 6;
+
+        [System.ComponentModel.DisplayName("Wasserspiegel (Z)"), System.ComponentModel.Description("Höhe der Wasser-Statics (Original −5).")]
         public int SurfaceZ { get; set; } = -5;
         public string FloorTiles { get; set; } = "0064";
         public string WaterStaticIds { get; set; } = "1797 1798 1799 179a 179b 179c";
 
         /// <summary>Water brush: set the sea floor tile (at <see cref="FloorZ"/>) below the painted water.</summary>
+        [System.ComponentModel.DisplayName("Grund setzen"), System.ComponentModel.Description("Unter dem Wasser das Grund-Tile auf 'Meeresgrund' setzen.")]
         public bool SetFloor { get; set; } = true;
 
         public static CoastSettings From(BuildOptions o)
