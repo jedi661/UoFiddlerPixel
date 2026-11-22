@@ -101,11 +101,49 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             items.Add(Opt("Nur Land", _cgiPatternLayers == StampLayers.LandOnly, () => _cgiPatternLayers = StampLayers.LandOnly));
             items.Add(Opt("Nur Statics", _cgiPatternLayers == StampLayers.StaticsOnly, () => _cgiPatternLayers = StampLayers.StaticsOnly));
             items.Add(new ToolStripSeparator());
+            var height = new ToolStripMenuItem(L.T("Höhe") + ": " + HeightModeText(_settings.PatternHeight) +
+                                               (_settings.PatternHeightOffset != 0 ? $" {_settings.PatternHeightOffset:+0;-0}" : string.Empty));
+            height.DropDownItems.Add(Opt("Gelände der Karte behalten (Straße folgt dem Gelände)", _settings.PatternHeight == PatternHeightMode.Terrain,
+                () => _settings.PatternHeight = PatternHeightMode.Terrain));
+            height.DropDownItems.Add(Opt("Original: Höhen aus dem Stempel (relativ)", _settings.PatternHeight == PatternHeightMode.Original,
+                () => _settings.PatternHeight = PatternHeightMode.Original));
+            height.DropDownItems.Add(Opt($"Feste Höhe… (jetzt {_settings.PatternHeightValue})", _settings.PatternHeight == PatternHeightMode.Fixed, () =>
+            {
+                if (AskInt(L.T("Feste Höhe (Z) für den Muster-Pinsel:"), _settings.PatternHeightValue, out int v))
+                {
+                    _settings.PatternHeightValue = v;
+                    _settings.PatternHeight = PatternHeightMode.Fixed;
+                }
+            }));
+            height.DropDownItems.Add(new ToolStripSeparator());
+            height.DropDownItems.Add(Opt($"Höhe ± … (jetzt {_settings.PatternHeightOffset})", _settings.PatternHeightOffset != 0, () =>
+            {
+                if (AskInt(L.T("Zur Höhe addieren (z. B. -3 für ein Flussbett, +1 für eine Straße):"), _settings.PatternHeightOffset, out int v))
+                {
+                    _settings.PatternHeightOffset = v;
+                }
+            }));
+            items.Add(height);
+            items.Add(Opt("Automatisch nachbessern (Höhen-Spitzen am Strich glätten)", _settings.PatternAutoFix, () => _settings.PatternAutoFix = !_settings.PatternAutoFix));
             items.Add(Opt("Übergänge zum Rand danach berechnen", _cgiPatternTransitions, () => _cgiPatternTransitions = !_cgiPatternTransitions));
             items.Add(Opt("Rückgängig schrittweise (je 32 Felder)", _cgiPatternSteps, () => _cgiPatternSteps = !_cgiPatternSteps));
             var undoAll = new ToolStripMenuItem(L.T("Ganzen Strich rückgängig (Strg+Umschalt+Z)"));
             undoAll.Click += (s, e) => isoView.UndoWholeStroke();
             items.Add(undoAll);
+        }
+
+        private static string HeightModeText(PatternHeightMode m) => m switch
+        {
+            PatternHeightMode.Original => L.T("Original"),
+            PatternHeightMode.Fixed => L.T("fest"),
+            _ => L.T("Gelände")
+        };
+
+        /// <summary>Small input for a whole number.</summary>
+        private bool AskInt(string prompt, int current, out int value)
+        {
+            string text = Microsoft.VisualBasic.Interaction.InputBox(prompt, Text, current.ToString());
+            return int.TryParse(text, out value);
         }
 
         private void ActivateCgiPattern()
@@ -122,6 +160,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             p.StaticsOn = _cgiPatternLayers != StampLayers.LandOnly;
             p.Transitions = _cgiPatternTransitions;
             p.StepCells = _cgiPatternSteps ? 32 : 0;
+            p.HeightMode = _settings.PatternHeight;
+            p.HeightValue = _settings.PatternHeightValue;
+            p.HeightOffset = _settings.PatternHeightOffset;
+            p.AutoFix = _settings.PatternAutoFix;
             isoView.Pattern = p;
             SelectCgiTool(IsoTool.PatternBrush);
             isoView.Focus();
@@ -132,7 +174,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 22.11.2026 – Pinsel 14";
+        public const string BuildMark = "Stand 22.11.2026 – Live 16";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
@@ -259,6 +301,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _cgiPatternButton.DropDownOpening += (s, e) => FillCgiPatternMenu();
             toolStripCgiLand.Items.Add(new ToolStripSeparator());
             toolStripCgiLand.Items.Add(_cgiPatternButton);
+            var staticIds = new ToolStripButton(L.T("Static-IDs")) { CheckOnClick = true, ToolTipText = L.T("ID und Höhe jedes Statics in der CGI-Ansicht einblenden") };
+            staticIds.Click += (s, e) => { isoView.ShowStaticIds = staticIds.Checked; isoView.Refresh(true); };
+            int at = toolStripCgi.Items.IndexOf(tscCgiLabels);
+            toolStripCgi.Items.Insert(at >= 0 ? at + 1 : toolStripCgi.Items.Count, staticIds);
             FillCgiPatternMenu();
         }
 
@@ -576,6 +622,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             };
             stampMenu.Click += (s, e) => ToggleStampMenu();
             toolStripEditor.Items.Add(stampMenu);
+            AddLiveButtons();
             var refresh = new ToolStripButton(L.T("⟳ CGI aktualisieren"))
             {
                 ToolTipText = L.T("Den sichtbaren Teil der Farbkarte (oder die Auswahl) neu bauen und in die CGI-Ansicht übernehmen – der Rest der CGI-Karte bleibt"),

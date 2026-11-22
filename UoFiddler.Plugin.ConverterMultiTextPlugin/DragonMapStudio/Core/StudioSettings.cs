@@ -91,6 +91,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Cave entrance stamp of the 2D map editor (colours).</summary>
         public CaveColorOptions CaveColor { get; set; } = new CaveColorOptions();
 
+        /// <summary>Pattern brush / stamps: which heights are drawn.</summary>
+        public PatternHeightMode PatternHeight { get; set; } = PatternHeightMode.Terrain;
+
+        /// <summary>Pattern brush: fixed height (mode Fixed).</summary>
+        public int PatternHeightValue { get; set; }
+
+        /// <summary>Pattern brush: added to the height in every mode (e.g. -3 for a river bed).</summary>
+        public int PatternHeightOffset { get; set; }
+
+        /// <summary>Pattern brush: after a stroke, height spikes at the stroke are smoothed and transitions set again.</summary>
+        public bool PatternAutoFix { get; set; } = true;
+
         /// <summary>Folded sections of the CGI side panel.</summary>
         public List<string> CgiCollapsed { get; set; } = new List<string>();
 

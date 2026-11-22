@@ -194,6 +194,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         [Category("Dragon"), DefaultValue(false)]
         public bool ShowHeights { get; set; }
 
+        /// <summary>Writes id and height at the foot of every static.</summary>
+        [Category("Dragon"), DefaultValue(false)]
+        public bool ShowStaticIds { get; set; }
+
         /// <summary>Content of the overlay: height, land id (hex), id + height, id + height + texture id.</summary>
         [Category("Dragon"), DefaultValue(IsoLabel.Height)]
         public IsoLabel LabelMode { get; set; } = IsoLabel.Height;
@@ -664,6 +668,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                                 using var b = new SolidBrush(UoArtCache.ItemColor(item.Id));
                                 g.FillRectangle(b, rect);
                                 g.DrawRectangle(Pens.Black, rect);
+                            }
+                            if (ShowStaticIds)
+                            {
+                                // id and height of the static at its foot
+                                string text = $"{item.Id:x4} z{item.Z}";
+                                using var font = new Font("Segoe UI", 6.5f, FontStyle.Bold);
+                                SizeF sz = g.MeasureString(text, font);
+                                float tx = floor.X - sz.Width / 2, ty = floor.Y - sz.Height - 2;
+                                using var back = new SolidBrush(Color.FromArgb(170, 60, 20, 0));
+                                g.FillRectangle(back, tx - 1, ty, sz.Width + 2, sz.Height);
+                                g.DrawString(text, font, Brushes.Orange, tx, ty);
                             }
                             _placed.Add(placed);
                         }));
@@ -1390,12 +1405,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             if (_landStroke)
             {
                 _landStroke = false;
-                if (Tool == IsoTool.PatternBrush && Pattern != null && Pattern.Transitions && Pattern.Land && LandTransitions != null && _strokeCells.Count > 0)
+                if (Tool == IsoTool.PatternBrush && Pattern != null && Pattern.Land && _strokeCells.Count > 0)
                 {
-                    // soft edges of the drawn road / river (Dragon transitions around the stroke)
                     int minX = _strokeCells.Min(i => i % _map.Width), maxX = _strokeCells.Max(i => i % _map.Width);
                     int minY = _strokeCells.Min(i => i / _map.Width), maxY = _strokeCells.Max(i => i / _map.Width);
-                    LandTransitions.Apply(_map, Rectangle.FromLTRB(minX - 1, minY - 1, maxX + 2, maxY + 2), _rnd);
+                    var box = Rectangle.FromLTRB(minX - 1, minY - 1, maxX + 2, maxY + 2);
+                    if (Pattern.AutoFix)
+                    {
+                        int fixedCells = FixPatternHeights(box);
+                        if (fixedCells > 0)
+                        {
+                            Message?.Invoke(this, $"Nachbesserung: {fixedCells} Höhen-Spitzen am Strich geglättet.");
+                        }
+                    }
+                    if (Pattern.Transitions && LandTransitions != null)
+                    {
+                        // soft edges of the drawn road / river (Dragon transitions around the stroke)
+                        LandTransitions.Apply(_map, box, _rnd);
+                    }
                     Refresh(true);
                 }
                 int n = _map.EndLand();
@@ -2641,6 +2668,56 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         private static int Mod(int a, int m) => ((a % m) + m) % m;
 
+        /// <summary>
+        /// Automatic repair after a pattern stroke: a cell of the stroke or its border that lies more than 6 Z above / below
+        /// the average of its 8 neighbours gets that average (no single spikes, steps or holes at the edges).
+        /// Statics on it move with the land.
+        /// </summary>
+        private int FixPatternHeights(Rectangle box)
+        {
+            box.Intersect(new Rectangle(0, 0, _map.Width, _map.Height));
+            var before = (sbyte[])_map.Z.Clone();
+            int n = 0;
+            var moves = new List<StaticChange>();
+            for (int y = box.Top; y < box.Bottom; y++)
+            {
+                for (int x = box.Left; x < box.Right; x++)
+                {
+                    int sum = 0, c = 0;
+                    for (int dy = -1; dy <= 1; dy++)
+                    {
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            if ((dx != 0 || dy != 0) && _map.InBounds(x + dx, y + dy))
+                            {
+                                sum += before[(y + dy) * _map.Width + x + dx];
+                                c++;
+                            }
+                        }
+                    }
+                    if (c == 0)
+                    {
+                        continue;
+                    }
+                    int avg = (int)Math.Round(sum / (double)c);
+                    int z = before[y * _map.Width + x];
+                    if (Math.Abs(z - avg) > 6)
+                    {
+                        _map.SetLand(x, y, _map.LandId(x, y), avg);
+                        foreach (StaticItem s in _map.StaticsAt(x, y).ToList())
+                        {
+                            StaticItem moved = s.Copy();
+                            moved.Z = Math.Clamp(s.Z + avg - z, -128, 127);
+                            moves.Add(new StaticChange { Item = s, Before = s.Copy(), After = moved });
+                        }
+                        n++;
+                    }
+                }
+            }
+            _map.ApplyStatics(moves);
+            return n;
+        }
+
         /// <summary>Freehand: the cells under the brush get the pattern cell of their position; once: the whole pattern at the click.</summary>
         private void ApplyPattern(Point center, int r)
         {
@@ -2693,7 +2770,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 int landZ = _map.LandZ(x, y);
                 if (p.Land && p.HasLand)
                 {
-                    landZ = Math.Clamp(landZ + p.RelativeZ[k], -128, 127);
+                    landZ = p.HeightFor(landZ, k);
                     _map.SetLand(x, y, p.Tiles[k], landZ);
                 }
                 if (p.StaticsOn && p.Statics.TryGetValue(k, out List<LayerStatic> l))

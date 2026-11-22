@@ -159,8 +159,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Cells the pattern brush reached for the first time in this stroke (inside the undo step) – the form adds statics there.</summary>
         public event EventHandler<List<Point>> PatternCellsPainted;
 
+        /// <summary>Raised while a brush stroke changes pixels (before the stroke ends) – live CGI preview.</summary>
+        public event EventHandler Painting;
+
         /// <summary>Stroke ended (mouse up) – e.g. for the live CGI preview.</summary>
         public event EventHandler StrokeEnded;
+
+        /// <summary>Mouse up of a pattern stroke, before its undo step closes (automatic repair belongs into the same step).</summary>
+        public event EventHandler StrokeFinishing;
 
         /// <summary>
         /// Undo per part of a stroke: after this many painted cells a new undo step begins (0 = the whole stroke is one step).
@@ -927,6 +933,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 _history?.Begin(ToolName(_tool));
                 DrawShape(_start, p, color);
             }
+            if (_tool == MapTool.PatternBrush)
+            {
+                StrokeFinishing?.Invoke(this, EventArgs.Empty);
+            }
             EndEdit();
             _patternDone.Clear();
             StrokeEnded?.Invoke(this, EventArgs.Empty);
@@ -1108,6 +1118,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             if (_drawing)
             {
                 SplitStrokeStep(r.Width * r.Height);
+                Painting?.Invoke(this, EventArgs.Empty);
             }
         }
 
