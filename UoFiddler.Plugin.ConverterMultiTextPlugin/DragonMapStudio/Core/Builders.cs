@@ -245,6 +245,79 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public bool FillRock2D { get; set; }
     }
 
+    public enum CourseKind
+    {
+        [Description("Fluss (Wasser, Ufer)")]
+        River,
+
+        [Description("Berg-Kamm (Fels, Hang)")]
+        Mountain,
+
+        [Description("Weg / Straße")]
+        Road,
+
+        [Description("Eigene Farben")]
+        Own,
+
+        [Description("Muster-Stempel (Land + Statics)")]
+        Stamp
+    }
+
+    /// <summary>
+    /// Kind of the natural course in the map editor: which colours (core, edge, outer edge) and how wide.
+    /// Colour −1 = colour 1 of the editor; edge −1 = none.
+    /// </summary>
+    public sealed class CoursePreset
+    {
+        [Category("1 Art"), DisplayName("Name")]
+        public string Name { get; set; } = "Fluss";
+
+        [Category("1 Art"), DisplayName("Art")]
+        public CourseKind Kind { get; set; } = CourseKind.River;
+
+        [Category("2 Farben"), DisplayName("Kern-Farbe"), Description("Index der Farbe in der Mitte (Wasser, Fels, Weg). −1 = Farbe 1 des Editors. Knopf 'Farbe 1 → Kern'.")]
+        public int Core { get; set; } = -1;
+
+        [Category("2 Farben"), DisplayName("Rand-Farbe"), Description("Farbe am Rand (Ufer-Sand, Hang, Bankett). −1 = kein Rand.")]
+        public int Edge { get; set; } = -1;
+
+        [Category("2 Farben"), DisplayName("Rand-Breite (Tiles)"), Description("So breit ist der Rand auf jeder Seite.")]
+        public int EdgeWidth { get; set; } = 2;
+
+        [Category("2 Farben"), DisplayName("Außen-Farbe"), Description("Zweiter, äußerer Rand (z. B. Gras-Höhe 5 um den Berg-Hang). −1 = keiner.")]
+        public int Edge2 { get; set; } = -1;
+
+        [Category("2 Farben"), DisplayName("Außen-Breite (Tiles)")]
+        public int Edge2Width { get; set; } = 2;
+
+        [Category("3 Lauf"), DisplayName("Breite am Anfang (Tiles)"), Description("Breite des Kerns an der Quelle. 0 = Pinselgröße.")]
+        public int Width { get; set; } = 3;
+
+        [Category("3 Lauf"), DisplayName("Breite am Ende (Tiles)"), Description("0 = wie am Anfang.")]
+        public int EndWidth { get; set; } = 6;
+
+        [Category("3 Lauf"), DisplayName("Schlängeln (%)"), Description("0 = gerade, 25 = Fluss, 10 = Weg.")]
+        public int Meander { get; set; } = 25;
+
+        [Category("3 Lauf"), DisplayName("Bögen je 20 Tiles")]
+        public double Bends { get; set; } = 1.5;
+
+        public override string ToString() => Name;
+
+        public CourseSettings ToCourse(int seed) => new CourseSettings { Width = Width, EndWidth = EndWidth, Widen = false, Meander = Meander, Bends = Bends, Seed = seed };
+
+        /// <summary>The built-in kinds (colours are found by name in the palette when the editor opens them).</summary>
+        public static List<CoursePreset> Defaults() => new List<CoursePreset>
+        {
+            new CoursePreset { Name = "Fluss", Kind = CourseKind.River, Width = 3, EndWidth = 7, Meander = 25, EdgeWidth = 1 },
+            new CoursePreset { Name = "Bach", Kind = CourseKind.River, Width = 1, EndWidth = 2, Meander = 30, Bends = 2.5, EdgeWidth = 1 },
+            new CoursePreset { Name = "Berg-Kamm", Kind = CourseKind.Mountain, Width = 2, EndWidth = 2, Meander = 15, EdgeWidth = 2, Edge2Width = 2 },
+            new CoursePreset { Name = "Weg", Kind = CourseKind.Road, Width = 2, EndWidth = 2, Meander = 10, Bends = 1, EdgeWidth = 0 },
+            new CoursePreset { Name = "Eigene", Kind = CourseKind.Own, Width = 3, EndWidth = 3, Meander = 20 },
+            new CoursePreset { Name = "Stempel", Kind = CourseKind.Stamp, Width = 3, EndWidth = 3, Meander = 15 }
+        };
+    }
+
     public sealed class CourseSettings
     {
         [Category("Lauf"), DisplayName("Schlängeln (%)"), Description("Wie weit der Lauf seitlich ausschwingt (0 = gerade, 25 = Fluss, 10 = Weg).")]

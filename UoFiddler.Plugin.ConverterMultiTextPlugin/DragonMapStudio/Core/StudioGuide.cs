@@ -780,6 +780,56 @@ Catalog | show / hide below
             },
             new GuideTopic
             {
+                Key = "tooloptions", Group = "CGI-Ansicht|CGI view", TitleDe = "Werkzeug-Einstellungen, Seitenleiste, Hue", TitleEn = "Tool settings, side panel, hue",
+                De = @"# Werkzeug-Einstellungen direkt in der Leiste
+Jedes Werkzeug zeigt oben in der Optionsleiste seine wichtigsten Werte – Höhe, Tiefe, Breite – zum direkten Ändern. ⚙ öffnet alle Einstellungen.
+
+Küste | Wasserspiegel, Meeresgrund, Wasser-Breite, höchstes Land, Grund setzen
+Küste glätten | Spiegel, Grund, Breite, Abfall-Breite, Glätten, Statics mit
+Fluss / Fluss-Lauf | Tiefe, Ufer-Breite, Ufer-Steigung, Grund tiefer (wie Küste: Grund unter den Wasser-Statics), Wasser-Statics; Lauf: Breite Anfang / Ende, Schlängeln
+Weg | Weg-Vorlage (gespeicherte Wege), aus Tiles oder mit Stempel (z. B. aus der Karte gelernt), Breite, Bankett, Glättung
+Unebenheit | Muster (Wellen, Hügel, Mulden, Grate, Rillen, Stufen, grob), Stärke, Größe, Feinheit, Richtung – mit Vorschau-Bild
+Varianten | eigenes Muster (Land-Tiles, „Neu aus Bereich“, „Muster bearbeiten“) oder die Familie der Farbtabelle
+Wand | Set, Sets bearbeiten (auch aus der Auswahl), Dicke, Stockwerke, Punkt zu Punkt, gleiche Höhe
+Färben / Hue-Pinsel | Hue-Nummer mit Farbfeld und Name, „🎨 Wählen“ (alle Hues mit Farbverlauf, Suche), ☆ merken, ★ Favoriten
+Radierer | Statics / Land, nur sichtbare, nur bestimmte IDs („Auswahl merken“)
+Multi setzen | ✖ Multi-Auswahl löschen; im Reiter Multis Bild sofort + Katalog mit Suche
+Berg / Brücke / Treppe | Gipfel, Steilheit … / Breite, Bogen, Z, Treppen / Richtung, Stufen, Breite
+
+## Seitenleiste und Palette
+◧ Werkzeuge (F7) | Werkzeug-Palette links ein / aus
+◨ Seite (F8) | Seitenleiste rechts ein / aus
+⧉ Seite lösen | Seitenleiste (Items, Multis, Land, Pinsel …) als eigenes Fenster, mit Rückgängig / Wiederholen; Schließen = wieder andocken
+
+## Natürlicher Lauf im Karten-Editor
+- Oben „Art“: Fluss, Bach, Berg-Kamm, Weg, Eigene, Stempel. Die Farben werden beim ersten Mal in der Farbtabelle gesucht (Wasser / Sand, Fels, Weg).
+- „Lauf-Arten …“: Kern-, Rand- und Außen-Farbe (links Farbe 1 wählen → „Farbe 1 → Kern / Rand / Außen“), Breiten, Schlängeln, Bögen. Neue Arten anlegen, kopieren, löschen.",
+                En = @"# Tool settings right in the bar
+Every tool shows its most important values – height, depth, width – in the options bar at the top. ⚙ opens all settings.
+
+Coast | water level, sea floor, water width, highest land, set floor
+Smooth coast | level, floor, width, drop width, blur, statics along
+River / river course | depth, bank width, bank slope, deeper bed (like the coast: bed under the water statics), water statics; course: width start / end, winding
+Road | road preset (saved roads), from tiles or with a stamp (e.g. learned from the map), width, shoulder, smoothing
+Noise | pattern (waves, hills, hollows, ridges, furrows, steps, rough), strength, size, detail, direction – with preview picture
+Variants | own pattern (land tiles, “New from area”, “Edit patterns”) or the family of the colour table
+Wall | set, edit sets (also from the selection), thickness, floors, point to point, same height
+Hue / hue brush | hue number with colour field and name, “🎨 Choose” (all hues with colour strip, search), ☆ remember, ★ favourites
+Eraser | statics / land, only visible, only certain ids (“Remember selection”)
+Place multi | ✖ clear multi choice; tab Multis: picture right away + catalog with search
+Mountain / bridge / stairs | peak, steepness … / width, arch, Z, stairs / direction, steps, width
+
+## Side panel and palette
+◧ Tools (F7) | tool palette on the left on / off
+◨ Side (F8) | side panel on the right on / off
+⧉ Detach side | side panel (items, multis, land, brushes …) in its own window, with undo / redo; closing docks it back
+
+## Natural course in the map editor
+- “Kind” at the top: river, brook, mountain ridge, road, own, stamp. The colours are looked up in the colour table the first time (water / sand, rock, road).
+- “Course kinds …”: core, edge and outer colour (choose colour 1 on the left → “Colour 1 → core / edge / outer”), widths, winding, bends. Add, copy, delete kinds."
+            },
+            new GuideTopic
+            {
                 Key = "keys", Group = "Übersicht|Overview", TitleDe = "Alle Tasten", TitleEn = "All keys",
                 De = @"# Alle Tasten
 ## Überall

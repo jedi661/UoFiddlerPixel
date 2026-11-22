@@ -105,6 +105,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Category("Wand"), DisplayName("Gleiche Höhe"), Description("Alle Teile auf die Bodenhöhe des Startpunkts (gerade Mauerkrone) statt der Höhe jedes Feldes.")]
         public bool Level { get; set; }
+
+        [Category("Wand"), DisplayName("Dicke (Tiles)"), Description("So viele Wand-Reihen nebeneinander (Burgmauer 2–3).")]
+        public int Thickness { get; set; } = 1;
+
+        [Category("Wand"), DisplayName("Punkt zu Punkt"), Description("An = Punkte klicken, die Wand läuft von Punkt zu Punkt (Ecken als L), Doppelklick / Enter = fertig. Aus = ziehen.")]
+        public bool PointMode { get; set; }
     }
 
     public sealed class RiverSettings
@@ -132,6 +138,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Category("Fluss"), DisplayName("Wasser-Statics (hex)")]
         public string WaterStaticIds { get; set; } = "1797 1798 1799 179a 179b 179c";
+
+        [Category("Fluss wie Küste"), DisplayName("Grund tiefer (Z)"), Description("Wie an der Meeresküste: der Boden des Flusses liegt so viel unter dem Wasserspiegel, die Wasser-Statics liegen auf dem Spiegel. 0 = Wasser-Tiles auf dem Spiegel.")]
+        public int BedDepth { get; set; }
+
+        [Category("Fluss wie Küste"), DisplayName("Grund-Tiles (hex)"), Description("Land unter den Wasser-Statics (z. B. Sand / Flussbett). Leer = Wasser-Tiles.")]
+        public string BedTiles { get; set; } = string.Empty;
     }
 
     /// <summary>Settings of the tool "Treppe" for a property grid (stored in <see cref="CgiBrushSettings"/>).</summary>
@@ -179,6 +191,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Category("Radierer"), DisplayName("Nur sichtbare"), Description("An = nur Statics, die die Ansicht zeigt (Filter, Etage).")]
         public bool OnlyVisible { get; set; } = true;
+
+        [Category("Radierer"), DisplayName("Nur diese IDs (hex)"), Description("Leer = alle. Sonst löscht der Radierer nur diese Statics (Knopf 'Auswahl merken' übernimmt die IDs der gewählten Statics).")]
+        public string OnlyIds { get; set; } = string.Empty;
     }
 
     public sealed class RoadSettings
@@ -235,16 +250,81 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public bool UseTargetHeight { get; set; }
     }
 
+    public enum NoisePattern
+    {
+        [Description("Weiche Wellen")]
+        Soft,
+
+        [Description("Hügel (nur nach oben)")]
+        Hills,
+
+        [Description("Mulden (nur nach unten)")]
+        Hollows,
+
+        [Description("Grate / Kämme")]
+        Ridges,
+
+        [Description("Rillen (Furchen in eine Richtung)")]
+        Furrows,
+
+        [Description("Stufen (Terrassen-Wellen)")]
+        Steps,
+
+        [Description("Grob (jedes Tile zufällig)")]
+        Rough
+    }
+
     public sealed class NoiseSettings
     {
+        [Category("Unebenheit"), DisplayName("Muster"), Description("Wie die Unebenheit aussieht: weiche Wellen, Hügel, Mulden, Grate, Rillen, Stufen oder grob.")]
+        public NoisePattern Pattern { get; set; } = NoisePattern.Soft;
+
         [Category("Unebenheit"), DisplayName("Stärke (± Z)")]
         public int Amplitude { get; set; } = 3;
 
         [Category("Unebenheit"), DisplayName("Größe der Wellen (Tiles)")]
         public int Scale { get; set; } = 5;
 
+        [Category("Unebenheit"), DisplayName("Feinheit (Lagen)"), Description("1 = glatte große Wellen, 2–4 = zusätzlich kleinere Wellen darauf (natürlicher).")]
+        public int Detail { get; set; } = 1;
+
+        [Category("Unebenheit"), DisplayName("Richtung (Grad)"), Description("Nur Rillen: 0 = Furchen laufen West-Ost, 90 = Nord-Süd.")]
+        public int Angle { get; set; }
+
+        [Category("Unebenheit"), DisplayName("Stufen-Höhe"), Description("Nur Stufen: Höhe jeder Stufe.")]
+        public int StepHeight { get; set; } = 3;
+
         [Category("Unebenheit"), DisplayName("Zufalls-Zahl")]
         public int Seed { get; set; } = 7;
+    }
+
+    /// <summary>Own set of land tiles for the variants brush (e.g. "Gras gemischt": 0003 0004 0005 0006 + a few flowers).</summary>
+    public sealed class VariantSet
+    {
+        public string Name { get; set; } = "Mein Muster";
+
+        [Description("Land-Tiles (hex). Ein Tile mehrfach eintragen = öfter.")]
+        public string Tiles { get; set; } = string.Empty;
+
+        [Description("Nur diese Tiles ersetzen (hex), leer = jedes Land unter dem Pinsel.")]
+        public string OnlyOn { get; set; } = string.Empty;
+
+        [Description("Chance je Tile (1–100 %). Wenig = einzelne Tupfer.")]
+        public int Chance { get; set; } = 100;
+
+        public override string ToString() => Name;
+    }
+
+    /// <summary>Road preset: the road settings plus an optional stamp (pattern) that is painted along the curve.</summary>
+    public sealed class RoadPreset
+    {
+        public string Name { get; set; } = "Weg";
+        public RoadSettings Settings { get; set; } = new RoadSettings();
+
+        /// <summary>File of a colour stamp: painted along the curve instead of the road tiles (empty = tiles).</summary>
+        public string Stamp { get; set; } = string.Empty;
+
+        public override string ToString() => Name + (string.IsNullOrEmpty(Stamp) ? string.Empty : "  (" + System.IO.Path.GetFileNameWithoutExtension(Stamp) + ")");
     }
 
     public enum WandMode
@@ -293,6 +373,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public WandSettings Wand { get; set; } = new WandSettings();
         public EraserSettings Eraser { get; set; } = new EraserSettings();
 
+        /// <summary>Own sets of the variants brush; empty name = tile family of the colour table.</summary>
+        public List<VariantSet> VariantSets { get; set; } = new List<VariantSet>();
+        public string VariantSet { get; set; } = string.Empty;
+
+        /// <summary>Saved roads (settings + optional stamp).</summary>
+        public List<RoadPreset> RoadPresets { get; set; } = new List<RoadPreset>();
+
+        /// <summary>Stamp file painted along the road curve (empty = road tiles).</summary>
+        public string RoadStamp { get; set; } = string.Empty;
+
+        /// <summary>Kinds of the natural course in the map editor.</summary>
+        public List<CoursePreset> CoursePresets { get; set; } = new List<CoursePreset>();
+        public string CoursePreset { get; set; } = string.Empty;
+
+        /// <summary>Remembered hues (favourites) of the hue tools.</summary>
+        public List<ushort> FavoriteHues { get; set; } = new List<ushort>();
+
         public BridgeSettings Bridge { get; set; } = new BridgeSettings();
         public string BridgeSet { get; set; } = string.Empty;
 
@@ -335,6 +432,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Noise ??= new NoiseSettings();
             Wand ??= new WandSettings();
             Eraser ??= new EraserSettings();
+            VariantSets ??= new List<VariantSet>();
+            RoadPresets ??= new List<RoadPreset>();
+            FavoriteHues ??= new List<ushort>();
+            CoursePresets ??= new List<CoursePreset>();
+            if (CoursePresets.Count == 0)
+            {
+                CoursePresets.AddRange(Core.CoursePreset.Defaults());
+            }
+            CoursePreset ??= string.Empty;
+            VariantSet ??= string.Empty;
+            RoadStamp ??= string.Empty;
             Bookmarks ??= new List<string>();
             Bridge ??= new BridgeSettings();
             BridgeSets ??= new List<BridgeSet>();
@@ -784,6 +892,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public static void River(MapData map, int cx, int cy, double radius, int level, RiverSettings o, Func<int, int, int> groundBefore, Random rnd, HashSet<int> core)
         {
             int r = (int)Math.Ceiling(Math.Max(0, radius - 0.5));
+            ushort[] bed = HexList.Parse(o.BedTiles);
             ushort[] water = HexList.Parse(o.WaterTiles);
             if (water.Length == 0)
             {
@@ -796,15 +905,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 ushort id = map.LandId(x, y);
                 if (d <= radius)
                 {
-                    ushort nid = Array.IndexOf(water, id) >= 0 ? id : water[rnd.Next(water.Length)];
-                    map.SetLand(x, y, nid, lv);
+                    ushort[] use = bed.Length > 0 ? bed : water;
+                    ushort nid = Array.IndexOf(use, id) >= 0 ? id : use[rnd.Next(use.Length)];
+                    map.SetLand(x, y, nid, lv - Math.Max(0, o.BedDepth));
                     if (core != null && d <= Math.Max(0.5, radius - 0.25))
                     {
                         core.Add(y * map.Width + x);
                     }
                     continue;
                 }
-                if (Array.IndexOf(water, id) >= 0)
+                if (Array.IndexOf(water, id) >= 0 || Array.IndexOf(bed, id) >= 0)
                 {
                     continue; // water of an earlier dab stays water
                 }
@@ -833,19 +943,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 water = new ushort[] { 0x00A8, 0x00A9, 0x00AA, 0x00AB };
             }
-            ushort[] wst = o.WaterStatics ? HexList.Parse(o.WaterStaticIds) : Array.Empty<ushort>();
+            ushort[] bed = HexList.Parse(o.BedTiles);
+            ushort[] use = bed.Length > 0 ? bed : water;
+            // with a deeper bed (like the sea coast) the water statics are needed – the bed alone looks dry
+            ushort[] wst = o.WaterStatics || o.BedDepth > 0 || bed.Length > 0 ? HexList.Parse(o.WaterStaticIds) : Array.Empty<ushort>();
             foreach (int i in core)
             {
                 int x = i % map.Width, y = i / map.Width;
                 ushort id = map.LandId(x, y);
                 int z = map.LandZ(x, y);
-                if (Array.IndexOf(water, id) < 0)
+                if (Array.IndexOf(use, id) < 0)
                 {
-                    map.SetLand(x, y, water[rnd.Next(water.Length)], z);
+                    map.SetLand(x, y, use[rnd.Next(use.Length)], z);
                 }
                 if (wst.Length > 0 && !map.StaticsAt(x, y).Any(s => Array.IndexOf(wst, s.Id) >= 0))
                 {
-                    statics.Add(MapData.Add(new StaticItem { Id = wst[rnd.Next(wst.Length)], X = x, Y = y, Z = z }));
+                    statics.Add(MapData.Add(new StaticItem { Id = wst[rnd.Next(wst.Length)], X = x, Y = y, Z = Math.Clamp(z + Math.Max(0, o.BedDepth), -128, 127) }));
                 }
             }
             return statics;
@@ -1009,6 +1122,43 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             return a + (b - a) * tx + (c - a) * ty + (a - b - c + d) * tx * ty;
         }
 
+        /// <summary>Value −1 … 1 of the noise pattern at a tile (detail layers, hills / hollows / ridges / furrows / steps / rough).</summary>
+        public static double NoiseValue(int x, int y, NoiseSettings o)
+        {
+            int scale = Math.Max(1, o.Scale);
+            if (o.Pattern == NoisePattern.Rough)
+            {
+                return Hash(x, y, o.Seed) * 2 - 1;
+            }
+            if (o.Pattern == NoisePattern.Furrows)
+            {
+                double a = o.Angle * Math.PI / 180;
+                // distance across the furrows, slightly wobbling
+                double across = -x * Math.Sin(a) + y * Math.Cos(a) + (Noise(x, y, scale * 3, o.Seed) - 0.5) * scale * 0.6;
+                return Math.Sin(across / scale * Math.PI * 2);
+            }
+            double sum = 0, amp = 1, total = 0;
+            int layers = Math.Clamp(o.Detail, 1, 4);
+            for (int l = 0; l < layers; l++)
+            {
+                sum += (Noise(x, y, Math.Max(1, scale >> l), o.Seed + l * 101) * 2 - 1) * amp;
+                total += amp;
+                amp *= 0.5;
+            }
+            double n = sum / total;
+            switch (o.Pattern)
+            {
+                case NoisePattern.Hills:
+                    return Math.Min(1, Math.Max(0, n) * 2);
+                case NoisePattern.Hollows:
+                    return Math.Max(-1, Math.Min(0, n) * 2);
+                case NoisePattern.Ridges:
+                    return (1 - Math.Abs(n) * 2) * 1.0;
+                default:
+                    return n;
+            }
+        }
+
         private static double Hash(int x, int y, int seed)
         {
             unchecked
@@ -1028,10 +1178,94 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 {
                     continue;
                 }
-                double n = Noise(x, y, o.Scale, o.Seed) * 2 - 1;
+                double n = NoiseValue(x, y, o);
                 double w = Weight(d, r, hardness);
-                map.SetLand(x, y, map.LandId(x, y), groundBefore(x, y) + Dither(n * o.Amplitude * w, rnd));
+                double dz = n * o.Amplitude * w;
+                if (o.Pattern == NoisePattern.Steps)
+                {
+                    int step = Math.Max(1, o.StepHeight);
+                    dz = Math.Round(dz / step) * step;
+                    map.SetLand(x, y, map.LandId(x, y), groundBefore(x, y) + (int)dz);
+                    continue;
+                }
+                map.SetLand(x, y, map.LandId(x, y), groundBefore(x, y) + Dither(dz, rnd));
             }
+        }
+
+        /// <summary>Variant brush with an own set: tiles of the set at random (chance per tile), only on the given tiles if set.</summary>
+        public static void VariantsFromSet(MapData map, int cx, int cy, int r, VariantSet set, HashSet<int> visited, Random rnd)
+        {
+            ushort[] tiles = HexList.Parse(set?.Tiles);
+            if (tiles.Length == 0)
+            {
+                return;
+            }
+            ushort[] only = HexList.Parse(set.OnlyOn);
+            int chance = Math.Clamp(set.Chance, 1, 100);
+            foreach ((int x, int y, double _) in Circle(map, cx, cy, r))
+            {
+                if (!visited.Add(y * map.Width + x))
+                {
+                    continue;
+                }
+                if (only.Length > 0 && Array.IndexOf(only, map.LandId(x, y)) < 0)
+                {
+                    continue;
+                }
+                if (rnd.Next(100) < chance)
+                {
+                    map.SetLand(x, y, tiles[rnd.Next(tiles.Length)], map.LandZ(x, y));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Wall along points: every leg as an L (first along X, then along Y), <see cref="WallSettings.Thickness"/> rows side by side,
+        /// no piece twice on the same tile and height.
+        /// </summary>
+        public static List<StaticChange> WallPath(MapData map, IReadOnlyList<Point> points, WallSet set, WallSettings o, Random rnd)
+        {
+            var result = new List<StaticChange>();
+            if (points.Count < 2)
+            {
+                return result;
+            }
+            var placed = new HashSet<(int, int, int)>();
+            var removed = new HashSet<StaticItem>();
+            int thick = Math.Clamp(o.Thickness, 1, 8);
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                Point a = points[i], b = points[i + 1];
+                var corner = new Point(b.X, a.Y);
+                foreach ((Point p, Point q) in new[] { (a, corner), (corner, b) })
+                {
+                    if (p == q && !(points.Count == 2 && a == b))
+                    {
+                        continue;
+                    }
+                    bool alongX = p.Y == q.Y && p.X != q.X;
+                    for (int t = 0; t < thick; t++)
+                    {
+                        Point p2 = alongX ? new Point(p.X, p.Y + t) : new Point(p.X + t, p.Y);
+                        Point q2 = alongX ? new Point(q.X, q.Y + t) : new Point(q.X + t, q.Y);
+                        foreach (StaticChange c in Wall(map, p2, q2, set, o, rnd))
+                        {
+                            if (c.After == null)
+                            {
+                                if (removed.Add(c.Item))
+                                {
+                                    result.Add(c);
+                                }
+                            }
+                            else if (placed.Add((c.After.X, c.After.Y, c.After.Z)))
+                            {
+                                result.Add(c);
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         /// <summary>Variant brush (one dab): every tile becomes a random tile of its family (same colour of the colour table).</summary>

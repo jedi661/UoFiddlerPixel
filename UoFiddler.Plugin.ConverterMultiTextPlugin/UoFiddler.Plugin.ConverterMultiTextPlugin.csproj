@@ -148,6 +148,9 @@
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.Builders.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.ToolOptions.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="DragonMapStudio\Controls\IsoMapView.Tools.cs">
 			<DependentUpon>IsoMapView.cs</DependentUpon>
 		</Compile>

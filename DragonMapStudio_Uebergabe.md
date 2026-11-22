@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Werkstatt 26“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Werkstatt 27“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -146,6 +146,14 @@
    * Katalog `Controls/ArtCatalog.cs` + `Core/ArtCategories.cs` (Statics / Land / Multis, Suche, eingebaute und eigene Kategorien in `katalog_kategorien.json`).
    * Neue CGI-Werkzeuge `IsoTool.Eraser` (Radierer-Pinsel) und `IsoTool.Stairs` (`Builders.BuildStairs`).
    * Werkstatt: Werkzeugleiste mit Radierer / Treppe / Höhe / Rampe / Multi, Pinselgröße, Gitter, Statics, Katalog unten, Hilfe-Knöpfe (`ws-generate`, `ws-2d`, `ws-3d`), fremde Karte (`Dialogs/ForeignMapForm.cs`), Vorlagen `Core/WorkshopPiece.cs` (`SettingsFolder/Werkstatt`).
+
+17. **Neu (Werkstatt 27):** `DragonMapStudioForm.ToolOptions.cs`
+   * Schnell-Einstellungen je CGI-Werkzeug in der Optionsleiste (`UpdateQuickOptions`, per Reflection aus den Settings-Klassen, DisplayName = Beschriftung), ⚙ = alle.
+   * Seitenleiste ein / aus (F8), als eigenes Fenster mit Rückgängig / Wiederholen, Paletten ein / aus (F7).
+   * Hue: Farbfeld, Name, `Dialogs/HuePickerForm.cs`, Favoriten (`CgiBrushSettings.FavoriteHues`).
+   * Radierer `OnlyIds` (Auswahl merken), Multi-Reiter mit Katalog + sofortigem Bild + Auswahl löschen.
+   * Weg-Vorlagen (`RoadPreset`), Weg mit Stempel (`IsoMapView.RoadWithStamp`, `FindStampPattern`), Varianten-Muster (`VariantSet`, `VariantsFromSet`), Wand Dicke + Punkt zu Punkt (`CgiBrushes.WallPath`), Unebenheit-Muster (`NoisePattern`, `NoiseValue`), Fluss-Grund wie Küste (`RiverSettings.BedDepth/BedTiles`).
+   * 2D: Lauf-Arten (`CoursePreset`, `MapCanvas.CourseColours`: Kern / Rand / Außen), Editor `Dialogs/NamedListEditor.cs`.
 
 ## Offen / als Nächstes
 

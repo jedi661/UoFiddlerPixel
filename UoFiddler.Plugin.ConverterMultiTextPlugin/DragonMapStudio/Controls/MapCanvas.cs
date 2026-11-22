@@ -262,6 +262,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         [Category("Dragon"), DefaultValue(false)]
         public bool CourseWithPattern { get; set; }
 
+        /// <summary>Colours of the course: core (−1 = colour 1), edge and outer edge (−1 = none) with their widths per side.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public (int core, int edge, int edgeWidth, int edge2, int edge2Width)? CourseColours { get; set; }
+
         /// <summary>Tool "Dungeon": the rectangle was dragged – the form builds the dungeon.</summary>
         public event EventHandler<Rectangle> DungeonRequested;
 
@@ -1552,32 +1556,55 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             int baseSize = BrushSize;
             bool pattern = CourseWithPattern && PatternColour != null;
             MapTool saveTool = _tool;
-            _tool = pattern ? MapTool.PatternBrush : MapTool.Brush;
-            _patternDone.Clear();
             var box = Rectangle.Empty;
-            Point last = new Point(int.MinValue, int.MinValue);
+            // passes from outside to inside: outer edge, edge, core
+            var passes = new List<(ushort colour, int extra, bool pattern)>();
+            if (CourseColours.HasValue && !pattern)
+            {
+                (int core, int edge, int ew, int edge2, int ew2) = CourseColours.Value;
+                ushort coreColour = core >= 0 ? (ushort)core : color;
+                if (edge2 >= 0 && ew2 > 0)
+                {
+                    passes.Add(((ushort)edge2, 2 * (Math.Max(0, ew) + ew2), false));
+                }
+                if (edge >= 0 && ew > 0)
+                {
+                    passes.Add(((ushort)edge, 2 * ew, false));
+                }
+                passes.Add((coreColour, 0, false));
+            }
+            else
+            {
+                passes.Add((color, 0, pattern));
+            }
             try
             {
-                foreach ((float x, float y, float t) in pts)
+                foreach ((ushort colour, int extra, bool withPattern) in passes)
                 {
-                    int cx = (int)Math.Floor(x), cy = (int)Math.Floor(y);
-                    BrushSize = Math.Max(1, (int)Math.Round(Course.WidthAt(t, baseSize)));
-                    int step = Math.Max(1, BrushSize / 4);
-                    if (Math.Abs(cx - last.X) < step && Math.Abs(cy - last.Y) < step)
+                    _tool = withPattern ? MapTool.PatternBrush : MapTool.Brush;
+                    _patternDone.Clear();
+                    Point last = new Point(int.MinValue, int.MinValue);
+                    foreach ((float x, float y, float t) in pts)
                     {
-                        continue;
+                        int cx = (int)Math.Floor(x), cy = (int)Math.Floor(y);
+                        BrushSize = Math.Max(1, (int)Math.Round(Course.WidthAt(t, baseSize)) + extra);
+                        int step = Math.Max(1, BrushSize / 4);
+                        if (Math.Abs(cx - last.X) < step && Math.Abs(cy - last.Y) < step)
+                        {
+                            continue;
+                        }
+                        last = new Point(cx, cy);
+                        if (withPattern)
+                        {
+                            PatternStamp(cx, cy);
+                        }
+                        else
+                        {
+                            Stamp(cx, cy, colour, MouseButtons.Left);
+                        }
+                        var dab = new Rectangle(cx - BrushSize, cy - BrushSize, BrushSize * 2 + 1, BrushSize * 2 + 1);
+                        box = box.IsEmpty ? dab : Rectangle.Union(box, dab);
                     }
-                    last = new Point(cx, cy);
-                    if (pattern)
-                    {
-                        PatternStamp(cx, cy);
-                    }
-                    else
-                    {
-                        Stamp(cx, cy, color, MouseButtons.Left);
-                    }
-                    var dab = new Rectangle(cx - BrushSize, cy - BrushSize, BrushSize * 2 + 1, BrushSize * 2 + 1);
-                    box = box.IsEmpty ? dab : Rectangle.Union(box, dab);
                 }
             }
             finally
