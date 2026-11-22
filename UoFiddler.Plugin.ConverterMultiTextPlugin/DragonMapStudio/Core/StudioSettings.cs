@@ -47,6 +47,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("0 Sprache / Language"), DisplayName("Sprache / Language / Langue"), Description("Sprache der Oberfläche: Deutsch, English, Français. Auch im Menü 'Sprache / Language / Langue'.")]
         public UiLanguage Language { get; set; } = UiLanguage.Deutsch;
 
+        /// <summary>Mouse button of "Sprung ins Live-CGI" (e.g. "XButton1"), empty = none.</summary>
+        [Browsable(false)]
+        public string LiveJumpButton { get; set; } = string.Empty;
+
+        /// <summary>Modifier keys that belong to <see cref="LiveJumpButton"/> (Control / Alt).</summary>
+        [Browsable(false)]
+        public int LiveJumpModifiers { get; set; }
+
         [Category("1 Ordner"), DisplayName("Projekt-Ordner (Karten)"), Description("Hier speichert der Editor die Karten-BMPs; die Kartenliste zeigt diesen Ordner.")]
         [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
         public string ProjectFolder { get; set; } = string.Empty;

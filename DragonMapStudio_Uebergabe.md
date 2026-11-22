@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** Commit `482d9c0`. Im Fenstertitel steht **„Stand 22.11.2026 – Höhen 17“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Sprung 18“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -76,7 +76,13 @@
    * Live-CGI-Fenster beim Zeichnen mit Höhe, IDs und Statics-Schalter, auch für alle normalen Werkzeuge
 8. **Neu (Höhen 17), Höhen-Ebene:** Hat eine Farbe die gewünschte Höhe nicht, wird die Höhe pro Zelle in `.statics.bin` gemerkt (mit Rückgängig). Der Compiler setzt sie, solange die Zelle noch diese Farbe hat. Ohne Oberfläche getestet: Holzboden auf Gras Z 4 ergibt Z 4. **In der Oberfläche vom Besitzer noch nicht bestätigt.**
 
+9. **Neu (Sprung 18), Sprung ins Live-CGI:** In der Editor-Werkzeugleiste gibt es den Knopf „⌖ Sprung“ mit „Maustaste belegen …“ und „Belegung löschen“. Belegt werden dürfen nur freie Tasten: Maustaste 4 und 5 sowie Strg oder Alt + Mitteltaste.
+   * Speicherort: `StudioSettings.LiveJumpButton` und `LiveJumpModifiers`.
+   * Ein Klick mit dieser Taste setzt `_livePin`: Live-CGI wird eingeschaltet, „folgt Maus“ ausgeschaltet. Erst beim nächsten Zeichnen folgt das Live-CGI wieder dem Stift.
+   * Code: `MapCanvas` hat `JumpButton`, `JumpModifiers`, `JumpClicked`, `CaptureNextButton` und `ButtonCaptured`, das Formular `AddLiveJumpButton` in `DragonMapStudioForm.Pattern.cs`.
+   * Nur kompiliert, in der Oberfläche noch nicht getestet.
+
 ## Offen / als Nächstes
 
-* Höhen-Ebene in der Oberfläche testen lassen. Schon gemalte Böden muss der Besitzer einmal neu malen.
+* Höhen-Ebene und Sprungtaste in der Oberfläche testen lassen. Schon gemalte Böden muss der Besitzer einmal neu malen.
 * Mögliche Erweiterung: die Höhen-Ebene auch beim normalen Farb-Pinsel nutzen, nicht nur bei Muster und Stempel. Außerdem die Höhen-Ebene im 2D-Editor anzeigen.

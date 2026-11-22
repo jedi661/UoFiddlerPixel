@@ -740,3 +740,18 @@ Jetzt merkt sich das Studio für solche Zellen die gewünschte Höhe in einer **
 * Strg+Z und Strg+Y nehmen den Eintrag mit zurück.
 * Der Compiler setzt die Zelle auf die gespeicherte Höhe, aber nur solange sie noch genau diese Farbe hat. Wird die Stelle später übermalt, verfällt der Eintrag von selbst.
 * Das gilt für alle Wege: CGI-Bau, Aktualisieren, Live-CGI, Vorschau, Stempel speichern und Karte bauen.
+
+## Sprung ins Live-CGI (seit „Sprung 18“)
+
+In der Werkzeugleiste des Karten-Editors gibt es neben „◉ Live-CGI“ und „folgt Maus“ jetzt den Knopf **⌖ Sprung**.
+
+1. Wähle **⌖ Sprung → Maustaste belegen …** und klicke danach mit der gewünschten Maustaste in die Karte. Erlaubt sind nur Tasten, die der Editor noch nicht nutzt:
+   * **Maustaste 4 oder 5** (die Seitentasten)
+   * **Strg + Mitteltaste** oder **Alt + Mitteltaste** (die Mitteltaste allein verschiebt die Karte)
+
+   Bei einer belegten Taste (links, rechts, Mitte allein) kommt ein Hinweis, und die alte Belegung bleibt. Die Belegung wird gespeichert und steht danach im Knopf.
+2. Klickst du mit dieser Taste auf eine Stelle der Karte, springt das Live-CGI dorthin und baut die Stelle. War Live-CGI aus, wird es eingeschaltet. „folgt Maus“ wird dabei ausgeschaltet, damit die Ansicht stehen bleibt.
+3. Das Live-CGI bleibt dort, bis du wieder zeichnest. Dann folgt es wieder dem Stift.
+4. **⌖ Sprung → Belegung löschen** nimmt die Belegung wieder weg.
+
+So kannst du Stellen, die du auf der Karte markiert hast, nacheinander anklicken und dir jeweils im CGI ansehen.
