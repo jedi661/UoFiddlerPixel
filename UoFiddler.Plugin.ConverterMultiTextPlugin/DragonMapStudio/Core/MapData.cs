@@ -45,6 +45,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     {
         /// <summary>Steps with the same group (> 0) belong to one stroke.</summary>
         public int Group;
+
+        /// <summary>Text of the step for the history list (null = not named yet).</summary>
+        public string Name;
         public List<StaticChange> Statics = new List<StaticChange>();
         public List<LandChange> Land = new List<LandChange>();
     }
@@ -197,6 +200,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Applies static and land changes as one undo step.</summary>
         public void Apply(List<StaticChange> changes, List<LandChange> land)
         {
+            if (EditMask != null)
+            {
+                changes = changes?.Where(c => InMask(c.Before ?? c.After)).ToList();
+                land = land?.Where(l => EditMask.Contains(l.Index)).ToList();
+            }
             var step = new EditStep { Statics = changes ?? new List<StaticChange>(), Land = land ?? new List<LandChange>() };
             if (step.Statics.Count == 0 && step.Land.Count == 0)
             {
@@ -254,6 +262,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// </summary>
         public void ApplyStatics(List<StaticChange> changes)
         {
+            if (EditMask != null && changes != null)
+            {
+                changes = changes.Where(c => InMask(c.Before ?? c.After)).ToList();
+            }
             if (changes == null || changes.Count == 0)
             {
                 return;
@@ -281,7 +293,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             int i = y * Width + x;
             sbyte nz = (sbyte)Math.Clamp(z, -128, 127);
-            if (Tiles[i] == id && Z[i] == nz)
+            if ((Tiles[i] == id && Z[i] == nz) || (EditMask != null && !EditMask.Contains(i)))
             {
                 return;
             }
@@ -317,6 +329,42 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             LandModified |= step.Land.Count > 0;
             StaticsModified |= statics.Count > 0;
             return step.Land.Count + statics.Count;
+        }
+
+        // ------------------------------------------------------------------ mask + history names
+
+        /// <summary>
+        /// Lasso / magic wand: only cells with these indices (y * Width + x) can be changed (land and statics);
+        /// null = everywhere. Undo / redo are not limited.
+        /// </summary>
+        public HashSet<int> EditMask { get; set; }
+
+        private bool InMask(StaticItem s) => s == null || EditMask == null || (InBounds(s.X, s.Y) && EditMask.Contains(s.Y * Width + s.X));
+
+        public int UndoCount => _undo.Count;
+
+        public int RedoCount => _redo.Count;
+
+        /// <summary>Gives the newest undo step a name (history list) when it has none yet.</summary>
+        public void NameLastStep(string name)
+        {
+            if (_undo.Count > 0 && _undo.Peek().Name == null)
+            {
+                _undo.Peek().Name = name;
+            }
+        }
+
+        /// <summary>Names of the undo steps, newest first.</summary>
+        public IEnumerable<string> UndoNames => _undo.Select(Describe);
+
+        /// <summary>Names of the redo steps, next first.</summary>
+        public IEnumerable<string> RedoNames => _redo.Select(Describe);
+
+        private static string Describe(EditStep s)
+        {
+            string what = s.Land.Count > 0 && s.Statics.Count > 0 ? $"{s.Land.Count} Land, {s.Statics.Count} Statics"
+                : s.Land.Count > 0 ? $"{s.Land.Count} Land" : $"{s.Statics.Count} Statics";
+            return string.IsNullOrEmpty(s.Name) ? what : s.Name + "  (" + what + ")";
         }
 
         public bool Undo()

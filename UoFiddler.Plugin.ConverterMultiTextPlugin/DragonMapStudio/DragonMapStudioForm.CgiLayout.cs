@@ -174,7 +174,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 22.11.2026 – Werkzeuge 20";
+        public const string BuildMark = "Stand 22.11.2026 – Pinsel 21";
         private PictureBox _picStampPreview;
         private ToolStripButton _tsbStaticIds;
         private bool _cgiLayoutBuilt;
@@ -222,6 +222,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             AddCategory(nav, "GELÄNDE", ColTerrain, (tabCgiLand, () => UoArtCache.Land(0x0003)), (tabCgiCoast, () => UoArtCache.Land(0x00A8)), (tabCgiMountain, () => UoArtCache.Land(0x022C)));
             AddCategory(nav, "HÖHLEN", ColCave, (tabCgiCave, () => UoArtCache.Land(0x0245)), (tabCgiStamp, () => UoArtCache.Land(0x01D4)));
             AddCategory(nav, "PRÜFEN", ColCheck, (tabCgiSelection, null), (tabCgiProblems, null));
+            AddCategory(nav, "PINSEL", Color.FromArgb(126, 34, 206), (EnsureBrushTab(), () => ToolIcons.Get("scatter")));
             nav.Resize += (s, e) => LayoutNav(nav);
 
             // ------------------------------------------------ tabs without the tab row

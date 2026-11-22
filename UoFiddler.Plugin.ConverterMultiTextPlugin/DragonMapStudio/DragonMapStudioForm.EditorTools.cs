@@ -1030,6 +1030,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
             }).Enabled = _staticsLayer.Heights.Count > 0;
             _editorMenu.Items.Add(heights);
+            _editorMenu.Items.Add(BookmarkMenu(new Point(e.X, e.Y), true));
             var tools = new ToolStripMenuItem(L.T("Werkzeug"));
             foreach ((string text, MapTool tool) in new[]
                      {

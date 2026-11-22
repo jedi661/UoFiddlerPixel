@@ -907,3 +907,256 @@ Küste weich: Abfall-Breite	Soft coast: drop width
 Tiles von der Wasserlinie bis zur vollen Tiefe des Meeresgrunds (Standard 3).	Tiles from the waterline to the full depth of the sea floor (default 3).
 Küste weich: Weichheit	Soft coast: softness
 Glättungs-Durchgänge des Abstands (0–4, Standard 1).	Smoothing passes of the distance (0–4, default 1).
+# Dragon Map Studio – Pinsel 21 (scatter, wall, river, road, ramp, plateau, noise, lasso, wand, measure, filter, bookmarks, history)
+ (der Stempel hat keine gebauten Land-Tiles – nur Statics)	 (the stamp has no built land tiles – statics only)
+0 = Pinselgröße oben.	0 = brush size at the top.
+Abflachen = alles auf die Höhe unter dem ersten Klick (oder 'Höhe ='). Terrassen = Höhen auf Stufen runden.	Flatten = everything to the height under the first click (or 'Height ='). Terraces = round heights to steps.
+Abflachen auf die Höhe 'Höhe =' aus dem Reiter Land statt auf die Höhe unter dem ersten Klick.	Flatten to the height 'Height =' of the tab Land instead of the height under the first click.
+Abflachen auf eine Höhe	Flatten to one height
+Abgebrochen.	Cancelled.
+Alle Schritte der CGI-Karte; ein Klick auf einen Schritt geht dorthin zurück (oder wieder vor).	All steps of the CGI map; a click on a step goes back (or forward) to it.
+Alle Teile auf die Bodenhöhe des Startpunkts (gerade Mauerkrone) statt der Höhe jedes Feldes.	All pieces at the ground height of the start (straight top of the wall) instead of the height of every cell.
+Alle zeigen	Show all
+Als Streu-Set speichern (ein Objekt) …	Save as scatter set (one object) …
+Als Streu-Set speichern (einzeln) …	Save as scatter set (single) …
+Alte Statics ersetzen	Replace old statics
+Am Anfang und Ende jeder Strecke den Pfosten setzen (wenn das Set einen hat).	Set the post at the start and end of every run (if the set has one).
+An = der Wasserspiegel liegt überall 'Tiefe' unter dem Boden (Gebirgsbach). Aus = ein Spiegel für den ganzen Strich (ruhiger Fluss, See).	On = the water level is 'depth' below the ground everywhere (mountain brook). Off = one level for the whole stroke (calm river, lake).
+An = der Weg folgt dem Boden, geglättet. Aus = gleichmäßige Steigung vom ersten zum letzten Punkt.	On = the road follows the ground, smoothed. Off = even slope from the first to the last point.
+An = nur die Höhen ändern. Aus = die Land-Tiles aus dem Reiter Land setzen.	On = change only the heights. Off = set the land tiles of the tab Land.
+Ansicht-Filter	View filter
+Art	Kind
+Auf Boden (D)	To ground (D)
+Auf den Boden setzen (D)	Put on the ground (D)
+Aufheben (Esc)	Remove (Esc)
+Ausgeblendete Statics werden nicht gezeichnet und lassen sich nicht anklicken – gut zum Arbeiten unter Bäumen oder in Häusern. 'Max Z' oben blendet Höhen aus.	Hidden statics are not drawn and cannot be clicked – good for working under trees or inside houses. 'Max Z' at the top hides heights.
+Auswahl auf den Boden gesetzt	Selection put on the ground
+Auswahl gedreht (90°) – die Bilder der Statics drehen nicht mit	Selection rotated (90°) – the pictures of the statics do not turn
+Auswahl gespiegelt	Selection mirrored
+Auswahl leer.	Selection empty.
+Bankett (Tiles)	Shoulder (tiles)
+Bearbeiten	Edit
+Bereich drehen 90° (R)	Rotate area 90° (R)
+Bereich gedreht (90°)	Area rotated (90°)
+Bereich gespiegelt (links ↔ rechts)	Area mirrored (left ↔ right)
+Bereich gespiegelt (oben ↔ unten)	Area mirrored (top ↔ bottom)
+Bereich spiegeln links ↔ rechts (X)	Mirror area left ↔ right (X)
+Bereich spiegeln oben ↕ unten (Y)	Mirror area top ↕ bottom (Y)
+Boden unter der Maus übernehmen	Take the ground under the mouse
+Breite (Tiles)	Width (tiles)
+Bäume / Pflanzen	Trees / plants
+Böden	Floors
+Chance pro Feld und Pinsel-Tupfer, dass etwas gesetzt wird (1–100). Wald dicht: 15, lichter Wald: 5, Steppe: 2.	Chance per cell and dab that something is placed (1–100). Dense forest: 15, light forest: 5, steppe: 2.
+Dichte (%)	Density (%)
+Die Sets aus den Dragon-Skripten lassen sich hier nicht löschen (Reiter Regeln → Items).	The sets of the Dragon scripts cannot be deleted here (tab Rules → Items).
+Drehen (R)	Rotate (R)
+Drehen 90° (R)	Rotate 90° (R)
+Dächer	Roofs
+Eigenes Set löschen	Delete own set
+Ein Set = die Wandstücke für beide Richtungen und ein Pfosten: im Reiter Items das Stück wählen und '← …' klicken (mehrere IDs = zufällig gemischt).	A set = the wall pieces for both directions and a post: choose the piece in the tab Items and click '← …' (several ids = mixed at random).
+Ersetzen	Replace
+Ersetzen durch:	Replace with:
+Ersetzen … (E)	Replace … (E)
+Ersetzt	Replaced
+Erst Statics auswählen (Werkzeug Auswahl, Rahmen ziehen).	First select statics (tool Select, drag a frame).
+Felder – alle Werkzeuge und Bereich-Befehle wirken nur noch darin (Umschalt = dazu, Strg = weg, Esc = aufheben).	cells – all tools and area commands now work only inside (Shift = add, Ctrl = remove, Esc = clear).
+Felder, auf denen schon ein Static steht, auslassen.	Skip cells that already have a static.
+Feste Höhe ('Höhe =')	Fixed height ('Height =')
+Fluss	River
+Fluss-Pinsel wählen	Choose river brush
+Fluss: Ziehen gräbt ein Bett – Wasser-Tiles auf 'Tiefe' unter dem Startpunkt, weiches Ufer, danach Übergänge (Reiter Pinsel → Fluss) · Pinsel oben = Breite	River: dragging digs a bed – water tiles at 'depth' below the start, soft banks, transitions afterwards (tab Brushes → River) · brush at the top = width
+Färben (H)	Hue (H)
+Gelände	Terrain
+Gleiche Höhe	Same height
+Gleiche Tile-Familie (Farbe der Farbtabelle)	Same tile family (colour of the colour table)
+Gleiches Land-Tile	Same land tile
+Glättung (Tiles)	Smoothing (tiles)
+Größe der Wellen (Tiles)	Size of the waves (tiles)
+Hinspringen	Jump there
+Hue-Pinsel	Hue brush
+Hue-Pinsel: Ziehen färbt alle Statics im Pinsel mit der Hue (Reiter Items) · Strg = Hue 0 (Original)	Hue brush: dragging colours all statics in the brush with the hue (tab Items) · Ctrl = hue 0 (original)
+Härte (%)	Hardness (%)
+Härte (%) für Höhe +/−, Glätten, Plateau, Unebenheit:	Hardness (%) for height +/−, smooth, plateau, noise:
+Härte 100 = harter Rand wie bisher, kleiner = zur Mitte stärker, am Rand weich.	Hardness 100 = hard edge as before, smaller = stronger in the middle, soft at the edge.
+Höchste Steigung	Steepest slope
+Höchstens Felder	At most cells
+Höhe +/−, Glätten, Plateau, Unebenheit: 100 = harter Rand, kleiner = weicher Rand (zur Mitte stärker).	Height +/−, smooth, plateau, noise: 100 = hard edge, smaller = soft edge (stronger in the middle).
+Höhe folgt dem Gelände	Height follows terrain
+Höhe je Stockwerk	Height per level
+Höhen-Toleranz	Height tolerance
+Im Karten-Editor zeigen	Show in the map editor
+Im markierten Bereich / Lasso	In the marked area / lasso
+Kein anderes Static desselben Sets näher als so viele Tiles (0 = egal).	No other static of the same set closer than this many tiles (0 = any).
+Klick auf einen Schritt = bis dorthin zurück (grau = wiederholen). Oben der neueste.	Click on a step = back to there (grey = redo). Newest at the top.
+Land-Tiles des Wassers (Standard: Wasser 00a8–00ab).	Land tiles of the water (default: water 00a8–00ab).
+Lasso	Lasso
+Lasso / Zauberstab aufgehoben.	Lasso / magic wand cleared.
+Lasso / Zauberstab aufheben	Clear lasso / magic wand
+Lasso / Zauberstab aufheben (Esc)	Clear lasso / magic wand (Esc)
+Lasso: Punkte um eine Fläche klicken · Doppelklick / Rechtsklick / Enter = schließen · Umschalt = dazu, Strg = weg · danach wirken alle Werkzeuge nur darin, Bereich-Tasten F K J W G R X Y E D · Esc = aufheben	Lasso: click points around an area · double click / right click / Enter = close · Shift = add, Ctrl = remove · then all tools work only inside, area keys F K J W G R X Y E D · Esc = clear
+Lasso: mindestens 3 Punkte.	Lasso: at least 3 points.
+Leer = auf jedem Boden. Sonst nur auf diesen Land-Tiles, z. B. Gras '0003 0004 0005 0006'. Knopf 'Boden unter der Maus übernehmen' im Reiter Pinsel.	Empty = on any ground. Otherwise only on these land tiles, e.g. grass '0003 0004 0005 0006'. Button 'Take the ground under the mouse' in the tab Brushes.
+Leer = die Hue aus dem Set. Sonst wird eine davon zufällig gewählt (z. B. Herbstfarben).	Empty = the hue of the set. Otherwise one of them at random (e.g. autumn colours).
+Leer = die Land-Tiles aus dem Reiter Land (oder die Vorlage dort, z. B. Pflaster).	Empty = the land tiles of the tab Land (or the preset there, e.g. cobblestones).
+Lesezeichen	Bookmarks
+Lesezeichen gesetzt	Bookmark set
+Löschen (Entf)	Delete (Del)
+Mauer	Wall
+Mein Objekt	My object
+Meine Pflanzen	My plants
+Messen	Measure
+Messen: ziehen zeigt Abstand, Schritte, Höhenunterschied und Steigung · Esc = weg	Measure: drag shows distance, steps, height difference and slope · Esc = remove
+Mindestabstand (Tiles)	Minimum distance (tiles)
+Nach dem Strich die Dragon-Übergänge (Wasser → Sand / Gras) um den Fluss berechnen.	After the stroke compute the Dragon transitions (water → sand / grass) around the river.
+Nachbarn höchstens so viel Z anders (alle Arten).	Neighbours differ at most this much Z (all kinds).
+Name des Lesezeichens:	Name of the bookmark:
+Name des Streu-Sets:	Name of the scatter set:
+Name des Wand-Sets (z. B. Steinmauer, Holzzaun):	Name of the wall set (e.g. stone wall, wooden fence):
+Neue Hue (dez.):	New hue (dec.):
+Neues Set …	New set …
+Neues Wand-Set	New wall set
+Nicht auf Hänge setzen, die zum Nachbarn mehr als so viel Z abfallen (0 = egal).	Do not place on slopes that drop more than this much Z to a neighbour (0 = any).
+Nicht auf Statics	Not on statics
+Nicht auf Wasser	Not on water
+Nichts zu suchen angegeben.	Nothing to search given.
+Nur auf Land-Tiles	Only on land tiles
+Nur auf Land-Tiles (hex)	Only on land tiles (hex)
+Nur mit Hue (dez.):	Only with hue (dec.):
+Objekte	objects
+Pfosten / Ecke (hex), leer = keiner.	Post / corner (hex), empty = none.
+Pfosten an Enden	Posts at the ends
+Plateau	Plateau
+Plateau / Terrassen	Plateau / terraces
+Plateau-Pinsel wählen	Choose plateau brush
+Plateau: Ziehen flacht auf die Höhe unter dem ersten Klick ab (oder 'Höhe ='), Art Terrassen = Stufen · Härte für weiche Ränder (Reiter Pinsel)	Plateau: dragging flattens to the height under the first click (or 'Height ='), kind terraces = steps · hardness for soft edges (tab Brushes)
+Punkte	points
+Punkte klicken · Doppelklick / Rechtsklick / Enter = bauen · Rücktaste = Punkt weg · Esc = abbrechen. Leere Weg-Tiles = Land-Tiles aus dem Reiter Land.	Click points · double click / right click / Enter = build · Backspace = remove point · Esc = cancel. Empty road tiles = land tiles of the tab Land.
+Punkte – weiter klicken · Doppelklick, Rechtsklick oder Enter = fertig · Rücktaste = letzten Punkt weg · Esc = abbrechen	points – keep clicking · double click, right click or Enter = finish · Backspace = remove the last point · Esc = cancel
+Rampe	Ramp
+Rampe wählen	Choose ramp
+Rampe: von unten nach oben ziehen (Strg = bis 'Höhe =').	Ramp: drag from bottom to top (Ctrl = up to 'Height =').
+Rampe: von unten nach oben ziehen – gleichmäßige Steigung von der Höhe am Start zur Höhe am Ende · Strg = bis 'Höhe =' · Breite = Pinsel oben	Ramp: drag from bottom to top – even slope from the height at the start to the height at the end · Ctrl = up to 'Height =' · width = brush at the top
+Ränder neben der Rampe weich angleichen.	Blend the edges next to the ramp softly.
+Schritte	steps
+Set aus Auswahl	Set from selection
+Set aus Auswahl: ein Objekt	Set from selection: one object
+Set löschen	Delete set
+So viele Lagen übereinander (Mauer 1, Burgmauer 2–3).	So many layers on top of each other (wall 1, castle wall 2–3).
+So viele Tiles neben dem Wasser steigt das Ufer weich an.	The bank rises softly over this many tiles next to the water.
+So viele Tiles neben dem Weg werden an die Weghöhe angeglichen (weicher Rand).	This many tiles next to the road are blended to the road height (soft edge).
+Solange Lasso oder Zauberstab aktiv sind, wirken ALLE Werkzeuge nur darin. Bereich-Tasten: F K J W G M T · R drehen · X / Y spiegeln · E ersetzen · D auf den Boden.	While lasso or magic wand are active, ALL tools work only inside. Area keys: F K J W G M T · R rotate · X / Y mirror · E replace · D to the ground.
+Sonstige	Other
+Spiegel folgt dem Gelände	Level follows terrain
+Spiegeln (X)	Mirror (X)
+Spiegeln links ↔ rechts (X)	Mirror left ↔ right (X)
+Spiegeln oben ↕ unten	Mirror top ↕ bottom
+Static(s) mit dem Rahmen ausgewählt – ziehen verschiebt, Pfeile / Bild↑↓ auch.	static(s) selected with the frame – dragging moves them, arrows / Page↑↓ too.
+Statics auf der Strecke vorher entfernen (sonst wird nur dazugesetzt).	Remove the statics on the run first (otherwise only added).
+Statics für eine Wand, die von Norden nach Süden läuft (hex, mehrere = zufällig).	Statics for a wall running north to south (hex, several = random).
+Statics für eine Wand, die von Westen nach Osten läuft (hex, mehrere = zufällig).	Statics for a wall running west to east (hex, several = random).
+Statics im Bereich auf den Boden (D)	Statics in the area to the ground (D)
+Statics im Bereich auf den Boden gesetzt	Statics in the area put on the ground
+Stockwerke	Levels
+Streu-Pinsel	Scatter brush
+Streu-Pinsel wählen	Choose scatter brush
+Streu-Pinsel: Ziehen verteilt das Set (Reiter Pinsel) – Dichte, Abstand, Boden-Filter · Strg+Ziehen entfernt Statics des Sets · Pinsel oben · ein Zug = ein Rückgängig-Schritt	Scatter brush: dragging spreads the set (tab Brushes) – density, distance, ground filter · Ctrl+drag removes statics of the set · brush at the top · one stroke = one undo step
+Streu-Pinsel: erst ein Set wählen (Reiter Pinsel).	Scatter brush: first choose a set (tab Brushes).
+Streu-Pinsel (Bäume, Büsche, Steine …)	Scatter brush (trees, bushes, rocks …)
+Streu-Set	Scatter set
+Streu-Set gespeichert	Scatter set saved
+Streuen	Scatter
+Stufen-Höhe	Step height
+Stärke (± Z)	Strength (± Z)
+Suchen & Ersetzen	Search & replace
+Suchen & Ersetzen … (E)	Search & replace … (E)
+Suchen (IDs hex):	Search (ids hex):
+Suchen (Tiles hex):	Search (tiles hex):
+Terrassen (Stufen)	Terraces (steps)
+Terrassen: Höhe jeder Stufe.	Terraces: height of every step.
+Tiefe	Depth
+Tiles behalten	Keep tiles
+Ufer-Breite	Bank width
+Ufer-Steigung	Bank slope
+Unebenheit-Pinsel wählen	Choose noise brush
+Unebenheit: Ziehen macht das Gelände leicht wellig (± Stärke, Größe der Wellen) – jedes Feld einmal pro Zug	Noise: dragging makes the ground slightly wavy (± strength, size of the waves) – every cell once per stroke
+Varianten	Variants
+Varianten-Pinsel	Variants brush
+Varianten: Ziehen mischt die Tiles derselben Farbe der Farbtabelle neu – gegen Kachel-Muster	Variants: dragging mixes the tiles of the same colour of the colour table again – against tile patterns
+Varianten, Übergänge, Härte	Variants, transitions, hardness
+Verlauf	History
+Verlauf – CGI-Ansicht	History – CGI view
+Verlauf …	History …
+Verlauf-Fenster öffnen	Open history window
+Verlauf-Fenster: alle Schritte, Klick geht dorthin zurück	History window: all steps, a click goes back to it
+Wand	Wall
+Wand / Zaun	Wall / fence
+Wand / Zaun: von einem Ende zum anderen ziehen – West-Ost oder Nord-Süd, Pfosten an den Enden, Stockwerke (Reiter Pinsel → Wand)	Wall / fence: drag from one end to the other – west-east or north-south, posts at the ends, levels (tab Brushes → Wall)
+Wand-Set	Wall set
+Wand-Set angelegt – jetzt im Item-Katalog das Wandstück wählen und '← West-Ost', '← Nord-Süd', '← Pfosten' klicken.	Wall set created – now choose the wall piece in the item catalogue and click '← West-East', '← North-South', '← Post'.
+Wand-Werkzeug wählen	Choose wall tool
+Wand: erst ein Wand-Set mit IDs anlegen (Reiter Pinsel → Wand).	Wall: first create a wall set with ids (tab Brushes → Wall).
+Wasser-Tiles (hex)	Water tiles (hex)
+Wasser-Tiles und Felder mit Wasser-Statics auslassen.	Skip water tiles and cells with water statics.
+Wasserspiegel so viel unter dem Boden am Startpunkt des Strichs.	Water level this much below the ground at the start of the stroke.
+Weg	Road
+Weg / Straße	Road
+Weg / Straße (Kurve)	Road (curve)
+Weg gebaut	Road built
+Weg-Tiles (hex)	Road tiles (hex)
+Weg-Werkzeug wählen	Choose road tool
+Weg: Punkte klicken, daraus wird eine weiche Kurve mit Breite und geglätteter Höhe · Doppelklick / Rechtsklick / Enter = bauen · Rücktaste = Punkt weg · Esc = abbrechen	Road: click points, they become a smooth curve with width and smoothed height · double click / right click / Enter = build · Backspace = remove point · Esc = cancel
+Weg: mindestens 2 Punkte.	Road: at least 2 points.
+Wie lang die Strecke ist, über die die Höhe gemittelt wird (keine Buckel).	How long the stretch is over which the height is averaged (no bumps).
+Wände / Türen / Fenster	Walls / doors / windows
+Z +	Z +
+Z pro Tile am Ufer.	Z per tile at the bank.
+Z-Abstand der Lagen (UO-Wände: 20).	Z distance of the layers (UO walls: 20).
+Zauberstab	Magic wand
+Zauberstab (hier klicken)	Magic wand (click here)
+Zauberstab: Klick wählt zusammenhängendes gleiches Land (Tile / Familie / Höhe, Reiter Pinsel) · Umschalt = dazu, Strg = weg · danach wirken alle Werkzeuge nur darin · Esc = aufheben	Magic wand: click selects connected equal land (tile / family / height, tab Brushes) · Shift = add, Ctrl = remove · then all tools work only inside · Esc = clear
+Ziehen = streuen · Strg+Ziehen = Statics des Sets entfernen · Sets: alle Item-Dateien der Dragon-Skripte (forest, jungle, swamp …) und eigene aus der Auswahl.	Drag = scatter · Ctrl+drag = remove statics of the set · sets: every item file of the Dragon scripts (forest, jungle, swamp …) and own ones from the selection.
+Zufalls-Zahl	Random number
+Zufällige Hues (hex)	Random hues (hex)
+Zur Bodenhöhe addieren.	Added to the ground height.
+Ähnliche Höhe	Similar height
+Änderung(en) – Strg+Z nimmt es zurück.	change(s) – Ctrl+Z undoes it.
+Übergänge danach	Transitions afterwards
+Übergänge-Pinsel	Transition brush
+Übergänge: Ziehen berechnet die Dragon-Übergänge (Gras → Sand …) nur unter dem Pinsel neu	Transitions: dragging computes the Dragon transitions (grass → sand …) only under the brush
+… jedes Static einzeln	… every static on its own
+← Nord-Süd	← North-South
+← Pfosten	← Post
+← West-Ost	← West-East
+★ Hier merken	★ Remember here
+★ Hier merken …	★ Remember here …
+jetzt	now
+nichts geändert.	nothing changed.
+PINSEL	BRUSHES
+Lasso, Zauberstab, Messen	Lasso, magic wand, measure
+Ansicht-Filter (Statics)	View filter (statics)
+Ausgewählte Statics um ihre Mitte drehen (Positionen)	Rotate the selected statics around their middle (positions)
+Ausgewählte Statics spiegeln	Mirror the selected statics
+Ausgewählte Statics auf die Bodenhöhe setzen	Put the selected statics on the ground height
+Statics im Bereich auf die Bodenhöhe setzen	Put the statics of the area on the ground height
+Statics / Land im Bereich suchen und ersetzen	Search and replace statics / land in the area
+Bereich 90° im Uhrzeigersinn drehen (Land + Statics)	Rotate the area 90° clockwise (land + statics)
+Bereich links ↔ rechts spiegeln	Mirror the area left ↔ right
+Bereich oben ↕ unten spiegeln	Mirror the area top ↕ bottom
+Ausgewählte Statics als eigenes Streu-Set (ein Objekt)	Selected statics as own scatter set (one object)
+Wand-Set anlegen, dann Stücke aus dem Item-Katalog zuordnen	Create a wall set, then assign pieces from the item catalogue
+Gewähltes Item (Reiter Items) als Wandstück West-Ost	Chosen item (tab Items) as wall piece west-east
+Gewähltes Item als Wandstück Nord-Süd	Chosen item as wall piece north-south
+Gewähltes Item als Pfosten / Ecke	Chosen item as post / corner
+Bäume, Büsche, Steine aus einem Set streuen (Reiter Pinsel) · Strg = entfernen	Scatter trees, bushes, rocks from a set (tab Brushes) · Ctrl = remove
+Alle Statics unter dem Pinsel färben · Strg = Hue 0	Colour all statics under the brush · Ctrl = hue 0
+Von Ende zu Ende ziehen: Wandstücke + Pfosten (Wand-Set im Reiter Pinsel)	Drag from end to end: wall pieces + posts (wall set in the tab Brushes)
+Flussbett mit Wasser-Tiles und weichem Ufer ziehen	Drag a river bed with water tiles and soft banks
+Punkte klicken = weiche Kurve, Doppelklick / Enter = bauen	Click points = smooth curve, double click / Enter = build
+Von unten nach oben ziehen = gleichmäßige Steigung	Drag from bottom to top = even slope
+Abflachen auf eine Höhe oder Stufen	Flatten to one height or steps
+Leichte Wellen ins Gelände	Slight waves in the ground
+Tiles derselben Farbe neu mischen (gegen Kachel-Muster)	Mix the tiles of the same colour again (against tile patterns)
+Dragon-Übergänge nur unter dem Pinsel neu berechnen	Compute the Dragon transitions only under the brush
+Punkte um eine Fläche klicken – danach wirken alle Werkzeuge nur darin · Esc = aufheben	Click points around an area – then all tools work only inside · Esc = clear
+Klick wählt gleiches zusammenhängendes Land · Umschalt = dazu, Strg = weg	Click selects equal connected land · Shift = add, Ctrl = remove
+Ziehen: Abstand, Höhenunterschied, Steigung	Drag: distance, height difference, slope

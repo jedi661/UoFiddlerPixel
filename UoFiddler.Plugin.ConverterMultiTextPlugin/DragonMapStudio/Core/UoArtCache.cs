@@ -212,6 +212,42 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
+        /// <summary>Kind of a static for the view filter (from the tiledata flags and the name).</summary>
+        public static StaticKind ItemKind(int id)
+        {
+            try
+            {
+                TileFlag f = TileData.ItemTable[id].Flags;
+                string name = (TileData.ItemTable[id].Name ?? string.Empty).ToLowerInvariant();
+                if ((f & TileFlag.Wet) != 0)
+                {
+                    return StaticKind.Water;
+                }
+                if ((f & TileFlag.Roof) != 0)
+                {
+                    return StaticKind.Roof;
+                }
+                if ((f & (TileFlag.Wall | TileFlag.Door | TileFlag.Window)) != 0)
+                {
+                    return StaticKind.Wall;
+                }
+                if ((f & TileFlag.Foliage) != 0 || name.Contains("tree") || name.Contains("bush") || name.Contains("grass") || name.Contains("flower") ||
+                    name.Contains("fern") || name.Contains("plant") || name.Contains("leaves") || name.Contains("vine") || name.Contains("cactus"))
+                {
+                    return StaticKind.Plant;
+                }
+                if ((f & TileFlag.Surface) != 0 && UoArtCache.ItemHeight(id) <= 3)
+                {
+                    return StaticKind.Floor;
+                }
+                return StaticKind.Other;
+            }
+            catch (Exception)
+            {
+                return id >= 0x1796 && id <= 0x17B2 ? StaticKind.Water : StaticKind.Other;
+            }
+        }
+
         /// <summary>Short list of the tiledata flags of an item (for the info texts).</summary>
         public static string ItemFlagsText(int id)
         {
@@ -588,5 +624,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 return null;
             }
         }
+    }
+
+    /// <summary>Kinds of statics the CGI view can hide.</summary>
+    [Flags]
+    public enum StaticKind
+    {
+        None = 0,
+        Plant = 1,
+        Wall = 2,
+        Roof = 4,
+        Water = 8,
+        Floor = 16,
+        Other = 32
     }
 }

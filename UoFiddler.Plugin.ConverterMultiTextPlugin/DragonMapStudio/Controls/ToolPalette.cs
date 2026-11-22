@@ -357,6 +357,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             _palette = palette;
             _host = host;
             _owner = owner;
+            host.Resize += (s, e) => FitColumns();
             palette.DockToggleRequested += (s, e) =>
             {
                 if (_window != null)
@@ -439,6 +440,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             return false;
         }
 
+        /// <summary>Docked: 2 columns, 3 or 4 when the tools do not fit into the height.</summary>
+        private void FitColumns()
+        {
+            if (_window != null || _palette.Parent != _host || _host.ClientSize.Height <= 0)
+            {
+                return;
+            }
+            for (int cols = 2; cols <= 4; cols++)
+            {
+                int w = ToolPalette.PreferredColumnsWidth(cols);
+                if (_palette.Width != w)
+                {
+                    _palette.Width = w;
+                    _palette.PerformLayout();
+                }
+                if (_palette.NeededHeight <= _host.ClientSize.Height)
+                {
+                    break;
+                }
+            }
+            _palette.Invalidate();
+        }
+
         private void DockBack()
         {
             _palette.Parent = null;
@@ -446,6 +470,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             _palette.Dock = DockStyle.Left;
             _palette.Width = ToolPalette.PreferredColumnsWidth(2);
             _host.Controls.Add(_palette);
+            FitColumns();
             // the palette is the outermost left control: behind (= docked before) the map
             _palette.SendToBack();
             _palette.Invalidate();

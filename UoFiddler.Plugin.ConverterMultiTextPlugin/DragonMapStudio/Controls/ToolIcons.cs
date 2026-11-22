@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – drawn tool icons for the tool palettes (no client files needed)
  *
@@ -291,6 +291,139 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         g.DrawLine(p, 12, 12, 12, 2);
                     }
                     break;
+                case "scatter":
+                    {
+                        Tree(g, 7, 13, 1f);
+                        Tree(g, 16, 9, 0.8f);
+                        Tree(g, 15, 18, 0.7f);
+                        break;
+                    }
+                case "huebrush":
+                    {
+                        using var lg = new LinearGradientBrush(new Rectangle(2, 12, 20, 10), Color.FromArgb(236, 72, 153), Color.FromArgb(59, 130, 246), 0f);
+                        g.FillEllipse(lg, 2, 13, 14, 9);
+                        Brush(g, Color.FromArgb(236, 72, 153));
+                        break;
+                    }
+                case "wall":
+                    {
+                        using var stone = new SolidBrush(Color.FromArgb(168, 162, 158));
+                        g.FillRectangle(stone, 2, 7, 20, 13);
+                        using var mortar = new Pen(Color.FromArgb(87, 83, 78), 1.2f);
+                        g.DrawRectangle(mortar, 2, 7, 20, 13);
+                        g.DrawLine(mortar, 2, 11.5f, 22, 11.5f);
+                        g.DrawLine(mortar, 2, 16, 22, 16);
+                        foreach (float x in new[] { 8f, 15f })
+                        {
+                            g.DrawLine(mortar, x, 7, x, 11.5f);
+                            g.DrawLine(mortar, x, 16, x, 20);
+                        }
+                        g.DrawLine(mortar, 11.5f, 11.5f, 11.5f, 16);
+                        g.DrawLine(mortar, 18.5f, 11.5f, 18.5f, 16);
+                        g.DrawLine(mortar, 4.5f, 11.5f, 4.5f, 16);
+                        break;
+                    }
+                case "river":
+                    {
+                        using var grass = new SolidBrush(Color.FromArgb(134, 194, 120));
+                        g.FillRectangle(grass, 2, 2, 20, 20);
+                        using var water = new Pen(Sea, 5f) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+                        g.DrawBezier(water, 4, 2, 2, 10, 20, 12, 18, 22);
+                        using var light = new Pen(Color.FromArgb(147, 197, 253), 1.2f);
+                        g.DrawBezier(light, 5, 4, 4, 10, 18, 12, 17, 20);
+                        break;
+                    }
+                case "road":
+                    {
+                        using var grass = new SolidBrush(Color.FromArgb(134, 194, 120));
+                        g.FillRectangle(grass, 2, 2, 20, 20);
+                        using var road = new Pen(Color.FromArgb(161, 120, 70), 6f) { StartCap = LineCap.Flat, EndCap = LineCap.Flat };
+                        g.DrawBezier(road, 3, 21, 8, 10, 16, 16, 21, 3);
+                        using var dash = new Pen(Color.FromArgb(250, 240, 200), 1f) { DashStyle = DashStyle.Dash };
+                        g.DrawBezier(dash, 3, 21, 8, 10, 16, 16, 21, 3);
+                        using var dot = new SolidBrush(Red);
+                        g.FillEllipse(dot, 1, 18, 5, 5);
+                        g.FillEllipse(dot, 18, 1, 5, 5);
+                        break;
+                    }
+                case "ramp":
+                    {
+                        using var b = new SolidBrush(Color.FromArgb(161, 120, 70));
+                        var pts = new[] { new PointF(2, 21), new PointF(22, 21), new PointF(22, 6) };
+                        g.FillPolygon(b, pts);
+                        g.DrawPolygon(new Pen(Ink, 1.2f), pts);
+                        Arrow(g, true, Color.FromArgb(22, 163, 74));
+                        break;
+                    }
+                case "plateau":
+                    {
+                        using var b = new SolidBrush(Grass);
+                        var pts = new[] { new PointF(1, 21), new PointF(6, 9), new PointF(18, 9), new PointF(23, 21) };
+                        g.FillPolygon(b, pts);
+                        g.DrawPolygon(new Pen(Ink, 1.2f), pts);
+                        using var top = new Pen(Color.FromArgb(250, 204, 21), 2f);
+                        g.DrawLine(top, 6, 9, 18, 9);
+                        break;
+                    }
+                case "noise":
+                    {
+                        using var p = new Pen(Grass, 2f) { LineJoin = LineJoin.Round };
+                        g.DrawLines(p, new[] { new PointF(1, 16), new PointF(4, 12), new PointF(7, 15), new PointF(10, 9), new PointF(13, 14), new PointF(16, 10), new PointF(19, 15), new PointF(23, 11) });
+                        g.DrawLine(new Pen(Color.FromArgb(120, Ink), 1f), 1, 20, 23, 20);
+                        break;
+                    }
+                case "variants":
+                    {
+                        Color[] c = { Color.FromArgb(22, 128, 61), Color.FromArgb(34, 160, 80), Color.FromArgb(21, 110, 50), Color.FromArgb(50, 140, 70) };
+                        for (int y = 0; y < 3; y++)
+                        {
+                            for (int x = 0; x < 3; x++)
+                            {
+                                using var b = new SolidBrush(c[(x * 7 + y * 5) % 4]);
+                                g.FillRectangle(b, 3 + x * 6, 3 + y * 6, 6, 6);
+                            }
+                        }
+                        g.DrawRectangle(new Pen(Ink, 1f), 3, 3, 18, 18);
+                        break;
+                    }
+                case "transitionbrush":
+                    {
+                        using var lg = new LinearGradientBrush(new Rectangle(2, 2, 20, 20), Color.FromArgb(22, 128, 61), Sand, 45f);
+                        g.FillRectangle(lg, 2, 2, 20, 20);
+                        g.DrawRectangle(new Pen(Ink, 1f), 2, 2, 20, 20);
+                        Sparkle(g, 12, 12, Color.White);
+                        break;
+                    }
+                case "lasso":
+                    {
+                        using var p = new Pen(Color.FromArgb(8, 145, 178), 1.8f) { DashStyle = DashStyle.Dash };
+                        g.DrawClosedCurve(p, new[] { new PointF(4, 8), new PointF(12, 3), new PointF(21, 7), new PointF(18, 15), new PointF(8, 16) });
+                        using var rope = new Pen(Ink, 1.4f);
+                        g.DrawBezier(rope, 8, 16, 6, 19, 9, 21, 5, 23);
+                        break;
+                    }
+                case "magicwand":
+                    {
+                        using var stick = new Pen(Ink, 2.6f) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+                        g.DrawLine(stick, 4, 21, 15, 10);
+                        Sparkle(g, 17, 7, Color.FromArgb(250, 204, 21));
+                        Sparkle(g, 9, 5, Color.FromArgb(8, 145, 178));
+                        break;
+                    }
+                case "measure":
+                    {
+                        using var b = new SolidBrush(Color.FromArgb(250, 204, 21));
+                        var pts = new[] { new PointF(2, 16), new PointF(16, 2), new PointF(22, 8), new PointF(8, 22) };
+                        g.FillPolygon(b, pts);
+                        g.DrawPolygon(new Pen(Ink, 1.2f), pts);
+                        using var tick = new Pen(Ink, 1f);
+                        for (int k = 1; k < 6; k++)
+                        {
+                            float x = 2 + k * 2.4f, y = 16 - k * 2.4f;
+                            g.DrawLine(tick, x, y, x + (k % 2 == 0 ? 3 : 2), y + (k % 2 == 0 ? 3 : 2));
+                        }
+                        break;
+                    }
                 default:
                     {
                         using var c = new SolidBrush(Color.FromArgb(71, 85, 105));
@@ -354,6 +487,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             g.DrawBezier(foam, 14, 3, 11, 8, 14, 13, 8, 21);
             using var pen = new Pen(Ink, 1f);
             g.DrawRectangle(pen, 2, 2, 20, 20);
+        }
+
+        private static void Tree(Graphics g, float x, float y, float k)
+        {
+            using var trunk = new SolidBrush(Color.FromArgb(120, 72, 30));
+            g.FillRectangle(trunk, x - 1 * k, y + 2 * k, 2 * k, 6 * k);
+            using var leaves = new SolidBrush(Grass);
+            g.FillEllipse(leaves, x - 5 * k, y - 6 * k, 10 * k, 10 * k);
+            using var pen = new Pen(Color.FromArgb(20, 83, 45), 1f);
+            g.DrawEllipse(pen, x - 5 * k, y - 6 * k, 10 * k, 10 * k);
         }
 
         private static void Stamp(Graphics g, Color c)

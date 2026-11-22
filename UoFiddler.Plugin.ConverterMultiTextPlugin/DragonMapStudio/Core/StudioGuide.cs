@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – help window content: guide and command reference in German and English
  *  *
@@ -314,6 +314,9 @@ Rechtsklick mit Auswahl, Bereich, Löschen, Färben, Multi, Vorlage oder Höhlen
 - Ansicht: Statics ein / aus, Raster, Höhen, Beschriftung, 2D, Wasser durchsichtig, Probleme, Static-IDs, Zoom.
 - Bereich: alle Befehle für den markierten Bereich (füllen, Küste, Küste glätten, Wasser, glätten, Berg, Übergänge, kopieren, Farb-Stempel …).
 - Küste: glätten im Bereich, ganze Karte, nur Fehlerstellen, Fehler anzeigen.
+- Auswahl (wenn Statics gewählt sind): drehen, spiegeln, auf den Boden, färben, als Streu-Set speichern, löschen.
+- Bearbeiten: Bereich drehen / spiegeln / auf den Boden, Suchen & Ersetzen, Lasso, Zauberstab, Messen.
+- Ansicht-Filter, Lesezeichen, Verlauf.
 - Karte: bauen, laden, speichern, Karte → Farbkarte, Stelle im Karten-Editor zeigen.
 - Rückgängig / Wiederholen, Hilfe.",
                 En = @"# CGI context menu
@@ -323,6 +326,9 @@ Right click with Select, Area, Delete, Hue, Multi, Template or Cave stamp – wi
 - View: statics on / off, grid, heights, labels, 2D, translucent water, problems, static ids, zoom.
 - Area: all commands for the marked area (fill, coast, smooth coast, water, smooth, mountain, transitions, copy, colour stamp …).
 - Coast: smooth in the area, whole map, only error places, show errors.
+- Selection (when statics are chosen): rotate, mirror, to the ground, hue, save as scatter set, delete.
+- Edit: rotate / mirror the area, to the ground, search & replace, lasso, magic wand, measure.
+- View filter, bookmarks, history.
 - Map: build, load, save, map → colour map, show the place in the map editor.
 - Undo / redo, help."
             },
@@ -341,6 +347,10 @@ T | Übergänge neu berechnen
 L | Bereich auswerten (Log + Zwischenablage)
 P | als Farb-Stempel speichern
 S | Statics darin auswählen
+R | Bereich drehen 90° (Land + Statics)
+X / Y | Bereich spiegeln links ↔ rechts / oben ↕ unten
+E | Suchen & Ersetzen
+D | Statics auf den Boden setzen
 Bild↑ / Bild↓ | Land + Statics heben / senken (Umschalt = 5)
 Strg+C / Strg+V | Land + Statics kopieren / einfügen
 Entf | Statics im Bereich löschen
@@ -357,6 +367,10 @@ T | compute transitions again
 L | analyse the area (log + clipboard)
 P | save as colour stamp
 S | select the statics inside
+R | rotate the area 90° (land + statics)
+X / Y | mirror the area left ↔ right / top ↕ bottom
+E | search & replace
+D | put the statics on the ground
 Page↑ / Page↓ | raise / lower land + statics (Shift = 5)
 Ctrl+C / Ctrl+V | copy / paste land + statics
 Del | delete the statics in the area
@@ -442,6 +456,76 @@ Mountain | build up from the ground height; area + M = a whole mountain.
             },
             new GuideTopic
             {
+                Key = "brushes", Group = "CGI-Ansicht|CGI view", TitleDe = "Pinsel & Bearbeiten (neu)", TitleEn = "Brushes & editing (new)",
+                De = @"# Pinsel & Bearbeiten
+Alle Werkzeuge stehen in der Palette links, die Einstellungen im Reiter „Pinsel“ (Kategorie PINSEL rechts). Ein Zug mit einem Pinsel ist immer ein Rückgängig-Schritt.
+## Statics
+Streu-Pinsel | verteilt ein Set: Dichte, Mindestabstand, nur auf bestimmten Land-Tiles, nicht auf Wasser / Statics / steilen Hängen, zufällige Hues. Strg+Ziehen entfernt die Statics des Sets.
+Sets | alle Item-Dateien der Dragon-Skripte (forest, jungle, swamp, snowforest …) – Bäume mit Blättern usw. wie beim Build. Eigene Sets: Statics auswählen → „Set aus Auswahl: ein Objekt“ (z. B. ein Baum aus mehreren Teilen) oder „jedes Static einzeln“.
+Hue-Pinsel | färbt alle Statics unter dem Pinsel mit der Hue aus dem Reiter Items, Strg = Hue 0.
+Wand / Zaun | von einem Ende zum anderen ziehen (West-Ost oder Nord-Süd). Wand-Set: im Reiter Items das Stück wählen und „← West-Ost“, „← Nord-Süd“, „← Pfosten“ klicken. Stockwerke, gleiche Höhe, alte Statics ersetzen.
+## Gelände
+Fluss | Bett mit Wasser-Tiles auf „Tiefe“ unter dem Startpunkt, Ufer steigt weich an, danach Übergänge. „Spiegel folgt dem Gelände“ für Bäche am Hang.
+Weg / Straße | Punkte klicken – eine weiche Kurve mit Breite; Höhe geglättet oder gleichmäßig; Bankett gleicht den Rand an. Doppelklick, Rechtsklick oder Enter = bauen, Rücktaste = letzten Punkt weg, Esc = abbrechen.
+Rampe | von unten nach oben ziehen: gleichmäßige Steigung (Strg = bis „Höhe =“). Breite = Pinsel.
+Plateau / Terrassen | abflachen auf die Höhe unter dem ersten Klick (oder „Höhe =“) oder Höhen auf Stufen runden.
+Unebenheit | leichte Wellen (± Stärke, Größe), jedes Feld einmal pro Zug.
+Varianten | mischt die Tiles derselben Farbe der Farbtabelle neu – keine Kachel-Muster.
+Übergänge-Pinsel | berechnet die Dragon-Übergänge nur unter dem Pinsel.
+Härte | Höhe +/−, Glätten, Plateau, Unebenheit: unter 100 % wird der Rand weich.
+## Auswählen und bearbeiten
+Auswahl | Rahmen auf freiem Boden ziehen wählt alle Statics darin (Strg = dazu). Ausgewählte Statics mit der Maus ziehen = verschieben.
+Alt+Klick | Pipette bei jedem Werkzeug: Item unter der Maus, sonst Land-Tile + Höhe.
+Lasso | Punkte um eine Fläche klicken, Doppelklick / Enter schließt. Umschalt = dazu, Strg = weg.
+Zauberstab | Klick wählt zusammenhängendes gleiches Land (Tile, Familie = Farbe der Farbtabelle, oder Höhe; Höhen-Toleranz).
+Maske | Solange Lasso oder Zauberstab aktiv sind (türkis), wirken ALLE Werkzeuge und Bereich-Befehle nur darin. Esc hebt auf.
+R / X / Y | Bereich drehen 90° / spiegeln links ↔ rechts / oben ↕ unten (Land + Statics). Mit Auswahl: R und X drehen / spiegeln die Statics.
+E | Suchen & Ersetzen: Statics-IDs (auch nur eine Hue, neue Hue, leer = löschen) und Land-Tiles, im Bereich / Lasso oder auf der ganzen Karte.
+D | Statics auf den Boden setzen (Auswahl oder Bereich) – nach dem Ändern des Landes.
+Messen | ziehen: Abstand, Schritte, Δz und Steigung (z pro Tile).
+## Komfort
+- Ansicht-Filter: Bäume / Pflanzen, Wände, Dächer, Wasser, Böden, Sonstige ausblenden (Reiter Pinsel oder Kontextmenü). Ausgeblendetes lässt sich nicht anklicken.
+- Lesezeichen: Stellen merken (Kontextmenü, Reiter Pinsel) und hinspringen – in der CGI-Ansicht oder im Karten-Editor.
+- Verlauf: Fenster mit allen Schritten, Klick geht dorthin zurück oder wieder vor.
+## Hinweise
+- Beim Drehen eines nicht quadratischen Bereichs bleiben Reste am alten Platz – am besten quadratisch markieren.
+- Die Bilder der Statics drehen nicht mit (eine Südwand bleibt eine Südwand).",
+                En = @"# Brushes & editing
+All tools are in the palette on the left, the settings in the tab “Brushes” (category BRUSHES on the right). One stroke of a brush is always one undo step.
+## Statics
+Scatter brush | spreads a set: density, minimum distance, only on certain land tiles, not on water / statics / steep slopes, random hues. Ctrl+drag removes the statics of the set.
+Sets | every item file of the Dragon scripts (forest, jungle, swamp, snowforest …) – trees with leaves etc. like the build. Own sets: select statics → “Set from selection: one object” (e.g. a tree of several parts) or “every static on its own”.
+Hue brush | colours all statics under the brush with the hue of the tab Items, Ctrl = hue 0.
+Wall / fence | drag from one end to the other (west – east or north – south). Wall set: choose the piece in the tab Items and click “← West-East”, “← North-South”, “← Post”. Levels, same height, replace old statics.
+## Terrain
+River | bed of water tiles at “depth” below the start, the bank rises softly, transitions afterwards. “Level follows terrain” for brooks on slopes.
+Road | click points – a smooth curve with width; height smoothed or even; the shoulder blends the edge. Double click, right click or Enter = build, Backspace = remove the last point, Esc = cancel.
+Ramp | drag from bottom to top: even slope (Ctrl = up to “Height =”). Width = brush.
+Plateau / terraces | flatten to the height under the first click (or “Height =”) or round heights to steps.
+Noise | slight waves (± strength, size), every cell once per stroke.
+Variants | mixes the tiles of the same colour of the colour table again – no tile patterns.
+Transition brush | computes the Dragon transitions only under the brush.
+Hardness | height +/−, smooth, plateau, noise: below 100 % the edge becomes soft.
+## Select and edit
+Select | drag a frame on empty ground to select all statics inside (Ctrl = add). Drag selected statics with the mouse = move.
+Alt+click | pipette with every tool: the item under the mouse, otherwise land tile + height.
+Lasso | click points around an area, double click / Enter closes. Shift = add, Ctrl = remove.
+Magic wand | click selects connected equal land (tile, family = colour of the colour table, or height; height tolerance).
+Mask | While lasso or magic wand are active (cyan), ALL tools and area commands work only inside. Esc removes it.
+R / X / Y | rotate the area 90° / mirror left ↔ right / top ↕ bottom (land + statics). With a selection: R and X rotate / mirror the statics.
+E | Search & replace: static ids (also only one hue, new hue, empty = delete) and land tiles, in the area / lasso or on the whole map.
+D | put statics on the ground (selection or area) – after the land was changed.
+Measure | drag: distance, steps, Δz and slope (z per tile).
+## Comfort
+- View filter: hide trees / plants, walls, roofs, water, floors, other (tab Brushes or context menu). Hidden statics cannot be clicked.
+- Bookmarks: remember places (context menu, tab Brushes) and jump there – in the CGI view or in the map editor.
+- History: window with all steps, a click goes back (or forward) to there.
+## Notes
+- Rotating a non-square area leaves rests at the old place – better mark a square.
+- The pictures of the statics do not turn (a south wall stays a south wall)."
+            },
+            new GuideTopic
+            {
                 Key = "keys", Group = "Übersicht|Overview", TitleDe = "Alle Tasten", TitleEn = "All keys",
                 De = @"# Alle Tasten
 ## Überall
@@ -464,6 +548,10 @@ Bild↑ / Bild↓ | Z ±1 (Umschalt ±5)
 Entf / H / I | löschen / färben / im Item-Katalog zeigen
 Strg+C / Strg+V / Strg+A | kopieren / einfügen / alles auf dem Tile
 Bereich: F K J W G M T L P S | füllen, Küste, Küste glätten, Wasser, glätten, Berg, Übergänge, Log, Stempel, Statics wählen
+Bereich / Lasso: R X Y E D | drehen, spiegeln ↔ / ↕, ersetzen, auf den Boden
+Auswahl: R X D | Statics drehen, spiegeln, auf den Boden
+Alt+Klick | Pipette (Item oder Land) bei jedem Werkzeug
+Weg / Lasso: Enter, Rücktaste, Esc | fertig, letzten Punkt weg, abbrechen
 Menütaste, Umschalt+Rechtsklick | Kontextmenü",
                 En = @"# All keys
 ## Everywhere
@@ -486,6 +574,10 @@ Page↑ / Page↓ | Z ±1 (Shift ±5)
 Del / H / I | delete / hue / show in the item catalogue
 Ctrl+C / Ctrl+V / Ctrl+A | copy / paste / all on the tile
 Area: F K J W G M T L P S | fill, coast, smooth coast, water, smooth, mountain, transitions, log, stamp, select statics
+Area / lasso: R X Y E D | rotate, mirror ↔ / ↕, replace, to the ground
+Selection: R X D | rotate, mirror, to the ground
+Alt+click | pipette (item or land) with every tool
+Road / lasso: Enter, Backspace, Esc | finish, remove the last point, cancel
 Menu key, Shift+right click | context menu"
             }
         };
