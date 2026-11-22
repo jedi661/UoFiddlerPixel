@@ -168,6 +168,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 tabCgiSide.SelectedTab = tabCgiTemplates;
                 EnsureTemplateLibrary();
             }
+            else if (_tabCgiBrushes != null && tool >= IsoTool.Scatter)
+            {
+                tabCgiSide.SelectedTab = _tabCgiBrushes;
+            }
+            if (_cgiNav.Count > 0)
+            {
+                UpdateCgiNav();
+            }
             // the Z offset belongs to the tool: 'Z +' of the items or of the templates
             isoView.ZOffset = tool == IsoTool.Template ? (int)numCgiTplZ.Value : (int)numCgiZOffset.Value;
             isoView.Invalidate();

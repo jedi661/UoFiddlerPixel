@@ -59,10 +59,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _settings.CoastSmooth ??= new CoastSmoothSettings();
             isoView.CoastSmooth = _settings.CoastSmooth;
             ToolPalette.Translate = L.T;
+            InitCgiBrushes();
             BuildEditorPalette();
             BuildEditorOptionsBar();
             BuildCgiPalette();
             BuildCgiOptionsBar();
+            BuildBrushOptionItems();
             BuildCoastSmoothUi();
             isoView.ContextMenuRequested += IsoView_ContextMenuRequested;
             UpdateEditorOptions();
@@ -184,6 +186,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             Add(CgiTool("template", "Vorlage setzen", string.Empty, "Gebäude / Böden aus dem Reiter Vorlagen", IsoTool.Template, ColBuild), "cgi");
             Add(CgiTool("delete", "Löschen", string.Empty, "Klick löscht ein Static", IsoTool.Delete, ColCheck), "cgi");
             Add(CgiTool("hue", "Färben", string.Empty, "Klick färbt das Static mit der Hue (Reiter Items)", IsoTool.Hue, AccDraw), "cgi");
+            Add(CgiTool("scatter", "Streu-Pinsel", string.Empty, "Bäume, Büsche, Steine aus einem Set streuen (Reiter Pinsel) · Strg = entfernen", IsoTool.Scatter, ColTerrain), "brushes");
+            Add(CgiTool("huebrush", "Hue-Pinsel", string.Empty, "Alle Statics unter dem Pinsel färben · Strg = Hue 0", IsoTool.HueBrush, AccDraw), "brushes");
+            Add(CgiTool("wall", "Wand / Zaun", string.Empty, "Von Ende zu Ende ziehen: Wandstücke + Pfosten (Wand-Set im Reiter Pinsel)", IsoTool.Wall, AccCave), "brushes");
             p.AddSeparator();
             Add(CgiTool("landset", "Land setzen", string.Empty, "Land-Tile malen (Reiter Land) · Rechtsklick = ID + Höhe aufnehmen", IsoTool.LandSet, AccHeight), "cgi");
             Add(CgiTool("raise", "Höhe +", string.Empty, "Land anheben (Schritt im Reiter Land)", IsoTool.Raise, AccHeight), "cgi");
@@ -212,10 +217,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             Add(CgiTool("coastsmooth", "Küste glätten", "", "Runder Pinsel: Ufer ohne Sand-Zacken, Spitzen / Buchten weg, Statics gehen mit · Bereich + J · ganze Karte / nur Fehler oben", IsoTool.CoastSmooth, ColTerrain), "coast");
             Add(CgiTool("water", "Wasser", "", "Wasser-Statics malen · Strg = entfernen", IsoTool.Water, ColTerrain), "coast");
             Add(CgiTool("mountain", "Berg", "", "Berg ab der Bodenhöhe aufbauen (Reiter Berg)", IsoTool.Mountain, ColTerrain), "caves");
+            Add(CgiTool("river", "Fluss", string.Empty, "Flussbett mit Wasser-Tiles und weichem Ufer ziehen", IsoTool.River, ColBuild), "brushes");
+            Add(CgiTool("road", "Weg / Straße", string.Empty, "Punkte klicken = weiche Kurve, Doppelklick / Enter = bauen", IsoTool.Road, AccCave), "brushes");
+            Add(CgiTool("ramp", "Rampe", string.Empty, "Von unten nach oben ziehen = gleichmäßige Steigung", IsoTool.Ramp, AccHeight), "brushes");
+            Add(CgiTool("plateau", "Plateau / Terrassen", string.Empty, "Abflachen auf eine Höhe oder Stufen", IsoTool.Plateau, AccHeight), "brushes");
+            Add(CgiTool("noise", "Unebenheit", string.Empty, "Leichte Wellen ins Gelände", IsoTool.Noise, AccHeight), "brushes");
+            Add(CgiTool("variants", "Varianten", string.Empty, "Tiles derselben Farbe neu mischen (gegen Kachel-Muster)", IsoTool.Variants, AccHeight), "brushes");
+            Add(CgiTool("transitionbrush", "Übergänge-Pinsel", string.Empty, "Dragon-Übergänge nur unter dem Pinsel neu berechnen", IsoTool.TransitionBrush, AccHeight), "brushes");
             p.AddSeparator();
             Add(CgiTool("cave", "Höhle", string.Empty, "In den Berg ziehen: Boden auf einer Höhe, Rand wird Wand", IsoTool.Cave, AccCave), "caves");
             Add(CgiTool("caveentrance", "Eingang", string.Empty, "Höhleneingang am Bergfuß malen", IsoTool.CaveEntrance, AccCave), "caves");
             Add(CgiTool("cavestamp", "Höhlen-Stempel", string.Empty, "Klick vor eine Bergwand = ganzer Eingang · Strg+Klick = entfernen", IsoTool.CaveStamp, AccCave), "caves");
+            p.AddSeparator();
+            Add(CgiTool("lasso", "Lasso", string.Empty, "Punkte um eine Fläche klicken – danach wirken alle Werkzeuge nur darin · Esc = aufheben", IsoTool.Lasso, AccSelect), "brushes");
+            Add(CgiTool("magicwand", "Zauberstab", string.Empty, "Klick wählt gleiches zusammenhängendes Land · Umschalt = dazu, Strg = weg", IsoTool.MagicWand, AccSelect), "brushes");
+            Add(CgiTool("measure", "Messen", string.Empty, "Ziehen: Abstand, Höhenunterschied, Steigung", IsoTool.Measure, AccSelect), "brushes");
             p.ToolHelpRequested += (s, e) => ShowHelp(_cgiHelpTopic.TryGetValue(e.Key, out string t) ? t : "cgi");
             _cgiPalette = p;
             _cgiDock = new ToolPaletteDock(p, splitCgi.Panel1, this);
@@ -571,6 +587,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             IsoTool.CaveEntrance => "Eingang",
             IsoTool.CaveStamp => "Höhlen-Stempel",
             IsoTool.PatternBrush => "Muster-Pinsel",
+            IsoTool.Scatter => "Streu-Pinsel",
+            IsoTool.HueBrush => "Hue-Pinsel",
+            IsoTool.Wall => "Wand / Zaun",
+            IsoTool.River => "Fluss",
+            IsoTool.Road => "Weg / Straße",
+            IsoTool.Ramp => "Rampe",
+            IsoTool.Plateau => "Plateau / Terrassen",
+            IsoTool.Noise => "Unebenheit",
+            IsoTool.Variants => "Varianten",
+            IsoTool.TransitionBrush => "Übergänge-Pinsel",
+            IsoTool.Lasso => "Lasso",
+            IsoTool.MagicWand => "Zauberstab",
+            IsoTool.Measure => "Messen",
             _ => t.ToString()
         };
 
@@ -587,7 +616,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private static bool CgiBrushTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight ||
                                                        t == IsoTool.Smooth || t == IsoTool.Coast || t == IsoTool.CoastSmooth || t == IsoTool.Water ||
-                                                       t == IsoTool.Cave || t == IsoTool.CaveEntrance || t == IsoTool.Mountain || t == IsoTool.PatternBrush;
+                                                       t == IsoTool.Cave || t == IsoTool.CaveEntrance || t == IsoTool.Mountain || t == IsoTool.PatternBrush ||
+                                                       t == IsoTool.Scatter || t == IsoTool.HueBrush || t == IsoTool.River || t == IsoTool.Plateau || t == IsoTool.Noise ||
+                                                       t == IsoTool.Variants || t == IsoTool.TransitionBrush || t == IsoTool.Ramp;
 
         private void UpdateCgiOptions()
         {
@@ -606,8 +637,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             foreach (ToolStripItem i in _cgiAreaItems)
             {
-                i.Visible = t == IsoTool.Area;
+                i.Visible = t == IsoTool.Area || t == IsoTool.Lasso || t == IsoTool.MagicWand;
             }
+            UpdateBrushOptionItems(t);
             foreach (ToolStripItem i in _cgiSelectItems)
             {
                 i.Visible = t == IsoTool.Select;
@@ -733,6 +765,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             coast.DropDownItems.Add(new ToolStripSeparator());
             coast.DropDownItems.Add(L.T("Einstellungen (Reiter Küste / Wasser)"), null, (s, a) => tabCgiSide.SelectedTab = tabCgiCoast);
             items.Add(coast);
+
+            AddBrushMenu(items, e);
 
             // ---- map
             var map = new ToolStripMenuItem(L.T("Karte"));
@@ -942,6 +976,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     IsoTool.Coast or IsoTool.CoastSmooth or IsoTool.Water => "coast",
                     IsoTool.Cave or IsoTool.CaveEntrance or IsoTool.CaveStamp or IsoTool.Mountain => "caves",
                     IsoTool.PatternBrush => "stamps",
+                    >= IsoTool.Scatter => "brushes",
                     _ => "cgi"
                 };
             }

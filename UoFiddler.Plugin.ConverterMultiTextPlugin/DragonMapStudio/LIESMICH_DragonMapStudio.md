@@ -849,3 +849,83 @@ Einstellungen im Reiter **Küste / Wasser**, oben im Kasten „Küste glätten (
 * **Fehler: Umkreis** (3)
 
 **Beim Bauen:** In den Build-Optionen unter **6 Küste** gibt es **„Küste weich (ohne Zacken)“** mit Abfall-Breite und Weichheit. Damit macht der Compiler dasselbe für die ganze Karte. Ab Werk ist das **aus**, damit bestehende Karten gleich bleiben, bis du es in der Oberfläche geprüft hast.
+
+## Neue Pinsel und Bearbeitung in der CGI-Ansicht (seit „Pinsel 21“)
+
+Im Fenstertitel steht jetzt `Stand 22.11.2026 – Pinsel 21`.
+
+Die neuen Werkzeuge findest du an mehreren Stellen:
+
+* in der CGI-**Palette links**
+* in der **Optionsleiste** (zweite Leiste) mit Knöpfen je Werkzeug
+* im **Kontextmenü** (Auswahl, Bearbeiten, Ansicht-Filter, Lesezeichen, Verlauf)
+* in der **Hilfe** (F1, Thema „Pinsel & Bearbeiten“)
+
+Die Einstellungen liegen im neuen Reiter **Pinsel** (Kategorie PINSEL rechts). Ein Zug mit einem Pinsel ist ein Rückgängig-Schritt. Die Logik steht in `Core/CgiBrushes.cs`, damit sie sich weiter ausbauen lässt.
+
+### Statics
+
+* **Streu-Pinsel:** verteilt ein Set.
+  * Einstellbar sind Dichte, Mindestabstand, „nur auf Land-Tiles“ (Knopf „Boden unter der Maus übernehmen“), nicht auf Wasser / Statics / steilen Hängen, zufällige Hues und Z +.
+  * **Strg+Ziehen** entfernt die Statics des Sets.
+  * **Sets:** alle Item-Dateien der Dragon-Skripte (forest, jungle, swamp, snowforest, desert …), mit mehrteiligen Objekten wie Stamm und Blättern, genau wie beim Build.
+  * **Eigene Sets** entstehen aus der Auswahl: „ein Objekt“ (mehrteilig) oder „jedes Static einzeln“ (Häufigkeit = Anzahl).
+* **Hue-Pinsel:** färbt alle Statics unter dem Pinsel, Strg = Hue 0.
+* **Wand / Zaun:** von Ende zu Ende ziehen (West-Ost oder Nord-Süd). Pfosten an den Enden, Stockwerke, gleiche Höhe, alte Statics ersetzen.
+  * Ein **Wand-Set** legst du so an: „Neues Wand-Set“, dann im Reiter Items das Stück wählen und **← West-Ost**, **← Nord-Süd**, **← Pfosten** klicken.
+  * Mehrere IDs werden zufällig gemischt.
+
+### Gelände
+
+* **Fluss:** Bett mit Wasser-Tiles auf „Tiefe“ unter dem Startpunkt. Das Ufer steigt weich an, danach kommen die Übergänge. „Spiegel folgt dem Gelände“ ist für Bäche am Hang.
+* **Weg / Straße:** Punkte klicken, daraus wird eine weiche Kurve (Catmull-Rom) mit Breite.
+  * Die Höhe wird geglättet oder läuft als gleichmäßige Steigung, ein Bankett gleicht den Rand an, danach kommen die Übergänge.
+  * Leere Weg-Tiles bedeuten: die Tiles aus dem Reiter Land.
+  * Doppelklick, Rechtsklick oder Enter baut; Rücktaste nimmt den letzten Punkt weg; Esc bricht ab.
+* **Rampe:** von unten nach oben ziehen ergibt eine gleichmäßige Steigung. Mit Strg geht sie bis „Höhe =“.
+* **Plateau / Terrassen:** abflachen auf die Höhe unter dem ersten Klick (oder „Höhe =“) oder auf Stufen runden.
+* **Unebenheit:** leichte Wellen ins Gelände.
+* **Varianten:** mischt die Tiles derselben Farbe der Farbtabelle neu, gegen Kachel-Muster.
+* **Übergänge-Pinsel:** berechnet die Dragon-Übergänge nur unter dem Pinsel.
+* **Härte (%)** gilt für Höhe +/−, Glätten, Plateau und Unebenheit: Unter 100 wird der Rand weich. Höhe +/− und Glätten sind jetzt runde Pinsel.
+
+### Auswählen und bearbeiten
+
+* **Rahmen-Auswahl:** Mit „Auswahl“ auf freiem Boden ziehen wählt alle Statics darin (Strg = dazu).
+* **Ziehen mit der Maus:** Ausgewählte Statics lassen sich direkt verschieben.
+* **Alt+Klick** ist bei jedem Werkzeug eine Pipette: das Item unter der Maus, sonst Land-Tile + Höhe.
+* **Lasso** (Punkte) und **Zauberstab** (gleiches Tile, gleiche Familie oder ähnliche Höhe): Umschalt = dazu, Strg = weg.
+  * Solange die türkise Maske da ist, wirken **alle** Werkzeuge und Bereich-Befehle nur darin. Esc hebt sie auf.
+  * Technisch: `MapData.EditMask` filtert jede Änderung, Rückgängig ist nicht eingeschränkt.
+* **Bereich / Lasso:**
+  * **R** dreht um 90°, **X / Y** spiegelt (Land + Statics).
+  * **E** öffnet Suchen & Ersetzen.
+  * **D** setzt die Statics auf den Boden.
+* **Auswahl:** **R / X** dreht bzw. spiegelt die Statics um ihre Mitte, **D** setzt sie auf den Boden.
+* **Suchen & Ersetzen:**
+  * Statics-IDs: gleich viele IDs werden 1:1 ersetzt, sonst zufällig; ein leeres Ziel löscht.
+  * Dazu „nur mit Hue“ und „neue Hue“.
+  * Land-Tiles lassen sich ebenso ersetzen.
+  * Wirkt im Bereich / Lasso oder auf der ganzen Karte.
+* **Messen:** Abstand, Schritte, Δz und Steigung (z pro Tile) als Linie mit Text.
+
+### Komfort
+
+* **Ansicht-Filter:** Bäume / Pflanzen, Wände / Türen / Fenster, Dächer, Wasser, Böden und Sonstige lassen sich ausblenden, über TileData-Flags und Namen. Ausgeblendetes ist nicht anklickbar.
+* **Lesezeichen:** Stellen merken und hinspringen, in der CGI-Ansicht oder im Karten-Editor. Erreichbar über das Kontextmenü in beiden Ansichten und den Reiter Pinsel. Gespeichert in den Einstellungen.
+* **Verlauf:** ein Fenster mit allen Schritten der CGI-Karte und ihren Namen. Ein Klick auf einen Schritt geht dorthin zurück oder wieder vor.
+* **Palette:** Angedockt nutzt sie automatisch 3 oder 4 Spalten, wenn 2 nicht in die Höhe passen.
+
+### Hinweise
+
+* Beim Drehen eines **nicht quadratischen** Bereichs bleiben Reste am alten Platz. Am besten quadratisch markieren.
+* Die **Bilder der Statics drehen nicht mit**, eine Südwand bleibt eine Südwand.
+* Ohne Oberfläche getestet (`CgiBrushes`):
+  * Drehen 4× ergibt wieder das Original.
+  * Fluss: Wasser auf Startpunkt − Tiefe, das Ufer steigt weich an.
+  * Rampe 0 → 30 gleichmäßig, Terrassen in Stufen.
+  * Unebenheit bleibt im Rahmen ± Stärke.
+  * Wand mit Pfosten und Stockwerken.
+  * Ersetzen und „auf Boden“ arbeiten richtig.
+  * Zauberstab und Lasso liefern die richtigen Felder, die Maske sperrt Änderungen außerhalb.
+  * Die Einstellungen überstehen Speichern und Laden (JSON).

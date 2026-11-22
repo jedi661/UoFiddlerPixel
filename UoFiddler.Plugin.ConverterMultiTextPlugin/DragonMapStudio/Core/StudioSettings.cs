@@ -75,6 +75,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public string CgiPaletteWindow { get; set; } = string.Empty;
 
+        /// <summary>New brushes of the CGI view (scatter, wall, river, road …), view filter, bookmarks.</summary>
+        [Browsable(false)]
+        public CgiBrushSettings CgiBrushes { get; set; } = new CgiBrushSettings();
+
         /// <summary>"Küste glätten" of the CGI view.</summary>
         [Browsable(false)]
         public CoastSmoothSettings CoastSmooth { get; set; } = new CoastSmoothSettings();

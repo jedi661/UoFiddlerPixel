@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Werkzeuge 20“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Pinsel 21“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -41,10 +41,11 @@
     * `MountainShaper.cs`: Berg-Pinsel.
     * `CoastSmoother.cs`: Küste ohne Zacken (weiches Ufer-Profil nach euklidischem Abstand, Küstenlinie begradigen, Fehlersuche). Arbeitet in Blöcken von 128, wird auch vom Compiler genutzt (`CoastSoft`).
     * `StudioGuide.cs`: Inhalte des Hilfe-Fensters (DE / EN, einfache Auszeichnung).
+    * `CgiBrushes.cs`: Logik und Einstellungen der neuen CGI-Pinsel (Streuen, Wand, Hue, Fluss, Weg-Kurve, Rampe, Plateau, Unebenheit, Varianten, Drehen/Spiegeln, Ersetzen, auf Boden, Zauberstab, Lasso).
     * `CgiAreaAnalyzer.cs`: Bereichs-Auswertung als Log.
     * `MapData.cs`: CGI-Daten mit `StrokeGroup` und `UndoWholeGroup`.
 * **Controls:**
-  * `IsoMapView.cs`: CGI-Ansicht.
+  * `IsoMapView.cs` + `IsoMapView.Tools.cs` (partial): CGI-Ansicht; die neuen Werkzeuge hängen über `ToolMouseDown/Move/Up`, `ToolKeyDown`, `ApplyNewBrush`, `DrawToolOverlay` an.
   * `MapCanvas.cs`: 2D-Karten-Editor.
   * `StampBrowser.cs`: Stempel-Menü, andockbar für mehrere Monitore.
   * `CollapsibleSection.cs`, `MapNavigator.cs`
@@ -61,6 +62,7 @@
   * `Templates`: Vorlagen und Multis als Stempel.
   * `HeightLayer`: „Höhe behalten“ für die normalen Farb-Werkzeuge (`MapCanvas.CellColour`, `StepClosing`), Anzeige und Löschen der Höhen-Ebene.
   * `Workspace`: Paletten, Optionsleisten, 👁-Ansicht-Menüs, CGI-Kontextmenü, Küste-glätten-Bedienung, F1.
+  * `CgiBrushes`: Reiter „Pinsel“, Streu-/Wand-Sets, Ansicht-Filter, Lesezeichen, Verlauf-Fenster, Suchen & Ersetzen, Menü- und Leisten-Einträge der neuen Werkzeuge.
 * **Rückgängig:**
   * 2D: `MapHistory` mit `Begin(name, group)`, `AddExtra(undo, redo)` und `UndoWholeGroup`, also schrittweise oder ganz.
   * CGI: `MapData.StrokeGroup`.
@@ -99,8 +101,18 @@
    * Englische Texte stehen in `DragonData/Lang/en.txt`.
    * **Alles nur kompiliert und der Küsten-Kern getestet, die Oberfläche hat der Besitzer noch nicht gesehen.**
 
+11. **Neu (Pinsel 21):**
+   * **CGI-Pinsel:** Streu-Pinsel (Sets aus den Dragon-Item-Dateien und eigene), Hue-Pinsel, Wand/Zaun, Fluss, Weg als Kurve, Rampe, Plateau/Terrassen, Unebenheit, Varianten, Übergänge-Pinsel, Härte.
+   * **Auswahl:** Rahmen-Auswahl, Statics ziehen, Alt-Pipette, Lasso und Zauberstab als Maske (`MapData.EditMask`).
+   * **Bearbeiten:** Bereich und Auswahl drehen/spiegeln (R X Y), Suchen & Ersetzen (E), auf Boden (D), Messen.
+   * **Komfort:** Ansicht-Filter, Lesezeichen, Verlauf-Fenster (`MapData` hat jetzt Schritt-Namen).
+   * Alles steht in Palette, Optionsleiste, Kontextmenü und Hilfe.
+   * Der Kern ist getestet, die Oberfläche hat der Besitzer noch nicht gesehen.
+
 ## Offen / als Nächstes
 
+* Pinsel 21 in der Oberfläche testen lassen, vor allem Weg (Doppelklick), Lasso-Maske, Statics ziehen, Rahmen-Auswahl und Streu-Sets.
+* Ausbau-Ideen: Wand-Sets mit Vorlagen ausliefern, Ecken automatisch (L-Formen), Streu-Pinsel mit mehreren Sets und Rand-Ausdünnung, Drehen mit Austausch der gerichteten IDs, Lesezeichen in der Kartenübersicht anzeigen.
 * Werkzeuge 20 in der Oberfläche testen lassen: Palette, Abdocken, Optionsleiste, Kontextmenü, F1, Höhe behalten, Küste glätten (sieht die Küste wirklich ohne Zacken aus?).
 * Danach evtl. `CoastSoft` ab Werk einschalten.
 * Ideen: Kartenübersicht erweitern (Lesezeichen, Fehler-Markierungen), Paletten-Spaltenzahl einstellbar, französische Texte (`fr.txt`).

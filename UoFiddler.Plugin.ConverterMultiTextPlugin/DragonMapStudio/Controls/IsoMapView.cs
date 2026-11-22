@@ -69,7 +69,46 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Template,
 
         /// <summary>Round brush: coast without saw teeth – soft shore heights, straight shore line, statics along.</summary>
-        CoastSmooth
+        CoastSmooth,
+
+        /// <summary>Brush: scatters a set of statics (trees, bushes, rocks …).</summary>
+        Scatter,
+
+        /// <summary>Brush: colours every static under it.</summary>
+        HueBrush,
+
+        /// <summary>Brush: river bed with water tiles and soft banks.</summary>
+        River,
+
+        /// <summary>Brush: flatten to one height or terraces.</summary>
+        Plateau,
+
+        /// <summary>Brush: slight waves in the ground.</summary>
+        Noise,
+
+        /// <summary>Brush: random tiles of the same family (no tile pattern).</summary>
+        Variants,
+
+        /// <summary>Brush: Dragon transitions only under the brush.</summary>
+        TransitionBrush,
+
+        /// <summary>Drag: wall / fence along X or Y.</summary>
+        Wall,
+
+        /// <summary>Points: road along a smooth curve.</summary>
+        Road,
+
+        /// <summary>Drag: even slope from start to end.</summary>
+        Ramp,
+
+        /// <summary>Drag: distance and height difference.</summary>
+        Measure,
+
+        /// <summary>Points: polygon selection (mask).</summary>
+        Lasso,
+
+        /// <summary>Click: connected cells of the same land (mask).</summary>
+        MagicWand
     }
 
     public sealed class StaticPickEventArgs : EventArgs
@@ -88,7 +127,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
     /// move / copy with the arrow keys, copy and paste, undo / redo.
     /// </summary>
     [ToolboxItem(true)]
-    public class IsoMapView : Control
+    public partial class IsoMapView : Control
     {
         private const int Tile = 44;
         private const int Half = 22;
@@ -393,6 +432,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Removes the marked area.</summary>
         public void ClearArea()
         {
+            ClearMask();
             _area = Rectangle.Empty;
             _areaPaste = false;
             Invalidate();
@@ -492,6 +532,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         public void SetMap(MapData map)
         {
+            _mask = null;
+            _points.Clear();
+            _dragStart = null;
+            _measureA = null;
             _map = map;
             _selection.Clear();
             _problemTiles.Clear();
@@ -688,7 +732,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     }
                     foreach (StaticItem st in _map.StaticsAt(x, y))
                     {
-                        if (st.Z > MaxZ)
+                        if (st.Z > MaxZ || Hidden(st.Id))
                         {
                             continue;
                         }
@@ -826,7 +870,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     {
                         foreach (StaticItem st in _map.StaticsAt(x, y).OrderBy(s => s.Z))
                         {
-                            if (st.Z > MaxZ)
+                            if (st.Z > MaxZ || Hidden(st.Id))
                             {
                                 continue;
                             }
@@ -1128,6 +1172,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 using var pen = new Pen(Color.Cyan, 2) { DashStyle = DashStyle.Dash };
                 g.DrawPolygon(pen, AreaPoly(_area));
             }
+            DrawToolOverlay(g);
             if (_areaPaste && _areaClip != null && _map.InBounds(_hover.X, _hover.Y))
             {
                 using var pen = new Pen(Color.Orange, 2) { DashStyle = DashStyle.Dash };
@@ -1151,14 +1196,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 g.DrawPolygon(pen, LandPoly(_hover.X, _hover.Y));
                 DrawGhost(g);
             }
+            g.ResetTransform();
+            DrawBand(g);
         }
 
         private static bool IsLandTool(IsoTool t) => t == IsoTool.LandSet || t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.SetHeight || t == IsoTool.Smooth ||
                                                      t == IsoTool.Coast || t == IsoTool.Water || t == IsoTool.Cave || t == IsoTool.CaveEntrance || t == IsoTool.Mountain || t == IsoTool.PatternBrush ||
-                                                     t == IsoTool.CoastSmooth;
+                                                     t == IsoTool.CoastSmooth || IsNewBrush(t);
 
         /// <summary>Round brushes: the outline is a circle.</summary>
-        private static bool IsRoundBrush(IsoTool t) => t == IsoTool.Coast || t == IsoTool.CoastSmooth;
+        private static bool IsRoundBrush(IsoTool t) => t == IsoTool.Coast || t == IsoTool.CoastSmooth || IsNewBrush(t) ||
+                                                       t == IsoTool.Raise || t == IsoTool.Lower || t == IsoTool.Smooth;
 
         /// <summary>Outline of a round brush (circle of tiles) at the land heights.</summary>
         private PointF[] CirclePoly(int cx, int cy, int r)
@@ -1333,6 +1381,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     Invalidate();
                     return;
                 }
+                if (ToolRightClick())
+                {
+                    return;
+                }
                 // context menu: Umschalt + right click with every tool; with tools that have no own right click a plain right click
                 bool menuTool = Tool == IsoTool.Select || Tool == IsoTool.Area || Tool == IsoTool.Delete || Tool == IsoTool.Hue ||
                                 Tool == IsoTool.Multi || Tool == IsoTool.Template || Tool == IsoTool.CaveStamp;
@@ -1367,8 +1419,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 PasteArea(tile.X, tile.Y);
                 return;
             }
+            if (ToolMouseDown(e, tile, hit))
+            {
+                return;
+            }
             if (IsLandTool(Tool))
             {
+                BeginBrushStroke(tile);
                 _map.BeginLand();
                 _landStroke = true;
                 _lastLandTile = new Point(-1, -1);
@@ -1382,6 +1439,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             if (Tool == IsoTool.Area)
             {
+                ClearMask();
                 _areaStart = tile;
                 _areaDragging = true;
                 _area = new Rectangle(tile.X, tile.Y, 1, 1);
@@ -1409,6 +1467,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     }
                     SelectionChanged?.Invoke(this, EventArgs.Empty);
                     Invalidate();
+                    SelectMouseDown(e, tile, hit);
                     break;
                 case IsoTool.Place:
                     if (_map.InBounds(tile.X, tile.Y))
@@ -1477,6 +1536,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 return;
             }
             Point t = TileAt(e.Location);
+            ToolMouseMove(e, t);
             if (t != _hover)
             {
                 _hover = t;
@@ -1501,6 +1561,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 _panning = false;
                 Cursor = Cursors.Default;
+            }
+            if (ToolMouseUp(e))
+            {
+                return;
             }
             if (_stampDragging)
             {
@@ -1531,6 +1595,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     }
                     Refresh(true);
                 }
+                EndBrushStroke();
                 int n = _map.EndLand();
                 _map.StrokeGroup = 0;
                 if (n > 0)
@@ -1560,7 +1625,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             Keys k = keyData & Keys.KeyCode;
             return k == Keys.Left || k == Keys.Right || k == Keys.Up || k == Keys.Down || k == Keys.PageUp || k == Keys.PageDown ||
-                   k == Keys.Space || base.IsInputKey(keyData);
+                   k == Keys.Space || k == Keys.Enter || k == Keys.Back || k == Keys.Escape || base.IsInputKey(keyData);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -1568,6 +1633,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             base.OnKeyDown(e);
             if (_map == null)
             {
+                return;
+            }
+            if (ToolKeyDown(e))
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
                 return;
             }
             if (Tool == IsoTool.Area && !_area.IsEmpty && _selection.Count == 0)
@@ -1922,6 +1993,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             _lastLandTile = center;
             int r = Math.Max(0, LandRadius);
+            if (ApplyNewBrush(center, r))
+            {
+                return;
+            }
             if (Tool == IsoTool.PatternBrush)
             {
                 ApplyPattern(center, r);
@@ -2027,10 +2102,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                                 break;
                             }
                         case IsoTool.Raise:
-                            _map.SetLand(x, y, id, z + Math.Max(1, HeightStep));
+                            _map.SetLand(x, y, id, z + Math.Max(BrushSettings.Hardness >= 100 ? 1 : 0, CgiBrushes.Dither(Math.Max(1, HeightStep) * HardnessWeight(x, y, center, r), _rnd)));
                             break;
                         case IsoTool.Lower:
-                            _map.SetLand(x, y, id, z - Math.Max(1, HeightStep));
+                            _map.SetLand(x, y, id, z - Math.Max(BrushSettings.Hardness >= 100 ? 1 : 0, CgiBrushes.Dither(Math.Max(1, HeightStep) * HardnessWeight(x, y, center, r), _rnd)));
                             break;
                         case IsoTool.SetHeight:
                             _map.SetLand(x, y, id, TargetHeight);
@@ -2049,7 +2124,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                                         }
                                     }
                                 }
-                                _map.SetLand(x, y, id, (int)Math.Round(sum / (double)n));
+                                double avg = sum / (double)n;
+                                _map.SetLand(x, y, id, z + (int)Math.Round((avg - z) * HardnessWeight(x, y, center, r)));
                                 break;
                             }
                     }
@@ -2781,7 +2857,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         tool = L.T("Vorlage setzen: die Vorschau folgt der Maus, Klick setzt auf die Boden-Höhe + 'Z +' · danach ausgewählt: Pfeile / Bild↑↓ verschieben, Entf löscht · Strg+Z nimmt alles zurück");
                         break;
                     default:
-                        tool = string.Empty;
+                        tool = NewToolHelp(Tool) ?? string.Empty;
                         break;
                 }
             }
