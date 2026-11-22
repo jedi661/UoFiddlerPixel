@@ -35,6 +35,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         West
     }
 
+    public enum DungeonLayout
+    {
+        [Description("Räume + Gänge (verstreut)")]
+        Corridors,
+
+        [Description("Gitter: Räume dicht an dicht mit Türen (wie Deceit)")]
+        Grid
+    }
+
     public enum DungeonStyle
     {
         [Description("Bergwall (Land: Boden-Tiles, Wände = Fels) – nur Werkzeug Bergwall")]
@@ -148,7 +157,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("Dungeon"), DisplayName("Leere mit Void füllen"), Description("Das ganze Rechteck außerhalb der Gänge wird Void-Land (schwarz) wie in den Original-Dungeons.")]
         public bool FillVoid { get; set; } = true;
 
-        [Category("Dungeon"), DisplayName("Räume")]
+        [Category("Dungeon"), DisplayName("Grundriss"), Description("Räume + Gänge = Räume verstreut, mit Gängen verbunden. Gitter = der Bereich wird in Räume geteilt (gemeinsame Wände, Türen) wie in Deceit.")]
+        public DungeonLayout Layout { get; set; } = DungeonLayout.Grid;
+
+        [Category("Dungeon"), DisplayName("Wand-Dicke (Gitter)"), Description("1 = eine Wand-Zeile auf Boden-Land zwischen den Räumen (wie das Original), 2 = zwei Zeilen Leere (jeder Raum hat eigene Wände).")]
+        public int WallThickness { get; set; } = 1;
+
+        [Category("Dungeon"), DisplayName("Tür-Breite")]
+        public int DoorWidth { get; set; } = 2;
+
+        [Category("Dungeon"), DisplayName("Räume"), Description("Grundriss Räume + Gänge: so viele Räume.")]
         public int Rooms { get; set; } = 8;
 
         [Category("Dungeon"), DisplayName("Raum kleinste Seite")]
@@ -222,12 +240,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public const byte Room = 1;
         public const byte Corridor = 2;
 
+        /// <summary>Wall line on floor land between two rooms (grid layout, wall thickness 1).</summary>
+        public const byte Inner = 3;
+
         public int W;
         public int H;
         public byte[] Cells;
         public List<Rectangle> Rooms = new List<Rectangle>();
 
-        public bool Floor(int x, int y) => x >= 0 && y >= 0 && x < W && y < H && Cells[y * W + x] != Solid;
+        /// <summary>Open floor (room or corridor) – inner wall lines are not.</summary>
+        public bool Floor(int x, int y) => x >= 0 && y >= 0 && x < W && y < H && (Cells[y * W + x] == Room || Cells[y * W + x] == Corridor);
+
+        /// <summary>Floor land: open floor or an inner wall line (the original puts those walls on floor land).</summary>
+        public bool LandFloor(int x, int y) => x >= 0 && y >= 0 && x < W && y < H && Cells[y * W + x] != Solid;
+
+        public bool IsInner(int x, int y) => x >= 0 && y >= 0 && x < W && y < H && Cells[y * W + x] == Inner;
 
         /// <summary>Solid cell next to a floor cell (8 neighbours).</summary>
         public bool Wall(int x, int y)
@@ -249,7 +276,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             return false;
         }
 
-        public int FloorCount => Cells.Count(c => c != Solid);
+        public int FloorCount => Cells.Count(c => c == Room || c == Corridor);
     }
 
     public static class Builders
@@ -258,6 +285,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         public static DungeonPlan Plan(int w, int h, DungeonSettings o, Random rnd)
         {
+            if (o.Layout == DungeonLayout.Grid)
+            {
+                return PlanGrid(w, h, o, rnd);
+            }
             var plan = new DungeonPlan { W = w, H = h, Cells = new byte[w * h] };
             int min = Math.Max(2, o.RoomMin), max = Math.Max(min, o.RoomMax);
             // rooms: random places, no overlap (one cell of rock between them), at least one cell from the border
@@ -336,6 +367,120 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 Carve(plan, p, corner, cw);
                 Carve(plan, corner, q, cw);
             }
+            return plan;
+        }
+
+        /// <summary>
+        /// Grid layout like Deceit: the area is split again and again (binary space partition) into rooms; between two halves
+        /// a wall line (thickness 1 on floor land, or 2 cells of void) with a door of the door width – every room is reachable.
+        /// </summary>
+        private static DungeonPlan PlanGrid(int w, int h, DungeonSettings o, Random rnd)
+        {
+            var plan = new DungeonPlan { W = w, H = h, Cells = new byte[w * h] };
+            int min = Math.Max(2, o.RoomMin), max = Math.Max(min + 1, o.RoomMax), t = Math.Clamp(o.WallThickness, 1, 3), door = Math.Max(1, o.DoorWidth);
+            byte line = t == 1 ? DungeonPlan.Inner : DungeonPlan.Solid;
+            void Set(int x, int y, byte v)
+            {
+                if (x >= 1 && y >= 1 && x < w - 1 && y < h - 1)
+                {
+                    plan.Cells[y * w + x] = v;
+                }
+            }
+            byte Get(int x, int y) => x < 0 || y < 0 || x >= w || y >= h ? DungeonPlan.Solid : plan.Cells[y * w + x];
+            void Split(Rectangle r, int depth)
+            {
+                bool vertical = r.Width > r.Height || (r.Width == r.Height && rnd.Next(2) == 0); // vertical = wall line from north to south
+                int size = vertical ? r.Width : r.Height;
+                bool can = size >= 2 * min + t;
+                bool want = size > max || (depth < 3 && rnd.Next(100) < 35 && size >= 2 * min + t);
+                if (!can || !want)
+                {
+                    for (int y = r.Top; y < r.Bottom; y++)
+                    {
+                        for (int x = r.Left; x < r.Right; x++)
+                        {
+                            Set(x, y, DungeonPlan.Room);
+                        }
+                    }
+                    plan.Rooms.Add(r);
+                    return;
+                }
+                int p = rnd.Next(min, size - min - t + 1);
+                Rectangle a, b;
+                if (vertical)
+                {
+                    a = new Rectangle(r.X, r.Y, p, r.Height);
+                    b = new Rectangle(r.X + p + t, r.Y, r.Width - p - t, r.Height);
+                }
+                else
+                {
+                    a = new Rectangle(r.X, r.Y, r.Width, p);
+                    b = new Rectangle(r.X, r.Y + p + t, r.Width, r.Height - p - t);
+                }
+                Split(a, depth + 1);
+                Split(b, depth + 1);
+                // the wall line between the halves
+                for (int k = 0; k < t; k++)
+                {
+                    for (int q = 0; q < (vertical ? r.Height : r.Width); q++)
+                    {
+                        if (vertical)
+                        {
+                            Set(r.X + p + k, r.Y + q, line);
+                        }
+                        else
+                        {
+                            Set(r.X + q, r.Y + p + k, line);
+                        }
+                    }
+                }
+                // doors: where both sides of the line are open floor (one, sometimes a second one = loop)
+                var places = new List<int>();
+                int len = vertical ? r.Height : r.Width;
+                for (int q = 0; q + door <= len; q++)
+                {
+                    bool ok = true;
+                    for (int d = 0; d < door && ok; d++)
+                    {
+                        int qq = q + d;
+                        bool before = vertical ? Get(r.X + p - 1, r.Y + qq) == DungeonPlan.Room || Get(r.X + p - 1, r.Y + qq) == DungeonPlan.Corridor
+                                               : Get(r.X + qq, r.Y + p - 1) == DungeonPlan.Room || Get(r.X + qq, r.Y + p - 1) == DungeonPlan.Corridor;
+                        bool after = vertical ? Get(r.X + p + t, r.Y + qq) == DungeonPlan.Room || Get(r.X + p + t, r.Y + qq) == DungeonPlan.Corridor
+                                              : Get(r.X + qq, r.Y + p + t) == DungeonPlan.Room || Get(r.X + qq, r.Y + p + t) == DungeonPlan.Corridor;
+                        ok = before && after;
+                    }
+                    if (ok)
+                    {
+                        places.Add(q);
+                    }
+                }
+                int doors = places.Count == 0 ? 0 : 1 + (rnd.Next(100) < o.Loops && places.Count > door * 3 ? 1 : 0);
+                var used = new List<int>();
+                for (int n = 0; n < doors; n++)
+                {
+                    int q = places[rnd.Next(places.Count)];
+                    if (used.Any(u => Math.Abs(u - q) < door + 2))
+                    {
+                        continue;
+                    }
+                    used.Add(q);
+                    for (int d = 0; d < door; d++)
+                    {
+                        for (int k = 0; k < t; k++)
+                        {
+                            if (vertical)
+                            {
+                                Set(r.X + p + k, r.Y + q + d, DungeonPlan.Corridor);
+                            }
+                            else
+                            {
+                                Set(r.X + q + d, r.Y + p + k, DungeonPlan.Corridor);
+                            }
+                        }
+                    }
+                }
+            }
+            Split(new Rectangle(1, 1, w - 2, h - 2), 0);
             return plan;
         }
 

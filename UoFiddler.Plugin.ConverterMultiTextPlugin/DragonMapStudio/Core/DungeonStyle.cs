@@ -36,6 +36,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>How many of them had statics (the stacks are only a sample of them).</summary>
         public int Filled { get; set; }
 
+        /// <summary>Things hanging on the wall in this situation (torches, paintings, tapestries) as stacks.</summary>
+        public List<string> Extras { get; set; } = new List<string>();
+
+        /// <summary>How many cells of the situation had such things.</summary>
+        public int ExtraFilled { get; set; }
+
+        /// <summary>Special masks of inner walls (wall statics on floor land with floor all around).</summary>
+        public const int InnerAlongX = 256;
+        public const int InnerAlongY = 512;
+        public const int InnerPost = 768;
+
         public override string ToString() => $"{(OnFloor ? "Boden" : "Leere")} N{(Mask & 1) > 0} O{(Mask & 2) > 0} S{(Mask & 4) > 0} W{(Mask & 8) > 0}: {Stacks.Count}/{Cells}";
     }
 
@@ -173,11 +184,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             var floorZ = new Dictionary<int, int>();
             var floorStatics = new Dictionary<string, int>();
             var rules = new Dictionary<(bool, int), WallRule>();
-            var kinds = new Dictionary<StaticKind, int>();
             var idCount = new Dictionary<(ushort id, int dz, string where), int>();
-            int floorCells = 0, decorCells = 0, wallStacks = 0;
+            int openCells = 0, decorCells = 0, wallStacks = 0, innerCells = 0;
             var decor = new List<string>();
             var rnd = new Random(1);
+            WallRule Rule(bool onFloor, int mask)
+            {
+                if (!rules.TryGetValue((onFloor, mask), out WallRule r))
+                {
+                    rules[(onFloor, mask)] = r = new WallRule { OnFloor = onFloor, Mask = mask };
+                }
+                return r;
+            }
+            void Sample(List<string> list, string stack)
+            {
+                if (list.Count < MaxStacks)
+                {
+                    list.Add(stack);
+                }
+                else
+                {
+                    list[rnd.Next(MaxStacks)] = stack; // keep a random sample
+                }
+            }
+            // walls on floor land (inner walls) make a cell not open
+            bool HasWall(int x, int y) => map.StaticsAt(x, y).Any(st => Role(st.Id, 0, true) == "Wand");
+            bool Open(int x, int y) => Floor(x, y) && !HasWall(x, y);
             for (int y = area.Top; y < area.Bottom; y++)
             {
                 for (int x = area.Left; x < area.Right; x++)
@@ -186,10 +218,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     int mask = Mask(Floor, x, y);
                     bool edge = floor ? mask != 15 : mask != 0;
                     int fz = FloorZ(map, Floor, x, y);
-                    List<StaticItem> statics = map.StaticsAt(x, y).OrderBy(s => s.Z).ToList();
+                    List<StaticItem> statics = map.StaticsAt(x, y).OrderBy(st => st.Z).ToList();
                     if (floor)
                     {
-                        floorCells++;
                         ushort land = map.LandId(x, y);
                         floorLand[land] = floorLand.TryGetValue(land, out int c) ? c + 1 : 1;
                         floorZ[fz] = floorZ.TryGetValue(fz, out int cz) ? cz + 1 : 1;
@@ -199,68 +230,85 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         continue; // deep void: nothing to learn
                     }
                     var wallPart = new List<string>();
-                    var decorPart = new List<string>();
-                    foreach (StaticItem s in statics)
+                    var hung = new List<string>();
+                    var loose = new List<string>();
+                    foreach (StaticItem st in statics)
                     {
-                        StaticKind k = UoArtCache.ItemKind(s.Id);
-                        kinds[k] = kinds.TryGetValue(k, out int kc) ? kc + 1 : 1;
-                        string entry = $"{s.Id:x4}@{s.Z - fz}";
-                        string where;
-                        if (!floor || k == StaticKind.Wall || k == StaticKind.Roof)
+                        int dz = st.Z - fz;
+                        string role = floor ? Role(st.Id, dz, false) : (IsHung(st.Id, dz) ? "Wand-Deko" : "Wand");
+                        string entry = $"{st.Id:x4}@{dz}";
+                        switch (role)
                         {
-                            wallPart.Add(entry);
-                            where = "Wand";
+                            case "Wand":
+                                wallPart.Add(entry);
+                                break;
+                            case "Boden":
+                                floorStatics[entry] = floorStatics.TryGetValue(entry, out int fc) ? fc + 1 : 1;
+                                break;
+                            case "Wand-Deko":
+                                hung.Add(entry);
+                                break;
+                            case "Deko":
+                                loose.Add(entry);
+                                break;
                         }
-                        else if (k == StaticKind.Floor)
-                        {
-                            floorStatics[entry] = floorStatics.TryGetValue(entry, out int fc) ? fc + 1 : 1;
-                            where = "Boden";
-                        }
-                        else
-                        {
-                            decorPart.Add(entry);
-                            where = "Deko";
-                        }
-                        var key = (s.Id, s.Z - fz, where);
+                        var key = (st.Id, dz, role);
                         idCount[key] = idCount.TryGetValue(key, out int ic) ? ic + 1 : 1;
+                    }
+                    // inner wall: wall statics on floor land with floor all around – the direction comes from the open neighbours
+                    bool inner = floor && !edge && wallPart.Count > 0;
+                    if (inner)
+                    {
+                        innerCells++;
+                        bool ns = Open(x, y - 1) || Open(x, y + 1), ew = Open(x - 1, y) || Open(x + 1, y);
+                        WallRule r = Rule(true, ns && !ew ? WallRule.InnerAlongX : ew && !ns ? WallRule.InnerAlongY : WallRule.InnerPost);
+                        r.Cells++;
+                        r.Filled++;
+                        wallStacks++;
+                        Sample(r.Stacks, string.Join(" ", wallPart));
+                        if (hung.Count > 0)
+                        {
+                            r.ExtraFilled++;
+                            Sample(r.Extras, string.Join(" ", hung));
+                        }
+                        continue;
                     }
                     if (edge)
                     {
-                        if (!rules.TryGetValue((floor, mask), out WallRule rule))
-                        {
-                            rules[(floor, mask)] = rule = new WallRule { OnFloor = floor, Mask = mask };
-                        }
+                        WallRule rule = Rule(floor, mask);
                         rule.Cells++;
                         if (wallPart.Count > 0)
                         {
                             wallStacks++;
                             rule.Filled++;
-                            string stack = string.Join(" ", wallPart);
-                            if (rule.Stacks.Count < MaxStacks)
-                            {
-                                rule.Stacks.Add(stack);
-                            }
-                            else
-                            {
-                                rule.Stacks[rnd.Next(MaxStacks)] = stack; // keep a random sample
-                            }
+                            Sample(rule.Stacks, string.Join(" ", wallPart));
+                        }
+                        if (hung.Count > 0)
+                        {
+                            rule.ExtraFilled++;
+                            Sample(rule.Extras, string.Join(" ", hung));
                         }
                     }
-                    if (floor && decorPart.Count > 0)
+                    if (floor && wallPart.Count == 0)
                     {
-                        decorCells++;
-                        if (decor.Count < 200)
+                        openCells++;
+                        if (loose.Count > 0)
                         {
-                            decor.Add(string.Join(" ", decorPart));
+                            decorCells++;
+                            if (decor.Count < 300)
+                            {
+                                decor.Add(string.Join(" ", loose));
+                            }
                         }
                     }
                 }
             }
-            look.FloorLand = string.Join(" ", floorLand.OrderByDescending(kv => kv.Value).Take(12).Select(kv => kv.Key.ToString("x4")));
-            look.FloorStatics = string.Join(" ", floorStatics.Where(kv => kv.Value * 10 >= floorCells).OrderByDescending(kv => kv.Value).Take(8).Select(kv => kv.Key));
+            look.FloorLand = string.Join(" ", floorLand.OrderByDescending(kv => kv.Value).Where(kv => kv.Value * 50 >= floorLand.Values.Sum()).Take(12).Select(kv => kv.Key.ToString("x4")));
+            look.FloorStatics = string.Join(" ", floorStatics.Where(kv => kv.Value * 10 >= openCells).OrderByDescending(kv => kv.Value).Take(8).Select(kv => kv.Key));
             look.Walls = rules.Values.Where(r => r.Cells > 0).OrderBy(r => r.OnFloor).ThenBy(r => r.Mask).ToList();
             look.Decor = decor;
-            look.DecorPercent = floorCells == 0 ? 0 : Math.Round(decorCells * 100.0 / floorCells, 1);
+            look.DecorPercent = openCells == 0 ? 0 : Math.Round(decorCells * 100.0 / openCells, 1);
+            int floorCells = openCells;
 
             // ---------------------------------------------------------- report
             var sb = new StringBuilder();
@@ -269,7 +317,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             sb.AppendLine($"Quelle / source: {source}");
             sb.AppendLine($"Bereich / area: {area.X},{area.Y} {area.Width}×{area.Height}");
             sb.AppendLine($"Void-Land (außen / outside): {string.Join(" ", voidTiles.Select(v => $"{v:x4} {UoArtCache.LandName(v)}"))}");
-            sb.AppendLine($"Bodenfelder / floor cells: {floorCells}, Wand-Stapel / wall stacks: {wallStacks}, Deko-Felder / decor cells: {decorCells} ({look.DecorPercent} %)");
+            sb.AppendLine($"Offene Bodenfelder / open floor cells: {floorCells}, Wand-Stapel / wall stacks: {wallStacks} (davon Innenwände / inner walls {innerCells}), lose Deko / loose decor: {decorCells} ({look.DecorPercent} %)");
+            sb.AppendLine("Rollen / roles: Wand = Wand-Flag oder auf der Leere · Wand-Deko = Fackeln, Bilder, Teppiche (an der Wand) · Deko = lose (Schutt, Blut, Knochen, Spinnweben) · Einrichtung = Tische, Stühle, Steine, Treppen (wird nicht zufällig gesetzt) · Boden = flache Boden-Statics");
             sb.AppendLine();
             sb.AppendLine("BODEN-LAND (Textur) / FLOOR LAND:");
             foreach (var kv in floorLand.OrderByDescending(kv => kv.Value).Take(20))
@@ -292,11 +341,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             sb.AppendLine("  Feld = Boden oder Leere, dahinter welche Nachbarn Boden sind (N O S W) → häufigste Stapel 'id@dz'");
             foreach (WallRule r in look.Walls)
             {
-                string n = r.Mask >= 16
+                string n = r.Mask >= 256
+                    ? (r.Mask == WallRule.InnerAlongX ? "Innen W-O" : r.Mask == WallRule.InnerAlongY ? "Innen N-S" : "Innen Ecke")
+                    : r.Mask >= 16
                     ? $"Ecke {((r.Mask & 16) > 0 ? "NO" : "")}{((r.Mask & 32) > 0 ? "SO" : "")}{((r.Mask & 64) > 0 ? "SW" : "")}{((r.Mask & 128) > 0 ? "NW" : "")}"
                     : $"{((r.Mask & 1) > 0 ? "N" : "-")}{((r.Mask & 2) > 0 ? "O" : "-")}{((r.Mask & 4) > 0 ? "S" : "-")}{((r.Mask & 8) > 0 ? "W" : "-")}";
                 var top = r.Stacks.GroupBy(s => s).OrderByDescending(g => g.Count()).Take(3).Select(g => $"[{g.Key}] ×{g.Count()}");
-                sb.AppendLine($"  {(r.OnFloor ? "Boden " : "Leere ")} {n,-8} Felder {r.Cells,5}, mit Statics {r.Filled,5}: {string.Join("  ", top)}");
+                sb.AppendLine($"  {(r.OnFloor ? "Boden " : "Leere ")} {n,-10} Felder {r.Cells,5}, mit Statics {r.Filled,5}: {string.Join("  ", top)}" +
+                              (r.ExtraFilled > 0 ? $"   Wand-Deko {r.ExtraFilled}×: {string.Join("  ", r.Extras.GroupBy(e => e).OrderByDescending(g => g.Count()).Take(3).Select(g => $"[{g.Key}]"))}" : string.Empty));
             }
             sb.AppendLine();
             sb.AppendLine("PLAN (# = Wand-Statics, . = Boden, d = Deko, ' ' = Leere) – höchstens 160×120:");
@@ -307,7 +359,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 {
                     bool floor = Floor(x, y);
                     bool hasStatics = map.StaticsAt(x, y).Any();
-                    bool wall = map.StaticsAt(x, y).Any(s => !floor || UoArtCache.ItemKind(s.Id) == StaticKind.Wall);
+                    bool wall = map.StaticsAt(x, y).Any(st => !floor || Role(st.Id, 0, true) == "Wand");
                     line.Append(wall ? '#' : floor ? (hasStatics ? 'd' : '.') : ' ');
                 }
                 sb.AppendLine(line.ToString().TrimEnd());
@@ -317,12 +369,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         /// <summary>
         /// Builds a dungeon plan with a learned look (inside BeginLand / EndLand): void and floor land at the floor height,
-        /// the learned wall stacks in the same situations, floor statics and decoration. Returns the static changes.
+        /// the learned wall stacks in the same situations (outer walls by the floor neighbours, inner walls by direction),
+        /// things on the walls, floor statics and loose decoration. Returns the static changes.
         /// </summary>
         public static List<StaticChange> Build(MapData map, Rectangle area, DungeonPlan plan, DungeonLook look, int floorZ, bool underMap, bool fillVoid, bool clearStatics, Random rnd)
         {
             var statics = new List<StaticChange>();
-            bool Floor(int x, int y) => plan.Floor(x - area.X, y - area.Y);
+            bool Land(int x, int y) => plan.LandFloor(x - area.X, y - area.Y);
+            bool Open(int x, int y) => plan.Floor(x - area.X, y - area.Y);
             ushort[] voidLand = HexList.Parse(look.VoidLand);
             ushort[] floorLand = HexList.Parse(look.FloorLand);
             var floorStatics = (look.FloorStatics ?? string.Empty).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -335,10 +389,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     {
                         continue;
                     }
-                    bool floor = Floor(x, y);
-                    int mask = Mask(Floor, x, y);
-                    bool edge = floor ? mask != 15 : mask != 0;
-                    if (!floor && !edge && !fillVoid)
+                    bool land = Land(x, y), open = Open(x, y), inner = plan.IsInner(x - area.X, y - area.Y);
+                    int mask = Mask(Land, x, y);
+                    bool edge = land ? mask != 15 : mask != 0;
+                    if (!land && !edge && !fillVoid)
                     {
                         continue;
                     }
@@ -350,7 +404,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     {
                         map.SetLand(x, y, 0x0002, floorZ);
                     }
-                    else if (floor)
+                    else if (land)
                     {
                         map.SetLand(x, y, floorLand.Length > 0 ? floorLand[rnd.Next(floorLand.Length)] : map.LandId(x, y), floorZ);
                     }
@@ -365,37 +419,109 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             statics.Add(MapData.Add(new StaticItem { Id = id, X = x, Y = y, Z = Math.Clamp(floorZ + dz, -128, 127) }));
                         }
                     }
-                    if (floor && floorStatics.Length > 0)
+                    WallRule rule = null;
+                    if (inner && !edge)
+                    {
+                        bool ns = Open(x, y - 1) || Open(x, y + 1), ew = Open(x - 1, y) || Open(x + 1, y);
+                        int key = ns && !ew ? WallRule.InnerAlongX : ew && !ns ? WallRule.InnerAlongY : WallRule.InnerPost;
+                        if (!rules.TryGetValue((true, key), out rule) || rule.Stacks.Count == 0)
+                        {
+                            // no inner walls in the sample: the outer wall pieces of the same direction
+                            rule = key == WallRule.InnerAlongX ? Best(rules, (true, 11), (false, 4)) : key == WallRule.InnerAlongY ? Best(rules, (true, 13), (false, 2)) : Best(rules, (false, 6), (false, 2));
+                        }
+                        if (rule != null && rule.Stacks.Count > 0)
+                        {
+                            Put(rule.Stacks[rnd.Next(rule.Stacks.Count)]);
+                        }
+                    }
+                    else if (edge)
+                    {
+                        rules.TryGetValue((land, mask), out rule);
+                        if (rule != null && rule.Stacks.Count > 0 && rnd.NextDouble() < Math.Max(rule.Filled, rule.Stacks.Count) / (double)Math.Max(1, Math.Max(rule.Cells, rule.Filled)))
+                        {
+                            Put(rule.Stacks[rnd.Next(rule.Stacks.Count)]);
+                        }
+                        else if (rule == null && !land)
+                        {
+                            // a situation the sample did not have: the most similar one (most matching neighbour bits)
+                            WallRule near = look.Walls.Where(r => !r.OnFloor && r.Stacks.Count > 0 && r.Mask < 256 && (r.Mask >= 16) == (mask >= 16))
+                                .OrderBy(r => BitCount(r.Mask ^ mask)).ThenByDescending(r => r.Filled).FirstOrDefault();
+                            if (near != null)
+                            {
+                                Put(near.Stacks[rnd.Next(near.Stacks.Count)]);
+                            }
+                        }
+                    }
+                    if (rule != null && rule.Extras.Count > 0 && rnd.NextDouble() < rule.ExtraFilled / (double)Math.Max(1, rule.Cells))
+                    {
+                        Put(rule.Extras[rnd.Next(rule.Extras.Count)]);
+                    }
+                    if (open && floorStatics.Length > 0)
                     {
                         Put(floorStatics[rnd.Next(floorStatics.Length)]);
                     }
-                    WallRule rule = null;
-                    if (edge)
-                    {
-                        rules.TryGetValue((floor, mask), out rule);
-                    }
-                    if (rule != null && rule.Stacks.Count > 0 &&
-                        rnd.NextDouble() < Math.Max(rule.Filled, rule.Stacks.Count) / (double)Math.Max(1, Math.Max(rule.Cells, rule.Filled)))
-                    {
-                        Put(rule.Stacks[rnd.Next(rule.Stacks.Count)]);
-                    }
-                    else if (edge && rule == null && !floor)
-                    {
-                        // a situation the sample did not have: the most similar one (most matching neighbour bits)
-                        WallRule near = look.Walls.Where(r => !r.OnFloor && r.Stacks.Count > 0 && (r.Mask >= 16) == (mask >= 16))
-                            .OrderBy(r => BitCount(r.Mask ^ mask)).ThenByDescending(r => r.Filled).FirstOrDefault();
-                        if (near != null)
-                        {
-                            Put(near.Stacks[rnd.Next(near.Stacks.Count)]);
-                        }
-                    }
-                    if (floor && look.Decor.Count > 0 && rnd.NextDouble() * 100 < look.DecorPercent && !(edge && rule != null && rule.Stacks.Count > 0))
+                    bool wallHere = rule != null && rule.Stacks.Count > 0 && (inner || rule.Filled * 2 >= rule.Cells);
+                    if (open && !wallHere && look.Decor.Count > 0 && rnd.NextDouble() * 100 < look.DecorPercent)
                     {
                         Put(look.Decor[rnd.Next(look.Decor.Count)]);
                     }
                 }
             }
             return statics;
+        }
+
+        private static WallRule Best(Dictionary<(bool, int), WallRule> rules, params (bool, int)[] keys)
+        {
+            foreach ((bool, int) k in keys)
+            {
+                if (rules.TryGetValue(k, out WallRule r) && r.Stacks.Count > 0)
+                {
+                    return r;
+                }
+            }
+            return null;
+        }
+
+        // ------------------------------------------------------------------ roles of statics
+
+        private static readonly string[] HungWords = { "torch", "sconce", "painting", "portrait", "tapestry", "banner", "candelabra", "lantern", "mirror", "plaque", "sign" };
+        private static readonly string[] LooseWords = { "garbage", "blood", "bone", "skull", "web", "rubble", "debris", "spike", "rock", "pebble", "dirt", "moss", "puddle" };
+
+        /// <summary>Hangs on a wall: torches, paintings … (or something high up that is no surface).</summary>
+        private static bool IsHung(ushort id, int dz)
+        {
+            string name = (UoArtCache.ItemName(id) ?? string.Empty).ToLowerInvariant();
+            return HungWords.Any(name.Contains) || (dz >= 8 && !UoArtCache.ItemHas(id, Ultima.TileFlag.Surface) && !UoArtCache.ItemHas(id, Ultima.TileFlag.Wall));
+        }
+
+        /// <summary>Role of a static on floor land: Wand, Boden, Wand-Deko, Deko (loose) or Einrichtung (furniture, stones, stairs).</summary>
+        private static string Role(ushort id, int dz, bool onlyWall)
+        {
+            StaticKind k = UoArtCache.ItemKind(id);
+            if (k == StaticKind.Wall || k == StaticKind.Roof)
+            {
+                return "Wand";
+            }
+            if (onlyWall)
+            {
+                return "-";
+            }
+            if (k == StaticKind.Floor)
+            {
+                return "Boden";
+            }
+            if (IsHung(id, dz))
+            {
+                return "Wand-Deko";
+            }
+            string name = (UoArtCache.ItemName(id) ?? string.Empty).ToLowerInvariant();
+            bool loose = UoArtCache.ItemHas(id, Ultima.TileFlag.Background) || LooseWords.Any(name.Contains) ||
+                         (!UoArtCache.ItemHas(id, Ultima.TileFlag.Surface) && !UoArtCache.ItemHas(id, Ultima.TileFlag.Impassable) && UoArtCache.ItemHeight(id) <= 1);
+            if (name.Contains("stair") || name == "stone")
+            {
+                loose = false;
+            }
+            return loose ? "Deko" : "Einrichtung";
         }
 
         private static int BitCount(int v)

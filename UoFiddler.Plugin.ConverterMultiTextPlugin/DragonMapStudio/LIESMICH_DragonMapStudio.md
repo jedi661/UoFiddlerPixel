@@ -1039,3 +1039,43 @@ Den Log kannst du mir schicken, dann verfeinere ich die Regeln weiter.
 * Test-Dungeon gebaut (Boden 0500 auf z 22, Void 0244, Wandstücke je Richtung, Eckpfosten, 5 % Deko).
 * Daraus den Stil gelernt, dann einen **anderen** Dungeon damit gebaut.
 * Ergebnis: **390 von 390** Wandstücken an der richtigen Stelle, Void und Boden richtig, Deko in gleicher Häufigkeit.
+
+## Dungeon nach echter map0-Analyse (seit „Dungeon 24“)
+
+Im Fenstertitel steht jetzt `Stand 22.11.2026 – Dungeon 24`. Grundlage war dein Log von map0 (6035, 25, 91×78). Daraus gelesen:
+
+* **Boden:** Höhlen-Textur 0245–0249 auf z 0 und z 22, also zwei Ebenen. Die Rampen dazwischen sind aus 07a3 „stone“ und 07a4–07a7 „stone stairs“.
+* **UO-Wand-Regel:**
+  * Die Westwand 0242 steht auf der Leere links vom Boden (113 von 118).
+  * Die Nordwand 0241 steht auf der Leere oberhalb (103 von 116).
+  * Die Südwand 0241 und die Ostwand 0242 stehen auf dem **letzten Bodenfeld innen** (114 von 124 bzw. 110 von 122).
+  * Leere südlich bzw. östlich hat fast nie ein Static.
+* **Innenwände:** Wände zwischen Räumen stehen auf Boden-Land (im Plan `#....#....#`).
+* **Grundriss:** Räume dicht an dicht mit Durchgängen von 2–3 Feldern.
+
+### Neu
+
+* **Innenwände** werden gelernt: Wand-Statics auf Boden-Land mit Boden ringsum, nach Richtung W-O, N-S oder Ecke.
+* **Rollen** der Statics:
+  * **Wand**
+  * **Wand-Deko** (Fackeln, Bilder, Teppiche): wird an Wänden gelernt und dort wieder angebracht.
+  * **Deko** (lose: Schutt, Blut, Knochen, Spinnweben): nur auf freiem Boden.
+  * **Einrichtung** (Tische, Stühle, Theken, Steine, Treppen): wird nicht mehr zufällig verteilt, erscheint aber im Log.
+  * **Boden**
+* **Grundriss „Gitter“** (Standard, wie Deceit):
+  * Der Bereich wird immer wieder geteilt (BSP), bis die Räume klein genug sind.
+  * Zwischen zwei Hälften liegt eine Wand-Zeile auf Boden-Land (Wand-Dicke 1) mit einer Tür, manchmal einer zweiten (Schleifen %).
+  * Wand-Dicke 2 = eigene Wände je Raum.
+  * „Räume + Gänge“ gibt es weiter, der Bergwall nutzt immer diesen Grundriss.
+* Den Stil bitte **neu lernen**, damit Innenwände und Wand-Deko mit drin sind.
+
+### Test ohne Oberfläche
+
+* Gitter: alle Räume erreichbar (1650 von 1650 Feldern).
+* Innenwände bekommen ihre Stücke (313 von 322, der Rest liegt am Rand und nimmt die Außenwand-Regel).
+* Fackeln nur an Wänden, Deko nur auf freiem Boden, Void außen, Boden-Textur auf z 22.
+
+### Noch offen
+
+* Mehrere **Ebenen** (z 0 / z 22) mit Treppen und Rampen aus „stone“ / „stone stairs“.
+* **Einrichtung je Raum**, z. B. ein Raum mit Tischen und Stühlen wie im Original.

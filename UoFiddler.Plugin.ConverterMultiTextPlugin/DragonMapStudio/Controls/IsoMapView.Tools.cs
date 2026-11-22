@@ -672,7 +672,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 // Bergwall: the former "cave" dungeon – raised rock walls, rough edges
                 o = new DungeonSettings
                 {
-                    Style = DungeonStyle.Cave, Rooms = o.Rooms, RoomMin = o.RoomMin, RoomMax = o.RoomMax, CorridorWidth = o.CorridorWidth, Loops = o.Loops,
+                    Style = DungeonStyle.Cave, Layout = DungeonLayout.Corridors, Rooms = o.Rooms, RoomMin = o.RoomMin, RoomMax = o.RoomMax, CorridorWidth = o.CorridorWidth, Loops = o.Loops,
                     Rough = Math.Max(30, o.Rough), Seed = o.Seed, FixedFloor = o.FixedFloor, FloorZ = o.FloorZ, WallHeight = o.WallHeight,
                     FloorLand = o.FloorLand, WallLand = o.WallLand, ClearStatics = o.ClearStatics
                 };

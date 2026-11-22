@@ -1358,3 +1358,12 @@ Deko je Bodenfeld (%)	Decor per floor cell (%)
 So oft liegt auf einem Bodenfeld Deko (Spinnweben, Knochen …) wie im Original.	This often a floor cell has decoration (webs, bones …) like in the original.
 Gelernt aus	Learned from
 Land-Tiles des Bodens (Dungeon-Textur), mehrere = zufällig.	Land tiles of the floor (dungeon texture), several = random.
+# Dragon Map Studio – Dungeon 24 (grid layout, inner walls, wall decor)
+Grundriss	Layout
+Räume + Gänge (verstreut)	Rooms + corridors (scattered)
+Gitter: Räume dicht an dicht mit Türen (wie Deceit)	Grid: rooms side by side with doors (like Deceit)
+Räume + Gänge = Räume verstreut, mit Gängen verbunden. Gitter = der Bereich wird in Räume geteilt (gemeinsame Wände, Türen) wie in Deceit.	Rooms + corridors = scattered rooms connected by corridors. Grid = the area is split into rooms (shared walls, doors) like in Deceit.
+Wand-Dicke (Gitter)	Wall thickness (grid)
+1 = eine Wand-Zeile auf Boden-Land zwischen den Räumen (wie das Original), 2 = zwei Zeilen Leere (jeder Raum hat eigene Wände).	1 = one wall line on floor land between the rooms (like the original), 2 = two lines of void (every room has its own walls).
+Tür-Breite	Door width
+Grundriss Räume + Gänge: so viele Räume.	Layout rooms + corridors: this many rooms.

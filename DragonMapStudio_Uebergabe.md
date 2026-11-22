@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Dungeon 23“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Dungeon 24“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -123,8 +123,15 @@
    * Stil lernen aus einem echten Dungeon und Analyse-Log (Datei + Zwischenablage).
    * Test: 390 von 390 Wandstücken richtig nachgebaut.
 
+14. **Neu (Dungeon 24):**
+   * Auswertung des echten map0-Logs.
+   * Innenwände gelernt (Masken `WallRule.InnerAlongX/Y/Post`).
+   * Rollen Wand / Wand-Deko (`Extras`) / Deko / Einrichtung / Boden.
+   * Grundriss „Gitter“ (BSP, Zellart `DungeonPlan.Inner`, Türen).
+
 ## Offen / als Nächstes
 
+* Dungeon 24: Ebenen z 0 / 22 mit Treppen (07a3–07a7) und Einrichtung je Raum lernen.
 * Dungeon 23: Besitzer soll Deceit / Doom o. ä. lernen und den Log schicken → Regeln verfeinern (z. B. Stockwerke, Türen, Treppen zwischen Ebenen, Raumformen aus dem Original).
 * Bauen 22 testen: Keller im Client begehbar? Treppen-Richtung passend? NoDraw-Verhalten auf dem Shard prüfen.
 * Pinsel 21 in der Oberfläche testen lassen, vor allem Weg (Doppelklick), Lasso-Maske, Statics ziehen, Rahmen-Auswahl und Streu-Sets.
