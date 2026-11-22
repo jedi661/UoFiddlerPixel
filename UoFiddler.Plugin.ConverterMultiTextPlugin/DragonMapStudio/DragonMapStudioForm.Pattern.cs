@@ -28,6 +28,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private bool _patternHooked;
 
         // live CGI preview
+        private bool _liveAlways;
+        private bool _liveFollow;
+        private Point _liveCenter = new Point(-10000, -10000);
+        private ToolStripButton _liveButton;
+        private ToolStripButton _liveFollowButton;
+        private bool _liveHooked;
         private Timer _liveTimer;
         private bool _liveEnabled;
         private bool _liveDirty;
@@ -279,6 +285,69 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             _history.AddExtra(() => Swap(added, removed), () => Swap(removed, added));
         }
 
+        /// <summary>
+        /// Map editor tool bar: "Live-CGI" for every tool (brush, fill, line, heights …) and "folgt Maus": the small CGI window
+        /// shows the surroundings of the mouse built – while drawing and, with "folgt Maus", also when only moving over the map.
+        /// </summary>
+        private void AddLiveButtons()
+        {
+            _liveButton = new ToolStripButton(L.T("◉ Live-CGI"))
+            {
+                CheckOnClick = true,
+                ToolTipText = L.T("Beim Zeichnen mit jedem Werkzeug zeigt ein kleines CGI-Fenster die Umgebung der Maus gebaut"),
+                BackColor = Color.FromArgb(180, 83, 9),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            _liveFollowButton = new ToolStripButton(L.T("folgt Maus"))
+            {
+                CheckOnClick = true,
+                ToolTipText = L.T("Live-CGI auch beim bloßen Bewegen der Maus über die Karte aktualisieren (neu gebaut, sobald die Maus ein Stück weiter ist)")
+            };
+            _liveButton.CheckedChanged += (s, e) =>
+            {
+                _liveAlways = _liveButton.Checked;
+                _liveFollowButton.Enabled = _liveAlways;
+                HookLiveEvents();
+                if (_liveAlways)
+                {
+                    _liveCenter = new Point(-10000, -10000);
+                    MarkLiveDirty();
+                }
+            };
+            _liveFollowButton.CheckedChanged += (s, e) => _liveFollow = _liveFollowButton.Checked;
+            _liveFollowButton.Enabled = false;
+            toolStripEditor.Items.Add(_liveButton);
+            toolStripEditor.Items.Add(_liveFollowButton);
+        }
+
+        private void HookLiveEvents()
+        {
+            if (_liveHooked)
+            {
+                return;
+            }
+            _liveHooked = true;
+            mapCanvas.MapEdited += (o, e) => MarkLiveDirty();
+            mapCanvas.Painting += (o, e) => MarkLiveDirty();
+            mapCanvas.CursorMoved += (o, e) =>
+            {
+                if (_liveAlways && _liveFollow && (Math.Abs(e.X - _liveCenter.X) > 16 || Math.Abs(e.Y - _liveCenter.Y) > 16))
+                {
+                    MarkLiveDirty();
+                }
+            };
+        }
+
+        /// <summary>The live window was closed by the user: switch live off.</summary>
+        private void LiveWindowClosed()
+        {
+            if (_liveButton != null && _liveButton.Checked)
+            {
+                _liveButton.Checked = false;
+            }
+        }
+
         /// <summary>Strg+Umschalt+Z: all parts of the last stroke.</summary>
         private void UndoWholeStroke()
         {
@@ -298,7 +367,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private void MarkLiveDirty()
         {
-            if (!_liveEnabled || _map == null || mapCanvas.Tool != MapTool.PatternBrush && !mapCanvas.PasteActive)
+            bool stampLive = _liveEnabled && (mapCanvas.Tool == MapTool.PatternBrush || mapCanvas.PasteActive);
+            if (_map == null || !(stampLive || _liveAlways))
             {
                 return;
             }
@@ -326,7 +396,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 RectangleF v = mapCanvas.ViewRect;
                 c = new Point((int)(v.X + v.Width / 2), (int)(v.Y + v.Height / 2));
             }
-            int size = Math.Clamp(Math.Max(_patternStamp?.Width ?? 32, _patternStamp?.Height ?? 32) * 2, 48, 96);
+            int size = mapCanvas.Tool == MapTool.PatternBrush || mapCanvas.PasteActive
+                ? Math.Clamp(Math.Max(_patternStamp?.Width ?? 32, _patternStamp?.Height ?? 32) * 2, 48, 96)
+                : Math.Clamp(Math.Max(mapCanvas.BrushSize * 3, 64), 64, 128);
+            _liveCenter = c;
             var area = new Rectangle(c.X - size / 2, c.Y - size / 2, size, size);
             area.Intersect(new Rectangle(0, 0, _map.Width, _map.Height));
             int x0 = Math.Max(0, (area.Left - 8) / 8 * 8), y0 = Math.Max(0, (area.Top - 8) / 8 * 8);

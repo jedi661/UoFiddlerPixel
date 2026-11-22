@@ -719,3 +719,12 @@ Einstellen: Stempel-Menü (Zeile „Höhe“, „fest Z“, „±“) bzw. CGI-M
 **Stempel in der 2D-Ansicht erstellen:** „Auswahl → Stempel speichern“ fragt jetzt Name, Kategorie, **Zeichnen (Einmal / Freihand)** und Statics. Die Auswahl wird zusätzlich im Speicher gebaut – der Stempel bekommt die echten Land-Tiles mit Höhen und die Statics der Statics-Ebene. Damit taugt er auch als Pinsel in der CGI-Ansicht und zum Regeln lernen.
 
 Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Pinsel 15]`.
+
+## Live-CGI für alle Werkzeuge des Karten-Editors
+
+Werkzeugleiste des Karten-Editors: **„◉ Live-CGI“** (an / aus) und **„folgt Maus“**.
+* **Live-CGI an:** beim Zeichnen mit jedem Werkzeug – Pinsel, Radierer, Sprühen, Höhe ±, Füllen, Linie / Rechteck / Ellipse, Einfügen, Stempel, Höhleneingang – baut ein kleines CGI-Fenster die Umgebung der Maus im Hintergrund neu (64–128 Felder, je nach Pinselgröße, + 8 Felder Rand für die Übergänge). Beim Pinsel schon während des Ziehens, sonst nach jeder Änderung. Die Karte selbst und die große CGI-Ansicht bleiben unverändert.
+* **folgt Maus:** auch ohne zu zeichnen – sobald die Maus mehr als 16 Felder weiter ist, wird die neue Umgebung gebaut. So sieht man beim Überfahren der Farbkarte, was aus den Farben (Vorgaben) wird.
+* Das Fenster hat Raster, Infos (Höhe / Land-ID / ID + Höhe / ID + Höhe + Textur), Statics ein / aus und Static-IDs. Fenster schließen = Live-CGI aus.
+
+Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Live 16]`.

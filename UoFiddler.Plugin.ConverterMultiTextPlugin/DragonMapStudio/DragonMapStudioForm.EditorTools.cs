@@ -928,6 +928,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     Owner = this
                 };
                 _previewView = new IsoMapView { Dock = DockStyle.Fill, ShowGrid = true, ShowHeights = false };
+                _previewWindow.FormClosed += (s, e) => LiveWindowClosed();
                 var bar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
                 var grid = new ToolStripButton(L.T("Raster")) { CheckOnClick = true, Checked = true };
                 grid.Click += (s, e) => { _previewView.ShowGrid = grid.Checked; _previewView.Refresh(true); };

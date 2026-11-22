@@ -174,7 +174,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 22.11.2026 – Pinsel 15";
+        public const string BuildMark = "Stand 22.11.2026 – Live 16";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
@@ -622,6 +622,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             };
             stampMenu.Click += (s, e) => ToggleStampMenu();
             toolStripEditor.Items.Add(stampMenu);
+            AddLiveButtons();
             var refresh = new ToolStripButton(L.T("⟳ CGI aktualisieren"))
             {
                 ToolTipText = L.T("Den sichtbaren Teil der Farbkarte (oder die Auswahl) neu bauen und in die CGI-Ansicht übernehmen – der Rest der CGI-Karte bleibt"),
