@@ -31,6 +31,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private readonly ListView _list;
         private readonly ImageList _images;
         private readonly CheckBox _adapt;
+        private readonly CheckBox _repeat;
         private readonly Button _dock;
         private readonly Label _info;
         private List<ColorStamp> _all = new List<ColorStamp>();
@@ -70,9 +71,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             _list.DoubleClick += (s, e) => RaisePlace();
             _list.SelectedIndexChanged += (s, e) => ShowInfo();
 
-            _info = new Label { Dock = DockStyle.Bottom, Height = 34, Font = new Font("Segoe UI", 8f), ForeColor = Color.FromArgb(51, 65, 85) };
+            _info = new Label { Dock = DockStyle.Bottom, Height = 48, Font = new Font("Segoe UI", 8f), ForeColor = Color.FromArgb(51, 65, 85) };
             var bottom = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, WrapContents = true, Padding = new Padding(0, 2, 0, 0) };
             _adapt = new CheckBox { Text = L.T("Höhen an den Boden anpassen"), Checked = true, AutoSize = true, Margin = new Padding(3, 6, 3, 3) };
+            _repeat = new CheckBox { Text = L.T("Mehrfach setzen"), Checked = false, AutoSize = true, Margin = new Padding(3, 6, 3, 3) };
+            Button cancel = ActionButton(L.T("Abbrechen"), Color.FromArgb(71, 85, 105), false);
+            cancel.Click += (s, e) => CancelRequested?.Invoke(this, EventArgs.Empty);
+            Button chooseFolder = ActionButton(L.T("Ordner wählen…"), Color.FromArgb(37, 99, 235), false);
+            chooseFolder.Click += (s, e) => ChooseFolderRequested?.Invoke(this, EventArgs.Empty);
+            Button import = ActionButton(L.T("Hinzufügen…"), Color.FromArgb(37, 99, 235), false);
+            import.Click += (s, e) => ImportRequested?.Invoke(this, EventArgs.Empty);
             Button place = ActionButton(L.T("Setzen"), Color.FromArgb(180, 83, 9), true);
             place.Click += (s, e) => RaisePlace();
             Button del = ActionButton(L.T("Löschen"), Color.FromArgb(185, 28, 28), false);
@@ -81,7 +89,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             folder.Click += (s, e) => FolderRequested?.Invoke(this, EventArgs.Empty);
             Button reload = ActionButton(L.T("Neu laden"), Color.FromArgb(71, 85, 105), false);
             reload.Click += (s, e) => ReloadRequested?.Invoke(this, EventArgs.Empty);
-            bottom.Controls.AddRange(new Control[] { place, del, folder, reload, _adapt });
+            bottom.Controls.AddRange(new Control[] { place, cancel, del, folder, chooseFolder, import, reload, _adapt, _repeat });
 
             Controls.Add(_list);
             Controls.Add(_info);
@@ -96,6 +104,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public event EventHandler ReloadRequested;
         public event EventHandler DockToggleRequested;
         public event EventHandler CloseRequested;
+        public event EventHandler CancelRequested;
+        public event EventHandler ChooseFolderRequested;
+        public event EventHandler ImportRequested;
+
+        public bool PlaceRepeated => _repeat.Checked;
+
+        /// <summary>Folder of the stamps (shown in the info line).</summary>
+        public string Folder { get; set; } = string.Empty;
 
         /// <summary>Picture of a stamp (set by the form: colours of the colour table, statics as dots).</summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -165,7 +181,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             ColorStamp s = Selected;
             _info.Text = s == null
-                ? L.T("Doppelklick oder 'Setzen': Stempel hängt an der Maus, Klick setzt, rechte Taste = fertig.")
+                ? L.T("Doppelklick oder 'Setzen': Stempel hängt an der Maus, Klick setzt (einmal oder 'Mehrfach setzen'), Abbrechen / Esc = fertig.") + "\r\n" + Folder
                 : $"{s.Name}: {s.Width}×{s.Height}, Boden Z {s.BaseAltitude}, {s.Statics?.Count ?? 0} Statics";
         }
 

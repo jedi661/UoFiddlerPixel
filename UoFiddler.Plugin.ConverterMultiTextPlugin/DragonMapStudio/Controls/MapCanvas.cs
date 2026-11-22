@@ -194,6 +194,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// One undoable edit by the form: everything within <paramref name="radius"/> around (x, y) is recorded first,
         /// <paramref name="edit"/> changes the map and returns the changed area (empty = nothing changed, no undo step).
         /// </summary>
+        /// <summary>
+        /// One undoable edit of a rectangle (recorded first). <paramref name="extra"/> is called inside the step
+        /// (e.g. to add the statics of the step to the history).
+        /// </summary>
+        public void EditRect(Rectangle area, string name, Action<IndexedMap> edit, Action extra = null)
+        {
+            if (_map == null)
+            {
+                return;
+            }
+            area.Intersect(_map.Bounds);
+            if (area.IsEmpty)
+            {
+                return;
+            }
+            _history?.Begin(name);
+            _history?.Touch(area);
+            edit(_map);
+            extra?.Invoke();
+            EndEdit();
+            Changed(area);
+        }
+
         public Rectangle EditAround(int x, int y, int radius, string name, Func<IndexedMap, Rectangle> edit)
         {
             if (_map == null)
@@ -681,6 +704,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     PasteTransform = null;
                     PasteRepeat = false;
                     PasteName = "Einfügen";
+                    PasteEnded?.Invoke(this, EventArgs.Empty);
                     _pasteMode = false;
                     Invalidate();
                     return;
@@ -844,6 +868,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     OnViewChanged();
                     break;
                 case Keys.Escape:
+                    if (_pasteMode)
+                    {
+                        EndPaste();
+                        PasteEnded?.Invoke(this, EventArgs.Empty);
+                    }
                     _pasteMode = false;
                     _selection = Rectangle.Empty;
                     if (_drawing)
@@ -1186,7 +1215,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             PasteApplied?.Invoke(this, new MapPointEventArgs(p.X, p.Y, -1));
             Changed(r);
             EndEdit();
+            if (!PasteRepeat)
+            {
+                // set once: the stamp leaves the mouse
+                EndPaste();
+                PasteEnded?.Invoke(this, EventArgs.Empty);
+            }
         }
+
+        /// <summary>Paste / stamp mode ended (set once, Esc, right click, Abbrechen).</summary>
+        public event EventHandler PasteEnded;
 
         protected override void OnResize(EventArgs e)
         {

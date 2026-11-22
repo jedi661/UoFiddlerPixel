@@ -51,6 +51,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
         public string ProjectFolder { get; set; } = string.Empty;
 
+        [Category("1 Ordner"), DisplayName("Farbstempel-Ordner"), Description("Hier liegen die Farb-Stempel des Karten-Editors (*.dmstamp.json). Leer = Unterordner 'Farbstempel' im Projekt-Ordner.")]
+        [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
+        public string ColorStampFolder { get; set; } = string.Empty;
+
         [Category("1 Ordner"), DisplayName("Ausgabe-Ordner (MUL / UOP)"), Description("Ziel für map#.mul, staidx#.mul, statics#.mul, map#LegacyMUL.uop.")]
         [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
         public string OutputFolder { get; set; } = string.Empty;

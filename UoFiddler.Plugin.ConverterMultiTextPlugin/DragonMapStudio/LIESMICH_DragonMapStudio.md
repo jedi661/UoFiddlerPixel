@@ -622,4 +622,19 @@ Knopf **„▦ Stempel-Menü“** in der Werkzeugleiste: alle Farb-Stempel als B
 * Mit **mehreren Monitoren** öffnet es sich als **eigenes Fenster** (auf dem anderen Monitor), mit einem Monitor als **Leiste rechts** neben der Karte.
 * **⧉** im Kopf: Fenster ↔ Leiste. **Fenster schließen** = es kommt als Leiste rechts zurück. **✕** blendet es aus.
 
-Im Fenstertitel steht jetzt `[Stand 21.11.2026 – Stempel 10]`.
+Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Stempel 11]`.
+
+
+## Stempel-Ordner, einmal / mehrfach setzen, CGI aktualisieren, CGI-Bereich in die Farbkarte
+
+**Wo liegen die Farb-Stempel?** Standard: `<Projekt-Ordner>\Farbstempel\*.dmstamp.json`. Anderer Ordner: Einstellungen → „Farbstempel-Ordner“ oder im Stempel-Menü **„Ordner wählen…“** (die vorhandenen Stempel werden auf Wunsch verschoben oder kopiert). **„Hinzufügen…“** kopiert Stempel-Dateien aus einem beliebigen Ordner (anderes Projekt, Download) in den Stempel-Ordner. Bis „Stempel 10“ lagen sie im Vorlagen-Ordner (`Multis\Farbstempel`) – beim ersten Start werden sie automatisch in den neuen Ordner verschoben.
+
+**Fehler behoben – eigene Multis / Vorlagen fehlten:** Die Vorlagen-Liste hat die Farb-Stempel im Vorlagen-Ordner als Vorlagen mitgelesen (`*.dmstamp.json` endet auf `.json`), darunter riesige Stempel mit zehntausenden Statics. Jetzt werden `*.dmstamp.json` nie als Vorlage gelesen, und die Stempel liegen nicht mehr im Vorlagen-Ordner.
+
+**Einmal oder mehrfach setzen:** Häkchen **„Mehrfach setzen“** (Stempel-Menü und Abschnitt „Bereich: CGI-Vorschau & Farb-Stempel“). Aus = der Stempel verlässt nach einem Klick die Maus. **„Abbrechen“**, Esc, rechte Taste oder Kontextmenü „Stempeln / Einfügen beenden“ beendet das Stempeln. Strg+V (Einfügen) bleibt mehrfach.
+
+**CGI aktualisieren (Karten-Editor):** grüner Knopf **„⟳ CGI aktualisieren“** in der Werkzeugleiste (auch im Kontextmenü). Gebaut wird nur der sichtbare Teil der Farbkarte (oder die Auswahl, höchstens 1024×1024, mit 8 Tiles Rand für die Übergänge) und in die CGI-Karte übernommen – der Rest der CGI-Karte bleibt, das geht viel schneller als die ganze Karte. Hat die CGI-Karte eigene Änderungen (in der CGI-Ansicht gesetzte Statics / Land) oder stammt sie nicht aus dieser Farbkarte, fragt das Programm: **Ja** = vorher den CGI-Bereich in die Farbkarte übernehmen (nichts geht verloren), **Nein** = trotzdem aktualisieren, **Abbrechen**.
+
+**CGI → Farbkarte, ohne die Farbkarte zu löschen:**
+* Neuer Knopf **„▧ Bereich → in Farbkarte“** in der CGI-Leiste: der markierte Bereich wird an **derselben Stelle** in die geöffnete Farbkarte geschrieben (Farben + Statics-Ebene in diesem Bereich), alles andere bleibt. Ein Rückgängig-Schritt im Karten-Editor.
+* **„▤ Karte → Farbkarte“** fragt jetzt, wenn eine gleich große Farbkarte offen ist: **Ja** = in die geöffnete Farbkarte schreiben (Rückgängig möglich), **Nein** = als neue Karte, **Abbrechen**.

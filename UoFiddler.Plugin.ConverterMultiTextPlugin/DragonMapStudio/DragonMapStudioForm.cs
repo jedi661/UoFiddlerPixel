@@ -848,6 +848,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             tabMain.SelectedTab = tabEditor;
             _placingStamp = null;
             mapCanvas.BeginPaste(_clipboard);
+            mapCanvas.PasteRepeat = true;
             mapCanvas.Focus();
             SetStatus("Einfügen: Linksklick setzt (mehrfach möglich), Esc oder Rechtsklick beendet.");
         }

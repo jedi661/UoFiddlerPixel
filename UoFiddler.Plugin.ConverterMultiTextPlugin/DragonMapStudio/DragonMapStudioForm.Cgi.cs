@@ -280,6 +280,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             RunBusy("CGI-Karte bauen", (progress, token) => new DragonCompiler(rules, o, Log).BuildInMemory(copy, progress, token), data =>
             {
                 _cgiFromEditor = true;
+                _cgiUserEdits = false;
                 SetCgiMap(data, cx ?? data.Width / 2.0, cy ?? data.Height / 2.0);
                 SetStatus($"CGI-Karte gebaut: {data.Width}×{data.Height}, {data.StaticCount:N0} Statics. 'Speichern' schreibt nach {o.OutputFolder}.");
                 if (!UoArtCache.ArtAvailable)
@@ -446,7 +447,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
         }
 
-        private void IsoView_MapChanged(object sender, EventArgs e) => UpdateCgiState();
+        /// <summary>The user changed the CGI map by hand (statics, land) since it was built / refreshed from the colour map.</summary>
+        private bool _cgiUserEdits;
+
+        private void IsoView_MapChanged(object sender, EventArgs e)
+        {
+            _cgiUserEdits = true;
+            UpdateCgiState();
+        }
 
         private void TsbCgiUndo_Click(object sender, EventArgs e) => isoView.Undo();
 

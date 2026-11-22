@@ -46,7 +46,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 21.11.2026 – Stempel 10";
+        public const string BuildMark = "Stand 22.11.2026 – Stempel 11";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
@@ -139,8 +139,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
             };
             toMap.Click += (s, e) => CgiMapToColorMap();
+            var toEditor = new ToolStripButton(L.T("▧ Bereich → in Farbkarte"))
+            {
+                ToolTipText = L.T("Den markierten Bereich an derselben Stelle in die geöffnete Farbkarte schreiben (Rest bleibt, Strg+Z im Karten-Editor)"),
+                BackColor = Color.FromArgb(15, 118, 110),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            toEditor.Click += (s, e) => CgiAreaToEditorMap();
             toolStripCgi.Items.Insert(0, new ToolStripSeparator());
             toolStripCgi.Items.Insert(0, toMap);
+            toolStripCgi.Items.Insert(0, toEditor);
             toolStripCgi.Items.Insert(0, toStamp);
             isoView.AreaToStampRequested += (s, e) => CgiAreaToColorStamp();
         }
@@ -459,6 +468,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             };
             stampMenu.Click += (s, e) => ToggleStampMenu();
             toolStripEditor.Items.Add(stampMenu);
+            var refresh = new ToolStripButton(L.T("⟳ CGI aktualisieren"))
+            {
+                ToolTipText = L.T("Den sichtbaren Teil der Farbkarte (oder die Auswahl) neu bauen und in die CGI-Ansicht übernehmen – der Rest der CGI-Karte bleibt"),
+                BackColor = ColTerrain,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            refresh.Click += (s, e) => RefreshCgiFromEditor();
+            toolStripEditor.Items.Add(refresh);
         }
 
         // ================================================================== sections in the tabs
