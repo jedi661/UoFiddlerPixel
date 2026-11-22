@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Dungeon 24“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Werkstatt 25“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -42,6 +42,7 @@
     * `CoastSmoother.cs`: Küste ohne Zacken (weiches Ufer-Profil nach euklidischem Abstand, Küstenlinie begradigen, Fehlersuche). Arbeitet in Blöcken von 128, wird auch vom Compiler genutzt (`CoastSoft`).
     * `StudioGuide.cs`: Inhalte des Hilfe-Fensters (DE / EN, einfache Auszeichnung).
     * `DungeonStyle.cs`: Dungeon-Stil lernen (`DungeonStyleTools.Analyze`: Lage-Schlüssel Boden/Leere + Nachbar-Maske N1 O2 S4 W8, Außenecken NO16 SO32 SW64 NW128 → Wand-Stapel 'id@dz', Deko, Void/Boden-Land) + Log, `Build` mit gelerntem Stil.
+    * `Workshop.cs`: Kartenhöhe ermitteln, Leeren (Land → Leere auf eigener Höhe), Verschieben, Heben, eingebauter Stil `Classic()` (map0-Log).
     * `Builders.cs`: Dungeon-Generator (Räume + MST + Schleifen, L-Gänge), Keller unter der Karte (NoDraw 0002), Brücke, natürlicher Lauf; Sets `BridgeSet`, `StairSet`.
     * `CgiBrushes.cs`: Logik und Einstellungen der neuen CGI-Pinsel (Streuen, Wand, Hue, Fluss, Weg-Kurve, Rampe, Plateau, Unebenheit, Varianten, Drehen/Spiegeln, Ersetzen, auf Boden, Zauberstab, Lasso).
     * `CgiAreaAnalyzer.cs`: Bereichs-Auswertung als Log.
@@ -52,7 +53,8 @@
   * `StampBrowser.cs`: Stempel-Menü, andockbar für mehrere Monitore.
   * `CollapsibleSection.cs`, `MapNavigator.cs`
   * `ToolPalette.cs` (Werkzeug-Palette + `ToolPaletteDock` zum Ab- und Andocken), `ToolIcons.cs` (gezeichnete Symbole)
-* **Dialogs:** `CgiStampDialog.cs` (CGI → Farb-Stempel), `LearnRulesDialog.cs`, `SaveTemplateDialog.cs`, `HelpWindow.cs` (F1)
+* **Dialogs:** `DungeonWorkshopForm.cs` (Dungeon-Werkstatt: Arbeitskopie `MapData.CopyRegion` / `WriteBack`, zwei `IsoMapView` oben/unten, `PlanEditor`, Skript-JSON, Log), `ReplaceDialog.cs`,
+* **Dialogs (älter):** `CgiStampDialog.cs` (CGI → Farb-Stempel), `LearnRulesDialog.cs`, `SaveTemplateDialog.cs`, `HelpWindow.cs` (F1)
 * **Formular-Teile `DragonMapStudioForm.*.cs`**, in der `.csproj` mit `DependentUpon` eingetragen:
   * `Cgi`: CGI-Bau.
   * `CgiLayout`: Seitenleiste, Werkzeugleisten, `BuildMark`.
@@ -129,8 +131,18 @@
    * Rollen Wand / Wand-Deko (`Extras`) / Deko / Einrichtung / Boden.
    * Grundriss „Gitter“ (BSP, Zellart `DungeonPlan.Inner`, Türen).
 
+15. **Neu (Werkstatt 25):**
+   * Dungeon-Werkstatt als eigenes Fenster.
+   * Zoom bis 1:32 (Farb-Übersicht unter 1:4).
+   * Berg-Dungeon und Bergwall als Arten.
+   * Keller mit Loch nur auf Kartenhöhe.
+   * Etagen-Regler.
+   * Leere wählbar (NoDraw / Schwarz / Katalog).
+
 ## Offen / als Nächstes
 
+* Als Nächstes (Besitzer-Wunsch): Brücken / Geländer / Treppen – Teile automatisch aus TileData (Namen 'bridge', 'railing', 'stairs', Flags) mit Bildern zur Auswahl.
+* Werkstatt 25 in der Oberfläche testen lassen.
 * Dungeon 24: Ebenen z 0 / 22 mit Treppen (07a3–07a7) und Einrichtung je Raum lernen.
 * Dungeon 23: Besitzer soll Deceit / Doom o. ä. lernen und den Log schicken → Regeln verfeinern (z. B. Stockwerke, Türen, Treppen zwischen Ebenen, Raumformen aus dem Original).
 * Bauen 22 testen: Keller im Client begehbar? Treppen-Richtung passend? NoDraw-Verhalten auf dem Shard prüfen.

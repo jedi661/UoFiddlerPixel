@@ -866,6 +866,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             return statics.Count + land.Count;
         }
 
+        /// <summary>Marks an area from outside (dungeon workshop).</summary>
+        public void SetArea(Rectangle r)
+        {
+            _area = r;
+            Invalidate();
+        }
+
         /// <summary>Jumps the view to a place (bookmarks).</summary>
         public void JumpTo(int x, int y)
         {

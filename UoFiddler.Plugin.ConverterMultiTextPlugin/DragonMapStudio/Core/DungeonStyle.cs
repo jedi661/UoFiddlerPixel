@@ -380,6 +380,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             ushort[] voidLand = HexList.Parse(look.VoidLand);
             ushort[] floorLand = HexList.Parse(look.FloorLand);
             var floorStatics = (look.FloorStatics ?? string.Empty).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (underMap && floorStatics.Length == 0)
+            {
+                // under the map there is no land to walk on: cave floor statics (053d / 053e like in map0)
+                floorStatics = new[] { "053d@0", "053e@0" };
+            }
             var rules = look.Walls.ToDictionary(r => (r.OnFloor, r.Mask));
             for (int y = area.Top; y < area.Bottom; y++)
             {
@@ -402,7 +407,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     }
                     if (underMap)
                     {
-                        map.SetLand(x, y, 0x0002, floorZ);
+                        // NoDraw on the height of the map (no holes into the depth), the dungeon lies below as statics
+                        map.SetLand(x, y, 0x0002, map.LandZ(x, y));
                     }
                     else if (land)
                     {

@@ -1367,3 +1367,93 @@ Wand-Dicke (Gitter)	Wall thickness (grid)
 1 = eine Wand-Zeile auf Boden-Land zwischen den Räumen (wie das Original), 2 = zwei Zeilen Leere (jeder Raum hat eigene Wände).	1 = one wall line on floor land between the rooms (like the original), 2 = two lines of void (every room has its own walls).
 Tür-Breite	Door width
 Grundriss Räume + Gänge: so viele Räume.	Layout rooms + corridors: this many rooms.
+# Dragon Map Studio – Werkstatt 25 (dungeon workshop)
+Dungeon-Werkstatt	Dungeon workshop
+Keller (Werkstatt)	Cellar (workshop)
+Dungeon-Werkstatt für diesen Platz …	Dungeon workshop for this place …
+Keller-Werkstatt für diesen Platz …	Cellar workshop for this place …
+Dungeon-Werkstatt: erst mit 'Bereich' den Platz markieren (zum Markieren großer Plätze weit herauszoomen), dann noch einmal klicken.	Dungeon workshop: first mark the place with 'Area' (zoom far out to mark big places), then click again.
+Erst mit 'Bereich' einen Platz markieren, dann klicken: eigenes Fenster – klassischer Dungeon, Keller, Berg-Dungeon, Bergwall; Vorschau oben / unten, 2D-Plan, Skript, Rückgängig, Verschieben, Höhe, Löschen	First mark a place with 'Area', then click: own window – classic dungeon, cellar, mountain dungeon, mountain wall; preview above / below, 2D plan, script, undo, move, height, delete
+Erst mit 'Bereich' einen Platz markieren, dann klicken: die Werkstatt im Keller-Modus (Statics unter der Karte, Loch auf Kartenhöhe)	First mark a place with 'Area', then click: the workshop in cellar mode (statics under the map, hole at map height)
+Ansicht: oben Karte · unten Etage	View: map above · level below
+OBEN – die Karte, wie sie ist	ABOVE – the map as it is
+UNTEN – die gewählte Etage (Statics unter dem Boden sichtbar, darüber ausgeblendet)	BELOW – the chosen level (statics below the ground visible, above it hidden)
+Loch (NoDraw)	Hole (NoDraw)
+in einer der beiden Ansichten benutzen	use it in one of the two views
+2D-Plan (nachzeichnen)	2D plan (draw by hand)
+Leerer Plan	Empty plan
+Neu generieren	Generate new
+Aus Plan bauen	Build from plan
+Plan geändert – 'Aus Plan bauen' baut ihn im Stil.	Plan changed – 'Build from plan' builds it in the style.
+Skript / Stil	Script / style
+Stil anzeigen	Show style
+Skript übernehmen	Apply script
+Als neuen Stil speichern	Save as new style
+Name des neuen Stils:	Name of the new style:
+Skript übernommen	Script applied
+'Aus Plan bauen' zeigt es	'Build from plan' shows it
+Das Skript ist kein gültiges JSON:	The script is no valid JSON:
+1 Art	1 Kind
+Klassischer Dungeon	Classic dungeon
+Berg-Dungeon	Mountain dungeon
+2 Platz und Etage	2 Place and level
+z genau:	exact z:
+Platz neu aus CGI	Place again from CGI
+3 Fläche außen (Leere)	3 Area outside (void)
+Schwarz	Black
+Wählen …	Choose …
+NoDraw = nichts (unsichtbar), Schwarz = 0244, 'Wählen' = z. B. Schwarz mit Sternen aus dem Land-Katalog.	NoDraw = nothing (invisible), black = 0244, 'Choose' = e.g. black with stars from the land catalogue.
+4 Stil (klassischer Dungeon)	4 Style (classic dungeon)
+Bereich scannen + Stil lernen	Scan area + learn style
+Gescannten Bereich 1:1 hierher kopieren	Copy the scanned area 1:1 to here
+5 Grundriss	5 Layout
+Keller:	Cellar:
+6 Bauen	6 Build
+▶ Generieren	▶ Generate
+🎲 Neue Zufalls-Zahl	🎲 New random number
+↶ Rückgängig	↶ Undo
+↷ Wiederholen	↷ Redo
+Alles zurück	All back
+7 Verschieben und Höhe	7 Move and height
++ Etage	+ level
+− Etage	− level
+N / S / W / O = so wie die Karte im Client (N = nach oben rechts). Verschiebt den ganzen Bau mit Land und Statics.	N / S / W / E = like the map in the client (N = up right). Moves the whole build with land and statics.
+8 Schnell löschen	8 Quick delete
+Land / Textur	Land / texture
+Beides	Both
+Gilt für den Platz – oder für einen kleineren Bereich, der oben mit 'Bereich' markiert ist. Land wird zur Leere oben, auf seiner Höhe.	Applies to the place – or to a smaller area marked above with 'Area'. Land becomes the void chosen above, at its own height.
+9 Fertig	9 Done
+✔ In die Karte übernehmen	✔ Apply to the map
+Schließen	Close
+Platz	Place
+Kartenhöhe	map height
+Alles geschieht erst hier; 'In die Karte übernehmen' schreibt es zurück.	Everything happens here first; 'Apply to the map' writes it back.
+Ebene der Karte	Level of the map
+Etage	Level
+unter der Karte	under the map
+Änderungen	changes
+Leeren	Empty
+Geleert	Emptied
+Verschieben	Move
+Verschoben	Moved
+Wiederholt.	Redone.
+Rückgängig.	Undone.
+Nichts mehr.	Nothing more.
+In der CGI-Ansicht des Studios einen Dungeon mit 'Bereich' markieren (mit etwas Rand), dann hier scannen.	Mark a dungeon with 'Area' in the CGI view of the studio (with some border), then scan here.
+1:1 kopiert	Copied 1:1
+mit Verschieben / Höhe anpassen	adjust with move / height
+Name des Dungeon-Stils (z. B. Deceit, Doom):	Name of the dungeon style (e.g. Deceit, Doom):
+Stil gelernt	Style learned
+In die Karte übernommen	Applied to the map
+Änderungen – in der CGI-Ansicht mit Strg+Z zurück.	changes – Ctrl+Z in the CGI view takes it back.
+Die Werkstatt hat Änderungen, die noch nicht in der Karte sind. Trotzdem schließen?	The workshop has changes that are not in the map yet. Close anyway?
+ohne Wand-Set keine Wände (Reiter Pinsel → Wand)	without a wall set no walls (tab Brushes → Wall)
+Noch kein Plan – 'Generieren' oder 'Leerer Plan'.	No plan yet – 'Generate' or 'Empty plan'.
+Links = Boden · Rechts = Fels / Leere · Umschalt+Links = Innenwand · Strg+Links = Gang · Norden ist oben links (wie die Karte)	Left = floor · right = rock / void · Shift+left = inner wall · Ctrl+left = corridor · north is top left (like the map)
+Der Stil als Skript (JSON): Void- und Boden-Land, Boden-Statics, Deko, und für jede Lage (Boden / Leere, Nachbar-Maske N1 O2 S4 W8, Ecken 16–128, Innenwände 256 / 512 / 768) die Wand-Stapel 'id@höhe'. Anpassen, übernehmen, neu bauen.	The style as a script (JSON): void and floor land, floor statics, decor, and for every situation (floor / void, neighbour mask N1 E2 S4 W8, corners 16–128, inner walls 256 / 512 / 768) the wall stacks 'id@height'. Adjust, apply, build again.
+Land / Loch	Land / hole
+Was mit dem Land passiert. Das Loch liegt immer auf der Höhe der Karte (keine Löcher in die Tiefe) – meist nur über der Treppe (ca. 3 Felder).	What happens to the land. The hole always lies at the height of the map (no holes into the depth) – usually only above the stairs (about 3 cells).
+Nur über der Treppe ein Loch (NoDraw auf Kartenhöhe)	Only a hole above the stairs (NoDraw at map height)
+Ganze Fläche NoDraw auf Kartenhöhe	Whole area NoDraw at map height
+Land bleibt (Löcher selbst setzen)	Land stays (set the holes yourself)
+Ganze Fläche NoDraw auf Kellerhöhe (alt)	Whole area NoDraw at cellar height (old)

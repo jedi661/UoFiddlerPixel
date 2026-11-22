@@ -1079,3 +1079,62 @@ Im Fenstertitel steht jetzt `Stand 22.11.2026 – Dungeon 24`. Grundlage war dei
 
 * Mehrere **Ebenen** (z 0 / z 22) mit Treppen und Rampen aus „stone“ / „stone stairs“.
 * **Einrichtung je Raum**, z. B. ein Raum mit Tischen und Stühlen wie im Original.
+
+## Dungeon-Werkstatt (seit „Werkstatt 25“)
+
+Im Fenstertitel steht jetzt `Stand 22.11.2026 – Werkstatt 25`. Umgesetzt nach deinen Vorgaben:
+
+* **Namen:**
+  * Der Fels-Raster aus Bild 1 heißt jetzt **Berg-Dungeon**.
+  * Das Fels-Labyrinth aus Bild 2 bleibt **Bergwall**.
+  * Beide sind in der Werkstatt als Art wählbar.
+* **Platz markieren:** mit „Bereich“.
+  * Die CGI-Ansicht zoomt jetzt bis 1:32 heraus.
+  * Unter 1:4 zeigt sie eine schnelle Farb-Übersicht (Land- bzw. Static-Farbe je Tile), damit man große Plätze markieren kann.
+* **Öffnen:** Palette → **Dungeon-Werkstatt** oder **Keller (Werkstatt)**, oder Kontextmenü → Bereich → „Dungeon-Werkstatt für diesen Platz …“.
+
+### Das Fenster
+
+* **Arbeitskopie:** Alles geschieht erst in einer Kopie des Platzes (plus Rand). **In die Karte übernehmen** schreibt es als *einen* Schritt zurück, in der CGI-Ansicht geht Strg+Z.
+* **Zwei CGI-Ansichten:**
+  * **Oben** die Karte, wie sie ist.
+  * **Unten** die gewählte Etage: Statics unter dem Boden werden gezeigt, alles darüber ist ausgeblendet.
+  * In beiden lässt sich mit der Leiste weiterbauen: Auswahl, Bereich, Static setzen, Löschen, Wand / Zaun, **Loch (NoDraw)**, Land setzen, Messen, Zoom, 2D.
+* **Art:** Klassischer Dungeon, Keller, Berg-Dungeon, Bergwall.
+* **Etage:**
+  * Die Kartenhöhe des Platzes wird ermittelt (häufigste Höhe, z. B. 0 bei Städten).
+  * Der Regler geht in 20er-Etagen (… −40, −20, 0, +20 …), dazu gibt es „z genau“.
+* **Leere außen:** NoDraw 0002, Schwarz 0244 oder „Wählen …“ aus dem Land-Katalog (z. B. Schwarz mit Sternen), mit Bild.
+* **Klassischer Dungeon:**
+  * Der Platz wird erst **geleert**: alle Statics weg (auch Wasser), das Land wird zur Leere **auf seiner eigenen Höhe**, also keine Löcher in die Tiefe.
+  * Dann wird gebaut: Boden-Textur, Wand-Statics und Deko im Stil.
+  * Eingebaut ist die Vorgabe **„Klassisch (map0-Log)“** aus deinem Log (Höhlenboden 0245–0249, Wände 0241/0242/0243 nach der UO-Regel, Schutt und Blut). Gelernte Stile kommen dazu.
+  * Liegt die Etage **unter der Karte**, bleibt das Land oben NoDraw auf Kartenhöhe, und der Dungeon liegt darunter nur aus Statics (Höhlenboden-Statics 053d / 053e wie im Log).
+* **Keller:**
+  * Er besteht nur aus Statics unter der Karte, auf Kartenhöhe minus Etage.
+  * Der Kellerboden, Wände (Wand-Set) und Treppe (Treppen-Set) werden gebaut.
+  * „Land / Loch“: Standard ist **nur über der Treppe ein Loch** auf Kartenhöhe (ca. 3 Felder). Alternativ die ganze Fläche, oder das Land bleibt und du setzt die Löcher selbst mit dem Werkzeug **Loch (NoDraw)**, einzeln oder in einem Zug.
+* **2D-Plan:** Der Grundriss lässt sich ansehen und **nachzeichnen** (links Boden, rechts Fels, Umschalt Innenwand, Strg Gang, Pinsel 1–3), dann **Aus Plan bauen**.
+* **Skript / Stil:** Der Stil als JSON zum Ansehen und Ändern, mit **Skript übernehmen** oder **Als neuen Stil speichern**.
+* **Scannen:**
+  * Einen Dungeon der Karte im Studio markieren.
+  * **Bereich scannen + Stil lernen** (Log im Reiter Log und als Datei), oder **1:1 hierher kopieren** (der Boden der Quelle landet auf der gewählten Etage).
+* **Bearbeiten:**
+  * **Rückgängig / Wiederholen** (auch Strg+Z / Strg+Y), **Alles zurück**.
+  * **Verschieben** N / S / W / O, **Höhe** ±1, ±5, ± Etage.
+  * **Schnell löschen:** Statics, Land / Textur oder beides, für den Platz oder einen kleineren markierten Bereich.
+
+### Test ohne Oberfläche
+
+Der Kern wurde genau so getestet, wie das Fenster ihn benutzt:
+
+* Leeren entfernt das Wasser, gebaut werden 23 Räume mit 651 Wand-Statics.
+* Verschieben behält alle Statics, Höhe −20 setzt Boden und Wände auf −20, zweimal Rückgängig stellt alles wieder her.
+* In die Karte übernehmen ist ein Schritt, Rückgängig in der Karte stellt den alten Stand wieder her.
+* Unter der Karte bleibt das Land auf z 0, die Boden-Statics liegen auf −20.
+* Keller: 8 Lochfelder auf Kartenhöhe über der Treppe, Kellerboden auf −20.
+* Ein Schemabild des erzeugten Dungeons liegt bei der Übergabe.
+
+### Als Nächstes
+
+Brücken, Geländer und Treppen mit Teilen, die automatisch aus TileData (Namen, Flags) gesucht und mit art.mul-Bildern zur Auswahl gezeigt werden.

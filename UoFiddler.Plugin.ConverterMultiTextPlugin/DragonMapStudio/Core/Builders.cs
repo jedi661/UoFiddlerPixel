@@ -122,8 +122,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public bool Railings { get; set; } = true;
     }
 
+    public enum CellarLand
+    {
+        [Description("Nur über der Treppe ein Loch (NoDraw auf Kartenhöhe)")]
+        HoleOverStairs,
+
+        [Description("Ganze Fläche NoDraw auf Kartenhöhe")]
+        WholeAreaNoDraw,
+
+        [Description("Land bleibt (Löcher selbst setzen)")]
+        Keep,
+
+        [Description("Ganze Fläche NoDraw auf Kellerhöhe (alt)")]
+        LowerToCellar
+    }
+
     public sealed class CellarSettings
     {
+        [Category("Keller"), DisplayName("Land / Loch"), Description("Was mit dem Land passiert. Das Loch liegt immer auf der Höhe der Karte (keine Löcher in die Tiefe) – meist nur über der Treppe (ca. 3 Felder).")]
+        public CellarLand Land { get; set; } = CellarLand.HoleOverStairs;
+
         [Category("Keller"), DisplayName("Tiefe (Z)"), Description("So tief unter dem Boden liegt der Kellerboden (UO: 20 = ein Stockwerk).")]
         public int Depth { get; set; } = 20;
 
@@ -170,10 +188,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public int Rooms { get; set; } = 8;
 
         [Category("Dungeon"), DisplayName("Raum kleinste Seite")]
-        public int RoomMin { get; set; } = 4;
+        public int RoomMin { get; set; } = 6;
 
         [Category("Dungeon"), DisplayName("Raum größte Seite")]
-        public int RoomMax { get; set; } = 10;
+        public int RoomMax { get; set; } = 16;
 
         [Category("Dungeon"), DisplayName("Gang-Breite")]
         public int CorridorWidth { get; set; } = 2;
@@ -392,7 +410,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 bool vertical = r.Width > r.Height || (r.Width == r.Height && rnd.Next(2) == 0); // vertical = wall line from north to south
                 int size = vertical ? r.Width : r.Height;
                 bool can = size >= 2 * min + t;
-                bool want = size > max || (depth < 3 && rnd.Next(100) < 35 && size >= 2 * min + t);
+                bool want = size > max || (depth < 2 && rnd.Next(100) < 25 && size >= 2 * min + t);
                 if (!can || !want)
                 {
                     for (int y = r.Top; y < r.Bottom; y++)
@@ -706,7 +724,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 for (int x = area.Left; x < area.Right; x++)
                 {
-                    map.SetLand(x, y, 0x0002, cz);
+                    bool overStairs = stairCells.ContainsKey((x, y));
+                    switch (o.Land)
+                    {
+                        case CellarLand.LowerToCellar:
+                            map.SetLand(x, y, 0x0002, cz);
+                            break;
+                        case CellarLand.WholeAreaNoDraw:
+                            map.SetLand(x, y, 0x0002, map.LandZ(x, y));
+                            break;
+                        case CellarLand.HoleOverStairs:
+                            if (overStairs)
+                            {
+                                map.SetLand(x, y, 0x0002, map.LandZ(x, y));
+                            }
+                            break;
+                    }
                     bool border = !Inner(x, y);
                     if (border)
                     {

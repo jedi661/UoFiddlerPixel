@@ -778,6 +778,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             A("→ in die Farbkarte (gleiche Stelle)", CgiAreaToEditorMap);
             A("Regeln lernen", LearnRulesFromCgiArea);
             A("Bereich auswerten (Log)", () => BtnCgiAreaLog_Click(this, EventArgs.Empty));
+            A("Dungeon-Werkstatt für diesen Platz …", () => OpenDungeonWorkshop(WorkshopKind.Classic));
+            A("Keller-Werkstatt für diesen Platz …", () => OpenDungeonWorkshop(WorkshopKind.Cellar));
             A("Dungeon analysieren (Log) …", () => AnalyzeDungeonArea(false));
             A("Dungeon-Stil aus dem Bereich lernen …", () => AnalyzeDungeonArea(true));
             A("Markierung entfernen (Esc)", () => isoView.ClearArea());

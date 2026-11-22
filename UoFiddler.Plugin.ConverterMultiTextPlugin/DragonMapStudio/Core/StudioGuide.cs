@@ -572,6 +572,18 @@ Schalter in der Palette, in der Leiste (⬇ Unter der Karte), im Reiter Pinsel u
 - Statics, die unter dem Boden liegen, werden über dem Land gezeigt – man sieht, was man unten baut.
 - Ein violettes Banner oben zeigt: man baut gerade unter der Karte, mit der Bau-Ebene.
 - Static setzen und Wand bauen setzen auf Boden + Bau-Ebene (Standard −20).
+## Dungeon-Werkstatt (eigenes Fenster)
+Platz mit „Bereich“ markieren (zum Markieren großer Plätze weit herauszoomen – unter 1:4 zeigt die Ansicht eine schnelle Farb-Übersicht), dann Palette → Dungeon-Werkstatt oder Keller (Werkstatt), oder Kontextmenü → Bereich.
+- Alles geschieht erst in einer Arbeitskopie: OBEN die Karte, UNTEN die gewählte Etage (Statics unter dem Boden sichtbar, darüber ausgeblendet). Mit den Werkzeugen der Leiste (Auswahl, Static setzen, Löschen, Wand, Loch, Land setzen, Messen) in beiden Ansichten weiterbauen.
+- Art: Klassischer Dungeon (Boden-Textur + Wand-Statics, Stil), Keller (nur Statics unter der Karte, Loch auf Kartenhöhe), Berg-Dungeon (Fels-Wände im Gitter), Bergwall (Fels-Labyrinth).
+- Etage: Regler in 20er-Schritten von der ermittelten Kartenhöhe (0, −20, −40 … und nach oben) oder z genau.
+- Leere außen: NoDraw 0002, Schwarz 0244 oder „Wählen …“ aus dem Land-Katalog (z. B. Schwarz mit Sternen).
+- Generieren leert den Platz zuerst (Statics weg, Land = Leere auf seiner Höhe – keine Löcher in die Tiefe) und baut dann. Liegt die Etage unter der Karte, bleibt das Land oben NoDraw und der Dungeon liegt darunter aus Statics.
+- 2D-Plan: der Grundriss zum Nachzeichnen (links Boden, rechts Fels, Umschalt Innenwand, Strg Gang) → „Aus Plan bauen“.
+- Skript / Stil: der Stil als JSON ansehen, ändern, übernehmen oder als neuen Stil speichern.
+- Scannen: einen Dungeon der Karte im Studio markieren → „Bereich scannen + Stil lernen“ (mit Log) oder „1:1 hierher kopieren“.
+- Rückgängig / Wiederholen (auch Strg+Z / Strg+Y), Alles zurück, Verschieben N S W O, Höhe ±1 / ±5 / ± Etage, Schnell löschen (Statics, Land, beides).
+- „In die Karte übernehmen“ schreibt alles als EINEN Schritt in die Karte (dort Strg+Z).
 ## Dungeon-Generator
 Echte UO-Dungeons (Deceit, Doom, Shame …) bestehen aus Boden-Land mit Dungeon-Textur, schwarzem Void-Land drumherum und Wand-Statics an der Grenze Boden ↔ Leere in Bodenhöhe, dazu Deko (Spinnweben, Knochen, Fackeln). Genau so baut der Generator – nur mit Textur und Statics.
 - Stil lernen: auf einer Karte mit Dungeons einen Dungeon mit „Bereich“ markieren (mit etwas schwarzem Rand), Kontextmenü → Bereich → „Dungeon-Stil aus dem Bereich lernen …“ oder Reiter Pinsel → Dungeon. Gelernt werden Boden-Textur, Void-Land, welche Wand-Stapel (id + Höhe) in welcher Lage stehen (Nachbarn N O S W und Außenecken) und die Deko mit Häufigkeit.
@@ -602,6 +614,18 @@ Switch in the palette, in the bar (⬇ Under the map), in the tab Brushes and un
 - Statics below the ground are shown above the land – you see what you build down there.
 - A violet banner at the top shows that you are building under the map, with the building level.
 - Place static and build wall put things at ground + building level (default −20).
+## Dungeon workshop (own window)
+Mark a place with “Area” (zoom far out to mark big places – below 1:4 the view shows a fast colour overview), then palette → Dungeon workshop or Cellar (workshop), or context menu → Area.
+- Everything happens in a working copy first: ABOVE the map, BELOW the chosen level (statics below the ground visible, above it hidden). Keep building in both views with the tools of the bar (select, place static, delete, wall, hole, set land, measure).
+- Kind: classic dungeon (floor texture + wall statics, style), cellar (only statics under the map, hole at map height), mountain dungeon (rock walls in a grid), mountain wall (rock labyrinth).
+- Level: slider in steps of 20 from the detected map height (0, −20, −40 … and up) or exact z.
+- Void outside: NoDraw 0002, black 0244 or “Choose …” from the land catalogue (e.g. black with stars).
+- Generate empties the place first (statics away, land = void at its own height – no holes into the depth) and then builds. If the level is under the map the land above stays NoDraw and the dungeon lies below as statics.
+- 2D plan: the floor plan to draw by hand (left floor, right rock, Shift inner wall, Ctrl corridor) → “Build from plan”.
+- Script / style: see the style as JSON, change it, apply it or save it as a new style.
+- Scan: mark a dungeon of the map in the studio → “Scan area + learn style” (with log) or “Copy 1:1 to here”.
+- Undo / redo (also Ctrl+Z / Ctrl+Y), all back, move N S W E, height ±1 / ±5 / ± level, quick delete (statics, land, both).
+- “Apply to the map” writes everything as ONE step into the map (Ctrl+Z there).
 ## Dungeon generator
 Real UO dungeons (Deceit, Doom, Shame …) consist of floor land with a dungeon texture, black void land around it and wall statics at the border floor ↔ void at floor height, plus decoration (webs, bones, torches). The generator builds exactly like that – only texture and statics.
 - Learn a style: on a map with dungeons mark a dungeon with “Area” (with some black border), context menu → Area → “Learn dungeon style from the area …” or tab Brushes → Dungeon. Learned are the floor texture, the void land, which wall stacks (id + height) stand in which situation (neighbours N E S W and outer corners) and the decoration with its frequency.

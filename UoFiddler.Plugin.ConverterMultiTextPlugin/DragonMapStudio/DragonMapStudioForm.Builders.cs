@@ -17,6 +17,7 @@ using System.Linq;
 using System.Windows.Forms;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 {
@@ -441,6 +442,106 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                       L.T("Log") + $": {path} (" + L.T("auch in der Zwischenablage") + ")");
         }
 
+        private DungeonWorkshopForm _workshop;
+
+        /// <summary>Opens the dungeon workshop for the area marked in the CGI view.</summary>
+        private void OpenDungeonWorkshop(WorkshopKind kind)
+        {
+            tabMain.SelectedTab = tabCgi;
+            if (_cgiMap == null)
+            {
+                SetStatus(L.T("Keine CGI-Karte geladen."));
+                return;
+            }
+            if (isoView.Area.IsEmpty || isoView.Area.Width < 6 || isoView.Area.Height < 6)
+            {
+                SelectCgiTool(IsoTool.Area);
+                SetStatus(L.T("Dungeon-Werkstatt: erst mit 'Bereich' den Platz markieren (zum Markieren großer Plätze weit herauszoomen), dann noch einmal klicken."));
+                return;
+            }
+            _workshop?.Close();
+            if (_workshop != null && !_workshop.IsDisposed)
+            {
+                return; // the open workshop wanted to keep its changes
+            }
+            var host = new WorkshopHost
+            {
+                Map = _cgiMap,
+                Area = isoView.Area,
+                Brushes = BrushCfg,
+                Configure = ConfigureLikeMain,
+                CurrentArea = () => isoView.Area,
+                LandList = () =>
+                {
+                    EnsureLandList();
+                    return _allLand;
+                },
+                RockTiles = () =>
+                {
+                    ushort[] t = HexList.Parse(_settings.Mountain?.Tiles ?? string.Empty);
+                    return t.Length > 0 ? t : isoView.MountainFallbackTiles;
+                },
+                CaveFloor = () => isoView.CaveFloorIds,
+                WriteLog = (file, text) =>
+                {
+                    string path = WriteLog(file, text);
+                    try
+                    {
+                        Clipboard.SetText(text);
+                    }
+                    catch (Exception)
+                    {
+                        // only a convenience
+                    }
+                    return path;
+                },
+                Status = SetStatus,
+                Applied = () =>
+                {
+                    isoView.Refresh(true);
+                    IsoView_MapChanged(isoView, EventArgs.Empty);
+                    UpdateCgiThumbnail();
+                }
+            };
+            _workshop = new DungeonWorkshopForm(host, kind) { Owner = this };
+            _workshop.FormClosed += (s, e) => _workshop = null;
+            _workshop.Show(this);
+        }
+
+        /// <summary>A CGI view of the workshop gets the settings of the main view (art, tiles, brushes, item, hue …).</summary>
+        private void ConfigureLikeMain(IsoMapView v)
+        {
+            v.LandTransitions = isoView.LandTransitions;
+            v.CaveFloorIds = isoView.CaveFloorIds;
+            v.MountainFallbackTiles = isoView.MountainFallbackTiles;
+            v.Mountain = isoView.Mountain;
+            v.CaveIsMountain = isoView.CaveIsMountain;
+            v.Coast = isoView.Coast;
+            v.CoastSmooth = isoView.CoastSmooth;
+            v.BrushSettings = BrushCfg;
+            v.WallSet = isoView.WallSet;
+            v.ScatterSet = isoView.ScatterSet;
+            v.LandFamily = isoView.LandFamily;
+            v.FindWallSet = isoView.FindWallSet;
+            v.FindDungeonLook = isoView.FindDungeonLook;
+            v.BridgeSet = isoView.BridgeSet;
+            v.StairSet = isoView.StairSet;
+            v.PlaceId = isoView.PlaceId;
+            v.PlaceHue = isoView.PlaceHue;
+            v.PlaceLandId = isoView.PlaceLandId;
+            v.PlaceLandIds = isoView.PlaceLandIds;
+            v.LandFlatten = isoView.LandFlatten;
+            v.LandRadius = isoView.LandRadius;
+            v.HeightStep = isoView.HeightStep;
+            v.TargetHeight = isoView.TargetHeight;
+            v.ZOffset = isoView.ZOffset;
+            v.ShowStatics = isoView.ShowStatics;
+            v.TranslucentWater = isoView.TranslucentWater;
+            v.HiddenKinds = isoView.HiddenKinds;
+            v.LabelMode = isoView.LabelMode;
+            v.ShowStaticIds = isoView.ShowStaticIds;
+        }
+
         private void SetUnderView(bool on)
         {
             isoView.UnderView = on;
@@ -474,10 +575,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         {
             p.AddSeparator();
             add(CgiTool("bridge", "Brücke", string.Empty, "Von Ufer zu Ufer ziehen: Bretter, Geländer, Pfosten, Bogen (Brücken-Set im Reiter Pinsel)", IsoTool.Bridge, ColBuild), "build");
-            add(CgiTool("cellar", "Keller", string.Empty, "Rechteck: Keller unter der Karte (NoDraw-Land, Boden, Wände, Treppe)", IsoTool.Cellar, Color.FromArgb(126, 34, 206)), "build");
-            add(CgiTool("dungeon", "Dungeon-Generator", string.Empty, "Rechteck: Räume + Gänge aus Boden-Textur und Wand-Statics – im gelernten Stil eines echten Dungeons oder mit Wand-Set", IsoTool.Dungeon, Color.FromArgb(68, 64, 60)), "build");
+            add(new ToolPaletteEntry
+            {
+                Key = "dungeon", Name = "Dungeon-Werkstatt", Accent = Color.FromArgb(68, 64, 60),
+                Help = "Erst mit 'Bereich' einen Platz markieren, dann klicken: eigenes Fenster – klassischer Dungeon, Keller, Berg-Dungeon, Bergwall; Vorschau oben / unten, 2D-Plan, Skript, Rückgängig, Verschieben, Höhe, Löschen",
+                Click = () => OpenDungeonWorkshop(WorkshopKind.Classic)
+            }, "build");
+            add(new ToolPaletteEntry
+            {
+                Key = "cellar", Name = "Keller (Werkstatt)", Accent = Color.FromArgb(126, 34, 206),
+                Help = "Erst mit 'Bereich' einen Platz markieren, dann klicken: die Werkstatt im Keller-Modus (Statics unter der Karte, Loch auf Kartenhöhe)",
+                Click = () => OpenDungeonWorkshop(WorkshopKind.Cellar)
+            }, "build");
             add(CgiTool("course", "Fluss-Lauf", string.Empty, "Von der Quelle zur Mündung ziehen: natürlich geschlängelter Fluss", IsoTool.Course, ColBuild), "build");
-            add(CgiTool("mountainwall", "Bergwall", string.Empty, "Rechteck: Labyrinth aus hohen Fels-Wänden (Land) mit Räumen und Gängen", IsoTool.MountainWall, ColTerrain), "build");
+
             add(new ToolPaletteEntry
             {
                 Key = "undermap",
