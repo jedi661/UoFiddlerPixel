@@ -104,6 +104,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Description("Pfosten an den Enden des Geländers (hex), leer = keine.")]
         public string Post { get; set; } = string.Empty;
 
+        [Description("Pfeiler unter der Brücke bis zum Wasser (hex), leer = keine.")]
+        public string Pillar { get; set; } = string.Empty;
+
         public override string ToString() => Name;
     }
 
@@ -120,6 +123,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Category("Brücke"), DisplayName("Geländer")]
         public bool Railings { get; set; } = true;
+
+        [Category("Brücke"), DisplayName("Treppen an den Enden"), Description("Liegt die Brücke höher als das Ufer, kommen Stufen davor (Treppe aus dem Brücken-Plan).")]
+        public bool Stairs { get; set; } = true;
+
+        [Category("Brücke"), DisplayName("Pfeiler alle … Tiles"), Description("Für Sets ohne Plan: Stütze unter der Brücke (Pfeiler-ID im Brücken-Designer).")]
+        public int PillarEvery { get; set; } = 6;
     }
 
     public enum CellarLand
@@ -244,8 +253,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("Lauf"), DisplayName("Bögen je 20 Tiles")]
         public double Bends { get; set; } = 1.5;
 
-        [Category("Lauf"), DisplayName("Breite wächst"), Description("Schmal am Anfang (Quelle), breiter zum Ende (Mündung).")]
+        [Category("Lauf"), DisplayName("Breite am Anfang (Tiles)"), Description("Breite des Wassers an der Quelle. 0 = Pinselgröße.")]
+        public int Width { get; set; } = 3;
+
+        [Category("Lauf"), DisplayName("Breite am Ende (Tiles)"), Description("Breite an der Mündung. 0 = wie am Anfang (oder automatisch breiter, wenn 'Breite wächst' an ist).")]
+        public int EndWidth { get; set; } = 5;
+
+        [Category("Lauf"), DisplayName("Breite wächst"), Description("Nur wenn 'Breite am Ende' 0 ist: schmal am Anfang (Quelle), breiter zum Ende (Mündung).")]
         public bool Widen { get; set; } = true;
+
+        /// <summary>Width in tiles at 0..1 along the course (brush = width when nothing is set).</summary>
+        public double WidthAt(double t, int brushWidth)
+        {
+            double w0 = Width > 0 ? Width : Math.Max(1, brushWidth);
+            double w1 = EndWidth > 0 ? EndWidth : Widen ? w0 * 1.6 : w0;
+            return w0 + (w1 - w0) * Math.Clamp(t, 0, 1);
+        }
 
         [Category("Lauf"), DisplayName("Zufalls-Zahl"), Description("0 = jedes Mal ein anderer Lauf.")]
         public int Seed { get; set; }
@@ -771,6 +794,43 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     else if (upper.Length > 0)
                     {
                         statics.Add(MapData.Add(new StaticItem { Id = Pick(upper, rnd), X = x, Y = y, Z = ground }));
+                    }
+                }
+            }
+            return statics;
+        }
+
+        // ------------------------------------------------------------------ stairs
+
+        /// <summary>
+        /// Stairs from <paramref name="at"/> downwards in direction <paramref name="down"/>: the first step lies just below
+        /// <paramref name="topZ"/>, every step 5 lower, filled down to the bottom so there are no holes under the steps.
+        /// </summary>
+        public static List<StaticChange> BuildStairs(MapData map, Point at, int topZ, Compass down, int steps, int width, StairSet set)
+        {
+            var statics = new List<StaticChange>();
+            ushort[] ids = set == null ? Array.Empty<ushort>() : HexList.Parse(set.For(down));
+            if (ids.Length == 0)
+            {
+                return statics;
+            }
+            int dx = down == Compass.East ? 1 : down == Compass.West ? -1 : 0;
+            int dy = down == Compass.South ? 1 : down == Compass.North ? -1 : 0;
+            int px = dy != 0 ? 1 : 0, py = dx != 0 ? 1 : 0; // across
+            int n = Math.Clamp(steps, 1, 40);
+            int bottom = topZ - 5 * n;
+            for (int k = 0; k < n; k++)
+            {
+                for (int w = 0; w < Math.Max(1, width); w++)
+                {
+                    int x = at.X + dx * k + px * w, y = at.Y + dy * k + py * w;
+                    if (!map.InBounds(x, y))
+                    {
+                        continue;
+                    }
+                    for (int z = topZ - 5 * (k + 1); z >= bottom; z -= 5)
+                    {
+                        statics.Add(MapData.Add(new StaticItem { Id = ids[0], X = x, Y = y, Z = Math.Clamp(z, -128, 127) }));
                     }
                 }
             }

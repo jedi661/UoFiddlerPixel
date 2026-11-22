@@ -1,4 +1,4 @@
-# Dragon Map Studio – English
+﻿# Dragon Map Studio – English
 # Deutsch<TAB>English  (\n = new line). Add or change lines as you like; the file is read when the language is chosen.
  · nass, ohne Textur (wird flach gezeichnet)	 · wet, no texture (drawn flat)
 &Anleitung	&Guide
@@ -1457,3 +1457,150 @@ Nur über der Treppe ein Loch (NoDraw auf Kartenhöhe)	Only a hole above the sta
 Ganze Fläche NoDraw auf Kartenhöhe	Whole area NoDraw at map height
 Land bleibt (Löcher selbst setzen)	Land stays (set the holes yourself)
 Ganze Fläche NoDraw auf Kellerhöhe (alt)	Whole area NoDraw at cellar height (old)
+# Werkstatt 26: Brücken-Designer, Katalog, Radierer, Treppe, fremde Karte, Fluss-Breite
+Suche: Name (z. B. wall, stair, bridge) oder Hex-ID (z. B. 0241)	Search: name (e.g. wall, stair, bridge) or hex id (e.g. 0241)
++ Kategorie	+ Category
+In Kategorie …	Into category …
+Neue Kategorie …	New category …
+Aus dieser Kategorie entfernen	Remove from this category
+Alle gezeigten in Kategorie …	All shown into category …
+Alle gezeigten Teile in die Kategorie (neu oder vorhanden):	All shown pieces into the category (new or existing):
+Kategorie löschen	Delete category
+Kategorie löschen?	Delete category?
+Katalog	Catalog
+ID kopieren	Copy id
+Meine Teile	My pieces
+Name der neuen Kategorie (z. B. Dungeon Wände, Brücke Holz):	Name of the new category (e.g. dungeon walls, wooden bridge):
+Brücken-Designer	Bridge designer
+Keine Bretter in der TileData gefunden – Teile unten im Katalog suchen und mit den Knöpfen links zuordnen.	No planks found in the tiledata – search pieces in the catalog below and assign them with the buttons on the left.
+Teile aus der TileData gefunden	Pieces found in the tiledata
+Bretter	Planks
+Pfeiler	Pillar
+Falsche Teile? Links 'Teil wählen' und im Katalog doppelklicken.	Wrong pieces? Choose a piece on the left and double click in the catalog.
+Brücken-Testfeld	Bridge test field
+Tiles lang	tiles long
+breit	wide
+West-Ost	west – east
+Nord-Süd	north – south
+im Muster von Hand setzen / löschen, dann 'Muster übernehmen'	place / delete by hand in the sample, then 'Take sample'
+Erst 'Muster' zeigen (nicht die lange Vorschau), dort bauen, dann übernehmen.	First show 'Sample' (not the long preview), build there, then take it.
+Muster übernommen	Sample taken
+In der CGI-Ansicht eine Brücke der Karte mit 'Bereich' markieren (genau Länge × Breite), dann hier übernehmen.	Mark a bridge of the map with 'Area' in the CGI view (exactly length × width), then take it here.
+Im markierten Bereich sind keine Statics.	There are no statics in the marked area.
+Brücke aus der Karte übernommen	Bridge taken from the map
+Brett-Höhe	deck height
+Anfang / Ende im Plan einstellen – die Mitte wird wiederholt.	Set start / end in the plan – the middle is repeated.
+Multi als Brücken-Plan geladen	Multi loaded as bridge plan
+Nord-Süd-Version aus West-Ost erzeugt (gleicher Name, Bild in die andere Richtung). Mit 'N-S' ansehen und von Hand verbessern.	North – south version made from west – east (same name, art the other way). Look at it with 'N-S' and improve it by hand.
+West-Ost-Version aus Nord-Süd erzeugt.	West – east version made from north – south.
+Kategorie (Ordner), z. B. Holz, Stein, Dungeon:	Category (folder), e.g. wood, stone, dungeon:
+Name des Brücken-Plans:	Name of the bridge plan:
+Gespeichert	Saved
+Plan ist jetzt im Brücken-Werkzeug der CGI-Ansicht	The plan is now in the bridge tool of the CGI view
+dort von Ufer zu Ufer ziehen.	drag from bank to bank there.
+Teil wählen für	Choose piece for
+im Katalog doppelklicken	double click in the catalog
+in der Vorschau zu sehen	visible in the preview
+'Aus Teilen erzeugen' baut neu	'Generate from pieces' rebuilds
+im Testfeld	in the test field
+Gitter	Grid
+KATALOG – Klick = zum Setzen im Testfeld · Doppelklick = dem gewählten Teil links zuordnen · Rechtsklick = Kategorien	CATALOG – click = place in the test field · double click = assign to the piece chosen on the left · right click = categories
+Multi als Brücken-Plan laden?	Load multi as bridge plan?
+Plan löschen?	Delete plan?
+Länge:	Length:
+Im Katalog eine Multi doppelklicken – sie wird zum Brücken-Plan.	Double click a multi in the catalog – it becomes the bridge plan.
+Muster = die Brücke einmal, flach: hier mit Katalog + Static setzen / Löschen / Radierer bauen, dann 'Muster übernehmen'. Anfang und Ende stehen im Plan, die Mitte wird bei langen Brücken wiederholt.	Sample = the bridge once, flat: build here with catalog + place static / delete / eraser, then 'Take sample'. Start and end are in the plan, the middle repeats on long bridges.
+Fremde Karte	Other map
+Bereich wählen und in die Werkstatt kopieren	choose an area and copy it into the workshop
+Karte öffnen …	Open map …
+Springen	Jump
+Bereich in die Werkstatt	Area into workshop
+Bereich als Vorlage speichern …	Save area as template …
+'Karte öffnen' wählt map#.mul oder map#LegacyMUL.uop (statics#.mul daneben). Dann zum Dungeon springen und mit 'Bereich' markieren.	'Open map' chooses map#.mul or map#LegacyMUL.uop (statics#.mul next to it). Then jump to the dungeon and mark it with 'Area'.
+Geladen	Loaded
+Zum Dungeon springen (X / Y), mit 'Bereich' markieren, dann '✔ Bereich in die Werkstatt'.	Jump to the dungeon (X / Y), mark it with 'Area', then '✔ Area into workshop'.
+Fremde Karte öffnen	Open other map
+Die Größe der Karte ist unbekannt.	The size of the map is unknown.
+Lade	Loading
+Laden fehlgeschlagen:	Loading failed:
+Erst die Karte öffnen und einen Bereich markieren.	First open the map and mark an area.
+Der Bereich ist zu groß (höchstens 512×512).	The area is too big (512×512 at most).
+Kategorie (Ordner):	Category (folder):
+In die Werkstatt kopiert	Copied into the workshop
+mit Verschieben / Höhe anpassen, Rückgängig nimmt es zurück	adjust with move / height, undo takes it back
+größer als der Platz – abgeschnitten, einen größeren Platz markieren	bigger than the place – cut off, mark a bigger place
+Aus fremder Karte	From other map
+Kategorie (Ordner), z. B. Dungeon, Keller, Räume:	Category (folder), e.g. dungeon, cellar, rooms:
+Name der Vorlage:	Name of the template:
+Vorlage gespeichert	Template saved
+Erst eine Vorlage in der Liste wählen.	First choose a template in the list.
+Vorlage	Template
+Vorlage nicht lesbar	Template not readable
+Pinselgröße für Radierer, Land, Höhe, Loch (1 = ein Tile)	Brush size for eraser, land, height, hole (1 = one tile)
+Treppe …	Stairs …
+Treppe	Stairs
+Statics / Land / Multis mit Suche und Kategorien unten ein- / ausblenden	Show / hide statics / land / multis with search and categories below
+KATALOG – Klick = Teil wählen (Static setzen / Land setzen / Multi setzen) · Rechtsklick = eigene Kategorien	CATALOG – click = choose piece (place static / set land / place multi) · right click = own categories
+Fremde Karte: z. B. die Original-map0 öffnen, einen Dungeon markieren und hierher kopieren – dann ändern und als Vorlage (nach Kategorie) speichern oder in die Karte übernehmen.	Other map: e.g. open the original map0, mark a dungeon and copy it here – then change it and save it as a template (by category) or apply it to the map.
+oben auf der Karte oder unten auf der Etage klicken	click above on the map or below on the level
+Treppe nach unten Richtung	Stairs down towards
+Plan	Plan
+Set	Set
+Teile aus der TileData	Pieces from the tiledata
+Brücke: keine Teile gefunden – im Brücken-Designer Teile wählen (Bretter, Geländer) oder die TileData laden.	Bridge: no pieces found – choose pieces in the bridge designer (planks, railings) or load the tiledata.
+Treppe: erst ein Treppen-Set mit Stufen für alle Richtungen wählen (Reiter Pinsel → Treppe / Brücken-Designer → Treppe aus TileData).	Stairs: first choose a stair set with steps for all directions (tab Brushes → Stairs / bridge designer → stairs from tiledata).
+Stufen	steps
+Tiles breit	tiles wide
+Radierer: Ziehen löscht alle Statics im Pinsel (Größe oben / [ ]) · Strg = Land zur Leere · Einstellungen im Reiter Pinsel	Eraser: dragging deletes every static in the brush (size at the top / [ ]) · Ctrl = land to void · settings in tab Brushes
+Treppe: Klick setzt Stufen nach unten in die gewählte Richtung (Treppen-Set) · R = Richtung drehen	Stairs: click places steps down in the chosen direction (stair set) · R = turn direction
+Plan:	Plan:
+Set (ohne Plan):	Set (without plan):
+Von Ufer zu Ufer ziehen – beim Ziehen sieht man die echten Teile. Ohne Plan und ohne Set sucht das Studio Bretter, Geländer, Pfosten und Pfeiler selbst in der TileData. Eigene Brücken baut man im Brücken-Designer. Höhe = höheres Ende + Z +, die Mitte um 'Bogen' höher.	Drag from bank to bank – while dragging you see the real pieces. Without plan and set the studio finds planks, railings, posts and pillars in the tiledata itself. Own bridges are made in the bridge designer. Height = higher end + Z +, the middle higher by 'Arch'.
+(kein Plan – Brücken-Set / Teile aus der TileData)	(no plan – bridge set / pieces from the tiledata)
+Keine Treppen-Gruppe in der TileData gefunden – Stufen im Katalog suchen (Suche: stair) und mit '← ab …' zuordnen.	No stair group found in the tiledata – search steps in the catalog (search: stair) and assign them with '← down …'.
+Treppen-Set aus der TileData	Stair set from the tiledata
+Richtung prüfen: Werkzeug Treppe zeigt die Stufen als Vorschau, R dreht.	Check the direction: the tool Stairs shows the steps as a preview, R turns.
+Fluss: Breite / Schlängeln …	River: width / winding …
+Wasser …	Water …
+Brücken-Designer …	Bridge designer …
+Richtung / Stufen …	Direction / steps …
+Radierer …	Eraser …
+Brücken-Designer öffnen …	Open bridge designer …
+Treppe setzen	Place stairs
+Treppe aus TileData	Stairs from tiledata
+Treppe: Richtung / Stufen …	Stairs: direction / steps …
+Fremde Karte öffnen …	Open other map …
+Vorlage laden	Load template
+Platz als Vorlage speichern …	Save place as template …
+4b Vorlagen und fremde Karten	4b Templates and other maps
+Generieren	Generate
+2D-Plan	2D plan
+3D bauen	Build in 3D
+1 Plan (gespeichert nach Kategorie)	1 Plan (saved by category)
+2 Teile (aus der TileData, mit Bild)	2 Pieces (from the tiledata, with picture)
+3 Testfeld	3 Test field
+4 Von Hand / aus Karte / Multi	4 By hand / from map / multi
+5 Fertig	5 Done
+Speichern …	Save …
+▶ Aus Teilen erzeugen	▶ Generate from pieces
+Teile neu suchen	Search pieces again
+Vorschau lang	Long preview
+W-O / N-S	W-E / N-S
+Muster übernehmen	Take sample
+Andere Richtung ableiten	Derive other direction
+Brücke aus der Karte	Bridge from the map
+Multi laden …	Load multi …
+✔ Im Studio benutzen	✔ Use in studio
+Geländer W-O	Railing W-E
+Geländer N-S	Railing N-S
+Lampe	Lamp
+Treppe Nord	Stairs north
+Treppe Ost	Stairs east
+Treppe Süd	Stairs south
+Treppe West	Stairs west
+Bretter / Boden	Planks / deck
+Pfeiler / Stütze	Pillar / support
+Pinsel: alle Statics darunter löschen (Größe wie jeder Pinsel) · Strg = Land zur Leere	Brush: delete all statics under it (size like every brush) · Ctrl = land to void
+Klick: Stufen nach unten in die Richtung (R dreht), bis zum Boden gefüllt (Treppen-Set)	Click: steps down in the direction (R turns), filled down to the ground (stair set)
+Eigenes Fenster: Brücken aus Statics entwerfen (Teile aus der TileData mit Bild, Testfeld, Muster von Hand, aus Karte / Multi), nach Kategorie speichern	Own window: design bridges of statics (pieces from the tiledata with pictures, test field, sample by hand, from map / multi), save by category
+Von der Quelle zur Mündung ziehen: natürlich geschlängelter Fluss mit Wasser, Breite am Anfang / Ende einstellbar	Drag from the source to the mouth: natural winding river with water, width at start / end adjustable

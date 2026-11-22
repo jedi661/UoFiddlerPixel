@@ -37,6 +37,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         public Func<string, string, string> WriteLog;
         public Action<string> Status;
         public Action Applied;
+        public Action<string> Help;
     }
 
     public enum WorkshopKind
@@ -75,6 +76,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private readonly Dictionary<WorkshopKind, RadioButton> _kindButtons = new Dictionary<WorkshopKind, RadioButton>();
         private bool _syncing;
         private bool _holeTool;
+        private readonly ArtCatalog _catalog = new ArtCatalog();
+        private int _radius;
+        private bool _grid;
+        private bool _statics = true;
+        private int _placeId = -1;
+        private int _landId = -1;
+        private int _multiId = -1;
+        private ComboBox _pieces;
+        private ForeignMapForm _foreign;
 
         public DungeonWorkshopForm(WorkshopHost host, WorkshopKind kind)
         {
@@ -87,6 +97,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             KeyPreview = true;
             Font = new Font("Segoe UI", 9f);
             BuildUi();
+            _catalog.ShowCategory(ArtKind.Static, "Dungeon (map0)");
             LoadPlace(host.Area);
         }
 
@@ -150,6 +161,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             _host.Configure?.Invoke(_bottom);
             _top.Tool = t1;
             _bottom.Tool = t2;
+            foreach (IsoMapView v in new[] { _top, _bottom })
+            {
+                v.LandRadius = _radius;
+                v.ShowGrid = _grid;
+                v.ShowStatics = _statics;
+                if (_placeId >= 0)
+                {
+                    v.PlaceId = (ushort)_placeId;
+                }
+                if (_landId >= 0)
+                {
+                    v.PlaceLandId = (ushort)_landId;
+                    v.PlaceLandIds = new[] { (ushort)_landId };
+                }
+                if (_multiId >= 0)
+                {
+                    v.MultiId = _multiId;
+                }
+            }
             if (_holeTool)
             {
                 foreach (IsoMapView v in new[] { _top, _bottom })
@@ -342,34 +372,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             }
             if (copyHere)
             {
-                // 1:1 copy into the place: the ground of the source lands on the chosen level
-                MapData src = _host.Map.CopyRegion(a, out Point so);
-                var inner = new Rectangle(a.X - so.X, a.Y - so.Y, a.Width, a.Height);
-                int dz = _level - Workshop.GroundLevel(src, inner);
-                _work.BeginLand();
-                var statics = new List<StaticChange>();
-                for (int y = 0; y < a.Height; y++)
-                {
-                    for (int x = 0; x < a.Width; x++)
-                    {
-                        int tx = _content.X + x, ty = _content.Y + y;
-                        if (!_work.InBounds(tx, ty))
-                        {
-                            continue;
-                        }
-                        statics.AddRange(_work.StaticsAt(tx, ty).Select(MapData.Remove));
-                        _work.SetLand(tx, ty, src.LandId(inner.X + x, inner.Y + y), src.LandZ(inner.X + x, inner.Y + y) + dz);
-                        foreach (StaticItem st in src.StaticsAt(inner.X + x, inner.Y + y))
-                        {
-                            statics.Add(MapData.Add(new StaticItem { Id = st.Id, Hue = st.Hue, X = tx, Y = ty, Z = Math.Clamp(st.Z + dz, -128, 127) }));
-                        }
-                    }
-                }
-                _work.ApplyStatics(statics);
-                int n = _work.EndLand();
-                _work.NameLastStep(L.T("1:1 kopiert"));
-                _content = new Rectangle(_content.X, _content.Y, Math.Min(a.Width, _work.Width - _content.X), Math.Min(a.Height, _work.Height - _content.Y));
-                Changed(L.T("1:1 kopiert") + $": {a.Width}×{a.Height}, {n} " + L.T("Änderungen") + " – " + L.T("mit Verschieben / Höhe anpassen"));
+                CopyIn(WorkshopPiece.From(_host.Map, a, "Scan", "Scan"), L.T("1:1 kopiert"));
                 return;
             }
             string name = Microsoft.VisualBasic.Interaction.InputBox(L.T("Name des Dungeon-Stils (z. B. Deceit, Doom):"), Text, L.T("Mein Dungeon"));
@@ -384,6 +387,105 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             _log.Text = report.Replace("\n", Environment.NewLine);
             string path = _host.WriteLog?.Invoke("dungeon_analyse_" + string.Concat(look.Name.Select(c => char.IsLetterOrDigit(c) ? c : '_')) + ".txt", report);
             Say(L.T("Stil gelernt") + $" '{look.Name}' · " + L.T("Log") + $": {path}");
+        }
+
+        /// <summary>A piece (scan, other map, saved template) into the place: its ground lands on the chosen level.</summary>
+        private void CopyIn(WorkshopPiece piece, string what)
+        {
+            if (_work == null || piece == null)
+            {
+                return;
+            }
+            _work.BeginLand();
+            Rectangle r = piece.WriteTo(_work, _content.Location, _level);
+            int n = _work.EndLand();
+            _work.NameLastStep(what);
+            _content = new Rectangle(_content.X, _content.Y, Math.Max(1, r.Width), Math.Max(1, r.Height));
+            _plan = null;
+            Changed(what + $": {piece.Width}×{piece.Height}, {piece.Statics.Count} Statics, {n} " + L.T("Änderungen") + " – " +
+                    L.T("mit Verschieben / Höhe anpassen, Rückgängig nimmt es zurück") +
+                    (piece.Width > _work.Width - _content.X || piece.Height > _work.Height - _content.Y ? " · " + L.T("größer als der Platz – abgeschnitten, einen größeren Platz markieren") : string.Empty));
+        }
+
+        private void OpenForeign()
+        {
+            if (_foreign != null)
+            {
+                _foreign.Activate();
+                return;
+            }
+            _foreign = new ForeignMapForm(_host.Configure) { Owner = this };
+            _foreign.Taken += (s, p) =>
+            {
+                CopyIn(p, L.T("Aus fremder Karte"));
+                Activate();
+            };
+            _foreign.FormClosed += (s, e) => _foreign = null;
+            _foreign.Show(this);
+        }
+
+        private void SavePiece()
+        {
+            if (_work == null)
+            {
+                return;
+            }
+            string cat = Microsoft.VisualBasic.Interaction.InputBox(L.T("Kategorie (Ordner), z. B. Dungeon, Keller, Räume:"), Text, _kind == WorkshopKind.Cellar ? "Keller" : "Dungeon");
+            if (string.IsNullOrWhiteSpace(cat))
+            {
+                return;
+            }
+            string name = Microsoft.VisualBasic.Interaction.InputBox(L.T("Name der Vorlage:"), Text, L.T("Mein Dungeon"));
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return;
+            }
+            WorkshopPiece p = WorkshopPiece.From(_work, Target, name.Trim(), cat.Trim());
+            // stored relative to the chosen level, so it loads on any level the same way
+            int d = p.Ground - _level;
+            p.Ground = _level;
+            for (int i = 0; i < p.LandZ.Length; i++)
+            {
+                p.LandZ[i] += d;
+            }
+            foreach (PieceStatic st in p.Statics)
+            {
+                st.Z += d;
+            }
+            string path = p.Save();
+            FillPieces();
+            Say(L.T("Vorlage gespeichert") + $": {path}");
+        }
+
+        private void FillPieces()
+        {
+            if (_pieces == null)
+            {
+                return;
+            }
+            _pieces.Items.Clear();
+            foreach ((string path, string title) in WorkshopPiece.List())
+            {
+                _pieces.Items.Add(new KeyValuePair<string, string>(path, title));
+            }
+            _pieces.DisplayMember = "Value";
+        }
+
+        private void LoadPiece()
+        {
+            if (!(_pieces.SelectedItem is KeyValuePair<string, string> kv))
+            {
+                Say(L.T("Erst eine Vorlage in der Liste wählen."));
+                return;
+            }
+            try
+            {
+                CopyIn(WorkshopPiece.Load(kv.Key), L.T("Vorlage") + $" '{kv.Value}'");
+            }
+            catch (Exception ex)
+            {
+                Say(L.T("Vorlage nicht lesbar") + ": " + ex.Message);
+            }
         }
 
         private void FillStyles(string select)
@@ -499,8 +601,54 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 }
             });
             ToolBtn("Land setzen", IsoTool.LandSet);
+            ToolBtn("Radierer", IsoTool.Eraser);
+            ToolBtn("Treppe", IsoTool.Stairs);
+            ToolBtn("Multi setzen", IsoTool.Multi);
+            ToolBtn("Höhe +", IsoTool.Raise);
+            ToolBtn("Höhe −", IsoTool.Lower);
+            ToolBtn("Rampe", IsoTool.Ramp);
+            ToolBtn("Glätten", IsoTool.Smooth);
             ToolBtn("Messen", IsoTool.Measure);
             viewTools.Items.Add(new ToolStripSeparator());
+            viewTools.Items.Add(new ToolStripLabel(L.T("Pinsel:")));
+            var brushSize = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 50, ToolTipText = L.T("Pinselgröße für Radierer, Land, Höhe, Loch (1 = ein Tile)") };
+            brushSize.Items.AddRange(new object[] { "1", "3", "5", "7", "9", "13", "17" });
+            brushSize.SelectedIndex = 0;
+            brushSize.SelectedIndexChanged += (s, e) =>
+            {
+                _radius = new[] { 0, 1, 2, 3, 4, 6, 8 }[brushSize.SelectedIndex];
+                _top.LandRadius = _radius;
+                _bottom.LandRadius = _radius;
+            };
+            viewTools.Items.Add(brushSize);
+            var stairOpt = new ToolStripButton(L.T("Treppe …"));
+            stairOpt.Click += (s, e) =>
+            {
+                using var f = new Form { Text = L.T("Treppe"), Size = new Size(340, 260), StartPosition = FormStartPosition.CenterParent, FormBorderStyle = FormBorderStyle.SizableToolWindow };
+                f.Controls.Add(new PropertyGrid { Dock = DockStyle.Fill, ToolbarVisible = false, SelectedObject = new StairToolOptions(_host.Brushes) });
+                f.ShowDialog(this);
+                ConfigureViews();
+            };
+            viewTools.Items.Add(stairOpt);
+            viewTools.Items.Add(new ToolStripSeparator());
+            var gridBtn = new ToolStripButton(L.T("Gitter")) { CheckOnClick = true };
+            gridBtn.Click += (s, e) =>
+            {
+                _grid = gridBtn.Checked;
+                ConfigureViews();
+                _top.Refresh(true);
+                _bottom.Refresh(true);
+            };
+            var staticsBtn = new ToolStripButton(L.T("Statics")) { CheckOnClick = true, Checked = true };
+            staticsBtn.Click += (s, e) =>
+            {
+                _statics = staticsBtn.Checked;
+                ConfigureViews();
+                _top.Refresh(true);
+                _bottom.Refresh(true);
+            };
+            viewTools.Items.Add(gridBtn);
+            viewTools.Items.Add(staticsBtn);
             var zoomIn = new ToolStripButton("Zoom +");
             zoomIn.Click += (s, e) =>
             {
@@ -519,8 +667,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 _top.TopDown = twoD.Checked;
                 _bottom.TopDown = twoD.Checked;
             };
-            viewTools.Items.AddRange(new ToolStripItem[] { zoomIn, zoomOut, twoD });
-            views.Controls.Add(viewSplit);
+            var catBtn = new ToolStripButton(L.T("Katalog")) { CheckOnClick = true, Checked = true, ToolTipText = L.T("Statics / Land / Multis mit Suche und Kategorien unten ein- / ausblenden") };
+            viewTools.Items.AddRange(new ToolStripItem[] { zoomIn, zoomOut, twoD, catBtn });
+            var catSplit = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal, SplitterDistance = 520, FixedPanel = FixedPanel.Panel2 };
+            catSplit.Panel1.Controls.Add(viewSplit);
+            catSplit.Panel2.Controls.Add(_catalog);
+            catSplit.Panel2.Controls.Add(new Label
+            {
+                Dock = DockStyle.Top, Height = 18, Text = "  " + L.T("KATALOG – Klick = Teil wählen (Static setzen / Land setzen / Multi setzen) · Rechtsklick = eigene Kategorien"),
+                BackColor = Color.FromArgb(180, 83, 9), ForeColor = Color.White
+            });
+            catBtn.Click += (s, e) => catSplit.Panel2Collapsed = !catBtn.Checked;
+            _catalog.Picked += (s, e) => PickFromCatalog(e);
+            views.Controls.Add(catSplit);
             views.Controls.Add(viewTools);
             foreach (IsoMapView v in new[] { _top, _bottom })
             {
@@ -686,6 +845,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             sc.Controls.Add(B("Gescannten Bereich 1:1 hierher kopieren", () => Scan(true), 300));
             left.Controls.Add(sc);
 
+            left.Controls.Add(Head("4b Vorlagen und fremde Karten", Color.FromArgb(146, 64, 14)));
+            var pc = Line();
+            pc.Controls.Add(B("Fremde Karte öffnen …", OpenForeign, 300));
+            _pieces = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 300 };
+            pc.Controls.Add(_pieces);
+            pc.Controls.Add(B("Vorlage laden", LoadPiece, 148));
+            pc.Controls.Add(B("Platz als Vorlage speichern …", SavePiece, 148));
+            left.Controls.Add(pc);
+            FillPieces();
+            left.Controls.Add(new Label { Text = L.T("Fremde Karte: z. B. die Original-map0 öffnen, einen Dungeon markieren und hierher kopieren – dann ändern und als Vorlage (nach Kategorie) speichern oder in die Karte übernehmen."), AutoSize = false, Width = 310, Height = 48, ForeColor = Color.FromArgb(71, 85, 105) });
+
             left.Controls.Add(Head("5 Grundriss", Color.FromArgb(180, 83, 9)));
             var grid = new PropertyGrid { Width = 310, Height = 230, ToolbarVisible = false, HelpVisible = true, PropertySort = PropertySort.Categorized, SelectedObject = Settings };
             left.Controls.Add(grid);
@@ -730,6 +900,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             left.Controls.Add(del);
             left.Controls.Add(new Label { Text = L.T("Gilt für den Platz – oder für einen kleineren Bereich, der oben mit 'Bereich' markiert ist. Land wird zur Leere oben, auf seiner Höhe."), AutoSize = false, Width = 310, Height = 34, ForeColor = Color.FromArgb(71, 85, 105) });
 
+            left.Controls.Add(Head("Hilfe", Color.FromArgb(37, 99, 235)));
+            var hp = Line();
+            hp.Controls.Add(B("Generieren", () => _host.Help?.Invoke("ws-generate"), 98));
+            hp.Controls.Add(B("2D-Plan", () => _host.Help?.Invoke("ws-2d"), 98));
+            hp.Controls.Add(B("3D bauen", () => _host.Help?.Invoke("ws-3d"), 98));
+            left.Controls.Add(hp);
+
             left.Controls.Add(Head("9 Fertig", Color.FromArgb(15, 23, 42)));
             var done = Line();
             done.Controls.Add(B("✔ In die Karte übernehmen", ApplyToMap, 200));
@@ -738,6 +915,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
 
             Controls.Add(split);
             Controls.Add(_status);
+        }
+
+        private void PickFromCatalog(ArtPickedEventArgs e)
+        {
+            _holeTool = false;
+            IsoTool tool;
+            switch (e.Kind)
+            {
+                case ArtKind.Land:
+                    _landId = e.Id;
+                    tool = IsoTool.LandSet;
+                    break;
+                case ArtKind.Multi:
+                    _multiId = e.Id;
+                    tool = IsoTool.Multi;
+                    break;
+                default:
+                    _placeId = e.Id;
+                    tool = IsoTool.Place;
+                    break;
+            }
+            ConfigureViews();
+            _top.Tool = tool;
+            _bottom.Tool = tool;
+            Say(L.T(tool == IsoTool.Place ? "Static setzen" : tool == IsoTool.LandSet ? "Land setzen" : "Multi setzen") + $": {e.Id:x4} " +
+                (e.Kind == ArtKind.Static ? UoArtCache.ItemName(e.Id) : e.Kind == ArtKind.Land ? UoArtCache.LandName(e.Id) : string.Empty) +
+                " – " + L.T("oben auf der Karte oder unten auf der Etage klicken"));
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

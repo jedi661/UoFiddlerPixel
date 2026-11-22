@@ -188,6 +188,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             Add(CgiTool("multi", "Multi setzen", string.Empty, "Multi aus dem Reiter Multis als Statics setzen", IsoTool.Multi, ColBuild), "cgi");
             Add(CgiTool("template", "Vorlage setzen", string.Empty, "Gebäude / Böden aus dem Reiter Vorlagen", IsoTool.Template, ColBuild), "cgi");
             Add(CgiTool("delete", "Löschen", string.Empty, "Klick löscht ein Static", IsoTool.Delete, ColCheck), "cgi");
+            Add(CgiTool("eraser", "Radierer", string.Empty, "Pinsel: alle Statics darunter löschen (Größe wie jeder Pinsel) · Strg = Land zur Leere", IsoTool.Eraser, ColCheck), "cgi");
             Add(CgiTool("hue", "Färben", string.Empty, "Klick färbt das Static mit der Hue (Reiter Items)", IsoTool.Hue, AccDraw), "cgi");
             Add(CgiTool("scatter", "Streu-Pinsel", string.Empty, "Bäume, Büsche, Steine aus einem Set streuen (Reiter Pinsel) · Strg = entfernen", IsoTool.Scatter, ColTerrain), "brushes");
             Add(CgiTool("huebrush", "Hue-Pinsel", string.Empty, "Alle Statics unter dem Pinsel färben · Strg = Hue 0", IsoTool.HueBrush, AccDraw), "brushes");
@@ -626,6 +627,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             IsoTool.Dungeon => "Dungeon-Generator",
             IsoTool.Course => "Fluss-Lauf",
             IsoTool.MountainWall => "Bergwall",
+            IsoTool.Eraser => "Radierer",
+            IsoTool.Stairs => "Treppe",
             _ => t.ToString()
         };
 
@@ -644,7 +647,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                                                        t == IsoTool.Smooth || t == IsoTool.Coast || t == IsoTool.CoastSmooth || t == IsoTool.Water ||
                                                        t == IsoTool.Cave || t == IsoTool.CaveEntrance || t == IsoTool.Mountain || t == IsoTool.PatternBrush ||
                                                        t == IsoTool.Scatter || t == IsoTool.HueBrush || t == IsoTool.River || t == IsoTool.Plateau || t == IsoTool.Noise ||
-                                                       t == IsoTool.Variants || t == IsoTool.TransitionBrush || t == IsoTool.Ramp;
+                                                       t == IsoTool.Variants || t == IsoTool.TransitionBrush || t == IsoTool.Ramp || t == IsoTool.Eraser;
 
         private void UpdateCgiOptions()
         {

@@ -43,10 +43,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         public event EventHandler ReplaceRequested;
 
         private static bool IsNewBrush(IsoTool t) => t == IsoTool.Scatter || t == IsoTool.HueBrush || t == IsoTool.River || t == IsoTool.Plateau ||
-                                                     t == IsoTool.Noise || t == IsoTool.Variants || t == IsoTool.TransitionBrush;
+                                                     t == IsoTool.Noise || t == IsoTool.Variants || t == IsoTool.TransitionBrush || t == IsoTool.Eraser;
 
         private static bool IsClickTool(IsoTool t) => t == IsoTool.Wall || t == IsoTool.Road || t == IsoTool.Ramp || t == IsoTool.Measure ||
-                                                      t == IsoTool.Lasso || t == IsoTool.MagicWand || IsBuildTool(t);
+                                                      t == IsoTool.Lasso || t == IsoTool.MagicWand || t == IsoTool.Stairs || IsBuildTool(t);
 
         /// <summary>Drag tools of the builders: bridge (line), cellar and dungeon (rectangle), course (line).</summary>
         private static bool IsBuildTool(IsoTool t) => t == IsoTool.Bridge || t == IsoTool.Cellar || t == IsoTool.Dungeon || t == IsoTool.Course || t == IsoTool.MountainWall;
@@ -156,6 +156,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private readonly HashSet<int> _visited = new HashSet<int>();
         private readonly Dictionary<int, int> _groundBefore = new Dictionary<int, int>();
         private int _strokeLevel;
+        private readonly HashSet<int> _riverCore = new HashSet<int>();
         private Rectangle _strokeBox;
 
         private int GroundBefore(int x, int y)
@@ -174,6 +175,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             _visited.Clear();
             _groundBefore.Clear();
             _strokeBox = Rectangle.Empty;
+            _riverCore.Clear();
             int r = Math.Max(0, LandRadius);
             switch (Tool)
             {
@@ -219,7 +221,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     _map.ApplyStatics(CgiBrushes.HueBrush(_map, center.X, center.Y, r, ctrl ? (ushort)0 : PlaceHue, s => !Hidden(s.Id)));
                     break;
                 case IsoTool.River:
-                    CgiBrushes.River(_map, center.X, center.Y, r, _strokeLevel, BrushSettings.River, GroundBefore, _rnd);
+                    CgiBrushes.River(_map, center.X, center.Y, r + 0.5, _strokeLevel, BrushSettings.River, GroundBefore, _rnd, _riverCore);
                     break;
                 case IsoTool.Plateau:
                     CgiBrushes.Plateau(_map, center.X, center.Y, r, _strokeLevel, BrushSettings.Plateau, BrushSettings.Hardness, _rnd);
@@ -237,6 +239,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 case IsoTool.TransitionBrush:
                     LandTransitions?.Apply(_map, new Rectangle(center.X - r, center.Y - r, r * 2 + 1, r * 2 + 1), _rnd);
                     break;
+                case IsoTool.Eraser:
+                    {
+                        EraserSettings o = BrushSettings.Eraser;
+                        ushort[] voids = HexList.Parse(o.VoidTile);
+                        ushort vt = voids.Length > 0 ? voids[0] : (ushort)0x0002;
+                        var del = new List<StaticChange>();
+                        foreach ((int x, int y, double _) in CgiBrushes.Circle(_map, center.X, center.Y, r))
+                        {
+                            if (o.Statics && !ctrl)
+                            {
+                                del.AddRange(_map.StaticsAt(x, y).Where(s => !o.OnlyVisible || (!Hidden(s.Id) && s.Z <= MaxZ)).ToList().Select(MapData.Remove));
+                            }
+                            if (o.Land || ctrl)
+                            {
+                                _map.SetLand(x, y, vt, _map.LandZ(x, y));
+                            }
+                        }
+                        foreach (StaticChange c in del)
+                        {
+                            _selection.Remove(c.Item);
+                        }
+                        _map.ApplyStatics(del);
+                        break;
+                    }
             }
             Refresh(true);
             return true;
@@ -248,6 +274,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             if (Tool == IsoTool.River && BrushSettings.River.Transitions && LandTransitions != null && !_strokeBox.IsEmpty)
             {
                 LandTransitions.Apply(_map, Rectangle.Inflate(_strokeBox, 1, 1), _rnd);
+            }
+            if (Tool == IsoTool.River)
+            {
+                _map.ApplyStatics(CgiBrushes.RestoreWater(_map, _riverCore, BrushSettings.River, _rnd));
+                _riverCore.Clear();
                 Refresh(true);
             }
         }
@@ -320,6 +351,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     _points.Add(tile);
                     Message?.Invoke(this, $"{_points.Count} " + L.T("Punkte – weiter klicken · Doppelklick, Rechtsklick oder Enter = fertig · Rücktaste = letzten Punkt weg · Esc = abbrechen"));
                     Invalidate();
+                    return true;
+                case IsoTool.Stairs:
+                    PlaceStairs(tile);
                     return true;
                 case IsoTool.MagicWand:
                     SetMask(CgiBrushes.Wand(_map, tile.X, tile.Y, BrushSettings.Wand, LandFamily), ModifierKeys, L.T("Zauberstab"));
@@ -456,6 +490,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Keys of the point tools and the new edits. True = handled.</summary>
         private bool ToolKeyDown(KeyEventArgs e)
         {
+            if (Tool == IsoTool.Stairs && e.KeyCode == Keys.R && !e.Control)
+            {
+                BrushSettings.StairDirection = (Compass)(((int)BrushSettings.StairDirection + 1) % 4);
+                Message?.Invoke(this, L.T("Treppe nach unten Richtung") + " " + L.T(BrushSettings.StairDirection switch
+                {
+                    Compass.North => "Nord", Compass.East => "Ost", Compass.South => "Süd", _ => "West"
+                }));
+                Invalidate();
+                return true;
+            }
             if ((Tool == IsoTool.Road || Tool == IsoTool.Lasso) && _points.Count > 0)
             {
                 switch (e.KeyCode)
@@ -621,23 +665,82 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         // ------------------------------------------------------------------ builders
 
+        /// <summary>Bridge plan by "Kategorie / Name" (designer), null = none.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<string, BridgeTemplate> FindBridgeTemplate { get; set; }
+
+        /// <summary>The plan the bridge tool builds: the chosen designer plan, else made from the bridge set, else from the tiledata.</summary>
+        public BridgeTemplate CurrentBridgePlan(out string source)
+        {
+            BridgeTemplate t = string.IsNullOrEmpty(BrushSettings.BridgeTemplate) ? null : FindBridgeTemplate?.Invoke(BrushSettings.BridgeTemplate);
+            if (t != null)
+            {
+                source = L.T("Plan") + $" '{t}'";
+                return t;
+            }
+            BridgeSet set = BridgeSet;
+            var g = new BridgeGenSettings { Width = BrushSettings.Bridge.Width, PillarEvery = BrushSettings.Bridge.PillarEvery };
+            if (set != null && (HexList.Parse(set.DeckX).Length > 0 || HexList.Parse(set.DeckY).Length > 0))
+            {
+                g.Deck = HexList.Parse(set.DeckX).Length > 0 ? set.DeckX : set.DeckY;
+                g.RailX = set.RailX;
+                g.RailY = set.RailY;
+                g.Post = set.Post;
+                g.Pillar = set.Pillar;
+                source = L.T("Set") + $" '{set.Name}'";
+            }
+            else
+            {
+                BridgeGenSettings auto = BridgeKit.AutoPieces();
+                auto.Width = g.Width;
+                auto.PillarEvery = g.PillarEvery;
+                g = auto;
+                source = L.T("Teile aus der TileData") + $": " + L.T("Bretter") + $" {g.Deck}, " + L.T("Geländer") + $" {g.RailX}/{g.RailY}, " + L.T("Pfosten") + $" {g.Post}, " + L.T("Pfeiler") + $" {g.Pillar}";
+            }
+            t = BridgeKit.Generate(g, set?.Name ?? "Auto");
+            StairSet st = StairSet;
+            if (st != null)
+            {
+                t.StairNorth = st.DownNorth;
+                t.StairEast = st.DownEast;
+                t.StairSouth = st.DownSouth;
+                t.StairWest = st.DownWest;
+            }
+            return t;
+        }
+
         private void PlaceBridge(Point a, Point b)
         {
-            BridgeSet set = BridgeSet;
-            if (set == null || (HexList.Parse(set.DeckX).Length == 0 && HexList.Parse(set.DeckY).Length == 0))
-            {
-                Message?.Invoke(this, L.T("Brücke: erst ein Brücken-Set mit Bodenbrettern anlegen (Reiter Pinsel → Brücke)."));
-                return;
-            }
             if (a == b)
             {
                 Message?.Invoke(this, L.T("Brücke: von Ufer zu Ufer ziehen (West-Ost oder Nord-Süd)."));
                 return;
             }
-            List<StaticChange> changes = Builders.BuildBridge(_map, a, b, set, BrushSettings.Bridge, _rnd);
+            BridgeTemplate plan = CurrentBridgePlan(out string source);
+            if (plan.PartsX.Count == 0 && plan.PartsY.Count == 0)
+            {
+                Message?.Invoke(this, L.T("Brücke: keine Teile gefunden – im Brücken-Designer Teile wählen (Bretter, Geländer) oder die TileData laden."));
+                return;
+            }
+            List<StaticChange> changes = BridgeKit.Build(_map, a, b, plan, BrushSettings.Bridge, _rnd);
             int before = _map.UndoCount;
             _map.Apply(changes);
-            Finished(_map.UndoCount > before ? changes.Count : 0, L.T("Brücke") + $" '{set.Name}'");
+            Finished(_map.UndoCount > before ? changes.Count : 0, L.T("Brücke") + $" ({source})");
+        }
+
+        private void PlaceStairs(Point tile)
+        {
+            StairSet set = StairSet;
+            if (set == null || HexList.Parse(set.For(BrushSettings.StairDirection)).Length == 0)
+            {
+                Message?.Invoke(this, L.T("Treppe: erst ein Treppen-Set mit Stufen für alle Richtungen wählen (Reiter Pinsel → Treppe / Brücken-Designer → Treppe aus TileData)."));
+                return;
+            }
+            int top = PlaceZ(tile.X, tile.Y);
+            List<StaticChange> changes = Builders.BuildStairs(_map, tile, top, BrushSettings.StairDirection, BrushSettings.StairSteps, BrushSettings.StairWidth, set);
+            int before = _map.UndoCount;
+            _map.Apply(changes);
+            Finished(_map.UndoCount > before ? changes.Count : 0, L.T("Treppe") + $" {BrushSettings.StairSteps} " + L.T("Stufen") + $", z {top} → {top - 5 * BrushSettings.StairSteps}");
         }
 
         private void PlaceCellar(Rectangle r)
@@ -729,7 +832,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 return;
             }
-            int r = Math.Max(0, LandRadius);
+            int brushWidth = Math.Max(0, LandRadius) * 2 + 1;
+            var core = new HashSet<int>();
             var pts = Builders.Course(new PointF(a.X + 0.5f, a.Y + 0.5f), new PointF(b.X + 0.5f, b.Y + 0.5f), BrushSettings.Course,
                 new Random(BrushSettings.Course.Seed != 0 ? BrushSettings.Course.Seed : _previewSeed));
             _previewSeed = Environment.TickCount;
@@ -746,9 +850,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     continue;
                 }
                 last = new Point(cx, cy);
-                int rr = BrushSettings.Course.Widen ? (int)Math.Round(r * (0.55 + 0.7 * t)) : r;
-                CgiBrushes.River(_map, cx, cy, rr, level, BrushSettings.River, GroundBefore, _rnd);
-                int reach = rr + BrushSettings.River.BankWidth + 1;
+                double rr = BrushSettings.Course.WidthAt(t, brushWidth) / 2.0;
+                CgiBrushes.River(_map, cx, cy, rr, level, BrushSettings.River, GroundBefore, _rnd, core);
+                int reach = (int)Math.Ceiling(rr) + BrushSettings.River.BankWidth + 1;
                 var dab = new Rectangle(cx - reach, cy - reach, reach * 2 + 1, reach * 2 + 1);
                 box = box.IsEmpty ? dab : Rectangle.Union(box, dab);
             }
@@ -756,8 +860,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 LandTransitions.Apply(_map, box, _rnd);
             }
+            _map.ApplyStatics(CgiBrushes.RestoreWater(_map, core, BrushSettings.River, _rnd));
             int n = _map.EndLand();
-            Finished(n, L.T("Fluss-Lauf"));
+            Finished(n, L.T("Fluss-Lauf") + $" ({BrushSettings.Course.WidthAt(0, brushWidth):0}–{BrushSettings.Course.WidthAt(1, brushWidth):0} " + L.T("Tiles breit") + ")");
         }
 
         private void DrawUnderBanner(Graphics g)
@@ -964,8 +1069,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     .Select(p => Middle((int)Math.Floor(p.x), (int)Math.Floor(p.y))).ToArray();
                 if (pts.Length > 1)
                 {
-                    using var pen = new Pen(Color.FromArgb(150, 80, 160, 255), Math.Max(3f, (LandRadius * 2 + 1) * Half * 0.6f)) { LineJoin = LineJoin.Round, StartCap = LineCap.Round, EndCap = LineCap.Round };
-                    g.DrawLines(pen, pts);
+                    // width grows from the start to the end like the course will
+                    int bw = Math.Max(0, LandRadius) * 2 + 1;
+                    for (int i = 1; i < pts.Length; i++)
+                    {
+                        double t = i / (double)(pts.Length - 1);
+                        using var pen = new Pen(Color.FromArgb(150, 40, 120, 255), Math.Max(3f, (float)(BrushSettings.Course.WidthAt(t, bw) * Half * 1.4))) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+                        g.DrawLine(pen, pts[i - 1], pts[i]);
+                    }
                 }
             }
             else if (_dragStart.HasValue)
@@ -1050,6 +1161,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private string NewToolHelp(IsoTool t) => t switch
         {
             IsoTool.Scatter => L.T("Streu-Pinsel: Ziehen verteilt das Set (Reiter Pinsel) – Dichte, Abstand, Boden-Filter · Strg+Ziehen entfernt Statics des Sets · Pinsel oben · ein Zug = ein Rückgängig-Schritt"),
+            IsoTool.Eraser => L.T("Radierer: Ziehen löscht alle Statics im Pinsel (Größe oben / [ ]) · Strg = Land zur Leere · Einstellungen im Reiter Pinsel"),
+            IsoTool.Stairs => L.T("Treppe: Klick setzt Stufen nach unten in die gewählte Richtung (Treppen-Set) · R = Richtung drehen"),
             IsoTool.HueBrush => L.T("Hue-Pinsel: Ziehen färbt alle Statics im Pinsel mit der Hue (Reiter Items) · Strg = Hue 0 (Original)"),
             IsoTool.River => L.T("Fluss: Ziehen gräbt ein Bett – Wasser-Tiles auf 'Tiefe' unter dem Startpunkt, weiches Ufer, danach Übergänge (Reiter Pinsel → Fluss) · Pinsel oben = Breite"),
             IsoTool.Plateau => L.T("Plateau: Ziehen flacht auf die Höhe unter dem ersten Klick ab (oder 'Höhe ='), Art Terrassen = Stufen · Härte für weiche Ränder (Reiter Pinsel)"),

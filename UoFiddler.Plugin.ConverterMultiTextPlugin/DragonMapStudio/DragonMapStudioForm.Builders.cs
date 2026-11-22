@@ -47,6 +47,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.FindDungeonLook = name => BrushCfg.DungeonLooks.FirstOrDefault(l => l.Name == name);
             isoView.BridgeSet = BrushCfg.BridgeSets.FirstOrDefault(b => b.Name == BrushCfg.BridgeSet);
             isoView.StairSet = BrushCfg.StairSets.FirstOrDefault(b => b.Name == BrushCfg.StairSet);
+            isoView.FindBridgeTemplate = FindBridgePlan;
             mapCanvas.Course = BrushCfg.Course;
             mapCanvas.SlopeColour = SlopeColourFor;
             mapCanvas.StepClosing += (s, e) => _slope = null;
@@ -208,8 +209,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
             };
             _propBridgeSet = Grid(null, 150);
+            _cmbBridgePlan = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+            _cmbBridgePlan.SelectedIndexChanged += (s, e) =>
+            {
+                BrushCfg.BridgeTemplate = _cmbBridgePlan.SelectedItem is BridgeTemplate t ? t.ToString() : string.Empty;
+                isoView.Invalidate();
+            };
             AddSection(col, "build.bridge", "Brücke (Statics über Wasser)", ColBuild, () => ToolIcons.Get("bridge"), true,
                 Row(ToolBtn("Brücken-Werkzeug wählen", IsoTool.Bridge, ColBuild)),
+                Row(Btn("Brücken-Designer öffnen …", ColBuild, OpenBridgeDesigner, true)),
+                Row(new Label { Text = L.T("Plan:"), AutoSize = true }),
+                Row(_cmbBridgePlan),
+                Row(new Label { Text = L.T("Set (ohne Plan):"), AutoSize = true }),
                 Row(_cmbBridgeSet),
                 Row(Btn("Neu …", ColBuild, () =>
                 {
@@ -237,9 +248,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     Btn("← Pfosten", ColView, () => SlotFromItem(isoView.BridgeSet, (o, id) => ((BridgeSet)o).Post = id, _propBridgeSet, "Pfosten"))),
                 Row(_propBridgeSet),
                 Row(Grid(BrushCfg.Bridge, 140)),
-                Row(Hint(L.T("Von Ufer zu Ufer ziehen. Die Stücke im Reiter Items wählen und '← …' klicken. Höhe = höheres Ende + Z +, die Mitte um 'Bogen' höher."))));
+                Row(Hint(L.T("Von Ufer zu Ufer ziehen – beim Ziehen sieht man die echten Teile. Ohne Plan und ohne Set sucht das Studio Bretter, Geländer, Pfosten und Pfeiler selbst in der TileData. Eigene Brücken baut man im Brücken-Designer. Höhe = höheres Ende + Z +, die Mitte um 'Bogen' höher."))));
             FillNamed(_cmbBridgeSet, BrushCfg.BridgeSets, BrushCfg.BridgeSet, b => b.Name);
             ApplyBridgeSet();
+            FillBridgePlans();
 
             // ---- cellar + under the map
             _chkUnderView = new CheckBox { Text = L.T("Unter der Karte bauen (Ansicht + Bau-Ebene)"), AutoSize = true, Checked = isoView.UnderView };
@@ -266,6 +278,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 Row(new Label { Text = L.T("Bau-Ebene (Z unter dem Boden):"), AutoSize = true }, offset),
                 Row(Grid(BrushCfg.Cellar, 200)),
                 Row(_cmbStairSet),
+                Row(ToolBtn("Treppe setzen", IsoTool.Stairs, ColBuild), Btn("Treppe aus TileData", ColView, AutoStairSet)),
+                Row(Btn("Treppe: Richtung / Stufen …", ColView, () => ShowSettingsWindow(new StairToolOptions(BrushCfg), L.T("Treppe")))),
                 Row(Btn("Neues Treppen-Set …", ColBuild, () =>
                 {
                     string n = AskName("Name des Treppen-Sets:", "Steintreppe");
@@ -443,6 +457,81 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         private DungeonWorkshopForm _workshop;
+        private BridgeDesignerForm _bridgeDesigner;
+        private List<BridgeTemplate> _bridgePlans;
+        private ComboBox _cmbBridgePlan;
+
+        private BridgeTemplate FindBridgePlan(string name)
+        {
+            _bridgePlans ??= BridgeKit.LoadAll();
+            return _bridgePlans.FirstOrDefault(t => t.ToString() == name);
+        }
+
+        private void FillBridgePlans()
+        {
+            _bridgePlans = BridgeKit.LoadAll();
+            if (_cmbBridgePlan == null)
+            {
+                return;
+            }
+            _cmbBridgePlan.Items.Clear();
+            _cmbBridgePlan.Items.Add(L.T("(kein Plan – Brücken-Set / Teile aus der TileData)"));
+            foreach (BridgeTemplate t in _bridgePlans)
+            {
+                _cmbBridgePlan.Items.Add(t);
+            }
+            int i = _bridgePlans.FindIndex(t => t.ToString() == BrushCfg.BridgeTemplate);
+            _cmbBridgePlan.SelectedIndex = i + 1;
+        }
+
+        /// <summary>Own window: design bridges in a test field (pieces from the tiledata with pictures), save by category.</summary>
+        private void OpenBridgeDesigner()
+        {
+            if (_bridgeDesigner != null)
+            {
+                _bridgeDesigner.Activate();
+                return;
+            }
+            var host = new BridgeDesignerHost
+            {
+                Map = _cgiMap,
+                Brushes = BrushCfg,
+                Configure = ConfigureLikeMain,
+                CurrentArea = () => isoView.Area,
+                Status = SetStatus,
+                Help = ShowHelp,
+                Use = t =>
+                {
+                    FillBridgePlans();
+                    SelectCgiTool(IsoTool.Bridge);
+                }
+            };
+            _bridgeDesigner = new BridgeDesignerForm(host) { Owner = this };
+            _bridgeDesigner.FormClosed += (s, e) =>
+            {
+                _bridgeDesigner = null;
+                FillBridgePlans();
+            };
+            _bridgeDesigner.Show(this);
+        }
+
+        /// <summary>Fills the stair set with the stairs found in the tiledata (as a new set "Treppe (TileData)").</summary>
+        private void AutoStairSet()
+        {
+            StairSet st = BridgeKit.AutoStairs();
+            if (string.IsNullOrEmpty(st.DownNorth))
+            {
+                SetStatus(L.T("Keine Treppen-Gruppe in der TileData gefunden – Stufen im Katalog suchen (Suche: stair) und mit '← ab …' zuordnen."));
+                return;
+            }
+            BrushCfg.StairSets.RemoveAll(b => b.Name == st.Name);
+            BrushCfg.StairSets.Add(st);
+            BrushCfg.StairSet = st.Name;
+            FillNamed(_cmbStairSet, BrushCfg.StairSets, st.Name, b => b.Name);
+            ApplyStairSet();
+            SetStatus(L.T("Treppen-Set aus der TileData") + $": {st.Name} (N {st.DownNorth}, O {st.DownEast}, S {st.DownSouth}, W {st.DownWest}) – " +
+                      L.T("Richtung prüfen: Werkzeug Treppe zeigt die Stufen als Vorschau, R dreht."));
+        }
 
         /// <summary>Opens the dungeon workshop for the area marked in the CGI view.</summary>
         private void OpenDungeonWorkshop(WorkshopKind kind)
@@ -496,6 +585,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     return path;
                 },
                 Status = SetStatus,
+                Help = ShowHelp,
                 Applied = () =>
                 {
                     isoView.Refresh(true);
@@ -587,7 +677,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 Help = "Erst mit 'Bereich' einen Platz markieren, dann klicken: die Werkstatt im Keller-Modus (Statics unter der Karte, Loch auf Kartenhöhe)",
                 Click = () => OpenDungeonWorkshop(WorkshopKind.Cellar)
             }, "build");
-            add(CgiTool("course", "Fluss-Lauf", string.Empty, "Von der Quelle zur Mündung ziehen: natürlich geschlängelter Fluss", IsoTool.Course, ColBuild), "build");
+            add(CgiTool("course", "Fluss-Lauf", string.Empty, "Von der Quelle zur Mündung ziehen: natürlich geschlängelter Fluss mit Wasser, Breite am Anfang / Ende einstellbar", IsoTool.Course, ColBuild), "build");
+            add(new ToolPaletteEntry
+            {
+                Key = "bridgedesigner", Name = "Brücken-Designer", Accent = ColBuild,
+                Help = "Eigenes Fenster: Brücken aus Statics entwerfen (Teile aus der TileData mit Bild, Testfeld, Muster von Hand, aus Karte / Multi), nach Kategorie speichern",
+                Click = OpenBridgeDesigner
+            }, "build");
+            add(CgiTool("stairs", "Treppe", string.Empty, "Klick: Stufen nach unten in die Richtung (R dreht), bis zum Boden gefüllt (Treppen-Set)", IsoTool.Stairs, ColBuild), "build");
 
             add(new ToolPaletteEntry
             {
@@ -638,8 +735,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             cellar.Click += (s, e) => OpenBrushSection("build.cellar");
             var dungeon = new ToolStripButton(L.T("Dungeon-Einstellungen …"));
             dungeon.Click += (s, e) => ShowSettingsWindow(BrushCfg.Dungeon, L.T("Dungeon-Generator"));
-            var course = new ToolStripButton(L.T("Schlängeln …"));
+            var course = new ToolStripButton(L.T("Fluss: Breite / Schlängeln …"));
             course.Click += (s, e) => ShowSettingsWindow(BrushCfg.Course, L.T("Natürlicher Lauf"));
+            var river = new ToolStripButton(L.T("Wasser …"));
+            river.Click += (s, e) => ShowSettingsWindow(BrushCfg.River, L.T("Fluss"));
+            var designer = new ToolStripButton(L.T("Brücken-Designer …"));
+            designer.Click += (s, e) => OpenBridgeDesigner();
+            var stairs = new ToolStripButton(L.T("Richtung / Stufen …"));
+            stairs.Click += (s, e) => ShowSettingsWindow(new StairToolOptions(BrushCfg), L.T("Treppe"));
+            var eraser = new ToolStripButton(L.T("Radierer …"));
+            eraser.Click += (s, e) => ShowSettingsWindow(BrushCfg.Eraser, L.T("Radierer"));
             _tsbUnderView = new ToolStripButton(L.T("⬇ Unter der Karte")) { CheckOnClick = true, Checked = isoView.UnderView, ToolTipText = L.T("Unter der Karte bauen: Statics unter dem Boden zeigen, Bau-Ebene Boden − 20") };
             _tsbUnderView.Click += (s, e) => SetUnderView(_tsbUnderView.Checked);
             foreach ((ToolStripItem item, Func<IsoTool, bool> show) in new (ToolStripItem, Func<IsoTool, bool>)[]
@@ -648,6 +753,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                          (cellar, t => t == IsoTool.Cellar),
                          (dungeon, t => t == IsoTool.Dungeon),
                          (course, t => t == IsoTool.Course),
+                         (river, t => t == IsoTool.Course || t == IsoTool.River),
+                         (designer, t => t == IsoTool.Bridge),
+                         (stairs, t => t == IsoTool.Stairs),
+                         (eraser, t => t == IsoTool.Eraser),
                          (_tsbUnderView, t => true)
                      })
             {

@@ -1,4 +1,4 @@
-# Dragon Map Studio
+﻿# Dragon Map Studio
 
 Nachbau und Erweiterung von **Dragon 1.03.62 (IMod13)** als UoFiddler-Werkzeug.
 Geöffnet wird es im Plugin *ConverterMultiText* → Reiter **Map** → Knopf **Dragon Map Studio** (unter *Uo Map*).
@@ -1138,3 +1138,42 @@ Der Kern wurde genau so getestet, wie das Fenster ihn benutzt:
 ### Als Nächstes
 
 Brücken, Geländer und Treppen mit Teilen, die automatisch aus TileData (Namen, Flags) gesucht und mit art.mul-Bildern zur Auswahl gezeigt werden.
+
+## Brücken, Katalog, Radierer, Treppe, fremde Karte (seit „Werkstatt 26“)
+
+### Fluss-Lauf mit Wasser und Breite
+* Die Mitte des Flusses bleibt jetzt immer Wasser, auch nach den Dragon-Übergängen. Vorher hat ein schmaler Fluss nur Ufer-Tiles bekommen und sah aus wie ein Erdweg.
+* „Fluss: Breite / Schlängeln …“ (Optionsleiste): **Breite am Anfang** und **Breite am Ende** in Tiles (0 = Pinselgröße). Die Vorschau beim Ziehen zeigt die Breite.
+* „Wasser …“: Tiefe, Ufer, Übergänge und neu **Wasser-Statics dazu** (1797–179c auf der Wasserfläche).
+* Der Fluss-Pinsel behält die Mitte ebenfalls als Wasser.
+
+### Brücken aus Statics
+* Werkzeug **Brücke**: von Ufer zu Ufer ziehen. Beim Ziehen sieht man die echten Teile.
+* Ohne Plan und ohne Set sucht das Studio die Teile selbst in der TileData: Bretter (Surface, Namen wie bridge / plank / board), Geländer (railing / fence), Pfosten, Pfeiler, Laterne, Treppe. Ob ein Geländer West-Ost oder Nord-Süd läuft, erkennt es am Bild.
+* Die Brücke hat Bretter, Geländer an beiden Seiten, Pfosten alle 2 Tiles, Laternen, **Pfeiler bis zum Wasser** und **Treppen an den Enden**, wenn sie höher liegt als das Ufer.
+* Reiter Pinsel → Brücke: **Plan** wählen (aus dem Designer) oder ein Set.
+
+### Brücken-Designer (eigenes Fenster)
+* Palette → **Brücken-Designer** oder Reiter Pinsel → Brücke → „Brücken-Designer öffnen …“.
+* **Testfeld** mit zwei Ufern und Wasser in CGI-Ansicht. „Muster“ zeigt die Brücke einmal flach zum Bearbeiten, „Vorschau lang“ mit Bogen, Pfeilern und Treppen, „W-O / N-S“ dreht.
+* **Teile:** Knöpfe Bretter / Geländer W-O / Geländer N-S / Pfosten / Pfeiler / Lampe / Treppe N-O-S-W zeigen unten im Katalog alle passenden Teile der TileData als Bild. Doppelklick ordnet zu.
+* **Von Hand:** im Muster mit Katalog, Static setzen, Löschen, Radierer, Multi setzen bauen, dann „Muster übernehmen“. „Andere Richtung ableiten“ macht die Nord-Süd-Version.
+* **Aus der Karte:** eine echte Brücke in der CGI-Ansicht mit „Bereich“ markieren → „Brücke aus der Karte“. **Aus einer Multi:** „Multi laden …“, dann im Katalog doppelklicken.
+* Anfang / Ende im Plan: diese Tiles werden einmal gebaut, die Mitte wird bei langen Brücken wiederholt.
+* **Speichern nach Kategorie** (Holz, Stein, Dungeon …). „✔ Im Studio benutzen“ gibt den Plan dem Brücken-Werkzeug.
+
+### Katalog (Statics, Land / Textur, Multis)
+* In Werkstatt und Brücken-Designer: Bilder aller Teile, **Suche** nach Name oder Hex-ID, Größe der Bilder wählbar.
+* **Kategorien:** eingebaute (◆ Wände, Böden, Treppen, Brücke, Geländer, Pfeiler, Türen, Dach, Pflanzen, Wasser, Licht, Dungeon-Deko, Möbel; beim Land Wasser, Höhle, Fels, Gras, Sand, Erde, Schnee, Lava, Leere) und **eigene**: „+ Kategorie“, Rechtsklick → „In Kategorie …“, „Alle gezeigten in Kategorie …“, „Aus dieser Kategorie entfernen“. Ab Werk gibt es „Dungeon (map0)“ und beim Land „Dungeon / Höhle“.
+* Gespeichert in `katalog_kategorien.json` bei den Einstellungen.
+
+### Radierer und Treppe (CGI-Ansicht und Werkstatt)
+* **Radierer:** runder Pinsel, löscht alle Statics darunter. Strg = Land zur Leere. Größe wie jeder Pinsel. Einstellungen: nur sichtbare, Land mit, Leere-Tile.
+* **Treppe:** Klick setzt Stufen nach unten in die Richtung (R dreht), je Stufe 5 Z, bis unten gefüllt. Stufen und Breite unter „Richtung / Stufen …“. Vorschau beim Zeigen. „Treppe aus TileData“ legt ein Treppen-Set aus der TileData an (Richtung bitte prüfen).
+
+### Werkstatt: neue Möglichkeiten (auch im Keller)
+* Werkzeugleiste: Radierer, Treppe, Multi setzen, Höhe + / −, Rampe, Glätten, **Pinselgröße** 1–17 (auch für Loch / NoDraw), **Gitter** und **Statics** ein / aus, **Katalog** unten ein / aus.
+* Klick im Katalog wählt das Teil und das Werkzeug (Static setzen, Land setzen, Multi setzen).
+* **4b Vorlagen und fremde Karten:** „Fremde Karte öffnen …“ lädt eine andere map#.mul / .uop mit Statics in ein eigenes CGI-Fenster. Dort zum Dungeon springen (X / Y), mit „Bereich“ markieren und „✔ Bereich in die Werkstatt“. Die fremde Karte wird nie verändert.
+* „Platz als Vorlage speichern …“ (Kategorie + Name) und „Vorlage laden“ setzt sie auf der gewählten Etage wieder ein.
+* **Hilfe-Knöpfe:** Generieren, 2D-Plan, 3D bauen (auch im Hilfe-Fenster unter „Bauen“).

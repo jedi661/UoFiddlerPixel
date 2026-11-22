@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Werkstatt 25“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Werkstatt 26“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -139,10 +139,18 @@
    * Etagen-Regler.
    * Leere wählbar (NoDraw / Schwarz / Katalog).
 
+16. **Neu (Werkstatt 26):**
+   * Fluss-Lauf: Breite am Anfang / Ende (`CourseSettings.Width/EndWidth/WidthAt`), die Mitte bleibt nach den Übergängen Wasser (`CgiBrushes.River(..., core)` + `RestoreWater`), optional Wasser-Statics.
+   * Brücken aus Statics: `Core/BridgeKit.cs` – Teile-Suche in der TileData (Namen + Flags), Richtung aus dem Art-Bild (Kovarianz), `BridgeTemplate` (Anfang / wiederholte Mitte / Ende, Pfeiler bis zum Boden, Treppen), Vorschau der echten Teile beim Ziehen.
+   * Brücken-Designer `Dialogs/BridgeDesignerForm.cs` (Testfeld, Muster von Hand, aus Karte / Multi, speichern nach Kategorie unter `SettingsFolder/Bruecken`).
+   * Katalog `Controls/ArtCatalog.cs` + `Core/ArtCategories.cs` (Statics / Land / Multis, Suche, eingebaute und eigene Kategorien in `katalog_kategorien.json`).
+   * Neue CGI-Werkzeuge `IsoTool.Eraser` (Radierer-Pinsel) und `IsoTool.Stairs` (`Builders.BuildStairs`).
+   * Werkstatt: Werkzeugleiste mit Radierer / Treppe / Höhe / Rampe / Multi, Pinselgröße, Gitter, Statics, Katalog unten, Hilfe-Knöpfe (`ws-generate`, `ws-2d`, `ws-3d`), fremde Karte (`Dialogs/ForeignMapForm.cs`), Vorlagen `Core/WorkshopPiece.cs` (`SettingsFolder/Werkstatt`).
+
 ## Offen / als Nächstes
 
-* Als Nächstes (Besitzer-Wunsch): Brücken / Geländer / Treppen – Teile automatisch aus TileData (Namen 'bridge', 'railing', 'stairs', Flags) mit Bildern zur Auswahl.
-* Werkstatt 25 in der Oberfläche testen lassen.
+* Werkstatt 26 testen lassen: Findet die TileData-Suche die richtigen Brücken-Teile? Stimmt die Richtungserkennung (W-O / N-S) der Geländer? Treppen-Gruppe von `BridgeKit.AutoStairs` (Reihenfolge geraten) prüfen.
+* Werkstatt 25/26 in der Oberfläche testen lassen (fremde Karte laden – ganze Karte im Speicher, Vorlagen, Katalog).
 * Dungeon 24: Ebenen z 0 / 22 mit Treppen (07a3–07a7) und Einrichtung je Raum lernen.
 * Dungeon 23: Besitzer soll Deceit / Doom o. ä. lernen und den Log schicken → Regeln verfeinern (z. B. Stockwerke, Türen, Treppen zwischen Ebenen, Raumformen aus dem Original).
 * Bauen 22 testen: Keller im Client begehbar? Treppen-Richtung passend? NoDraw-Verhalten auf dem Shard prüfen.

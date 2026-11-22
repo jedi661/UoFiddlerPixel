@@ -123,7 +123,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Course,
 
         /// <summary>Drag a rectangle: labyrinth of raised rock walls (the former "cave" dungeon).</summary>
-        MountainWall
+        MountainWall,
+
+        /// <summary>Round brush: deletes statics (and / or land to void) under it – size like every brush.</summary>
+        Eraser,
+
+        /// <summary>Click: stairs down in the chosen direction (stair set), filled down to the ground.</summary>
+        Stairs
     }
 
     public sealed class StaticPickEventArgs : EventArgs
@@ -1381,6 +1387,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 Rectangle b = _template.Bounds;
                 using var pen = new Pen(Color.FromArgb(200, 255, 170, 0), 2) { DashStyle = DashStyle.Dash };
                 g.DrawPolygon(pen, AreaPoly(new Rectangle(_hover.X + b.X, _hover.Y + b.Y, b.Width, b.Height)));
+            }
+            else if (Tool == IsoTool.Stairs && StairSet != null)
+            {
+                foreach (StaticChange c in Builders.BuildStairs(_map, _hover, PlaceZ(_hover.X, _hover.Y), BrushSettings.StairDirection, BrushSettings.StairSteps, BrushSettings.StairWidth, StairSet)
+                             .OrderBy(c => c.After.X + c.After.Y).ThenBy(c => c.After.Z))
+                {
+                    parts.Add((c.After.Id, c.After.X, c.After.Y, c.After.Z));
+                }
+            }
+            else if (Tool == IsoTool.Bridge && _dragStart.HasValue && _dragStart.Value != _dragEnd)
+            {
+                // the real pieces of the bridge while dragging
+                BridgeTemplate plan = CurrentBridgePlan(out _);
+                foreach (StaticChange c in BridgeKit.Build(_map, _dragStart.Value, _dragEnd, plan, BrushSettings.Bridge, new Random(1))
+                             .OrderBy(c => c.After.X + c.After.Y).ThenBy(c => c.After.Z).Take(3000))
+                {
+                    parts.Add((c.After.Id, c.After.X, c.After.Y, c.After.Z));
+                }
             }
             else if (_pasteGhost && _clipboard.Count > 0)
             {

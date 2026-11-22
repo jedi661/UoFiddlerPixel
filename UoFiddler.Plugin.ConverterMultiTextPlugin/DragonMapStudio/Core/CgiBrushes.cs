@@ -124,8 +124,61 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("Fluss"), DisplayName("Spiegel folgt dem Gelände"), Description("An = der Wasserspiegel liegt überall 'Tiefe' unter dem Boden (Gebirgsbach). Aus = ein Spiegel für den ganzen Strich (ruhiger Fluss, See).")]
         public bool FollowTerrain { get; set; }
 
-        [Category("Fluss"), DisplayName("Übergänge danach"), Description("Nach dem Strich die Dragon-Übergänge (Wasser → Sand / Gras) um den Fluss berechnen.")]
+        [Category("Fluss"), DisplayName("Übergänge danach"), Description("Nach dem Strich die Dragon-Übergänge (Wasser → Sand / Gras) um den Fluss berechnen. Die Mitte des Flusses bleibt immer Wasser.")]
         public bool Transitions { get; set; } = true;
+
+        [Category("Fluss"), DisplayName("Wasser-Statics dazu"), Description("Zusätzlich Wasser-Statics (1797–179c) auf die Wasserfläche legen – sieht auch auf Schrägen wie Wasser aus.")]
+        public bool WaterStatics { get; set; }
+
+        [Category("Fluss"), DisplayName("Wasser-Statics (hex)")]
+        public string WaterStaticIds { get; set; } = "1797 1798 1799 179a 179b 179c";
+    }
+
+    /// <summary>Settings of the tool "Treppe" for a property grid (stored in <see cref="CgiBrushSettings"/>).</summary>
+    public sealed class StairToolOptions
+    {
+        private readonly CgiBrushSettings _o;
+
+        public StairToolOptions(CgiBrushSettings o)
+        {
+            _o = o;
+        }
+
+        [Category("Treppe"), DisplayName("Richtung (nach unten)"), Description("In diese Richtung geht man die Treppe hinunter. Im Werkzeug dreht R.")]
+        public Compass Direction
+        {
+            get => _o.StairDirection;
+            set => _o.StairDirection = value;
+        }
+
+        [Category("Treppe"), DisplayName("Stufen"), Description("Je Stufe 5 Z tiefer: 4 Stufen = 20 Z = eine Etage.")]
+        public int Steps
+        {
+            get => _o.StairSteps;
+            set => _o.StairSteps = Math.Clamp(value, 1, 40);
+        }
+
+        [Category("Treppe"), DisplayName("Breite (Tiles)")]
+        public int Width
+        {
+            get => _o.StairWidth;
+            set => _o.StairWidth = Math.Clamp(value, 1, 10);
+        }
+    }
+
+    public sealed class EraserSettings
+    {
+        [Category("Radierer"), DisplayName("Statics löschen")]
+        public bool Statics { get; set; } = true;
+
+        [Category("Radierer"), DisplayName("Land löschen"), Description("Land unter dem Pinsel wird zur Leere (auf seiner Höhe, kein Loch in die Tiefe).")]
+        public bool Land { get; set; }
+
+        [Category("Radierer"), DisplayName("Leere (hex)"), Description("0002 = NoDraw, 0244 = Schwarz.")]
+        public string VoidTile { get; set; } = "0002";
+
+        [Category("Radierer"), DisplayName("Nur sichtbare"), Description("An = nur Statics, die die Ansicht zeigt (Filter, Etage).")]
+        public bool OnlyVisible { get; set; } = true;
     }
 
     public sealed class RoadSettings
@@ -238,9 +291,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public PlateauSettings Plateau { get; set; } = new PlateauSettings();
         public NoiseSettings Noise { get; set; } = new NoiseSettings();
         public WandSettings Wand { get; set; } = new WandSettings();
+        public EraserSettings Eraser { get; set; } = new EraserSettings();
 
         public BridgeSettings Bridge { get; set; } = new BridgeSettings();
         public string BridgeSet { get; set; } = string.Empty;
+
+        /// <summary>Bridge plan of the designer ("Kategorie / Name"), empty = the bridge set.</summary>
+        public string BridgeTemplate { get; set; } = string.Empty;
         public List<BridgeSet> BridgeSets { get; set; } = new List<BridgeSet>();
 
         public CellarSettings Cellar { get; set; } = new CellarSettings();
@@ -250,6 +307,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public DungeonSettings Dungeon { get; set; } = new DungeonSettings();
         public List<DungeonLook> DungeonLooks { get; set; } = new List<DungeonLook>();
         public CourseSettings Course { get; set; } = new CourseSettings();
+
+        /// <summary>Tool "Treppe": direction you walk down, number of steps (5 z each), width.</summary>
+        public Compass StairDirection { get; set; } = Compass.South;
+        public int StairSteps { get; set; } = 4;
+        public int StairWidth { get; set; } = 2;
 
         /// <summary>"Unter der Karte bauen": statics are placed this much below the ground (−20 = one floor).</summary>
         public int UnderOffset { get; set; } = -20;
@@ -272,6 +334,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Plateau ??= new PlateauSettings();
             Noise ??= new NoiseSettings();
             Wand ??= new WandSettings();
+            Eraser ??= new EraserSettings();
             Bookmarks ??= new List<string>();
             Bridge ??= new BridgeSettings();
             BridgeSets ??= new List<BridgeSet>();
@@ -711,8 +774,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         // ------------------------------------------------------------------ land
 
         /// <summary>River brush (one dab): water tiles at the water level inside, the bank rises softly outside.</summary>
-        public static void River(MapData map, int cx, int cy, int r, int level, RiverSettings o, Func<int, int, int> groundBefore, Random rnd)
+        public static void River(MapData map, int cx, int cy, int r, int level, RiverSettings o, Func<int, int, int> groundBefore, Random rnd) =>
+            River(map, cx, cy, (double)r, level, o, groundBefore, rnd, null);
+
+        /// <summary>
+        /// River dab with a radius in tiles (0.5 = one tile wide line, 1 = 3 wide …). <paramref name="core"/> collects the cells
+        /// in the middle that must stay water (the transitions afterwards may only change the rim).
+        /// </summary>
+        public static void River(MapData map, int cx, int cy, double radius, int level, RiverSettings o, Func<int, int, int> groundBefore, Random rnd, HashSet<int> core)
         {
+            int r = (int)Math.Ceiling(Math.Max(0, radius - 0.5));
             ushort[] water = HexList.Parse(o.WaterTiles);
             if (water.Length == 0)
             {
@@ -723,10 +794,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 int lv = o.FollowTerrain ? groundBefore(x, y) - o.Depth : level;
                 ushort id = map.LandId(x, y);
-                if (d <= r + 0.5)
+                if (d <= radius)
                 {
                     ushort nid = Array.IndexOf(water, id) >= 0 ? id : water[rnd.Next(water.Length)];
                     map.SetLand(x, y, nid, lv);
+                    if (core != null && d <= Math.Max(0.5, radius - 0.25))
+                    {
+                        core.Add(y * map.Width + x);
+                    }
                     continue;
                 }
                 if (Array.IndexOf(water, id) >= 0)
@@ -740,6 +815,40 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     map.SetLand(x, y, id, max);
                 }
             }
+        }
+
+        /// <summary>
+        /// After the transitions: the middle of the river is water again (a narrow river would otherwise become shore tiles
+        /// only – "kein Wasser"). Optionally water statics on it. Returns the statics to apply.
+        /// </summary>
+        public static List<StaticChange> RestoreWater(MapData map, HashSet<int> core, RiverSettings o, Random rnd)
+        {
+            var statics = new List<StaticChange>();
+            if (core == null || core.Count == 0)
+            {
+                return statics;
+            }
+            ushort[] water = HexList.Parse(o.WaterTiles);
+            if (water.Length == 0)
+            {
+                water = new ushort[] { 0x00A8, 0x00A9, 0x00AA, 0x00AB };
+            }
+            ushort[] wst = o.WaterStatics ? HexList.Parse(o.WaterStaticIds) : Array.Empty<ushort>();
+            foreach (int i in core)
+            {
+                int x = i % map.Width, y = i / map.Width;
+                ushort id = map.LandId(x, y);
+                int z = map.LandZ(x, y);
+                if (Array.IndexOf(water, id) < 0)
+                {
+                    map.SetLand(x, y, water[rnd.Next(water.Length)], z);
+                }
+                if (wst.Length > 0 && !map.StaticsAt(x, y).Any(s => Array.IndexOf(wst, s.Id) >= 0))
+                {
+                    statics.Add(MapData.Add(new StaticItem { Id = wst[rnd.Next(wst.Length)], X = x, Y = y, Z = z }));
+                }
+            }
+            return statics;
         }
 
         /// <summary>Points along a smooth curve (Catmull-Rom) through the clicked points, about one per half tile.</summary>

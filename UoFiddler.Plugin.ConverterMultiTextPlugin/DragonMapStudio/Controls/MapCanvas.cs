@@ -871,8 +871,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                                               .Select(p => MapToScreen(p.x, p.y)).ToArray();
                             if (pts.Length > 1)
                             {
-                                using var wide = new Pen(Color.FromArgb(120, 80, 160, 255), (float)Math.Max(2, BrushSize * _zoom)) { LineJoin = LineJoin.Round };
-                                g.DrawLines(wide, pts);
+                                for (int i = 1; i < pts.Length; i++)
+                                {
+                                    using var wide = new Pen(Color.FromArgb(120, 80, 160, 255), (float)Math.Max(2, Course.WidthAt(i / (double)(pts.Length - 1), BrushSize) * _zoom)) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+                                    g.DrawLine(wide, pts[i - 1], pts[i]);
+                                }
                             }
                             break;
                         }
@@ -1558,7 +1561,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 foreach ((float x, float y, float t) in pts)
                 {
                     int cx = (int)Math.Floor(x), cy = (int)Math.Floor(y);
-                    BrushSize = Math.Max(1, (int)Math.Round(baseSize * (Course.Widen ? 0.55 + 0.7 * t : 1)));
+                    BrushSize = Math.Max(1, (int)Math.Round(Course.WidthAt(t, baseSize)));
                     int step = Math.Max(1, BrushSize / 4);
                     if (Math.Abs(cx - last.X) < step && Math.Abs(cy - last.Y) < step)
                     {

@@ -218,6 +218,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         g.DrawLine(blue, 15, 10, 18, 10);
                         break;
                     }
+                case "stairs":
+                    {
+                        using var st = new SolidBrush(Color.FromArgb(168, 162, 158));
+                        for (int i = 0; i < 4; i++)
+                        {
+                            g.FillRectangle(st, 3 + i * 5, 6 + i * 4, 20 - i * 5, 4);
+                        }
+                        using var pen = new Pen(Color.FromArgb(87, 83, 78), 1f);
+                        for (int i = 0; i < 4; i++)
+                        {
+                            g.DrawRectangle(pen, 3 + i * 5, 6 + i * 4, 20 - i * 5, 4);
+                        }
+                        break;
+                    }
+                case "bridgedesigner":
+                    {
+                        using var wood = new SolidBrush(Color.FromArgb(146, 64, 14));
+                        using var water = new SolidBrush(Color.FromArgb(37, 99, 235));
+                        g.FillRectangle(water, 2, 17, 20, 5);
+                        g.FillRectangle(wood, 2, 11, 20, 4);
+                        using var rail = new Pen(Color.FromArgb(120, 53, 15), 1.5f);
+                        g.DrawLine(rail, 2, 7, 22, 7);
+                        for (int x = 3; x <= 21; x += 6)
+                        {
+                            g.DrawLine(rail, x, 7, x, 11);
+                        }
+                        using var pencil = new Pen(Color.FromArgb(234, 179, 8), 2.5f);
+                        g.DrawLine(pencil, 15, 2, 21, 8);
+                        break;
+                    }
                 case "delete":
                     using (var x = new Pen(Red, 3f) { StartCap = LineCap.Round, EndCap = LineCap.Round })
                     {
