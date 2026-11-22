@@ -229,6 +229,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 argb[i] = palette[i].ToArgb();
             }
+            if (palette.Length < 65536)
+            {
+                // transparent stamp pixel (0xFFFF): dark grey in previews
+                argb[65535] = Color.FromArgb(48, 48, 52).ToArgb();
+            }
             BitmapData bd = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
             try
             {

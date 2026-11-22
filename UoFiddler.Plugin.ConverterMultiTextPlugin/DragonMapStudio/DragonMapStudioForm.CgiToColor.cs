@@ -434,5 +434,117 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             RunLearnDialog("Stempel " + s.Name, s.Name, s.Width, s.Height, s.LandTiles, s.LandZ, s.Pixels, s.Statics ?? new List<LayerStatic>());
         }
+
+        // ================================================================== templates (multis) -> colour stamps
+
+        /// <summary>Floor and missing colours for template stamps (small dialog built in code).</summary>
+        private bool AskTemplateStampOptions(string title, out int floorColour, out bool floorEverywhere, out MissingColorMode missing)
+        {
+            floorColour = -1;
+            floorEverywhere = false;
+            missing = MissingColorMode.ExistingOnly;
+            using var f = new Form
+            {
+                Text = L.T(title),
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                StartPosition = FormStartPosition.CenterParent,
+                ClientSize = new Size(560, 250),
+                Font = new Font("Segoe UI", 9f)
+            };
+            DragonPaletteEntry p1 = _rules.Palette[Math.Clamp(mapCanvas.PrimaryIndex, 0, _rules.Palette.Count - 1)];
+            var rbNone = new RadioButton { Text = L.T("Boden: nicht ändern (durchsichtig – die Karte behält ihre Farbe)"), Location = new Point(12, 12), AutoSize = true, Checked = true };
+            var rbUnder = new RadioButton { Text = L.T("Boden: Farbe 1 des Karten-Editors unter den Statics") + $"  ({p1.HexIndex} {p1.Name})", Location = new Point(12, 38), AutoSize = true };
+            var rbAll = new RadioButton { Text = L.T("Boden: Farbe 1 im ganzen Rechteck"), Location = new Point(12, 64), AutoSize = true };
+            var note = new Label
+            {
+                Text = L.T("Vorlagen mit eigenem Land (Dragon-Vorlagen) nehmen ihr Land; nur der Rest wird so behandelt. Die Statics behalten ihre Höhe über dem Boden, " +
+                           "beim Setzen im Karten-Editor passen sich die Farben dem Boden an."),
+                Location = new Point(12, 96),
+                Size = new Size(536, 46),
+                ForeColor = Color.FromArgb(71, 85, 105)
+            };
+            var lblMissing = new Label { Text = L.T("Land-Tiles ohne Farbe:"), Location = new Point(12, 152), AutoSize = true };
+            var cmbMissing = new ComboBox { Location = new Point(170, 148), Width = 370, DropDownStyle = ComboBoxStyle.DropDownList };
+            cmbMissing.Items.AddRange(new object[] { L.T("ähnlichste vorhandene Farbe"), L.T("neue Farben automatisch anlegen") });
+            cmbMissing.SelectedIndex = 0;
+            var ok = new Button { Text = "OK", DialogResult = DialogResult.OK, Location = new Point(368, 206), Width = 80 };
+            var cancel = new Button { Text = L.T("Abbrechen"), DialogResult = DialogResult.Cancel, Location = new Point(456, 206), Width = 90 };
+            f.Controls.AddRange(new Control[] { rbNone, rbUnder, rbAll, note, lblMissing, cmbMissing, ok, cancel });
+            f.AcceptButton = ok;
+            f.CancelButton = cancel;
+            if (f.ShowDialog(this) != DialogResult.OK)
+            {
+                return false;
+            }
+            floorColour = rbNone.Checked ? -1 : mapCanvas.PrimaryIndex;
+            floorEverywhere = rbAll.Checked;
+            missing = cmbMissing.SelectedIndex == 1 ? MissingColorMode.AutoCreate : MissingColorMode.ExistingOnly;
+            return true;
+        }
+
+        private void BtnCgiTplToStamp_Click(object sender, EventArgs e) => TemplatesToColorStamps(false);
+
+        private void BtnCgiTplAllToStamp_Click(object sender, EventArgs e) => TemplatesToColorStamps(true);
+
+        /// <summary>Templates tab: the selected template or all templates of the shown list as colour stamps.</summary>
+        private void TemplatesToColorStamps(bool all)
+        {
+            List<MapTemplate> list = all ? _shownTemplates.ToList() : (SelectedTemplate != null ? new List<MapTemplate> { SelectedTemplate } : new List<MapTemplate>());
+            if (list.Count == 0)
+            {
+                SetStatus(L.T("Erst eine Vorlage in der Liste wählen."));
+                return;
+            }
+            if (all && MessageBox.Show(this, $"{list.Count} Vorlagen der Liste als Farb-Stempel speichern (Kategorie = Ordner der Vorlage)?", Text,
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK)
+            {
+                return;
+            }
+            if (!AskTemplateStampOptions(all ? "Vorlagen → Farb-Stempel" : "Vorlage → Farb-Stempel", out int floor, out bool everywhere, out MissingColorMode missing))
+            {
+                return;
+            }
+            LandTransitionEngine engine = TransitionEngine();
+            var log = new List<string>();
+            int made = 0, coloursBefore = _rules.Palette.Count(p => p.Defined);
+            string last = null;
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                foreach (MapTemplate t in list)
+                {
+                    try
+                    {
+                        ColorStamp stamp = CgiToColor.TemplateToStamp(t, _rules, engine, _settings.Generator.WaterGroup, floor, everywhere, missing, log);
+                        if (stamp == null)
+                        {
+                            continue;
+                        }
+                        stamp.Category = string.IsNullOrWhiteSpace(t.Category) ? "Vorlagen" : t.Category;
+                        last = ColorStampTools.Save(stamp, Path.Combine(ColorStampFolder, MakeSafeFileName(stamp.Category.Replace('/', '_'))));
+                        made++;
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Add($"{t.Name}: {ex.Message}");
+                    }
+                }
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+            if (_rules.Palette.Count(p => p.Defined) != coloursBefore)
+            {
+                MarkRulesDirty();
+                ApplyRules();
+                log.Add("Neue Farben: mit 'JSON speichern' oder 'Als Dragon-Skripte exportieren' dauerhaft machen.");
+            }
+            log.ForEach(Log);
+            LoadColorStamps(last);
+            SetStatus($"{made} Farb-Stempel aus Vorlagen gespeichert in {ColorStampFolder} – im Karten-Editor: Stempel-Menü.");
+        }
     }
 }

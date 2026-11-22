@@ -46,7 +46,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 22.11.2026 – Lernen 12";
+        public const string BuildMark = "Stand 22.11.2026 – Vorlagen 13";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 

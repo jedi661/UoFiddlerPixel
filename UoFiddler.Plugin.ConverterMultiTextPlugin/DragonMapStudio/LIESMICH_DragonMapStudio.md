@@ -656,3 +656,21 @@ Aus einem gebauten Stück Karte – z. B. aus der Original-Karte – lernt das S
 **Test** mit dem Regelsatz im Repo: Regel Gras → Sand (`map/grass2sand.txt`) aus dem Regelsatz entfernt, aus einer gebauten Karte neu gelernt, neu gebaut: **99,8 %** der Gras-Sand-Randzellen bekommen wieder ein Tile aus dem Original-Muster (ohne die Regel: 0 %). Export als Dragon-Skripte und erneutes Einlesen: alle gelernten Dateien und Regeln kommen wieder an.
 
 Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Lernen 12]`.
+
+## Vorlagen (Multis) → Farb-Stempel
+
+Reiter **Vorlagen** der CGI-Ansicht, zwei neue Knöpfe unten:
+* **„→ Farb-Stempel“**: die gewählte Vorlage.
+* **„Liste → Farb-Stempel“**: alle Vorlagen, die die Liste gerade zeigt (z. B. die ganze Kategorie „Fiddler/Haus“).
+
+Abfrage vorher:
+* **Boden:** *nicht ändern (durchsichtig)* – der Stempel setzt nur die Statics, die Farbkarte behält ihre Farben; *Farbe 1 des Karten-Editors unter den Statics*; *Farbe 1 im ganzen Rechteck*. Vorlagen mit eigenem Land (Dragon-Vorlagen `.dmsv.json`) bringen ihr Land als Farben mit.
+* **Land-Tiles ohne Farbe:** ähnlichste vorhandene Farbe oder neue Farben automatisch anlegen.
+
+Die Statics behalten ihre Höhe über dem Boden; beim Setzen im Karten-Editor passen sich die Farben dem Boden an (Häkchen „Höhen an den Boden anpassen“). Kategorie des Stempels = Ordner der Vorlage; die Stempel werden in einem Unterordner je Kategorie gespeichert (`Farbstempel\Fiddler_Haus\…`), das Stempel-Menü liest auch Unterordner.
+
+**Durchsichtige Stempel-Pixel** (`0xFFFF`): sie lassen beim Setzen die Farbe der Karte stehen; in Vorschauen dunkelgrau, im Stempel-Bild leer.
+
+Test mit den mitgelieferten Vorlagen: 556 Vorlagen gelesen, z. B. `Arenasand03` (5.804 Statics, ohne Land) → Stempel 49×51 mit 5.804 Statics; mit Boden „unter den Statics“ auf Boden 20 gesetzt bekommt der Boden die Höhe 20, der Rest bleibt durchsichtig.
+
+Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Vorlagen 13]`.

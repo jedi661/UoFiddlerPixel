@@ -321,6 +321,8 @@
             btnCgiTplSaveSel = new System.Windows.Forms.Button();
             btnCgiTplAreaStatics = new System.Windows.Forms.Button();
             btnCgiTplFolder = new System.Windows.Forms.Button();
+            btnCgiTplToStamp = new System.Windows.Forms.Button();
+            btnCgiTplAllToStamp = new System.Windows.Forms.Button();
             picCgiMulti = new System.Windows.Forms.PictureBox();
             panelCgiMultiTop = new System.Windows.Forms.Panel();
             lblCgiMultiId = new System.Windows.Forms.Label();
@@ -2972,8 +2974,10 @@
             panelCgiTpl.Controls.Add(btnCgiTplSaveSel);
             panelCgiTpl.Controls.Add(btnCgiTplAreaStatics);
             panelCgiTpl.Controls.Add(btnCgiTplFolder);
+            panelCgiTpl.Controls.Add(btnCgiTplToStamp);
+            panelCgiTpl.Controls.Add(btnCgiTplAllToStamp);
             panelCgiTpl.Dock = System.Windows.Forms.DockStyle.Bottom;
-            panelCgiTpl.Size = new System.Drawing.Size(290, 330);
+            panelCgiTpl.Size = new System.Drawing.Size(290, 362);
             panelCgiTpl.Name = "panelCgiTpl";
             // 
             // picCgiTpl
@@ -3099,6 +3103,24 @@
             btnCgiTplFolder.UseVisualStyleBackColor = true;
             btnCgiTplFolder.Name = "btnCgiTplFolder";
             btnCgiTplFolder.Click += BtnCgiTplFolder_Click;
+            // 
+            // btnCgiTplToStamp
+            // 
+            btnCgiTplToStamp.Location = new System.Drawing.Point(4, 328);
+            btnCgiTplToStamp.Size = new System.Drawing.Size(136, 25);
+            btnCgiTplToStamp.Text = "→ Farb-Stempel";
+            btnCgiTplToStamp.UseVisualStyleBackColor = true;
+            btnCgiTplToStamp.Name = "btnCgiTplToStamp";
+            btnCgiTplToStamp.Click += BtnCgiTplToStamp_Click;
+            // 
+            // btnCgiTplAllToStamp
+            // 
+            btnCgiTplAllToStamp.Location = new System.Drawing.Point(146, 328);
+            btnCgiTplAllToStamp.Size = new System.Drawing.Size(136, 25);
+            btnCgiTplAllToStamp.Text = "Liste → Farb-Stempel";
+            btnCgiTplAllToStamp.UseVisualStyleBackColor = true;
+            btnCgiTplAllToStamp.Name = "btnCgiTplAllToStamp";
+            btnCgiTplAllToStamp.Click += BtnCgiTplAllToStamp_Click;
             // 
             // picCgiMulti
             // 
@@ -5097,6 +5119,8 @@
         private System.Windows.Forms.Button btnCgiTplSaveSel;
         private System.Windows.Forms.Button btnCgiTplAreaStatics;
         private System.Windows.Forms.Button btnCgiTplFolder;
+        private System.Windows.Forms.Button btnCgiTplToStamp;
+        private System.Windows.Forms.Button btnCgiTplAllToStamp;
         private System.Windows.Forms.PictureBox picCgiMulti;
         private System.Windows.Forms.Panel panelCgiMultiTop;
         private System.Windows.Forms.Label lblCgiMultiId;

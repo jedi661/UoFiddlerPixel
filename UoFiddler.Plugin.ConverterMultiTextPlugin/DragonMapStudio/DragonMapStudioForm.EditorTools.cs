@@ -719,6 +719,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     for (int x = 0; x < s.Width; x++)
                     {
                         ushort c = s.Pixels[y * s.Width + x];
+                        if (c == ColorStampTools.Transparent)
+                        {
+                            continue;
+                        }
                         if (!brushes.TryGetValue(c, out SolidBrush b))
                         {
                             brushes[c] = b = new SolidBrush(c < colors.Length ? colors[c] : Color.Magenta);

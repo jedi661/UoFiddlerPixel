@@ -63,6 +63,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     {
         public const string Extension = ".dmstamp.json";
 
+        /// <summary>Stamp pixel that keeps the colour of the map (e.g. a house multi without own floor).</summary>
+        public const ushort Transparent = ushort.MaxValue;
+
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions { WriteIndented = false, IncludeFields = true };
 
         /// <summary>Median altitude of the border cells of <paramref name="r"/> (water group left out when possible).</summary>
@@ -130,6 +133,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 ushort c = s.Pixels[i];
                 int g = i < s.Groups.Length ? s.Groups[i] : -1;
+                if (c == Transparent)
+                {
+                    map.Pixels[i] = c;
+                    continue;
+                }
                 if (adapt && g >= 0)
                 {
                     if (!byGroup.TryGetValue(g, out List<DragonPaletteEntry> entries))
@@ -164,7 +172,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 return list;
             }
-            foreach (string f in Directory.GetFiles(folder, "*" + Extension).OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+            // sub folders too (stamps made from templates are sorted into a folder per category)
+            foreach (string f in Directory.GetFiles(folder, "*" + Extension, SearchOption.AllDirectories).OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
