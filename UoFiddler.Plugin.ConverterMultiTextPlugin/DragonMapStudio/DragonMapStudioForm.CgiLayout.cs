@@ -46,7 +46,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 22.11.2026 – Stempel 11";
+        public const string BuildMark = "Stand 22.11.2026 – Vorlagen 13";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
@@ -147,6 +147,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
             };
             toEditor.Click += (s, e) => CgiAreaToEditorMap();
+            var learnRules = new ToolStripButton(L.T("✦ Regeln lernen"))
+            {
+                ToolTipText = L.T("Aus dem markierten Bereich Map-Übergänge, Items und Static-Übergänge lernen (Land, Statics oder beides) → neue Dragon-Skripte + Regeln"),
+                BackColor = Color.FromArgb(126, 34, 206),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            learnRules.Click += (s, e) => LearnRulesFromCgiArea();
+            toolStripCgi.Items.Insert(0, learnRules);
             toolStripCgi.Items.Insert(0, new ToolStripSeparator());
             toolStripCgi.Items.Insert(0, toMap);
             toolStripCgi.Items.Insert(0, toEditor);

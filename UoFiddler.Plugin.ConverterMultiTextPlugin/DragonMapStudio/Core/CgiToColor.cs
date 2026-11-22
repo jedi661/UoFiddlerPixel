@@ -354,13 +354,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
+        /// <summary>Land tiles and heights of an area of a built map.</summary>
+        public static (ushort[] tiles, sbyte[] z) Cut(MapData map, Rectangle a)
+        {
+            var t = new ushort[a.Width * a.Height];
+            var z = new sbyte[a.Width * a.Height];
+            for (int y = 0; y < a.Height; y++)
+            {
+                for (int x = 0; x < a.Width; x++)
+                {
+                    t[y * a.Width + x] = map.LandId(a.X + x, a.Y + y);
+                    z[y * a.Width + x] = (sbyte)map.LandZ(a.X + x, a.Y + y);
+                }
+            }
+            return (t, z);
+        }
+
         private static int ColorDistance(Color a, Color b) => Math.Abs(a.R - b.R) + Math.Abs(a.G - b.G) + Math.Abs(a.B - b.B);
 
         /// <summary>The finished conversion as a colour stamp; statics as layer, left out or as a new Dragon item rule.</summary>
-        public static ColorStamp ToStamp(CgiConversion conv, DragonRuleSet rules, int waterGroup, string name, string category, StaticsMode statics, List<string> log)
+        public static ColorStamp ToStamp(CgiConversion conv, DragonRuleSet rules, int waterGroup, string name, string category, StaticsMode statics, List<string> log,
+            MapData source = null)
         {
             var cut = new IndexedMap(conv.Area.Width, conv.Area.Height, conv.Colours, rules.ColorBits);
             ColorStamp stamp = ColorStampTools.FromMap(cut, rules, waterGroup, name, category);
+            if (source != null)
+            {
+                // the built tiles go with the stamp: rules can be learned from it later
+                (stamp.LandTiles, stamp.LandZ) = Cut(source, conv.Area);
+            }
             if (statics == StaticsMode.Layer)
             {
                 stamp.Statics = conv.Statics.ToList();
@@ -421,6 +443,89 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
             }
             return sb.ToString();
+        }
+
+        // ================================================================== template (multi) -> colour stamp
+
+        /// <summary>
+        /// A template of the template library (UoFiddler multi, UO Architect, own template) as colour stamp:
+        /// statics with their height above the ground, land tiles (if the template has some) as colours, otherwise
+        /// <paramref name="floorColour"/> under the statics or transparent (the map keeps its colour).
+        /// </summary>
+        public static ColorStamp TemplateToStamp(MapTemplate t, DragonRuleSet rules, LandTransitionEngine transitions, int waterGroup, int floorColour,
+            bool floorEverywhere, MissingColorMode missing, List<string> log)
+        {
+            Rectangle b = t.Bounds;
+            if (b.IsEmpty)
+            {
+                return null;
+            }
+            int w = b.Width, h = b.Height;
+            var colours = new ushort[w * h];
+            Array.Fill(colours, ColorStampTools.Transparent);
+            var landZ = new int[w * h];
+            if (t.HasLand)
+            {
+                // land of the template as a small built map -> colours like a CGI area
+                int mw = (w + 7) / 8 * 8, mh = (h + 7) / 8 * 8;
+                var tiles = new ushort[mw * mh];
+                var z = new sbyte[mw * mh];
+                for (int ly = 0; ly < t.LandHeight; ly++)
+                {
+                    for (int lx = 0; lx < t.LandWidth; lx++)
+                    {
+                        int x = t.LandX + lx - b.X, y = t.LandY + ly - b.Y;
+                        int k = ly * t.LandWidth + lx;
+                        tiles[y * mw + x] = t.LandTiles[k];
+                        z[y * mw + x] = (sbyte)Math.Clamp(t.LandZ != null && k < t.LandZ.Length ? t.LandZ[k] : 0, -128, 127);
+                        landZ[y * w + x] = z[y * mw + x];
+                    }
+                }
+                var map = new MapData(mw, mh, tiles, z);
+                var area = new Rectangle(t.LandX - b.X, t.LandY - b.Y, t.LandWidth, t.LandHeight);
+                CgiConversion conv = Analyze(map, area, rules, transitions, false);
+                if (missing == MissingColorMode.AutoCreate && conv.Suggestions.Count > 0)
+                {
+                    log?.AddRange(CreateColours(rules, conv.Suggestions));
+                }
+                Finish(conv, map, rules, transitions);
+                for (int y = 0; y < area.Height; y++)
+                {
+                    for (int x = 0; x < area.Width; x++)
+                    {
+                        colours[(area.Y + y) * w + area.X + x] = conv.Colours[y * area.Width + x];
+                    }
+                }
+            }
+            if (floorColour >= 0 && floorColour < rules.Palette.Count)
+            {
+                var occupied = new HashSet<int>(t.Statics.Select(s => (s.Y - b.Y) * w + s.X - b.X));
+                for (int i = 0; i < colours.Length; i++)
+                {
+                    if (colours[i] == ColorStampTools.Transparent && (floorEverywhere || occupied.Contains(i)))
+                    {
+                        colours[i] = (ushort)floorColour;
+                    }
+                }
+            }
+            var cut = new IndexedMap(w, h, colours, rules.ColorBits);
+            ColorStamp stamp = ColorStampTools.FromMap(cut, rules, waterGroup, t.Name, t.Category);
+            if (!t.HasLand && floorColour >= 0 && floorColour < rules.Palette.Count)
+            {
+                // the stamp stands on the floor colour: its altitude is the ground
+                stamp.BaseAltitude = rules.Palette[floorColour].Altitude;
+                for (int i = 0; i < colours.Length; i++)
+                {
+                    stamp.RelativeAltitudes[i] = colours[i] < rules.Palette.Count ? rules.Palette[colours[i]].Altitude - stamp.BaseAltitude : 0;
+                }
+            }
+            foreach (TemplateStatic s in t.Statics)
+            {
+                int x = s.X - b.X, y = s.Y - b.Y;
+                // template Z is relative to the ground at the anchor; above the land of the cell when the template has land
+                stamp.Statics.Add(new LayerStatic { X = x, Y = y, Dz = s.Z - (t.HasLand ? landZ[y * w + x] : 0), Id = s.Id, Hue = s.Hue });
+            }
+            return stamp;
         }
     }
 }

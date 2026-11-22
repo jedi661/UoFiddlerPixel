@@ -638,3 +638,39 @@ Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Stempel 11]`.
 **CGI → Farbkarte, ohne die Farbkarte zu löschen:**
 * Neuer Knopf **„▧ Bereich → in Farbkarte“** in der CGI-Leiste: der markierte Bereich wird an **derselben Stelle** in die geöffnete Farbkarte geschrieben (Farben + Statics-Ebene in diesem Bereich), alles andere bleibt. Ein Rückgängig-Schritt im Karten-Editor.
 * **„▤ Karte → Farbkarte“** fragt jetzt, wenn eine gleich große Farbkarte offen ist: **Ja** = in die geöffnete Farbkarte schreiben (Rückgängig möglich), **Nein** = als neue Karte, **Abbrechen**.
+
+## Regeln und Skripte lernen (aus der CGI-Ansicht oder aus einem Stempel)
+
+Aus einem gebauten Stück Karte – z. B. aus der Original-Karte – lernt das Studio Dragon-Regeln, so wie man sie von Hand aus der Karte ablesen würde (`Core/RuleLearner.cs`):
+
+* **Map-Übergänge:** für jede Zelle am Rand zwischen zwei Gruppen (A = eigene Gruppe, B = Nachbargruppe) das 8-Nachbar-Muster und das Tile, das dort liegt, mit Höhenversatz → `map/lernen_<name>_<A>_zu_<B>.txt` + Regel in `betweentrans.txt`. Pro Muster werden nur Tiles genommen, die mindestens 15 % der Beispiele ausmachen (der Rest stammt von anderen Regeln). Gibt es für das Paar schon eine Regel, behält sie Vorrang – die gelernte füllt nur die fehlenden Muster. Ein neues Paar kommt vor die allgemeinen Regeln seiner Gruppe.
+* **Items:** Statics auf Zellen mitten in einer Gruppe (alle 8 Nachbarn gleiche Gruppe), pro Zelle als Gruppe gestapelter Statics mit Häufigkeit → `items/lernen_<name>_<A>.txt` + Zeile in `items.txt` mit der gemessenen Dichte (Promille).
+* **Static-Übergänge:** Statics auf Randzellen → `statics/lernen_<name>_<A>_zu_<B>.txt` + Regel in `statbetweentrans.txt` (Höhe wie der Compiler: tiefstes Land der Gruppe A drumherum).
+
+**Wo:**
+* CGI-Ansicht: mit „Bereich“ markieren, violetter Knopf **„✦ Regeln lernen“** ganz links in der oberen Leiste. Land-Tiles ohne Farbe werden vorher als neue Farben vorgeschlagen (damit ihre Gruppe mitgelernt werden kann).
+* Karten-Editor: Stempel-Menü → Stempel wählen → **„Regeln lernen…“** (nur Stempel, die ab „Lernen 12“ in der CGI-Ansicht erstellt wurden – sie speichern die gebauten Land-Tiles mit).
+
+**Dialog:** Auswahl **Beides / Nur Land / Nur Statics / Eigene** (Map-Übergänge, Items, Static-Übergänge einzeln), „Mindestens Beispiele je Muster“, Name der Dateien, „Lernen“. Die Liste zeigt jede gelernte Datei mit Anzahl der Muster / Beispiele; darunter der Inhalt (Muster, Tiles, Z, Item-Zeilen). Angehakte werden mit „Angehakte übernehmen“ in den Regelsatz übernommen. Danach **„Als Dragon-Skripte exportieren“** (oder „JSON speichern“) – dann gelten sie für MUL erzeugen, die CGI-Ansicht und den Generator. Bericht: `gelernt_<name>.txt` im Log-Ordner.
+
+**Test** mit dem Regelsatz im Repo: Regel Gras → Sand (`map/grass2sand.txt`) aus dem Regelsatz entfernt, aus einer gebauten Karte neu gelernt, neu gebaut: **99,8 %** der Gras-Sand-Randzellen bekommen wieder ein Tile aus dem Original-Muster (ohne die Regel: 0 %). Export als Dragon-Skripte und erneutes Einlesen: alle gelernten Dateien und Regeln kommen wieder an.
+
+Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Lernen 12]`.
+
+## Vorlagen (Multis) → Farb-Stempel
+
+Reiter **Vorlagen** der CGI-Ansicht, zwei neue Knöpfe unten:
+* **„→ Farb-Stempel“**: die gewählte Vorlage.
+* **„Liste → Farb-Stempel“**: alle Vorlagen, die die Liste gerade zeigt (z. B. die ganze Kategorie „Fiddler/Haus“).
+
+Abfrage vorher:
+* **Boden:** *nicht ändern (durchsichtig)* – der Stempel setzt nur die Statics, die Farbkarte behält ihre Farben; *Farbe 1 des Karten-Editors unter den Statics*; *Farbe 1 im ganzen Rechteck*. Vorlagen mit eigenem Land (Dragon-Vorlagen `.dmsv.json`) bringen ihr Land als Farben mit.
+* **Land-Tiles ohne Farbe:** ähnlichste vorhandene Farbe oder neue Farben automatisch anlegen.
+
+Die Statics behalten ihre Höhe über dem Boden; beim Setzen im Karten-Editor passen sich die Farben dem Boden an (Häkchen „Höhen an den Boden anpassen“). Kategorie des Stempels = Ordner der Vorlage; die Stempel werden in einem Unterordner je Kategorie gespeichert (`Farbstempel\Fiddler_Haus\…`), das Stempel-Menü liest auch Unterordner.
+
+**Durchsichtige Stempel-Pixel** (`0xFFFF`): sie lassen beim Setzen die Farbe der Karte stehen; in Vorschauen dunkelgrau, im Stempel-Bild leer.
+
+Test mit den mitgelieferten Vorlagen: 556 Vorlagen gelesen, z. B. `Arenasand03` (5.804 Statics, ohne Land) → Stempel 49×51 mit 5.804 Statics; mit Boden „unter den Statics“ auf Boden 20 gesetzt bekommt der Boden die Höhe 20, der Rest bleibt durchsichtig.
+
+Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Vorlagen 13]`.

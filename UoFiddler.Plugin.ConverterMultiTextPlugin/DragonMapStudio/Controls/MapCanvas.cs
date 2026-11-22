@@ -1209,7 +1209,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 for (int x = r.Left; x < r.Right; x++)
                 {
-                    _map.Pixels[y * _map.Width + x] = buffer.Pixels[(y - p.Y) * buffer.Width + (x - p.X)];
+                    ushort c = buffer.Pixels[(y - p.Y) * buffer.Width + (x - p.X)];
+                    if (c != ushort.MaxValue)
+                    {
+                        // 0xFFFF = transparent stamp pixel: the map keeps its colour
+                        _map.Pixels[y * _map.Width + x] = c;
+                    }
                 }
             }
             PasteApplied?.Invoke(this, new MapPointEventArgs(p.X, p.Y, -1));
