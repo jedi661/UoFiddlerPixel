@@ -139,7 +139,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         private static readonly string[] Extensions = { ".json", ".txt", ".uoa", ".wsc", ".scp" };
 
-        public static bool IsTemplateFile(string path) => Extensions.Contains(Path.GetExtension(path).ToLowerInvariant());
+        /// <summary>Template file – colour stamps of the map editor (*.dmstamp.json) are no templates.</summary>
+        public static bool IsTemplateFile(string path) =>
+            Extensions.Contains(Path.GetExtension(path).ToLowerInvariant()) && !path.EndsWith(".dmstamp.json", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>All templates of a file (a Sphere script can hold several multis).</summary>
         public static List<MapTemplate> Load(string path)

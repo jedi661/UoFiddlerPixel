@@ -1,4 +1,4 @@
-﻿# Dragon Map Studio
+# Dragon Map Studio
 
 Nachbau und Erweiterung von **Dragon 1.03.62 (IMod13)** als UoFiddler-Werkzeug.
 Geöffnet wird es im Plugin *ConverterMultiText* → Reiter **Map** → Knopf **Dragon Map Studio** (unter *Uo Map*).
@@ -589,3 +589,52 @@ Seitenleiste von oben nach unten (jeder Abschnitt auf- und zuklappbar):
 Rückgängig / Wiederholen gab es schon (Strg+Z / Strg+Y, Leiste, Menü Bearbeiten) – jetzt auch im Kontextmenü. Höhen: Werkzeuge „Höhe +“ / „Höhe −“ wechseln innerhalb der Gruppe die Farbe; Straßen, Wege, Hausböden und Küsten malt man mit den Farben aus dem Katalog – die Übergänge macht der Compiler (in der CGI-Vorschau sofort zu sehen).
 
 Im Fenstertitel steht jetzt `[Stand 21.11.2026 – Editor 8]`.
+
+## CGI-Ansicht → Farben: Stempel aus gebauten Karten, ganze Karte zurück in Farben
+
+In der CGI-Ansicht mit den Werkzeugen Land (Land-Tiles / Texturen), Items, Multis und Vorlagen bauen – oder eine andere Karte laden (MUL / UOP) und dort etwas markieren. Die beiden Knöpfe stehen ganz links in der **oberen Werkzeugleiste der CGI-Ansicht** (grün **„▣ Bereich → Farb-Stempel“**, blau **„▤ Karte → Farbkarte“**); mit dem Werkzeug „Bereich“ geht der Stempel auch mit der Taste **P**. Dieselben Knöpfe gibt es zusätzlich im Reiter Höhlen-Stempel → „In Farben umwandeln“:
+
+* **„Markierten Bereich → Farb-Stempel…“** (vorher mit „Bereich“ markieren): Name, Kategorie, Statics-Art, Art für fehlende Farben wählen. Der Stempel landet im Ordner `Farbstempel` und erscheint im Karten-Editor (Stempel-Menü, Abschnitt Stempel). Ein Bericht wird als `cgi_stempel_<Name>.txt` im Log-Ordner gespeichert.
+* **„Ganze Karte → Farbkarte (Karten-Editor)…“:** die ganze CGI-Karte wird zur Farbkarte mit Statics-Ebene (z. B. die Original-Karte zum Nachbauen oder zur Fehlersuche). Bericht: `cgi_karte_zu_farben.txt`.
+
+**So wird umgewandelt** (`Core/CgiToColor.cs`), für jedes Land-Tile mit seiner Höhe:
+1. Eine Farbe, deren Tiles das Tile enthalten und deren Höhe höchstens 4 abweicht.
+2. Ein Übergangs-Tile einer Regel (z. B. Gras → Erde) → die Zellgruppe der Regel (der Compiler macht den Übergang wieder).
+3. Tiles, die der Compiler selbst setzt (Meeresgrund `0064` der Küste) → Wasser-Gruppe.
+4. Sonst je nach Einstellung **„Fehlende Farben“**:
+   * **Vorschlag + Bestätigen (empfohlen):** Liste mit Tile, Höhe (in 5er-Schritten), Anzahl, TileData-Name, Radar-Farbe und Gruppe (eine vorhandene Gruppe mit gleichem Tile-Namen oder eine neue, Name änderbar). Angehakte werden als neue Farben angelegt (Farbe = Radar-Farbe, eindeutig gemacht; Kategorie „Aus CGI“).
+   * **Automatisch anlegen:** dasselbe ohne Nachfrage.
+   * **Nur vorhandene Farben:** die Farbe, deren Tile die ähnlichste Radar-Farbe hat (und die passende Höhe).
+   Neue Farben / Gruppen mit „JSON speichern“ / „Als Dragon-Skripte exportieren“ dauerhaft machen.
+
+**Statics** (Einstellung „Statics“):
+* **Statics-Ebene (empfohlen):** alle Statics 1:1 (Lage, Höhe über dem Land, ID, Hue). Beim Stempeln im Karten-Editor kommen sie in die **Statics-Ebene** der Karte (`<Karte>.statics.bin` neben der Karte, wird mit der Karte gespeichert, umbenannt und mit Strg+Z / Strg+Y zurückgenommen). Ab Zoom 2 als kleine orange Quadrate sichtbar. Beim Bauen (MUL erzeugen, CGI-Karte bauen, CGI-Vorschau) setzt der Compiler sie auf die gebaute Landhöhe.
+* **Nur Land:** Statics weglassen.
+* **Dragon-Item-Regel:** alle Statics als eine Item-Gruppe in `items/stamp_<name>.txt` (relativ zur Mitte) und eine Regel für die häufigste Gruppe des Bereichs (Chance 1) – Dragon setzt sie dann zufällig.
+
+Eine **ganze umgewandelte Karte** bekommt eine *vollständige* Statics-Ebene mit absoluten Höhen: beim Bauen setzt Dragon dann keine eigenen Statics dazu (keine Übergangs-Statics, Items, Wasser-, NODRAW-Statics) – sonst wären sie doppelt.
+
+**Test** (Generator-Karte 512×512 bauen → zurück in Farben → wieder bauen, mit dem Regelsatz im Repo): 97,7 % gleiche Tile-Gruppe, 99,4 % Höhe ±3, alle 32.787 Statics identisch (Lage, Höhe, ID, Hue). Abweichungen nur bei Gruppen mit denselben Tiles (Gras / Wald, Sand / Wüste) – gebaut ergibt das dasselbe Tile.
+
+### Stempel-Menü im Karten-Editor
+
+Knopf **„▦ Stempel-Menü“** in der Werkzeugleiste: alle Farb-Stempel als Bilder (Farben, Statics als orange Punkte), Kategorie-Auswahl, Suche, „Höhen an den Boden anpassen“, Setzen / Löschen / Ordner / Neu laden.
+* Mit **mehreren Monitoren** öffnet es sich als **eigenes Fenster** (auf dem anderen Monitor), mit einem Monitor als **Leiste rechts** neben der Karte.
+* **⧉** im Kopf: Fenster ↔ Leiste. **Fenster schließen** = es kommt als Leiste rechts zurück. **✕** blendet es aus.
+
+Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Stempel 11]`.
+
+
+## Stempel-Ordner, einmal / mehrfach setzen, CGI aktualisieren, CGI-Bereich in die Farbkarte
+
+**Wo liegen die Farb-Stempel?** Standard: `<Projekt-Ordner>\Farbstempel\*.dmstamp.json`. Anderer Ordner: Einstellungen → „Farbstempel-Ordner“ oder im Stempel-Menü **„Ordner wählen…“** (die vorhandenen Stempel werden auf Wunsch verschoben oder kopiert). **„Hinzufügen…“** kopiert Stempel-Dateien aus einem beliebigen Ordner (anderes Projekt, Download) in den Stempel-Ordner. Bis „Stempel 10“ lagen sie im Vorlagen-Ordner (`Multis\Farbstempel`) – beim ersten Start werden sie automatisch in den neuen Ordner verschoben.
+
+**Fehler behoben – eigene Multis / Vorlagen fehlten:** Die Vorlagen-Liste hat die Farb-Stempel im Vorlagen-Ordner als Vorlagen mitgelesen (`*.dmstamp.json` endet auf `.json`), darunter riesige Stempel mit zehntausenden Statics. Jetzt werden `*.dmstamp.json` nie als Vorlage gelesen, und die Stempel liegen nicht mehr im Vorlagen-Ordner.
+
+**Einmal oder mehrfach setzen:** Häkchen **„Mehrfach setzen“** (Stempel-Menü und Abschnitt „Bereich: CGI-Vorschau & Farb-Stempel“). Aus = der Stempel verlässt nach einem Klick die Maus. **„Abbrechen“**, Esc, rechte Taste oder Kontextmenü „Stempeln / Einfügen beenden“ beendet das Stempeln. Strg+V (Einfügen) bleibt mehrfach.
+
+**CGI aktualisieren (Karten-Editor):** grüner Knopf **„⟳ CGI aktualisieren“** in der Werkzeugleiste (auch im Kontextmenü). Gebaut wird nur der sichtbare Teil der Farbkarte (oder die Auswahl, höchstens 1024×1024, mit 8 Tiles Rand für die Übergänge) und in die CGI-Karte übernommen – der Rest der CGI-Karte bleibt, das geht viel schneller als die ganze Karte. Hat die CGI-Karte eigene Änderungen (in der CGI-Ansicht gesetzte Statics / Land) oder stammt sie nicht aus dieser Farbkarte, fragt das Programm: **Ja** = vorher den CGI-Bereich in die Farbkarte übernehmen (nichts geht verloren), **Nein** = trotzdem aktualisieren, **Abbrechen**.
+
+**CGI → Farbkarte, ohne die Farbkarte zu löschen:**
+* Neuer Knopf **„▧ Bereich → in Farbkarte“** in der CGI-Leiste: der markierte Bereich wird an **derselben Stelle** in die geöffnete Farbkarte geschrieben (Farben + Statics-Ebene in diesem Bereich), alles andere bleibt. Ein Rückgängig-Schritt im Karten-Editor.
+* **„▤ Karte → Farbkarte“** fragt jetzt, wenn eine gleich große Farbkarte offen ist: **Ja** = in die geöffnete Farbkarte schreiben (Rückgängig möglich), **Nein** = als neue Karte, **Abbrechen**.

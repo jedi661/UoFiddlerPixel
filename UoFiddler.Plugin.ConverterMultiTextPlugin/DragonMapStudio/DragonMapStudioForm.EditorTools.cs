@@ -46,7 +46,128 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private IsoMapView _previewView;
         private ContextMenuStrip _editorMenu;
 
-        private string ColorStampFolder => Path.Combine(string.IsNullOrWhiteSpace(_settings.TemplateFolder) ? StudioSettings.SettingsFolder : _settings.TemplateFolder, "Farbstempel");
+        /// <summary>Folder of the colour stamps: setting, otherwise "Farbstempel" in the project folder.</summary>
+        private string ColorStampFolder
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(_settings.ColorStampFolder))
+                {
+                    return _settings.ColorStampFolder;
+                }
+                string project = string.IsNullOrWhiteSpace(_settings.ProjectFolder) ? StudioSettings.SettingsFolder : _settings.ProjectFolder;
+                return Path.Combine(project, "Farbstempel");
+            }
+        }
+
+        /// <summary>Old place (until Stempel 10): "Farbstempel" inside the template folder – the template list read the stamps as templates.</summary>
+        private string OldColorStampFolder => Path.Combine(string.IsNullOrWhiteSpace(_settings.TemplateFolder) ? StudioSettings.SettingsFolder : _settings.TemplateFolder, "Farbstempel");
+
+        /// <summary>Moves stamps of the old place into the stamp folder (once).</summary>
+        private void MigrateColorStamps()
+        {
+            try
+            {
+                string old = OldColorStampFolder, now = ColorStampFolder;
+                if (!Directory.Exists(old) || string.Equals(Path.GetFullPath(old).TrimEnd('\\', '/'), Path.GetFullPath(now).TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+                string[] files = Directory.GetFiles(old, "*" + ColorStampTools.Extension);
+                if (files.Length == 0)
+                {
+                    return;
+                }
+                Directory.CreateDirectory(now);
+                int moved = 0;
+                foreach (string f in files)
+                {
+                    string target = Path.Combine(now, Path.GetFileName(f));
+                    if (!File.Exists(target))
+                    {
+                        File.Move(f, target);
+                        moved++;
+                    }
+                }
+                if (Directory.GetFileSystemEntries(old).Length == 0)
+                {
+                    Directory.Delete(old);
+                }
+                Log($"{moved} Farb-Stempel aus {old} nach {now} verschoben (im Vorlagen-Ordner wurden sie als Vorlagen mitgelesen).");
+                _templates = null;
+            }
+            catch (Exception ex)
+            {
+                Log("Farb-Stempel verschieben: " + ex.Message);
+            }
+        }
+
+        /// <summary>Chooses another stamp folder (e.g. inside the project) and offers to move the stamps there.</summary>
+        private void ChooseColorStampFolder()
+        {
+            using var dlg = new FolderBrowserDialog { Description = L.T("Ordner für die Farb-Stempel (z. B. im Projekt-Ordner)"), SelectedPath = ColorStampFolder, ShowNewFolderButton = true };
+            if (dlg.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            string old = ColorStampFolder;
+            string[] files = Directory.Exists(old) ? Directory.GetFiles(old, "*" + ColorStampTools.Extension) : Array.Empty<string>();
+            _settings.ColorStampFolder = dlg.SelectedPath;
+            _settings.Save();
+            if (files.Length > 0 && !string.Equals(Path.GetFullPath(old), Path.GetFullPath(dlg.SelectedPath), StringComparison.OrdinalIgnoreCase))
+            {
+                DialogResult r = MessageBox.Show(this, $"{files.Length} Stempel aus\n{old}\nin den neuen Ordner\n{dlg.SelectedPath}\n\nJa = verschieben, Nein = kopieren, Abbrechen = dort lassen", Text,
+                    MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (r != DialogResult.Cancel)
+                {
+                    Directory.CreateDirectory(dlg.SelectedPath);
+                    foreach (string f in files)
+                    {
+                        string target = Path.Combine(dlg.SelectedPath, Path.GetFileName(f));
+                        if (File.Exists(target))
+                        {
+                            continue;
+                        }
+                        if (r == DialogResult.Yes)
+                        {
+                            File.Move(f, target);
+                        }
+                        else
+                        {
+                            File.Copy(f, target);
+                        }
+                    }
+                }
+            }
+            LoadColorStamps();
+            SetStatus(L.T("Farbstempel-Ordner: ") + ColorStampFolder);
+        }
+
+        /// <summary>Adds stamp files from anywhere (other project, download) into the stamp folder.</summary>
+        private void ImportColorStamps()
+        {
+            using var dlg = new OpenFileDialog { Filter = "Farb-Stempel|*" + ColorStampTools.Extension, Multiselect = true, Title = L.T("Farb-Stempel hinzufügen") };
+            if (dlg.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            Directory.CreateDirectory(ColorStampFolder);
+            int n = 0;
+            string last = null;
+            foreach (string f in dlg.FileNames)
+            {
+                string target = Path.Combine(ColorStampFolder, Path.GetFileName(f));
+                if (string.Equals(Path.GetFullPath(f), Path.GetFullPath(target), StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                File.Copy(f, target, true);
+                last = target;
+                n++;
+            }
+            LoadColorStamps(last);
+            SetStatus($"{n} Stempel in {ColorStampFolder} übernommen.");
+        }
 
         /// <summary>Sections of the map editor side panel (called by BuildEditorLayout).</summary>
         private (CollapsibleSection info, CollapsibleSection catalog, CollapsibleSection stamps) BuildEditorToolSections()
@@ -127,10 +248,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             top.Controls.Add(B("Auswahl → Stempel speichern", ColBuild, (s, e) => SaveSelectionAsStamp()));
             _stampAdapt = new CheckBox { Text = L.T("Höhen an den Boden anpassen"), Checked = true, AutoSize = true, Margin = new Padding(4, 6, 2, 2) };
             top.Controls.Add(_stampAdapt);
+            _stampRepeat = new CheckBox { Text = L.T("Mehrfach setzen"), Checked = false, AutoSize = true, Margin = new Padding(4, 6, 2, 2) };
+            top.Controls.Add(_stampRepeat);
             _stampList = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false };
             _stampList.DoubleClick += (s, e) => PlaceSelectedStamp();
             var bottom = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
             bottom.Controls.Add(B("Stempel setzen", ColBuild, (s, e) => PlaceSelectedStamp(), true));
+            bottom.Controls.Add(B("Abbrechen", ColView, (s, e) => CancelStamp()));
             bottom.Controls.Add(B("Löschen", ColCheck, (s, e) => DeleteSelectedStamp()));
             bottom.Controls.Add(B("Ordner", ColView, (s, e) =>
             {
@@ -346,6 +470,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 return;
             }
+            if (!_stampsMigrated)
+            {
+                _stampsMigrated = true;
+                MigrateColorStamps();
+            }
             var errors = new List<string>();
             _stamps = ColorStampTools.LoadAll(ColorStampFolder, errors);
             errors.ForEach(err => Log("Farbstempel nicht lesbar: " + err));
@@ -357,6 +486,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             if (sel >= 0)
             {
                 _stampList.SelectedIndex = sel;
+            }
+            if (_stampBrowser != null)
+            {
+                _stampBrowser.Folder = ColorStampFolder;
+                _stampBrowser.SetStamps(_stamps);
             }
         }
 
@@ -386,10 +520,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 SetStatus(L.T("Erst einen Stempel in der Liste wählen."));
                 return;
             }
+            PlaceStamp(s, _stampAdapt.Checked, _stampRepeat?.Checked ?? false);
+        }
+
+        /// <summary>Stamp / paste leaves the mouse.</summary>
+        private void CancelStamp()
+        {
+            if (mapCanvas.PasteActive)
+            {
+                mapCanvas.EndPaste();
+                SetStatus(L.T("Stempeln beendet."));
+            }
+            _placingStamp = null;
+        }
+
+        /// <summary>The stamp hangs at the mouse; every click writes it (heights adapted to the ground there), statics into the layer.</summary>
+        private void PlaceStamp(ColorStamp s, bool adapt, bool repeat)
+        {
+            if (_map == null)
+            {
+                SetStatus(L.T("Im Karten-Editor ist keine Karte geöffnet."));
+                return;
+            }
+            tabMain.SelectedTab = tabEditor;
             var raw = new IndexedMap(s.Width, s.Height, (ushort[])s.Pixels.Clone(), _map?.Bits ?? 8);
             mapCanvas.BeginPaste(raw);
+            _placingStamp = s;
             mapCanvas.PasteName = "Stempel " + s.Name;
-            bool adapt = _stampAdapt.Checked;
+            mapCanvas.PasteRepeat = repeat;
             mapCanvas.PasteTransform = (buffer, p) =>
             {
                 if (!adapt || _map == null)
@@ -400,15 +558,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return ColorStampTools.Realize(s, _rules, ground, true, _map.Bits);
             };
             mapCanvas.Focus();
-            SetStatus($"Stempel '{s.Name}': Klick setzt ihn (mehrmals möglich){(adapt ? ", Höhen passen sich dem Boden an" : string.Empty)} · rechte Taste = fertig.");
+            SetStatus($"Stempel '{s.Name}': Klick setzt ihn {(repeat ? "(mehrmals – rechte Taste / Esc / Abbrechen = fertig)" : "(einmal)")}{(adapt ? ", Höhen passen sich dem Boden an" : string.Empty)}. Danach im Karten-Editor 'CGI aktualisieren'.");
         }
 
         private void DeleteSelectedStamp()
         {
-            if (_stampList?.SelectedItem is not ColorStamp s)
+            if (_stampList?.SelectedItem is ColorStamp s)
             {
-                return;
+                DeleteStamp(s);
             }
+        }
+
+        private void DeleteStamp(ColorStamp s)
+        {
             if (MessageBox.Show(this, $"Stempel '{s.Name}' löschen?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
             {
                 return;
@@ -422,6 +584,221 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             LoadColorStamps();
+        }
+
+        // ================================================================== stamp menu (window on another monitor or panel on the right)
+
+        private StampBrowser _stampBrowser;
+        private Form _stampWindow;
+        private Panel _stampDock;
+
+        private void EnsureStampBrowser()
+        {
+            if (_stampBrowser != null)
+            {
+                return;
+            }
+            _stampBrowser = new StampBrowser { Dock = DockStyle.Fill, Thumbnail = StampThumbnail };
+            _stampBrowser.PlaceRequested += (s, st) => PlaceStamp(st, _stampBrowser.AdaptHeights, _stampBrowser.PlaceRepeated);
+            _stampBrowser.CancelRequested += (s, e) => CancelStamp();
+            _stampBrowser.ChooseFolderRequested += (s, e) => ChooseColorStampFolder();
+            _stampBrowser.ImportRequested += (s, e) => ImportColorStamps();
+            _stampBrowser.DeleteRequested += (s, st) => DeleteStamp(st);
+            _stampBrowser.FolderRequested += (s, e) =>
+            {
+                Directory.CreateDirectory(ColorStampFolder);
+                OpenFolder(ColorStampFolder);
+            };
+            _stampBrowser.ReloadRequested += (s, e) => LoadColorStamps();
+            _stampBrowser.DockToggleRequested += (s, e) =>
+            {
+                if (_stampWindow != null)
+                {
+                    _stampWindow.Close();
+                }
+                else
+                {
+                    ShowStampWindow();
+                }
+            };
+            _stampBrowser.CloseRequested += (s, e) =>
+            {
+                if (_stampWindow != null)
+                {
+                    _stampWindow.Close();
+                }
+                if (_stampDock != null)
+                {
+                    _stampDock.Visible = false;
+                }
+            };
+            _stampDock = new Panel { Dock = DockStyle.Right, Width = 270, Visible = false };
+            splitEditor.Panel2.Controls.Add(_stampDock);
+            _stampBrowser.Folder = ColorStampFolder;
+            _stampBrowser.SetStamps(_stamps);
+        }
+
+        /// <summary>Button "Stempel-Menü": with several monitors its own window, otherwise the panel right of the map.</summary>
+        private void ToggleStampMenu()
+        {
+            EnsureStampBrowser();
+            if (_stampWindow != null)
+            {
+                _stampWindow.Activate();
+                return;
+            }
+            if (_stampDock.Visible)
+            {
+                _stampDock.Visible = false;
+                return;
+            }
+            if (Screen.AllScreens.Length > 1)
+            {
+                ShowStampWindow();
+            }
+            else
+            {
+                DockStampBrowser();
+            }
+        }
+
+        private void DockStampBrowser()
+        {
+            _stampDock.Controls.Add(_stampBrowser);
+            _stampBrowser.Undocked = false;
+            _stampDock.Visible = true;
+        }
+
+        private void ShowStampWindow()
+        {
+            _stampDock.Visible = false;
+            var f = new Form
+            {
+                Text = L.T("Stempel – Dragon Map Studio"),
+                FormBorderStyle = FormBorderStyle.SizableToolWindow,
+                ShowInTaskbar = false,
+                StartPosition = FormStartPosition.Manual,
+                Size = new Size(320, 720),
+                Owner = this
+            };
+            // on a second monitor if there is one, otherwise next to the main window
+            Screen other = Screen.AllScreens.FirstOrDefault(sc => !sc.Bounds.Contains(Bounds.Location)) ?? Screen.FromControl(this);
+            f.Location = other.Bounds.Contains(Bounds.Location)
+                ? new Point(Math.Max(other.WorkingArea.Left, Right - f.Width - 20), Top + 80)
+                : new Point(other.WorkingArea.Left + 40, other.WorkingArea.Top + 40);
+            f.Controls.Add(_stampBrowser);
+            _stampBrowser.Undocked = true;
+            f.FormClosed += (s, e) =>
+            {
+                _stampWindow = null;
+                // closing the window = the menu comes back as panel on the right
+                if (!IsDisposed)
+                {
+                    DockStampBrowser();
+                }
+            };
+            _stampWindow = f;
+            f.Show(this);
+        }
+
+        /// <summary>72×72 picture of a stamp: its colours, statics as orange dots.</summary>
+        private Image StampThumbnail(ColorStamp s)
+        {
+            Color[] colors = _rules.GetColors();
+            var bmp = new Bitmap(72, 72);
+            using Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.FromArgb(24, 24, 27));
+            float k = Math.Min(70f / s.Width, 70f / s.Height);
+            float ox = (72 - s.Width * k) / 2, oy = (72 - s.Height * k) / 2;
+            var brushes = new Dictionary<ushort, SolidBrush>();
+            try
+            {
+                for (int y = 0; y < s.Height; y++)
+                {
+                    for (int x = 0; x < s.Width; x++)
+                    {
+                        ushort c = s.Pixels[y * s.Width + x];
+                        if (!brushes.TryGetValue(c, out SolidBrush b))
+                        {
+                            brushes[c] = b = new SolidBrush(c < colors.Length ? colors[c] : Color.Magenta);
+                        }
+                        g.FillRectangle(b, ox + x * k, oy + y * k, Math.Max(1, k), Math.Max(1, k));
+                    }
+                }
+            }
+            finally
+            {
+                foreach (SolidBrush b in brushes.Values)
+                {
+                    b.Dispose();
+                }
+            }
+            if (s.Statics != null)
+            {
+                using var dot = new SolidBrush(Color.FromArgb(230, 255, 140, 0));
+                foreach (LayerStatic st in s.Statics.Take(4000))
+                {
+                    g.FillRectangle(dot, ox + st.X * k, oy + st.Y * k, Math.Max(1, k * 0.6f), Math.Max(1, k * 0.6f));
+                }
+            }
+            return bmp;
+        }
+
+        // ================================================================== statics layer
+
+        private bool _stampsMigrated;
+        private CheckBox _stampRepeat;
+        private StaticsLayer _staticsLayer = new StaticsLayer();
+        private ColorStamp _placingStamp;
+        private bool _pasteHooked;
+
+        private void LoadStaticsLayer()
+        {
+            try
+            {
+                _staticsLayer = StaticsLayer.Load(StaticsLayer.PathFor(_map?.FilePath));
+            }
+            catch (Exception ex)
+            {
+                _staticsLayer = new StaticsLayer();
+                Log("Statics-Ebene nicht lesbar: " + ex.Message);
+            }
+            mapCanvas.SetStaticMarkers(_staticsLayer.Items);
+            _placingStamp = null;
+            if (!_pasteHooked)
+            {
+                _pasteHooked = true;
+                mapCanvas.PasteApplied += MapCanvas_PasteApplied;
+            }
+            if (_staticsLayer.Items.Count > 0)
+            {
+                Log($"Statics-Ebene: {_staticsLayer.Items.Count:N0} Statics ({StaticsLayer.PathFor(_map?.FilePath)}).");
+            }
+        }
+
+        /// <summary>A colour stamp with statics was written: its statics go into the layer (same undo step), the old ones there are replaced.</summary>
+        private void MapCanvas_PasteApplied(object sender, MapPointEventArgs e)
+        {
+            ColorStamp s = _placingStamp;
+            if (s == null || !mapCanvas.PasteActive || s.Statics == null || s.Statics.Count == 0 || _map == null)
+            {
+                return;
+            }
+            var area = new Rectangle(e.X, e.Y, s.Width, s.Height);
+            List<LayerStatic> removed = _staticsLayer.Items.Where(st => area.Contains(st.X, st.Y)).ToList();
+            List<LayerStatic> added = s.Statics.Select(st => new LayerStatic { X = st.X + e.X, Y = st.Y + e.Y, Dz = st.Dz, Id = st.Id, Hue = st.Hue })
+                                              .Where(st => _map.InBounds(st.X, st.Y)).ToList();
+            void Apply(List<LayerStatic> remove, List<LayerStatic> add)
+            {
+                var set = new HashSet<(int, int, int, ushort, ushort)>(remove.Select(r => (r.X, r.Y, r.Dz, r.Id, r.Hue)));
+                _staticsLayer.Items.RemoveAll(st => set.Contains((st.X, st.Y, st.Dz, st.Id, st.Hue)));
+                _staticsLayer.Items.AddRange(add);
+                _staticsLayer.Modified = true;
+                _map.Modified = true;
+                mapCanvas.SetStaticMarkers(_staticsLayer.Items);
+            }
+            Apply(removed, added);
+            _history.AddExtra(() => Apply(added, removed), () => Apply(removed, added));
         }
 
         // ================================================================== CGI preview of a marked area
@@ -452,6 +829,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             var r = Rectangle.FromLTRB(x0, y0, x1, y1);
             IndexedMap crop = _map.Crop(r);
             BuildOptions o = CurrentBuildOptions();
+            o.ExtraStatics = _staticsLayer.Crop(r);
+            o.ExtraStaticsComplete = _staticsLayer.Complete;
             DragonRuleSet rules = _rules;
             EnsureCaveRule(crop);
             Rectangle inner = new Rectangle(area.X - r.X, area.Y - r.Y, area.Width, area.Height);
@@ -549,7 +928,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 tools.DropDownItems.Add(L.T(text), null, (s, a) => SelectTool(tool)).Enabled = mapCanvas.Tool != tool;
             }
             _editorMenu.Items.Add(tools);
-            _editorMenu.Items.Add(L.T("Hier in der CGI-Ansicht öffnen (ganze Karte)"), null, (s, a) => BuildCgiFromEditor(e.X, e.Y));
+            _editorMenu.Items.Add(L.T("CGI-Ansicht aktualisieren (sichtbarer Teil / Auswahl)"), null, (s, a) => RefreshCgiFromEditor());
+            _editorMenu.Items.Add(L.T("Hier in der CGI-Ansicht öffnen (ganze Karte neu bauen)"), null, (s, a) => BuildCgiFromEditor(e.X, e.Y));
+            if (mapCanvas.PasteActive)
+            {
+                _editorMenu.Items.Insert(0, new ToolStripMenuItem(L.T("Stempeln / Einfügen beenden"), null, (s, a) => CancelStamp()));
+            }
             _editorMenu.Show(mapCanvas, mapCanvas.PointToClient(Control.MousePosition));
         }
     }

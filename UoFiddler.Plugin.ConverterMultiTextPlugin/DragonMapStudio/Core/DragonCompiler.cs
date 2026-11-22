@@ -100,6 +100,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("3 Details"), DisplayName("Statics mehrerer IDs"), Description("RandomOne = eine ID zufällig (wie Dragon: 'itemid1 to x will be used randomly'), PlaceAll = alle IDs einer Zeile setzen.")]
         public StaticTileMode StaticMode { get; set; } = StaticTileMode.RandomOne;
 
+        /// <summary>Statics layer of the colour map (set by the studio before a build, not saved).</summary>
+        [Browsable(false), System.Text.Json.Serialization.JsonIgnore]
+        public List<LayerStatic> ExtraStatics { get; set; }
+
+        /// <summary>
+        /// The statics layer holds ALL statics (a whole map converted from the CGI view): Dragon then sets no statics of its own
+        /// (no static transitions, items, water / NODRAW statics) – otherwise they would be there twice.
+        /// </summary>
+        [Browsable(false), System.Text.Json.Serialization.JsonIgnore]
+        public bool ExtraStaticsComplete { get; set; }
+
         [Category("3 Details"), DisplayName("Höhleneingang: NODRAW-Statics"), Description("Wie im Original: auf jedes Tile der Mund-Reihe eines Höhleneingangs (01DA/01DB/01D6 vor 01DC–01E7, nach Osten 01D4/01DB/01D8) ein unsichtbares Static 0001 auf Bodenhöhe.")]
         public bool CaveNoDrawStatics { get; set; } = true;
 
@@ -351,13 +362,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 _log($"Küste geglättet: {smoothed:N0} Tile-Höhen angepasst.");
             }
 
+            bool layerOnly = _o.ExtraStaticsComplete && _o.ExtraStatics != null && _o.ExtraStatics.Count > 0;
+            if (layerOnly)
+            {
+                _log("Statics-Ebene ist vollständig (aus der CGI-Ansicht umgewandelt): Dragon setzt keine eigenen Statics dazu.");
+            }
+
             // 4) static transitions
-            if (_o.ApplyStaticTransitions && _o.WriteStatics)
+            if (_o.ApplyStaticTransitions && _o.WriteStatics && !layerOnly)
             {
                 ApplyTransitions(TransitionLayer.Static, result, progress, 45, 60, cancel);
             }
 
-            if (_o.CaveNoDrawStatics && _o.WriteStatics)
+            if (_o.ExtraStatics != null && _o.ExtraStatics.Count > 0 && _o.WriteStatics)
+            {
+                // statics layer of the colour map: 1:1 on the built land height
+                long added = 0;
+                foreach (LayerStatic s in _o.ExtraStatics)
+                {
+                    if (s.X >= 0 && s.Y >= 0 && s.X < _w && s.Y < _h)
+                    {
+                        AddStatic(s.Id, s.X, s.Y, s.Absolute ? s.Dz : _z[s.Y * _w + s.X] + s.Dz, s.Hue);
+                        added++;
+                    }
+                }
+                _log($"Statics-Ebene: {added:N0} Statics übernommen.");
+            }
+
+            if (_o.CaveNoDrawStatics && _o.WriteStatics && !layerOnly)
             {
                 long nodraw = AddCaveNoDrawStatics();
                 if (nodraw > 0)
@@ -366,14 +398,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
             }
 
-            long waterStatics = AddCoastWaterStatics();
+            long waterStatics = layerOnly ? 0 : AddCoastWaterStatics();
             if (waterStatics > 0)
             {
                 _log($"Wasser-Statics auf dem Meeresgrund: {waterStatics:N0}");
             }
 
             // 5) items
-            if (_o.ApplyItems && _o.WriteStatics)
+            if (_o.ApplyItems && _o.WriteStatics && !(_o.ExtraStaticsComplete && _o.ExtraStatics != null && _o.ExtraStatics.Count > 0))
             {
                 ApplyItems(result, progress, cancel);
             }

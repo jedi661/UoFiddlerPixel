@@ -46,7 +46,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private static readonly int[] OverviewHeights = { 170, 250, 380 };
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 21.11.2026 – Editor 8";
+        public const string BuildMark = "Stand 22.11.2026 – Stempel 11";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
@@ -121,6 +121,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             BuildMountainTab();
             UpdateCgiNav();
             RefreshCgiIcons();
+
+            // conversion to colours: always visible in the top tool bar (it has nothing to do with caves)
+            var toStamp = new ToolStripButton(L.T("▣ Bereich → Farb-Stempel"))
+            {
+                ToolTipText = L.T("Erst mit 'Bereich' (Leiste Land) markieren: Land-Tiles + Höhen + Statics als Farb-Stempel für den Karten-Editor (Name, Kategorie, Statics-Art, fehlende Farben) – Taste P"),
+                BackColor = ColTerrain,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            toStamp.Click += (s, e) => CgiAreaToColorStamp();
+            var toMap = new ToolStripButton(L.T("▤ Karte → Farbkarte"))
+            {
+                ToolTipText = L.T("Die ganze CGI-Karte als Farbkarte + Statics-Ebene in den Karten-Editor (Nachbauen, Fehlersuche)"),
+                BackColor = ColBuild,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            toMap.Click += (s, e) => CgiMapToColorMap();
+            var toEditor = new ToolStripButton(L.T("▧ Bereich → in Farbkarte"))
+            {
+                ToolTipText = L.T("Den markierten Bereich an derselben Stelle in die geöffnete Farbkarte schreiben (Rest bleibt, Strg+Z im Karten-Editor)"),
+                BackColor = Color.FromArgb(15, 118, 110),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            toEditor.Click += (s, e) => CgiAreaToEditorMap();
+            toolStripCgi.Items.Insert(0, new ToolStripSeparator());
+            toolStripCgi.Items.Insert(0, toMap);
+            toolStripCgi.Items.Insert(0, toEditor);
+            toolStripCgi.Items.Insert(0, toStamp);
+            isoView.AreaToStampRequested += (s, e) => CgiAreaToColorStamp();
         }
 
         /// <summary>Folding section; open / closed is remembered (sections that start folded remember "open").</summary>
@@ -428,6 +459,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             preview.Click += (s, e) => ShowSelectionInCgi();
             toolStripEditor.Items.Add(new ToolStripSeparator());
             toolStripEditor.Items.Add(preview);
+            var stampMenu = new ToolStripButton(L.T("▦ Stempel-Menü"))
+            {
+                ToolTipText = L.T("Farb-Stempel mit Bildern: bei mehreren Monitoren als eigenes Fenster, sonst rechts neben der Karte"),
+                BackColor = ColBuild,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            stampMenu.Click += (s, e) => ToggleStampMenu();
+            toolStripEditor.Items.Add(stampMenu);
+            var refresh = new ToolStripButton(L.T("⟳ CGI aktualisieren"))
+            {
+                ToolTipText = L.T("Den sichtbaren Teil der Farbkarte (oder die Auswahl) neu bauen und in die CGI-Ansicht übernehmen – der Rest der CGI-Karte bleibt"),
+                BackColor = ColTerrain,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Bold)
+            };
+            refresh.Click += (s, e) => RefreshCgiFromEditor();
+            toolStripEditor.Items.Add(refresh);
         }
 
         // ================================================================== sections in the tabs
@@ -563,6 +612,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             StyleButton(btnCgiStampPlaceSaved, ColBuild);
             lstCgiStampSaved.Height = 110;
             AddSection(col, "stamp.saved", "Gespeicherte Stempel", ColBuild, null, Row(lstCgiStampSaved), Row(btnCgiStampSave, btnCgiStampPlaceSaved));
+            var toStamp = new Button { Text = L.T("Markierten Bereich → Farb-Stempel…") };
+            StyleButton(toStamp, ColTerrain, true);
+            toStamp.Click += (s, e) => CgiAreaToColorStamp();
+            var toMap = new Button { Text = L.T("Ganze Karte → Farbkarte (Karten-Editor)…") };
+            StyleButton(toMap, ColTerrain);
+            toMap.Click += (s, e) => CgiMapToColorMap();
+            AddSection(col, "stamp.tocolor", "In Farben umwandeln (für den Karten-Editor)", ColTerrain, () => UoArtCache.Land(0x0003),
+                Row(toStamp), Row(toMap),
+                Row(Hint(L.T("Land-Tiles + Höhe → Farben der Farbtabelle (fehlende: Vorschlag / automatisch / ähnlichste), Statics → Statics-Ebene, Item-Regel oder weglassen. " +
+                             "Mit Items, Multis, Land und Vorlagen hier bauen oder aus einer anderen Karte kopieren – dann als Stempel speichern."))));
             lblCgiStampInfo.AutoSize = false;
             AddSection(col, "stamp.help", "Hilfe", ColView, null, true, Row(lblCgiStampInfo));
             propCgiStamp.PropertyValueChanged += (s, e) => UpdateStampPreview();
