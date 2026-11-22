@@ -38,6 +38,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private bool _liveEnabled;
         private bool _liveDirty;
         private bool _liveBusy;
+        private Point? _livePin;
+        private ToolStripDropDownButton _liveJumpButton;
 
         /// <summary>Stamp menu "Setzen": once (paste, layers respected) or as freehand pattern brush.</summary>
         private void UseStamp(ColorStamp s, bool adapt, bool repeat, bool stepUndo, bool live)
@@ -386,10 +388,150 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     MarkLiveDirty();
                 }
             };
-            _liveFollowButton.CheckedChanged += (s, e) => _liveFollow = _liveFollowButton.Checked;
+            _liveFollowButton.CheckedChanged += (s, e) =>
+            {
+                _liveFollow = _liveFollowButton.Checked;
+                if (_liveFollow)
+                {
+                    _livePin = null;
+                }
+            };
             _liveFollowButton.Enabled = false;
             toolStripEditor.Items.Add(_liveButton);
             toolStripEditor.Items.Add(_liveFollowButton);
+            AddLiveJumpButton();
+        }
+
+        // ------------------------------------------------------------------ jump the live CGI with a free mouse button
+
+        /// <summary>Mouse buttons the map editor does not use: side buttons, middle button only with Strg / Alt (alone it pans).</summary>
+        private static bool JumpButtonFree(MouseButtons b, Keys mods) =>
+            b == MouseButtons.XButton1 || b == MouseButtons.XButton2 ||
+            (b == MouseButtons.Middle && (mods == Keys.Control || mods == Keys.Alt));
+
+        private static string JumpButtonName(MouseButtons b, Keys mods)
+        {
+            string n = b switch
+            {
+                MouseButtons.XButton1 => L.T("Maustaste 4 (Seite hinten)"),
+                MouseButtons.XButton2 => L.T("Maustaste 5 (Seite vorne)"),
+                MouseButtons.Middle => L.T("Mittlere Maustaste"),
+                MouseButtons.Left => L.T("Linke Maustaste"),
+                MouseButtons.Right => L.T("Rechte Maustaste"),
+                _ => b.ToString()
+            };
+            if ((mods & Keys.Control) != 0)
+            {
+                n = L.T("Strg") + " + " + n;
+            }
+            if ((mods & Keys.Alt) != 0)
+            {
+                n = "Alt + " + n;
+            }
+            if ((mods & Keys.Shift) != 0)
+            {
+                n = L.T("Umschalt") + " + " + n;
+            }
+            return n;
+        }
+
+        private void AddLiveJumpButton()
+        {
+            _liveJumpButton = new ToolStripDropDownButton(L.T("⌖ Sprung"))
+            {
+                ToolTipText = L.T("Mit einer freien Maustaste auf eine Stelle der Karte klicken: das Live-CGI springt dorthin und baut die Stelle")
+            };
+            var assign = new ToolStripMenuItem(L.T("Maustaste belegen …"));
+            assign.Click += LiveJumpAssign_Click;
+            var clear = new ToolStripMenuItem(L.T("Belegung löschen"));
+            clear.Click += LiveJumpClear_Click;
+            var stopFollow = new ToolStripMenuItem(L.T("Sprung schaltet 'folgt Maus' aus"))
+            {
+                CheckOnClick = true,
+                Checked = _settings.LiveJumpStopsFollow,
+                ToolTipText = L.T("Aus (Standard): Live-Zeichnen und 'folgt Maus' bleiben wie sie sind. An: nach dem Sprung bleibt die Ansicht stehen, bis du zeichnest.")
+            };
+            stopFollow.CheckedChanged += LiveJumpStopFollow_CheckedChanged;
+            _liveJumpButton.DropDownItems.Add(assign);
+            _liveJumpButton.DropDownItems.Add(clear);
+            _liveJumpButton.DropDownItems.Add(new ToolStripSeparator());
+            _liveJumpButton.DropDownItems.Add(stopFollow);
+            toolStripEditor.Items.Add(_liveJumpButton);
+
+            if (Enum.TryParse(_settings.LiveJumpButton ?? string.Empty, out MouseButtons b) && JumpButtonFree(b, (Keys)_settings.LiveJumpModifiers))
+            {
+                mapCanvas.JumpButton = b;
+                mapCanvas.JumpModifiers = (Keys)_settings.LiveJumpModifiers;
+            }
+            mapCanvas.ButtonCaptured += MapCanvas_JumpButtonCaptured;
+            mapCanvas.JumpClicked += MapCanvas_JumpClicked;
+            UpdateLiveJumpText();
+        }
+
+        private void UpdateLiveJumpText()
+        {
+            bool on = mapCanvas.JumpButton != MouseButtons.None;
+            _liveJumpButton.Text = on ? L.T("⌖ Sprung") + ": " + JumpButtonName(mapCanvas.JumpButton, mapCanvas.JumpModifiers) : L.T("⌖ Sprung (keine Taste)");
+        }
+
+        private void LiveJumpAssign_Click(object sender, EventArgs e)
+        {
+            mapCanvas.CaptureNextButton = true;
+            SetStatus(L.T("Sprungtaste: jetzt mit der gewünschten Maustaste in die Karte klicken (frei: Maustaste 4 / 5, Strg oder Alt + Mitteltaste)."));
+        }
+
+        private void LiveJumpStopFollow_CheckedChanged(object sender, EventArgs e)
+        {
+            _settings.LiveJumpStopsFollow = ((ToolStripMenuItem)sender).Checked;
+            _settings.Save();
+        }
+
+        private void LiveJumpClear_Click(object sender, EventArgs e)
+        {
+            mapCanvas.JumpButton = MouseButtons.None;
+            mapCanvas.JumpModifiers = Keys.None;
+            _settings.LiveJumpButton = string.Empty;
+            _settings.LiveJumpModifiers = 0;
+            _settings.Save();
+            UpdateLiveJumpText();
+            SetStatus(L.T("Sprungtaste gelöscht."));
+        }
+
+        private void MapCanvas_JumpButtonCaptured(object sender, MapClickEventArgs e)
+        {
+            if (!JumpButtonFree(e.Button, e.Modifiers))
+            {
+                MessageBox.Show(this,
+                    JumpButtonName(e.Button, e.Modifiers) + L.T(" ist schon belegt (Zeichnen, Kontextmenü oder Verschieben).") + "\n\n" +
+                    L.T("Frei sind: Maustaste 4 und 5 (Seitentasten), Strg + Mitteltaste, Alt + Mitteltaste."),
+                    L.T("Sprungtaste"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                SetStatus(L.T("Sprungtaste nicht geändert."));
+                return;
+            }
+            mapCanvas.JumpButton = e.Button;
+            mapCanvas.JumpModifiers = e.Modifiers;
+            _settings.LiveJumpButton = e.Button.ToString();
+            _settings.LiveJumpModifiers = (int)e.Modifiers;
+            _settings.Save();
+            UpdateLiveJumpText();
+            SetStatus(L.T("Sprungtaste") + ": " + JumpButtonName(e.Button, e.Modifiers));
+        }
+
+        /// <summary>Jump: the live CGI shows the clicked cell (turned on if needed) and stays there until you draw again.</summary>
+        private void MapCanvas_JumpClicked(object sender, MapClickEventArgs e)
+        {
+            if (_settings.LiveJumpStopsFollow && _liveFollowButton.Checked)
+            {
+                _liveFollowButton.Checked = false; // only when wanted: the view then stays until you draw
+            }
+            _livePin = new Point(e.X, e.Y);
+            if (!_liveButton.Checked)
+            {
+                _liveButton.Checked = true; // marks dirty itself
+            }
+            _liveAlways = true;
+            MarkLiveDirty();
+            SetStatus(L.T("Live-CGI springt zu") + $" {e.X}, {e.Y}");
         }
 
         private void HookLiveEvents()
@@ -399,12 +541,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             _liveHooked = true;
-            mapCanvas.MapEdited += (o, e) => MarkLiveDirty();
-            mapCanvas.Painting += (o, e) => MarkLiveDirty();
+            mapCanvas.MapEdited += (o, e) =>
+            {
+                _livePin = null; // every edit (any tool): the live CGI shows where you draw again
+                MarkLiveDirty();
+            };
+            mapCanvas.StrokeEnded += (o, e) => _livePin = null;
+            mapCanvas.Painting += (o, e) =>
+            {
+                _livePin = null; // drawing again: the live CGI follows the pen
+                MarkLiveDirty();
+            };
             mapCanvas.CursorMoved += (o, e) =>
             {
                 if (_liveAlways && _liveFollow && (Math.Abs(e.X - _liveCenter.X) > 16 || Math.Abs(e.Y - _liveCenter.Y) > 16))
                 {
+                    _livePin = null; // "folgt Maus" stays on after a jump: moving on follows the mouse again
                     MarkLiveDirty();
                 }
             };
@@ -461,7 +613,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             _liveDirty = false;
             _liveTimer.Stop();
-            Point c = mapCanvas.CursorTile;
+            Point c = _livePin ?? mapCanvas.CursorTile;
             if (!_map.InBounds(c.X, c.Y))
             {
                 RectangleF v = mapCanvas.ViewRect;

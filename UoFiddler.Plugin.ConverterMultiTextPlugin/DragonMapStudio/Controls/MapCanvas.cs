@@ -133,6 +133,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// </summary>
         public event EventHandler<MapClickEventArgs> ContextRequested;
 
+        /// <summary>Mouse button (plus <see cref="JumpModifiers"/>) that jumps the live CGI to the clicked cell; None = off.</summary>
+        public MouseButtons JumpButton { get; set; } = MouseButtons.None;
+
+        public Keys JumpModifiers { get; set; } = Keys.None;
+
+        /// <summary>The jump button was clicked on the map.</summary>
+        public event EventHandler<MapClickEventArgs> JumpClicked;
+
+        /// <summary>The next click on the map only reports its button (to assign the jump button) and does nothing else.</summary>
+        public bool CaptureNextButton { get; set; }
+
+        public event EventHandler<MapClickEventArgs> ButtonCaptured;
+
         /// <summary>Paste / colour stamp: turns the buffer into the pixels for this position (e.g. heights adapted to the ground there).</summary>
         [System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
         public Func<IndexedMap, Point, IndexedMap> PasteTransform { get; set; }
@@ -772,8 +785,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             base.OnMouseDown(e);
             Focus();
+            Keys mods = ModifierKeys & (Keys.Control | Keys.Alt | Keys.Shift);
+            if (CaptureNextButton)
+            {
+                CaptureNextButton = false;
+                Point cp = ScreenToMap(e.Location);
+                ButtonCaptured?.Invoke(this, new MapClickEventArgs(cp.X, cp.Y, e.Button, mods));
+                return;
+            }
             if (_map == null)
             {
+                return;
+            }
+            if (JumpButton != MouseButtons.None && e.Button == JumpButton && mods == JumpModifiers)
+            {
+                Point jp = ScreenToMap(e.Location);
+                if (_map.InBounds(jp.X, jp.Y))
+                {
+                    JumpClicked?.Invoke(this, new MapClickEventArgs(jp.X, jp.Y, e.Button, mods));
+                }
                 return;
             }
             if (e.Button == MouseButtons.Middle || (e.Button == MouseButtons.Left && (_spaceDown || _tool == MapTool.Pan)))

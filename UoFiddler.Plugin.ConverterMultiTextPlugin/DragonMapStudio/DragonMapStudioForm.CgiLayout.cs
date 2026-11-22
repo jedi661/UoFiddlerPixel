@@ -174,7 +174,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 22.11.2026 – Höhen 17";
+        public const string BuildMark = "Stand 22.11.2026 – Sprung 19";
         private PictureBox _picStampPreview;
         private bool _cgiLayoutBuilt;
 
