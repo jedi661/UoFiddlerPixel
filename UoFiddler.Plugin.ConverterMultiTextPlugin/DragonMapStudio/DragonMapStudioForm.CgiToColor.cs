@@ -329,6 +329,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             IndexedMap crop = _map.Crop(r8);
             BuildOptions o = CurrentBuildOptions();
             o.ExtraStatics = _staticsLayer.Crop(r8);
+            o.ExtraHeights = _staticsLayer.CropHeights(r8);
             o.ExtraStaticsComplete = _staticsLayer.Complete;
             DragonRuleSet rules = _rules;
             EnsureCaveRule(crop);

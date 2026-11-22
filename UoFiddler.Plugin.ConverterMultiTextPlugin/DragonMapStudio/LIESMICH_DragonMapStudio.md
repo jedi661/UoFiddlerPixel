@@ -728,3 +728,15 @@ Werkzeugleiste des Karten-Editors: **„◉ Live-CGI“** (an / aus) und **„fo
 * Das Fenster hat Raster, Infos (Höhe / Land-ID / ID + Höhe / ID + Höhe + Textur), Statics ein / aus und Static-IDs. Fenster schließen = Live-CGI aus.
 
 Im Fenstertitel steht jetzt `[Stand 22.11.2026 – Live 16]`.
+
+## Höhen-Ebene (seit „Höhen 17“)
+
+Eine Farbe der Dragon-Farbkarte trägt ihre Höhe fest in sich. Manche Farben gibt es nur in einer Höhe, z. B. Holzboden **1f** (Tiles 0406–0409) nur mit **Z 0**. Malte man bisher mit „Höhe: Gelände der Karte behalten“ einen Holzboden auf Gras mit Z 4–6, landete der Boden trotzdem auf Z 0.
+
+Jetzt merkt sich das Studio für solche Zellen die gewünschte Höhe in einer **Höhen-Ebene**:
+
+* Gespeichert wird sie neben der Karte in `<karte>.statics.bin`, zusammen mit den Statics.
+* Muster-Pinsel (einmal oder freihand) und Stempel tragen die Höhe automatisch ein, wenn die gewählte Farbe die Höhe nicht hat (Abweichung > 1).
+* Strg+Z und Strg+Y nehmen den Eintrag mit zurück.
+* Der Compiler setzt die Zelle auf die gespeicherte Höhe, aber nur solange sie noch genau diese Farbe hat. Wird die Stelle später übermalt, verfällt der Eintrag von selbst.
+* Das gilt für alle Wege: CGI-Bau, Aktualisieren, Live-CGI, Vorschau, Stempel speichern und Karte bauen.
