@@ -274,8 +274,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                             DecorPercent = look.DecorPercent, Decor = look.Decor, Walls = look.Walls
                         };
                         bool under = _level < _ground;
+                        int floors = Math.Clamp(o.Floors, 1, 6);
+                        int fh = Math.Max(5, o.FloorHeight);
+                        // lower floors first (statics only, under the map), then the top floor
+                        var plans = new List<DungeonPlan> { _plan };
+                        for (int f = 1; f < floors; f++)
+                        {
+                            DungeonSettings pf = Copy(o);
+                            plans.Add(Builders.Plan(_content.Width, _content.Height, pf, new Random(seed + f * 7919)));
+                        }
+                        for (int f = floors - 1; f >= 1; f--)
+                        {
+                            _work.ApplyStatics(DungeonStyleTools.Build(_work, _content, plans[f], use, _level - f * fh, true, false, false, rnd));
+                        }
                         _work.ApplyStatics(DungeonStyleTools.Build(_work, _content, _plan, use, _level, under, true, false, rnd));
-                        what = L.T("Klassischer Dungeon") + $" '{look.Name}': {_plan.Rooms.Count} " + L.T("Räume") + (under ? ", " + L.T("unter der Karte") : string.Empty);
+                        string stairsNote = floors > 1 ? ConnectFloors(plans, fh) : string.Empty;
+                        what = L.T("Klassischer Dungeon") + $" '{look.Name}': {_plan.Rooms.Count} " + L.T("Räume") + (under ? ", " + L.T("unter der Karte") : string.Empty) +
+                               (floors > 1 ? $", {floors} " + L.T("Etagen") + stairsNote : string.Empty);
                         break;
                     }
                 case WorkshopKind.Cellar:
@@ -307,6 +322,65 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             int n = _work.EndLand();
             _work.NameLastStep(what);
             Changed(what + $" · {n} " + L.T("Änderungen") + " · " + L.T("Zufalls-Zahl") + $" {seed}");
+        }
+
+        /// <summary>
+        /// Stairs between the floors: in a room that is open on both floors, a flight of 4 steps down from the upper floor;
+        /// the floor of the upper level above the steps becomes a hole (NoDraw land / floor statics away).
+        /// </summary>
+        private string ConnectFloors(List<DungeonPlan> plans, int fh)
+        {
+            StairSet set = _host.Brushes.StairSets.FirstOrDefault(s => s.Name == _host.Brushes.StairSet);
+            if (set == null || HexList.Parse(set.DownWest).Length == 0)
+            {
+                return " – " + L.T("ohne Treppen (erst ein Treppen-Set wählen / lernen)");
+            }
+            int made = 0;
+            var floorIds = new HashSet<ushort> { 0x053d, 0x053e };
+            for (int f = 0; f < plans.Count - 1; f++)
+            {
+                DungeonPlan up = plans[f], down = plans[f + 1];
+                Point? at = null;
+                // 6 cells in a row along X (4 steps + landing + a free cell), open on both floors, with a free row beside
+                for (int y = 1; y < up.H - 1 && at == null; y++)
+                {
+                    for (int x = 1; x < up.W - 7 && at == null; x++)
+                    {
+                        bool ok = true;
+                        for (int k = -1; k < 6 && ok; k++)
+                        {
+                            ok = up.Floor(x + k, y) && down.Floor(x + k, y) && down.Floor(x + k, y - 1) && up.Floor(x + k, y - 1);
+                        }
+                        if (ok)
+                        {
+                            at = new Point(x, y);
+                        }
+                    }
+                }
+                if (at == null)
+                {
+                    continue;
+                }
+                int topZ = _level - f * fh;
+                var p = new Point(_content.X + at.Value.X, _content.Y + at.Value.Y);
+                var o = new StaircaseSettings { Up = Compass.East, Floors = 1, Steps = Math.Max(1, fh / 5), StepHeight = 5, Width = 1, Downwards = true, TopLanding = true, Fill = true };
+                List<StaticChange> st = Staircase.Build(_work, p, topZ, o, set);
+                // hole in the upper floor over the steps
+                var holes = new List<StaticChange>();
+                for (int k = 0; k < o.Steps; k++)
+                {
+                    int x = p.X + k, y = p.Y;
+                    if (f == 0 && _level >= _ground)
+                    {
+                        _work.SetLand(x, y, 0x0002, _work.LandZ(x, y));
+                    }
+                    holes.AddRange(_work.StaticsAt(x, y).Where(s => s.Z == topZ && floorIds.Contains(s.Id)).ToList().Select(MapData.Remove));
+                }
+                _work.ApplyStatics(holes);
+                _work.ApplyStatics(st);
+                made++;
+            }
+            return $", {made} " + L.T("Treppen");
         }
 
         private static DungeonSettings Copy(DungeonSettings o) => JsonSerializer.Deserialize<DungeonSettings>(JsonSerializer.Serialize(o));
@@ -625,7 +699,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             stairOpt.Click += (s, e) =>
             {
                 using var f = new Form { Text = L.T("Treppe"), Size = new Size(340, 260), StartPosition = FormStartPosition.CenterParent, FormBorderStyle = FormBorderStyle.SizableToolWindow };
-                f.Controls.Add(new PropertyGrid { Dock = DockStyle.Fill, ToolbarVisible = false, SelectedObject = new StairToolOptions(_host.Brushes) });
+                f.Controls.Add(new PropertyGrid { Dock = DockStyle.Fill, ToolbarVisible = false, SelectedObject = _host.Brushes.Staircase });
                 f.ShowDialog(this);
                 ConfigureViews();
             };
@@ -852,6 +926,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             pc.Controls.Add(_pieces);
             pc.Controls.Add(B("Vorlage laden", LoadPiece, 148));
             pc.Controls.Add(B("Platz als Vorlage speichern …", SavePiece, 148));
+            pc.Controls.Add(B("🖼 Vorlagen mit Bild …", () =>
+            {
+                using var tb = new TemplateBrowserForm(false);
+                if (tb.ShowDialog(this) == DialogResult.OK && tb.Selected is string path)
+                {
+                    try
+                    {
+                        CopyIn(WorkshopPiece.Load(path), L.T("Vorlage") + " " + System.IO.Path.GetFileNameWithoutExtension(path));
+                    }
+                    catch (Exception ex)
+                    {
+                        Say(L.T("Vorlage nicht lesbar") + ": " + ex.Message);
+                    }
+                }
+            }, 300));
             left.Controls.Add(pc);
             FillPieces();
             left.Controls.Add(new Label { Text = L.T("Fremde Karte: z. B. die Original-map0 öffnen, einen Dungeon markieren und hierher kopieren – dann ändern und als Vorlage (nach Kategorie) speichern oder in die Karte übernehmen."), AutoSize = false, Width = 310, Height = 48, ForeColor = Color.FromArgb(71, 85, 105) });

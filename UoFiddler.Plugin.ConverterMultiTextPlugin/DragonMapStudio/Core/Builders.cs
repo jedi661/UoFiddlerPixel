@@ -73,6 +73,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Description("Stufe, wenn man nach Westen hinuntergeht (hex).")]
         public string DownWest { get; set; } = string.Empty;
 
+        [Description("Füll-Block unter den Stufen (hex), leer = die Stufe selbst.")]
+        public string Block { get; set; } = string.Empty;
+
+        [Description("Flaches Stück oben auf dem Absatz (hex), leer = Füll-Block.")]
+        public string Landing { get; set; } = string.Empty;
+
         public string For(Compass c) => c switch
         {
             Compass.North => DownNorth,
@@ -123,6 +129,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Category("Brücke"), DisplayName("Geländer")]
         public bool Railings { get; set; } = true;
+
+        [Category("Brücke"), DisplayName("Bogen aus Stufen"), Description("An = die Brücke steigt in Treppenstufen (je 5 Z) bis zur Bogen-Höhe an, oben flach, auf der anderen Seite wieder hinunter (Treppe aus dem Plan). Aus = weicher Bogen.")]
+        public bool ArchStairs { get; set; }
 
         [Category("Brücke"), DisplayName("Treppen an den Enden"), Description("Liegt die Brücke höher als das Ufer, kommen Stufen davor (Treppe aus dem Brücken-Plan).")]
         public bool Stairs { get; set; } = true;
@@ -240,6 +249,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Category("Tiles"), DisplayName("Alte Statics entfernen"), Description("Statics im Dungeon-Bereich vorher entfernen.")]
         public bool ClearStatics { get; set; } = true;
+
+        [Category("Etagen"), DisplayName("Etagen"), Description("Klassischer Dungeon in der Werkstatt: so viele Etagen untereinander (je 20 Z tiefer), verbunden mit Treppen (Treppen-Set).")]
+        public int Floors { get; set; } = 1;
+
+        [Category("Etagen"), DisplayName("Etagen-Höhe (Z)")]
+        public int FloorHeight { get; set; } = 20;
 
         [Category("Karten-Editor"), DisplayName("Fels ganz füllen"), Description("Karten-Editor: der ganze Rest des Rechtecks wird Farbe 2 (sonst nur ein Ring Wand um Räume und Gänge).")]
         public bool FillRock2D { get; set; }

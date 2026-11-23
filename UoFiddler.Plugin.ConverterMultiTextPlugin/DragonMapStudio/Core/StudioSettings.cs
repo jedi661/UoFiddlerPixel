@@ -75,6 +75,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public string CgiPaletteWindow { get; set; } = string.Empty;
 
+        /// <summary>Own window of the tool options ("x,y,w,h", empty = in the options bar).</summary>
+        public string ToolOptionsWindow { get; set; } = string.Empty;
+
+        /// <summary>Own window of the CGI side panel ("x,y,w,h", empty = docked).</summary>
+        public string SideWindow { get; set; } = string.Empty;
+
+        public bool ToolOptionsOpen { get; set; }
+
+        /// <summary>Version of the settings (one time changes of defaults).</summary>
+        [Browsable(false)]
+        public int SettingsLevel { get; set; }
+
+        public bool SideWindowOpen { get; set; }
+
         /// <summary>New brushes of the CGI view (scatter, wall, river, road …), view filter, bookmarks.</summary>
         [Browsable(false)]
         public CgiBrushSettings CgiBrushes { get; set; } = new CgiBrushSettings();
@@ -245,6 +259,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             s ??= new StudioSettings();
             s.ApplyDefaults();
+            if (s.SettingsLevel < 28)
+            {
+                // Werkstatt 28: the soft coast is switched on once for existing settings (can be switched off again)
+                s.Build ??= new BuildOptions();
+                s.Build.CoastSoft = true;
+                s.SettingsLevel = 28;
+            }
             return s;
         }
 

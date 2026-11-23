@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 22.11.2026 – Werkstatt 27“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 23.11.2026 – Werkstatt 28“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -154,6 +154,14 @@
    * Radierer `OnlyIds` (Auswahl merken), Multi-Reiter mit Katalog + sofortigem Bild + Auswahl löschen.
    * Weg-Vorlagen (`RoadPreset`), Weg mit Stempel (`IsoMapView.RoadWithStamp`, `FindStampPattern`), Varianten-Muster (`VariantSet`, `VariantsFromSet`), Wand Dicke + Punkt zu Punkt (`CgiBrushes.WallPath`), Unebenheit-Muster (`NoisePattern`, `NoiseValue`), Fluss-Grund wie Küste (`RiverSettings.BedDepth/BedTiles`).
    * 2D: Lauf-Arten (`CoursePreset`, `MapCanvas.CourseColours`: Kern / Rand / Außen), Editor `Dialogs/NamedListEditor.cs`.
+
+18. **Neu (Werkstatt 28):**
+   * Treppenhaus `Core/Staircase.cs` (Läufe 4 × 5 Z, Absatz, Wende gerade / rechts / links / U, gefüllt, nach unten) und `Staircase.Learn` (Treppen-Set aus Auswahl, `StairSet.Block/Landing`).
+   * Brücke: `BridgeSettings.ArchStairs` (Bogen aus Stufen), Regler Länge / Breite / Bogen im Designer, Testfeld 112×112.
+   * Werkzeug-Optionen als eigenes Fenster (Tabs je Einstellung + Skript JSON, Position gemerkt), Seitenleisten-Fenster merkt Position.
+   * Drehen 90° tauscht gerichtete Teile (`CgiBrushes.TurnedId` über `BridgeKit.Turned`), Wand-Ecken (`WallSet.Corner`), Streu-Sets mischen + Rand ausdünnen, Übersichtskarte zeigt Lesezeichen + Fehler (`MapNavigator.Markers`).
+   * Dungeon mit Etagen (`DungeonSettings.Floors`, `ConnectFloors` in der Werkstatt), Einrichtung lernen und an Wänden setzen (`DungeonLook.Furniture/FurniturePercent`).
+   * `CoastSoft` ab Werk an (einmalig über `StudioSettings.SettingsLevel` 28), Vorlagen-Browser mit Bildern `Dialogs/TemplateBrowserForm.cs`.
 
 ## Offen / als Nächstes
 

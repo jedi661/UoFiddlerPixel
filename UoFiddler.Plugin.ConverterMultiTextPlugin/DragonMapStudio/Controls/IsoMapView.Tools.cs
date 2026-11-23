@@ -35,6 +35,30 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public WallSet WallSet { get; set; }
 
+        /// <summary>Scatter set by name (for "Weitere Sets mischen").</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<string, ScatterSet> FindScatterSet { get; set; }
+
+        /// <summary>The chosen scatter set plus the sets of "Weitere Sets mischen" (one set with all groups).</summary>
+        private ScatterSet MixedScatterSet()
+        {
+            string mix = BrushSettings.Scatter.MixSets;
+            if (string.IsNullOrWhiteSpace(mix) || FindScatterSet == null || ScatterSet == null)
+            {
+                return ScatterSet;
+            }
+            var all = new ScatterSet { Name = ScatterSet.Name + " +", Groups = ScatterSet.Groups.ToList() };
+            foreach (string name in mix.Split(';').Select(n => n.Trim()).Where(n => n.Length > 0))
+            {
+                ScatterSet other = FindScatterSet(name);
+                if (other != null && other != ScatterSet)
+                {
+                    all.Groups.AddRange(other.Groups);
+                }
+            }
+            return all;
+        }
+
         /// <summary>Tiles of the same family (colour of the colour table) – variants brush and magic wand.</summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Func<ushort, ushort[]> LandFamily { get; set; }
@@ -215,7 +239,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         Message?.Invoke(this, L.T("Streu-Pinsel: erst ein Set wählen (Reiter Pinsel)."));
                         break;
                     }
-                    _map.ApplyStatics(CgiBrushes.Scatter(_map, center.X, center.Y, r, ScatterSet, BrushSettings.Scatter, _rnd, ctrl, ctrl ? null : _visited));
+                    _map.ApplyStatics(CgiBrushes.Scatter(_map, center.X, center.Y, r, MixedScatterSet(), BrushSettings.Scatter, _rnd, ctrl, ctrl ? null : _visited));
                     break;
                 case IsoTool.HueBrush:
                     _map.ApplyStatics(CgiBrushes.HueBrush(_map, center.X, center.Y, r, ctrl ? (ushort)0 : PlaceHue, s => !Hidden(s.Id)));
@@ -513,8 +537,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             if (Tool == IsoTool.Stairs && e.KeyCode == Keys.R && !e.Control)
             {
-                BrushSettings.StairDirection = (Compass)(((int)BrushSettings.StairDirection + 1) % 4);
-                Message?.Invoke(this, L.T("Treppe nach unten Richtung") + " " + L.T(BrushSettings.StairDirection switch
+                BrushSettings.Staircase.Up = (Compass)(((int)BrushSettings.Staircase.Up + 1) % 4);
+                Message?.Invoke(this, L.T("Treppe hinauf Richtung") + " " + L.T(BrushSettings.Staircase.Up switch
                 {
                     Compass.North => "Nord", Compass.East => "Ost", Compass.South => "Süd", _ => "West"
                 }));
@@ -838,16 +862,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         private void PlaceStairs(Point tile)
         {
             StairSet set = StairSet;
-            if (set == null || HexList.Parse(set.For(BrushSettings.StairDirection)).Length == 0)
+            if (set == null || HexList.Parse(set.DownNorth + " " + set.DownEast + " " + set.DownSouth + " " + set.DownWest).Length == 0)
             {
-                Message?.Invoke(this, L.T("Treppe: erst ein Treppen-Set mit Stufen für alle Richtungen wählen (Reiter Pinsel → Treppe / Brücken-Designer → Treppe aus TileData)."));
+                Message?.Invoke(this, L.T("Treppe: erst ein Treppen-Set wählen – oder eine Treppe von Hand bauen, auswählen und 'Treppe aus Auswahl lernen'."));
                 return;
             }
-            int top = PlaceZ(tile.X, tile.Y);
-            List<StaticChange> changes = Builders.BuildStairs(_map, tile, top, BrushSettings.StairDirection, BrushSettings.StairSteps, BrushSettings.StairWidth, set);
+            StaircaseSettings o = BrushSettings.Staircase;
+            int z = PlaceZ(tile.X, tile.Y);
+            List<StaticChange> changes = Staircase.Build(_map, tile, z, o, set);
             int before = _map.UndoCount;
             _map.Apply(changes);
-            Finished(_map.UndoCount > before ? changes.Count : 0, L.T("Treppe") + $" {BrushSettings.StairSteps} " + L.T("Stufen") + $", z {top} → {top - 5 * BrushSettings.StairSteps}");
+            int height = o.Floors * o.Steps * o.StepHeight;
+            Finished(_map.UndoCount > before ? changes.Count : 0, L.T("Treppe") + $" {o.Floors} × {o.Steps} " + L.T("Stufen") +
+                     (o.Downwards ? $", z {z} → {z - height}" : $", z {z} → {z + height}"));
         }
 
         private void PlaceCellar(Rectangle r)
@@ -1269,7 +1296,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             IsoTool.Scatter => L.T("Streu-Pinsel: Ziehen verteilt das Set (Reiter Pinsel) – Dichte, Abstand, Boden-Filter · Strg+Ziehen entfernt Statics des Sets · Pinsel oben · ein Zug = ein Rückgängig-Schritt"),
             IsoTool.Eraser => L.T("Radierer: Ziehen löscht alle Statics im Pinsel (Größe oben / [ ]) · Strg = Land zur Leere · Einstellungen im Reiter Pinsel"),
-            IsoTool.Stairs => L.T("Treppe: Klick setzt Stufen nach unten in die gewählte Richtung (Treppen-Set) · R = Richtung drehen"),
+            IsoTool.Stairs => L.T("Treppe: Klick = Fuß der Treppe – Läufe zu 4 Stufen (je 5 Z = 20 Z), dazwischen ein Absatz, Wende gerade / rechts / links / zurück, bis unten gefüllt · R = Richtung drehen · Vorschau am Mauszeiger"),
             IsoTool.HueBrush => L.T("Hue-Pinsel: Ziehen färbt alle Statics im Pinsel mit der Hue (Reiter Items) · Strg = Hue 0 (Original)"),
             IsoTool.River => L.T("Fluss: Ziehen gräbt ein Bett – Wasser-Tiles auf 'Tiefe' unter dem Startpunkt, weiches Ufer, danach Übergänge (Reiter Pinsel → Fluss) · Pinsel oben = Breite"),
             IsoTool.Plateau => L.T("Plateau: Ziehen flacht auf die Höhe unter dem ersten Klick ab (oder 'Höhe ='), Art Terrassen = Stufen · Härte für weiche Ränder (Reiter Pinsel)"),

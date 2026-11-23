@@ -29,6 +29,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
     {
         private readonly List<ToolStripItem> _quickItems = new List<ToolStripItem>();
         private Action _quickChanged;
+        private Form _optWindow;
+        private ToolStrip _optStrip;
+        private TabControl _optTabs;
+        private Label _optTitle;
         private Form _sideWindow;
         private bool _toolOptionsBuilt;
         private ToolStripComboBox _edCourseKind;
@@ -56,6 +60,27 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             var edPal = new ToolStripButton(L.T("◧ Werkzeuge")) { ToolTipText = L.T("Werkzeug-Palette links ein- / ausblenden (F7)"), Alignment = ToolStripItemAlignment.Right };
             edPal.Click += (s, e) => ToggleEditorPalette();
             toolStripEditor.Items.Add(edPal);
+
+            // overview map: bookmarks (gold, with name) and problems (red)
+            cgiNavigator.Markers = () =>
+            {
+                var list = new List<(Point, Color, string)>();
+                foreach (string b in BrushCfg.Bookmarks)
+                {
+                    string[] p = b.Split('|');
+                    if (p.Length >= 3 && int.TryParse(p[1], out int x) && int.TryParse(p[2], out int y))
+                    {
+                        list.Add((new Point(x, y), Color.Gold, p[0]));
+                    }
+                }
+                if (isoView.ShowProblems)
+                {
+                    list.AddRange(_problems.Take(2000).Select(pr => (new Point(pr.X, pr.Y), Color.Red, (string)null)));
+                }
+                return list;
+            };
+
+            isoView.FindScatterSet = name => AllScatterSets().FirstOrDefault(s => s.Name == name || s.Name == "Dragon: " + name);
 
             // ---- the stamp of a road
             isoView.FindStampPattern = file =>
@@ -108,6 +133,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
             // ---- map editor: kind of the natural course
             BuildCourseKinds();
+
+            // ---- windows come back where they were (3 monitors)
+            if (_settings.ToolOptionsOpen)
+            {
+                BeginInvoke(new Action(ToggleOptionWindow));
+            }
+            if (_settings.SideWindowOpen)
+            {
+                BeginInvoke(new Action(UndockSidePanel));
+            }
         }
 
         // ================================================================== side panel, palettes
@@ -158,6 +193,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 Owner = this,
                 Bounds = new Rectangle(Math.Max(0, screen.X - 40), Math.Max(0, screen.Y), Math.Max(340, host.Width + 16), Math.Max(400, host.Height + 60))
             };
+            Rectangle saved = ParseBounds(_settings.SideWindow);
+            if (!saved.IsEmpty && Screen.AllScreens.Any(sc => sc.WorkingArea.IntersectsWith(saved)))
+            {
+                f.Bounds = saved;
+            }
+            f.ResizeEnd += (s, e) => _settings.SideWindow = $"{f.Left},{f.Top},{f.Width},{f.Height}";
+            f.Move += (s, e) => _settings.SideWindow = $"{f.Left},{f.Top},{f.Width},{f.Height}";
+            bool ownerClosing = false;
+            f.FormClosing += (s, e) => ownerClosing = e.CloseReason == CloseReason.FormOwnerClosing || e.CloseReason == CloseReason.ApplicationExitCall;
             var panel = new Panel { Dock = DockStyle.Fill };
             var strip = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
             var undo = new ToolStripButton("↶ " + L.T("Rückgängig")) { ToolTipText = "Strg+Z" };
@@ -197,9 +241,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
                 splitCgi.Panel2Collapsed = false;
                 _sideWindow = null;
+                if (!ownerClosing)
+                {
+                    _settings.SideWindowOpen = false;
+                }
             };
             splitCgi.Panel2Collapsed = true;
             _sideWindow = f;
+            _settings.SideWindowOpen = true;
             f.Show(this);
         }
 
@@ -215,7 +264,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             toolStripCgiLand.SuspendLayout();
             foreach (ToolStripItem i in _quickItems)
             {
-                toolStripCgiLand.Items.Remove(i);
+                i.Owner?.Items.Remove(i);
                 i.Dispose();
             }
             _quickItems.Clear();
@@ -297,7 +346,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     all.Add((b.Wall, L.T("Wand")));
                     break;
                 case IsoTool.Scatter:
-                    Quick(b.Scatter, "Density", "MinDistance", "ZOffset");
+                    Quick(b.Scatter, "Density", "MinDistance", "EdgeThinning", "MixSets", "ZOffset");
+                    {
+                        var mix = new ToolStripDropDownButton(L.T("+ Set mischen")) { ToolTipText = L.T("Ein weiteres Streu-Set dazumischen (oder wieder herausnehmen)") };
+                        foreach (ScatterSet set in AllScatterSets())
+                        {
+                            string n = set.Name.StartsWith("Dragon: ") ? set.Name.Substring(8) : set.Name;
+                            bool on = b.Scatter.MixSets.Split(';').Select(x => x.Trim()).Contains(n);
+                            var it = new ToolStripMenuItem(set.Name) { Checked = on };
+                            it.Click += (s, e) =>
+                            {
+                                var names = b.Scatter.MixSets.Split(';').Select(x => x.Trim()).Where(x => x.Length > 0).ToList();
+                                if (!names.Remove(n))
+                                {
+                                    names.Add(n);
+                                }
+                                b.Scatter.MixSets = string.Join("; ", names);
+                                UpdateQuickOptions(isoView.Tool);
+                            };
+                            mix.DropDownItems.Add(it);
+                        }
+                        AddQuick(mix);
+                    }
                     all.Add((b.Scatter, L.T("Streuen")));
                     break;
                 case IsoTool.Hue:
@@ -335,17 +405,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     all.Add((isoView.Mountain, L.T("Berg")));
                     break;
                 case IsoTool.Bridge:
-                    Quick(b.Bridge, "Width", "Arch", "ZOffset", "Stairs");
+                    Quick(b.Bridge, "Width", "Arch", "ArchStairs", "ZOffset", "Stairs");
                     all.Add((b.Bridge, L.T("Brücke")));
                     break;
                 case IsoTool.Stairs:
                     {
-                        var st = new StairToolOptions(b);
-                        Quick(st, "Direction", "Steps", "Width");
+                        Quick(b.Staircase, "Up", "Floors", "Steps", "Width", "Turn", "Downwards", "TopLanding");
+                        Cmd("Treppe aus Auswahl lernen", "Eine von Hand gebaute Treppe (alle Stücke) auswählen: Stufen je Richtung, Füll-Block und Absatz werden erkannt", LearnStairsFromSelection);
+                        all.Add((b.Staircase, L.T("Treppe")));
                         break;
                     }
             }
-            if (all.Count > 0)
+            FillOptionTabs(t, all);
+            if (all.Count > 0 && _optWindow == null)
             {
                 var gear = new ToolStripDropDownButton("⚙") { ToolTipText = L.T("Alle Einstellungen dieses Werkzeugs") };
                 foreach ((object o, string title) in all)
@@ -355,13 +427,174 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
                 AddQuick(gear);
             }
+            var pop = new ToolStripButton(_optWindow == null ? "⧉" : "⇤") { ToolTipText = L.T(_optWindow == null ? "Werkzeug-Optionen in ein eigenes Fenster (z. B. auf einen anderen Monitor)" : "Werkzeug-Optionen wieder in die Leiste") };
+            pop.Click += (s, e) => ToggleOptionWindow();
+            AddQuick(pop);
             toolStripCgiLand.ResumeLayout();
+        }
+
+        // ================================================================== own window of the tool options
+
+        private void ToggleOptionWindow()
+        {
+            if (_optWindow != null)
+            {
+                _optWindow.Close();
+                return;
+            }
+            var f = new Form
+            {
+                Text = L.T("Werkzeug-Optionen") + " – Dragon Map Studio",
+                FormBorderStyle = FormBorderStyle.SizableToolWindow,
+                ShowInTaskbar = false,
+                StartPosition = FormStartPosition.Manual,
+                Owner = this,
+                Size = new Size(460, 560),
+                Location = new Point(Math.Max(0, Cursor.Position.X - 470), Math.Max(0, Cursor.Position.Y))
+            };
+            Rectangle saved = ParseBounds(_settings.ToolOptionsWindow);
+            if (!saved.IsEmpty && Screen.AllScreens.Any(sc => sc.WorkingArea.IntersectsWith(saved)))
+            {
+                f.Bounds = saved;
+            }
+            _optTitle = new Label { Dock = DockStyle.Top, Height = 26, Font = new Font("Segoe UI", 10f, FontStyle.Bold), ForeColor = Color.White, BackColor = Color.FromArgb(30, 41, 59), TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(6, 0, 0, 0) };
+            _optStrip = new ToolStrip { Dock = DockStyle.Top, LayoutStyle = ToolStripLayoutStyle.Flow, GripStyle = ToolStripGripStyle.Hidden, AutoSize = true, Padding = new Padding(2) };
+            _optTabs = new TabControl { Dock = DockStyle.Fill };
+            f.Controls.Add(_optTabs);
+            f.Controls.Add(_optStrip);
+            f.Controls.Add(_optTitle);
+            void Remember() => _settings.ToolOptionsWindow = f.WindowState == FormWindowState.Normal ? $"{f.Left},{f.Top},{f.Width},{f.Height}" : _settings.ToolOptionsWindow;
+            f.ResizeEnd += (s, e) => Remember();
+            f.Move += (s, e) => Remember();
+            bool ownerClosing = false;
+            f.FormClosing += (s, e) => ownerClosing = e.CloseReason == CloseReason.FormOwnerClosing || e.CloseReason == CloseReason.ApplicationExitCall;
+            f.FormClosed += (s, e) =>
+            {
+                if (!ownerClosing)
+                {
+                    _settings.ToolOptionsOpen = false;
+                }
+                _optWindow = null;
+                _optStrip = null;
+                _optTabs = null;
+                _optTitle = null;
+                _quickItems.Clear();
+                UpdateQuickOptions(isoView.Tool);
+            };
+            // the items move from the bar into the window
+            foreach (ToolStripItem i in _quickItems)
+            {
+                i.Owner?.Items.Remove(i);
+                i.Dispose();
+            }
+            _quickItems.Clear();
+            _optWindow = f;
+            _settings.ToolOptionsOpen = true;
+            f.Show(this);
+            Remember();
+            UpdateQuickOptions(isoView.Tool);
+        }
+
+        private static Rectangle ParseBounds(string text)
+        {
+            int[] v = (text ?? string.Empty).Split(',').Select(p => int.TryParse(p, out int n) ? n : int.MinValue).ToArray();
+            return v.Length == 4 && v.All(n => n != int.MinValue) && v[2] > 50 && v[3] > 50 ? new Rectangle(v[0], v[1], v[2], v[3]) : Rectangle.Empty;
+        }
+
+        /// <summary>Tabs of the option window: every settings object as a grid, plus the settings as a script (JSON) to change, save, load.</summary>
+        private void FillOptionTabs(IsoTool t, List<(object o, string title)> all)
+        {
+            if (_optTabs == null)
+            {
+                return;
+            }
+            _optTitle.Text = L.T(CgiToolTitle(t));
+            _optTitle.Image = ToolIcons.Get(CgiIconKey(t));
+            _optTitle.ImageAlign = ContentAlignment.MiddleRight;
+            _optTabs.TabPages.Clear();
+            if (all.Count == 0)
+            {
+                var none = new TabPage(L.T("Hinweis"));
+                none.Controls.Add(new Label { Dock = DockStyle.Fill, Padding = new Padding(8), Text = L.T("Dieses Werkzeug hat keine weiteren Einstellungen – die Knöpfe oben sind alles.") });
+                _optTabs.TabPages.Add(none);
+                return;
+            }
+            foreach ((object o, string title) in all)
+            {
+                var page = new TabPage(title);
+                var grid = new PropertyGrid { Dock = DockStyle.Fill, SelectedObject = o, ToolbarVisible = false, HelpVisible = true, PropertySort = PropertySort.Categorized };
+                grid.PropertyValueChanged += (s, e) =>
+                {
+                    _quickChanged?.Invoke();
+                    isoView.Invalidate();
+                };
+                page.Controls.Add(grid);
+                _optTabs.TabPages.Add(page);
+            }
+            // script: the settings as JSON, to adapt by hand, save, load, share
+            var script = new TabPage(L.T("Skript (JSON)"));
+            var pick = new ComboBox { Dock = DockStyle.Top, DropDownStyle = ComboBoxStyle.DropDownList };
+            foreach ((object o, string title) in all)
+            {
+                pick.Items.Add(title);
+            }
+            var box = new TextBox { Dock = DockStyle.Fill, Multiline = true, ScrollBars = ScrollBars.Both, WordWrap = false, Font = new Font("Consolas", 9f) };
+            var opts = new JsonSerializerOptions { WriteIndented = true };
+            pick.SelectedIndexChanged += (s, e) => box.Text = JsonSerializer.Serialize(all[pick.SelectedIndex].o, all[pick.SelectedIndex].o.GetType(), opts);
+            var bar = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true };
+            Button B(string text, Action a)
+            {
+                var b = new Button { Text = L.T(text), AutoSize = true, FlatStyle = FlatStyle.System };
+                b.Click += (s, e) => a();
+                bar.Controls.Add(b);
+                return b;
+            }
+            B("Übernehmen", () =>
+            {
+                try
+                {
+                    object target = all[pick.SelectedIndex].o;
+                    object read = JsonSerializer.Deserialize(box.Text, target.GetType());
+                    foreach (PropertyInfo p in target.GetType().GetProperties().Where(p => p.CanRead && p.CanWrite && p.GetIndexParameters().Length == 0))
+                    {
+                        p.SetValue(target, p.GetValue(read));
+                    }
+                    SetStatus(L.T("Skript übernommen") + ": " + all[pick.SelectedIndex].title);
+                    UpdateQuickOptions(isoView.Tool);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, L.T("Das Skript ist kein gültiges JSON:") + Environment.NewLine + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            });
+            B("Kopieren", () => Clipboard.SetText(box.Text));
+            B("Speichern …", () =>
+            {
+                using var dlg = new SaveFileDialog { Filter = "JSON (*.json)|*.json", FileName = all[pick.SelectedIndex].title + ".json" };
+                if (dlg.ShowDialog(this) == DialogResult.OK)
+                {
+                    System.IO.File.WriteAllText(dlg.FileName, box.Text);
+                }
+            });
+            B("Laden …", () =>
+            {
+                using var dlg = new OpenFileDialog { Filter = "JSON (*.json)|*.json" };
+                if (dlg.ShowDialog(this) == DialogResult.OK)
+                {
+                    box.Text = System.IO.File.ReadAllText(dlg.FileName);
+                }
+            });
+            script.Controls.Add(box);
+            script.Controls.Add(pick);
+            script.Controls.Add(bar);
+            _optTabs.TabPages.Add(script);
+            pick.SelectedIndex = 0;
         }
 
         private void AddQuick(ToolStripItem item)
         {
             _quickItems.Add(item);
-            toolStripCgiLand.Items.Add(item);
+            (_optStrip ?? toolStripCgiLand).Items.Add(item);
         }
 
         private void Cmd(string text, string tip, Action click)
@@ -518,6 +751,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
             }
             SetStatus("Hue " + hue + ": " + (hue == 0 ? L.T("Original") : UoArtCache.HueName(hue)));
+        }
+
+        // ================================================================== stairs
+
+        /// <summary>A stair built by hand (all pieces selected) becomes a stair set: steps per direction, filling block, landing.</summary>
+        private void LearnStairsFromSelection()
+        {
+            if (isoView.Selection.Count < 2)
+            {
+                SetStatus(L.T("Erst eine von Hand gebaute Treppe auswählen (Rahmen ziehen oder Strg+Klick, alle Stücke), dann lernen."));
+                return;
+            }
+            string name = AskName("Name des Treppen-Sets:", "Holztreppe");
+            if (name == null)
+            {
+                return;
+            }
+            StairSet set = Staircase.Learn(isoView.Selection, name, out string report);
+            BrushCfg.StairSets.RemoveAll(s => s.Name == name);
+            BrushCfg.StairSets.Add(set);
+            BrushCfg.StairSet = name;
+            if (_cmbStairSet != null)
+            {
+                FillNamed(_cmbStairSet, BrushCfg.StairSets, name, s => s.Name);
+            }
+            ApplyStairSet();
+            MessageBox.Show(this, L.T("Treppen-Set gelernt") + $": {name}" + Environment.NewLine + Environment.NewLine + report, L.T("Treppe"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+            SetStatus(L.T("Treppen-Set gelernt") + $": {name} – " + L.T("Werkzeug Treppe zeigt es als Vorschau"));
         }
 
         // ================================================================== multi
@@ -706,6 +967,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 ed.AddAction("+ Item → West-Ost", o => ((WallSet)o).AlongX = (((WallSet)o).AlongX + " " + isoView.PlaceId.ToString("x4")).Trim());
                 ed.AddAction("+ Item → Nord-Süd", o => ((WallSet)o).AlongY = (((WallSet)o).AlongY + " " + isoView.PlaceId.ToString("x4")).Trim());
                 ed.AddAction("Item → Pfosten", o => ((WallSet)o).Post = isoView.PlaceId.ToString("x4"));
+                ed.AddAction("Item → Ecke", o => ((WallSet)o).Corner = isoView.PlaceId.ToString("x4"));
                 ed.AddAction("Aus Auswahl (X / Y / Pfosten raten)", o =>
                 {
                     var w = (WallSet)o;

@@ -279,7 +279,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 Row(Grid(BrushCfg.Cellar, 200)),
                 Row(_cmbStairSet),
                 Row(ToolBtn("Treppe setzen", IsoTool.Stairs, ColBuild), Btn("Treppe aus TileData", ColView, AutoStairSet)),
-                Row(Btn("Treppe: Richtung / Stufen …", ColView, () => ShowSettingsWindow(new StairToolOptions(BrushCfg), L.T("Treppe")))),
+                Row(Btn("Treppe: Richtung / Stufen …", ColView, () => ShowSettingsWindow(BrushCfg.Staircase, L.T("Treppe")))),
                 Row(Btn("Neues Treppen-Set …", ColBuild, () =>
                 {
                     string n = AskName("Name des Treppen-Sets:", "Steintreppe");
@@ -742,7 +742,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             var designer = new ToolStripButton(L.T("Brücken-Designer …"));
             designer.Click += (s, e) => OpenBridgeDesigner();
             var stairs = new ToolStripButton(L.T("Richtung / Stufen …"));
-            stairs.Click += (s, e) => ShowSettingsWindow(new StairToolOptions(BrushCfg), L.T("Treppe"));
+            stairs.Click += (s, e) => ShowSettingsWindow(BrushCfg.Staircase, L.T("Treppe"));
             var eraser = new ToolStripButton(L.T("Radierer …"));
             eraser.Click += (s, e) => ShowSettingsWindow(BrushCfg.Eraser, L.T("Radierer"));
             _tsbUnderView = new ToolStripButton(L.T("⬇ Unter der Karte")) { CheckOnClick = true, Checked = isoView.UnderView, ToolTipText = L.T("Unter der Karte bauen: Statics unter dem Boden zeigen, Bau-Ebene Boden − 20") };

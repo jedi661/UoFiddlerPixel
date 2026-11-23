@@ -1390,7 +1390,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             else if (Tool == IsoTool.Stairs && StairSet != null)
             {
-                foreach (StaticChange c in Builders.BuildStairs(_map, _hover, PlaceZ(_hover.X, _hover.Y), BrushSettings.StairDirection, BrushSettings.StairSteps, BrushSettings.StairWidth, StairSet)
+                foreach (StaticChange c in Staircase.Build(_map, _hover, PlaceZ(_hover.X, _hover.Y), BrushSettings.Staircase, StairSet)
                              .OrderBy(c => c.After.X + c.After.Y).ThenBy(c => c.After.Z))
                 {
                     parts.Add((c.After.Id, c.After.X, c.After.Y, c.After.Z));

@@ -65,6 +65,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("Streuen"), DisplayName("Zufällige Hues (hex)"), Description("Leer = die Hue aus dem Set. Sonst wird eine davon zufällig gewählt (z. B. Herbstfarben).")]
         public string RandomHues { get; set; } = string.Empty;
 
+        [Category("Streuen"), DisplayName("Weitere Sets mischen"), Description("Namen weiterer Streu-Sets, mit ; getrennt – sie werden mit dem gewählten Set gemischt (z. B. Wald + Büsche + Steine).")]
+        public string MixSets { get; set; } = string.Empty;
+
+        [Category("Streuen"), DisplayName("Rand ausdünnen (%)"), Description("Zum Rand des Pinsels hin weniger dicht (natürliche Waldränder). 0 = überall gleich dicht.")]
+        public int EdgeThinning { get; set; }
+
         [Category("Streuen"), DisplayName("Höchste Steigung"), Description("Nicht auf Hänge setzen, die zum Nachbarn mehr als so viel Z abfallen (0 = egal).")]
         public int MaxSlope { get; set; } = 12;
     }
@@ -82,6 +88,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Description("Pfosten / Ecke (hex), leer = keiner.")]
         public string Post { get; set; } = string.Empty;
+
+        [Description("Eckstück (hex) für L- und T-Ecken, wo eine West-Ost- und eine Nord-Süd-Wand zusammenstoßen. Leer = Pfosten (oder beide Stücke).")]
+        public string Corner { get; set; } = string.Empty;
 
         public override string ToString() => Name;
     }
@@ -410,6 +419,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public int StairSteps { get; set; } = 4;
         public int StairWidth { get; set; } = 2;
 
+        /// <summary>Tool "Treppe": the staircase (flights of 4 steps, landings, turns).</summary>
+        public StaircaseSettings Staircase { get; set; } = new StaircaseSettings();
+
         /// <summary>"Unter der Karte bauen": statics are placed this much below the ground (−20 = one floor).</summary>
         public int UnderOffset { get; set; } = -20;
 
@@ -432,6 +444,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Noise ??= new NoiseSettings();
             Wand ??= new WandSettings();
             Eraser ??= new EraserSettings();
+            Staircase ??= new StaircaseSettings();
             VariantSets ??= new List<VariantSet>();
             RoadPresets ??= new List<RoadPreset>();
             FavoriteHues ??= new List<ushort>();
@@ -540,14 +553,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             ushort[] hues = HexList.Parse(o.RandomHues);
             int total = set.Groups.Sum(g => Math.Max(1, g.Frequency));
             var placedNow = new List<Point>();
-            foreach ((int x, int y, double _) in Circle(map, cx, cy, r))
+            foreach ((int x, int y, double dist) in Circle(map, cx, cy, r))
             {
                 int key = y * map.Width + x;
                 if (visited != null && !visited.Add(key))
                 {
                     continue; // every cell is tried once per stroke
                 }
-                if (rnd.Next(100) >= Math.Clamp(o.Density, 1, 100))
+                double density = Math.Clamp(o.Density, 1, 100);
+                if (o.EdgeThinning > 0 && r > 0)
+                {
+                    density *= 1 - Math.Clamp(o.EdgeThinning, 0, 100) / 100.0 * Math.Clamp(dist / r, 0, 1);
+                }
+                if (rnd.NextDouble() * 100 >= density)
                 {
                     continue;
                 }
@@ -720,17 +738,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 (int nx, int ny) = Transform(s.X - minX, s.Y - minY, maxX - minX + 1, maxY - minY + 1, quarterTurns, mirrorX, mirrorY);
                 nx += minX;
                 ny += minY;
-                if (map.InBounds(nx, ny) && (nx != s.X || ny != s.Y))
+                ushort nid = TurnedId(s.Id, quarterTurns);
+                if (map.InBounds(nx, ny) && (nx != s.X || ny != s.Y || nid != s.Id))
                 {
                     changes.Add(MapData.Modify(s, t =>
                     {
                         t.X = nx;
                         t.Y = ny;
+                        t.Id = nid;
                     }));
                 }
             }
             return changes;
         }
+
+        /// <summary>
+        /// Turned by 90° (odd quarter turns) a directed piece (wall, fence, railing) must become the piece of the other direction:
+        /// the item with the same name close by whose art runs the other way. Other pieces stay.
+        /// </summary>
+        public static ushort TurnedId(ushort id, int quarterTurns) => ((quarterTurns % 2) + 2) % 2 == 1 ? BridgeKit.Turned(id) : id;
 
         /// <summary>Position in a w × h box after the transformation (the box itself turns: w and h swap for odd turns).</summary>
         public static (int x, int y) Transform(int x, int y, int w, int h, int quarterTurns, bool mirrorX, bool mirrorY)
@@ -753,7 +779,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         /// <summary>
         /// Rotates / mirrors the land and the statics of a rectangle in place (top left stays; the size turns with odd turns).
-        /// Note: the pictures of the statics do not turn – walls facing south stay facing south.
+        /// Directed pieces (walls, fences) are swapped for the piece of the other direction on 90° turns (<see cref="TurnedId"/>).
         /// </summary>
         public static (List<StaticChange> statics, List<LandChange> land) TransformArea(MapData map, Rectangle area, int quarterTurns, bool mirrorX, bool mirrorY)
         {
@@ -806,13 +832,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         {
                             statics.Add(MapData.Remove(s));
                         }
-                        else if (nx != s.X || ny != s.Y)
+                        else
                         {
-                            statics.Add(MapData.Modify(s, t =>
+                            ushort nid = TurnedId(s.Id, quarterTurns);
+                            if (nx != s.X || ny != s.Y || nid != s.Id)
                             {
-                                t.X = nx;
-                                t.Y = ny;
-                            }));
+                                statics.Add(MapData.Modify(s, t =>
+                                {
+                                    t.X = nx;
+                                    t.Y = ny;
+                                    t.Id = nid;
+                                }));
+                            }
                         }
                     }
                 }
@@ -1233,6 +1264,37 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             var placed = new HashSet<(int, int, int)>();
             var removed = new HashSet<StaticItem>();
             int thick = Math.Clamp(o.Thickness, 1, 8);
+            // corners: where a west – east and a north – south part meet (L at every leg, the points in between)
+            var corners = new HashSet<(int, int)>();
+            void Corner(Point c)
+            {
+                for (int dx = 0; dx < thick; dx++)
+                {
+                    for (int dy = 0; dy < thick; dy++)
+                    {
+                        corners.Add((c.X + dx, c.Y + dy));
+                    }
+                }
+            }
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                Point a = points[i], b = points[i + 1];
+                if (a.X != b.X && a.Y != b.Y)
+                {
+                    Corner(new Point(b.X, a.Y));
+                }
+                if (i > 0)
+                {
+                    Point prev = points[i - 1];
+                    bool arriveAlongY = prev.Y != a.Y;
+                    bool leaveAlongX = a.X != b.X;
+                    if (arriveAlongY == leaveAlongX)
+                    {
+                        Corner(a);
+                    }
+                }
+            }
+            ushort[] cornerIds = HexList.Parse(set?.Corner);
             for (int i = 0; i < points.Count - 1; i++)
             {
                 Point a = points[i], b = points[i + 1];
@@ -1259,7 +1321,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             }
                             else if (placed.Add((c.After.X, c.After.Y, c.After.Z)))
                             {
-                                result.Add(c);
+                                if (cornerIds.Length > 0 && corners.Contains((c.After.X, c.After.Y)))
+                                {
+                                    StaticItem it = c.After.Copy();
+                                    it.Id = cornerIds[rnd.Next(cornerIds.Length)];
+                                    result.Add(MapData.Add(it));
+                                }
+                                else
+                                {
+                                    result.Add(c);
+                                }
                             }
                         }
                     }

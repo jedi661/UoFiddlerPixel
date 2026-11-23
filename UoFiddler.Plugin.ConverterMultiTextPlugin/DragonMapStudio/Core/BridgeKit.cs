@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – bridges of statics
  *  *
@@ -596,10 +596,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Point first = dir > 0 ? a : end;
             int baseZ = Math.Max(map.LandZ(a.X, a.Y), map.LandZ(end.X, end.Y)) + o.ZOffset;
             var deckZ = new int[n];
+            // arch of stairs: steps of 5 z up to the arch height, flat on top, down again on the other side
+            ushort upStair = HexList.Parse(alongX ? t.StairWest : t.StairNorth).FirstOrDefault();
+            ushort downStair = HexList.Parse(alongX ? t.StairEast : t.StairSouth).FirstOrDefault();
+            bool stairArch = o.ArchStairs && o.Arch >= 5 && upStair != 0 && downStair != 0;
+            int rise = stairArch ? Math.Min(o.Arch / 5, (n - 1) / 2) : 0;
             for (int k = 0; k < n; k++)
             {
                 double f = n <= 1 ? 0 : k / (double)(n - 1);
-                deckZ[k] = Math.Clamp(baseZ + (int)Math.Round(o.Arch * Math.Sin(Math.PI * f)), -128, 127);
+                ushort stepHere = 0;
+                if (stairArch)
+                {
+                    int s = Math.Min(rise, Math.Min(k + 1, n - k));
+                    deckZ[k] = Math.Clamp(baseZ + 5 * s, -128, 127);
+                    if (k < rise)
+                    {
+                        stepHere = upStair; // walking back to the start goes down
+                    }
+                    else if (n - 1 - k < rise)
+                    {
+                        stepHere = downStair;
+                    }
+                }
+                else
+                {
+                    deckZ[k] = Math.Clamp(baseZ + (int)Math.Round(o.Arch * Math.Sin(Math.PI * f)), -128, 127);
+                }
                 int col = SampleColumn(t, k, n);
                 if (!byCol.TryGetValue(col, out List<BridgePart> list))
                 {
@@ -616,6 +638,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     int y = alongX ? first.Y + across : first.Y + k;
                     if (!map.InBounds(x, y))
                     {
+                        continue;
+                    }
+                    if (stepHere != 0 && p.Dz == 0 && !IsRailLike(p.Id) && !IsRailPart(t, p))
+                    {
+                        // the deck piece becomes a step (its top is the deck height)
+                        statics.Add(MapData.Add(new StaticItem { Id = stepHere, X = x, Y = y, Z = Math.Clamp(deckZ[k] - 5, -128, 127) }));
                         continue;
                     }
                     statics.Add(MapData.Add(new StaticItem { Id = p.Id, Hue = p.Hue, X = x, Y = y, Z = Math.Clamp(deckZ[k] + p.Dz, -128, 127) }));
@@ -699,6 +727,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
             }
             return statics;
+        }
+
+        /// <summary>A piece on the side rows that is not the deck (railing / post / lamp of a generated plan stand on the edge rows).</summary>
+        private static bool IsRailPart(BridgeTemplate t, BridgePart p) =>
+            (p.Across == 0 || p.Across == t.Width - 1) && t.Width >= 2 &&
+            (t.PartsX.Concat(t.PartsY).Count(q => q.Along == p.Along && q.Across == p.Across && q.Dz == p.Dz) > 1 && !IsDeckId(t, p.Id));
+
+        private static bool IsDeckId(BridgeTemplate t, ushort id)
+        {
+            // deck = what lies on height 0 in the inner rows (or the most common piece on 0 for narrow bridges)
+            var all = t.PartsX.Concat(t.PartsY).Where(q => q.Dz == 0).ToList();
+            var inner = all.Where(q => q.Across > 0 && q.Across < t.Width - 1).Select(q => q.Id).ToList();
+            if (inner.Count > 0)
+            {
+                return inner.Contains(id);
+            }
+            return all.GroupBy(q => q.Id).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault() == id;
         }
 
         private static bool IsRailLike(ushort id)

@@ -10,6 +10,7 @@
 //  ***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -94,6 +95,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         [DefaultValue(true)]
         public bool FollowView { get; set; } = true;
 
+        /// <summary>Marks on the overview: bookmarks (with name) and problems (red dots). Asked on every paint.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<IEnumerable<(Point at, Color color, string label)>> Markers { get; set; }
+
         public event EventHandler ZoomChanged;
 
         public void ZoomStep(int dir) => Zoom = dir > 0 ? _zoom * 1.5f : _zoom / 1.5f;
@@ -154,6 +159,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 using var markPen = new Pen(Color.OrangeRed, 2f) { DashStyle = DashStyle.Dash };
                 g.DrawRectangle(markPen, r.X + _mark.X * k, r.Y + _mark.Y * k, Math.Max(2, _mark.Width * k), Math.Max(2, _mark.Height * k));
+            }
+            if (Markers != null)
+            {
+                using var font = new Font("Segoe UI", 7f, FontStyle.Bold);
+                int n = 0;
+                foreach ((Point at, Color color, string label) in Markers())
+                {
+                    float mx = r.X + (at.X + 0.5f) * k, my = r.Y + (at.Y + 0.5f) * k;
+                    if (string.IsNullOrEmpty(label))
+                    {
+                        using var dot = new SolidBrush(color);
+                        g.FillRectangle(dot, mx - 1.5f, my - 1.5f, 3, 3);
+                    }
+                    else
+                    {
+                        PointF[] d = { new PointF(mx, my - 5), new PointF(mx + 4, my), new PointF(mx, my + 5), new PointF(mx - 4, my) };
+                        using var fill = new SolidBrush(color);
+                        g.FillPolygon(fill, d);
+                        g.DrawPolygon(Pens.Black, d);
+                        g.DrawString(label, font, Brushes.Black, mx + 6, my - 6);
+                        g.DrawString(label, font, Brushes.White, mx + 5, my - 7);
+                    }
+                    if (++n > 3000)
+                    {
+                        break;
+                    }
+                }
             }
             using var pen = new Pen(Color.Yellow, 1.5f);
             g.DrawRectangle(Pens.Black, v.X - 1, v.Y - 1, v.Width + 2, v.Height + 2);
