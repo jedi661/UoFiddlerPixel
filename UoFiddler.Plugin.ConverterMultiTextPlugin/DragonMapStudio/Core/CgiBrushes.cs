@@ -392,6 +392,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Stamp file painted along the road curve (empty = road tiles).</summary>
         public string RoadStamp { get; set; } = string.Empty;
 
+        /// <summary>Motif of the tool "Muster" ("Kategorie / Name") and how it is drawn.</summary>
+        public string Motif { get; set; } = string.Empty;
+        public MotifDrawSettings MotifDraw { get; set; } = new MotifDrawSettings();
+
         /// <summary>Kinds of the natural course in the map editor.</summary>
         public List<CoursePreset> CoursePresets { get; set; } = new List<CoursePreset>();
         public string CoursePreset { get; set; } = string.Empty;
@@ -445,6 +449,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Wand ??= new WandSettings();
             Eraser ??= new EraserSettings();
             Staircase ??= new StaircaseSettings();
+            MotifDraw ??= new MotifDrawSettings();
+            Motif ??= string.Empty;
             VariantSets ??= new List<VariantSet>();
             RoadPresets ??= new List<RoadPreset>();
             FavoriteHues ??= new List<ushort>();

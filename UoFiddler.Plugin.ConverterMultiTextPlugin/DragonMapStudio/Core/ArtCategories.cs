@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – catalog categories for statics, land tiles and multis
  *  *
@@ -145,6 +145,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             string n = (d.Name ?? string.Empty).ToLowerInvariant();
             TileFlag f = d.Flags;
+            // placeholders of the tiledata are no pieces
+            if (id <= 2 || n.Length == 0 || n.Contains("missing_name") || n == "nodraw" || n.StartsWith("void"))
+            {
+                return false;
+            }
             switch (category)
             {
                 case "Wände":
@@ -168,7 +173,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 case "Wasser":
                     return (f & TileFlag.Wet) != 0;
                 case "Licht":
-                    return (f & TileFlag.LightSource) != 0 || Has(n, "lamp", "torch", "candle", "lantern", "brazier");
+                    return !Has(n, "window") && ((f & TileFlag.LightSource) != 0 || Has(n, "lamp", "torch", "candle", "lantern", "brazier"));
                 case "Dungeon-Deko":
                     return Has(n, "bone", "blood", "skull", "skeleton", "debris", "rubble", "garbage", "web", "cobweb", "chain", "spike", "remains", "torch", "slime");
                 case "Möbel":

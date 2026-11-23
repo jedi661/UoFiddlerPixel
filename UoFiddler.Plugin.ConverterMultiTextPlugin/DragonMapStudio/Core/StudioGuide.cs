@@ -844,6 +844,13 @@ Breite | so viele Tiles breit, der Absatz wächst mit
 - Eine Treppe von Hand bauen (Stufen in mehreren Richtungen, Blöcke darunter, Absatz), alle Stücke auswählen und „Treppe aus Auswahl lernen“: Stufe je Richtung, Füll-Block und Absatz werden erkannt und als Treppen-Set gespeichert.
 - Eine fertige Treppe lässt sich in der Werkstatt als Vorlage speichern und überall wieder einsetzen.
 
+## Treppen-Designer (eigenes Fenster)
+- Eine Treppe besteht aus viereckigen Blöcken, stufig übereinander (je 5 Z), und oben auf jeder Stufe dem geneigten Treppenstück.
+- Im Testfeld von Hand bauen: im Katalog Block / Stufe wählen, „Z +“ (0, 5, 10, 15) einstellen, klicken. Oder „Aus Treppen-Set erzeugen“ und ändern.
+- Mit „Bereich“ markieren → „Als Modell übernehmen“ (Richtung „Gebaut hinauf nach“ prüfen), „Gedreht ansehen“ N / O / S / W, speichern nach Kategorie.
+- „Treppe aus der Karte“ übernimmt eine echte Treppe. „📋 Log + Bild“ speichert Bild und jede Stufe mit ID, Höhe und Neigung – zum Schicken.
+- „Im Studio benutzen“: das Werkzeug Treppe setzt das Modell (R dreht, „Modell mehrmals“, „Nach unten bauen“, unter der Karte mit „Unter der Karte bauen“).
+
 ## Brücke mit Bogen aus Stufen
 Im Brücken-Designer „Bogen aus Stufen“ und den Regler „Bogen“ (z. B. 20 = 4 Stufen) einstellen: die Brücke steigt in Stufen an, ist oben flach und geht auf der anderen Seite wieder hinunter. Regler auch für Länge und Breite.
 
@@ -862,11 +869,106 @@ Width | this many tiles wide, the landing grows with it
 - Build a stair by hand (steps in several directions, blocks below, landing), select all pieces and “Learn stairs from selection”: the step per direction, filling block and landing are found and saved as a stair set.
 - A finished stair can be saved as a template in the workshop and placed anywhere again.
 
+## Stair designer (own window)
+- Stairs are square blocks stepped on top of each other (5 Z each) with the sloped stair piece on every step.
+- Build by hand in the test field: choose block / step in the catalog, set “Z +” (0, 5, 10, 15), click. Or “Generate from stair set” and change it.
+- Mark with “Area” → “Take as model” (check “Built going up towards”), “View turned” N / E / S / W, save by category.
+- “Stairs from the map” takes real stairs. “📋 Log + picture” saves a picture and every step with id, height and slope – to send.
+- “Use in the studio”: the tool Stairs places the model (R turns, “Model several times”, “Build downwards”, under the map with “Build under the map”).
+
 ## Bridge with an arch of steps
 In the bridge designer switch on “Arch of steps” and set the slider “Arch” (e.g. 20 = 4 steps): the bridge rises in steps, is flat on top and goes down on the other side. Sliders for length and width too.
 
 ## Dungeon with floors
 Workshop → layout → “Floors”: this many levels below each other (20 Z each), every one with its own layout, connected by stairs (4 steps) in a room that is open on both levels. Above the stairs the upper level gets a hole."
+            },
+            new GuideTopic
+            {
+                Key = "motif", Group = "Bauen|Building", TitleDe = "Muster-Baukasten (Zinnen, Zelte, Mauern …)", TitleEn = "Pattern kit (battlements, tents, walls …)",
+                De = @"# Muster-Baukasten
+Gleicher Baukasten wie der Treppen-Designer – für alles, was sich wiederholt: Burg-Zinnen, Zelte, eine Mauer mit Fenstern, Festungsmauern mit verschiedenen Höhen, eine Etage mit Decke …
+
+## Bauen
+1. Muster-Baukasten öffnen (Palette Bauen, Werkzeug Muster ▸ „Muster-Baukasten …“ oder Karten-Editor).
+2. „Richtung, die ich baue“ wählen: Ost = das Muster läuft beim Ziehen nach Osten (eine Mauer West → Ost).
+3. Im Katalog Teile wählen, im Testfeld bauen (Höhe „auf den Stapel“ oder feste Höhe). Auswahl verschieben N / S / W / O, Z ± Teil-Höhe, Rückgängig / Wiederholen.
+4. Mit „Bereich“ markieren (oder Teile mit Auswahl) → „Markiertes als diese Richtung übernehmen“. Treppen im Muster werden erkannt (Anstieg 5 Z).
+5. Die anderen Richtungen selbst bauen und übernehmen – oder „Fehlende Richtungen automatisch“ (Wände / Stufen werden gedreht und getauscht). „Alle 4 ansehen“ zeigt Nord, Ost, Süd, West.
+6. „Speichern …“: Kategorie + Name. Im Baum steht dann Kategorie ▸ Name ▸ Süd / West / Nord / Ost.
+
+## Zeichnen (CGI: Werkzeug „Muster“, Karten-Editor: „Muster (Statics)“)
+Klick | Muster einmal in der gewählten Richtung (R dreht)
+Ziehen | wiederholt das Muster in Zieh-Richtung, mit der Version dieser Richtung
+Ziehen wiederholt aus | jeder Zug setzt es genau einmal
+Höhe gerade | alle Stücke auf der Höhe am Start (Zinnen)
+Höhe Boden | jedes Stück auf dem Gelände
+Höhe steigend | jedes Stück höher (Treppen: deren Höhe, sonst 5 Z)
+Etagen / Etagen-Höhe | 2–3 Etagen in einem Zug übereinander
+Abstand | Lücke zwischen den Wiederholungen (Zelte, Pfosten)
+Ersetzen | alte Statics auf den Feldern vorher entfernen
+
+Im Karten-Editor landen die Statics in der Statics-Ebene (Höhe über dem Boden), Strg+Z nimmt sie zurück. „📋 Log + Bild“ im Baukasten speichert jedes Teil mit ID, Lage und Höhe.",
+                En = @"# Pattern kit
+The same bench as the stair designer – for everything that repeats: battlements, tents, a wall with windows, fortress walls of different heights, a floor with ceiling …
+
+## Building
+1. Open the pattern kit (palette Building, tool Pattern ▸ “Pattern kit …” or the map editor).
+2. Choose “Direction I build”: East = the pattern runs east when dragging (a wall west → east).
+3. Pick parts in the catalog and build in the test field (height “on the stack” or fixed). Move the selection N / S / W / E, Z ± part height, undo / redo.
+4. Mark with “Area” (or parts with Select) → “Take the marked as this direction”. Stairs in the pattern are recognised (rise 5 Z).
+5. Build the other directions yourself – or “Missing directions automatically” (walls / steps are turned and swapped). “View all 4” shows north, east, south, west.
+6. “Save …”: category + name. The tree then shows category ▸ name ▸ south / west / north / east.
+
+## Drawing (CGI: tool “Pattern”, map editor: “Pattern (statics)”)
+Click | the pattern once in the chosen direction (R turns)
+Drag | repeats the pattern in the drag direction, with the version of that direction
+Drag repeats off | every drag places it exactly once
+Height level | all pieces at the height of the start (battlements)
+Height ground | every piece on the terrain
+Height rising | every piece higher (stairs: their height, otherwise 5 Z)
+Floors / floor height | 2–3 floors on top of each other in one go
+Gap | space between the repeats (tents, posts)
+Replace | remove old statics on the fields first
+
+In the map editor the statics go into the statics layer (height above the ground), Ctrl+Z takes them back. “📋 Log + picture” in the kit saves every part with id, position and height."
+            },
+            new GuideTopic
+            {
+                Key = "test", Group = "Anleitung|Guide", TitleDe = "Test-Assistent (Bericht für den Entwickler)", TitleEn = "Test assistant (report for the developer)",
+                De = @"# Test-Assistent
+Menü Hilfe → 🧪 Test-Assistent oder der Knopf „🧪 Test“ oben rechts in der CGI-Ansicht.
+
+## 1. Automatisch prüfen
+„⚙ Automatisch prüfen (alle)“ baut auf kleinen Karten im Speicher Brücke, Treppen, Fluss, Wand, Dungeon mit Etagen, Vorlage usw. – mit deinen Client-Dateien – und schreibt alle Werte ins Protokoll (welche Teile die TileData-Suche findet, welche Richtung erkannt wird, ob die Treppe 20 Z hat …). Die echte Karte bleibt unverändert.
+
+## 2. Prüfliste
+Links die Schritte. Je Schritt:
+▶ Vorbereiten | wählt das Werkzeug / öffnet das Fenster
+So geht's | was du tun sollst
+Das solltest du sehen | was herauskommen soll
+📷 Aufnehmen | Bildschirmfoto aller Studio-Fenster + Werkzeug mit Einstellungen + jedes Static / Land-Tile, das das Werkzeug seit Beginn des Schritts gesetzt hat (ID, Name, Position, Höhe, Richtung)
+✔ / ✖ / ? | passt, falsch, unklar – mit Kommentar
+Weiter | nächster Schritt
+
+## 3. Bericht
+„💾 Bericht speichern“ packt alles in eine ZIP in „Dokumente“ (Bericht, Bilder, Daten, Fehler des Studios, Einstellungen). Diese Datei schickst du dem Entwickler.",
+                En = @"# Test assistant
+Menu Help → 🧪 Test assistant or the button “🧪 Test” at the top right of the CGI view.
+
+## 1. Automatic checks
+“⚙ Check automatically (all)” builds bridge, stairs, river, wall, dungeon with floors, template etc. on small maps in memory – with your client files – and writes every value into the log (which pieces the tiledata search finds, which direction is detected, whether the stairs have 20 Z …). The real map stays unchanged.
+
+## 2. Check list
+The steps on the left. For every step:
+▶ Prepare | chooses the tool / opens the window
+How to | what you should do
+You should see | what should come out
+📷 Capture | screenshot of all studio windows + tool with settings + every static / land tile the tool placed since the start of the step (id, name, position, height, direction)
+✔ / ✖ / ? | OK, wrong, unclear – with a comment
+Next | next step
+
+## 3. Report
+“💾 Save report” packs everything into one ZIP in “Documents” (report, pictures, data, errors of the studio, settings). Send this file to the developer."
             },
             new GuideTopic
             {

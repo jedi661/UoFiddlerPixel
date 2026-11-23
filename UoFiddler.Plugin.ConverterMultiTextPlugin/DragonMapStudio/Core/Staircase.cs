@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – staircases like in the client
  *  *
@@ -43,8 +43,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("Treppe"), DisplayName("Stufen je Lauf"), Description("Original: 4 Stufen × 5 Z = 20 Z = eine Etage.")]
         public int Steps { get; set; } = 4;
 
-        [Category("Treppe"), DisplayName("Stufen-Höhe (Z)")]
+        [Category("Treppe"), DisplayName("Stufen-Höhe (Z)"), Description("Nur wenn 'Höhen aus der TileData' aus ist.")]
         public int StepHeight { get; set; } = 5;
+
+        [Category("Treppe"), DisplayName("Höhen aus der TileData"), Description("An = Stufen-, Block- und Absatz-Höhe stehen in der TileData (normal 5) und werden von dort gelesen. Aus = 'Stufen-Höhe'.")]
+        public bool HeightFromTileData { get; set; } = true;
 
         [Category("Treppe"), DisplayName("Breite (Tiles)")]
         public int Width { get; set; } = 1;
@@ -60,6 +63,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Category("Treppe"), DisplayName("Bis zum Boden füllen"), Description("Unter Stufen und Absätzen Blöcke bis zum Fuß – massiv wie im Original.")]
         public bool Fill { get; set; } = true;
+
+        [Category("Modell"), DisplayName("Modell"), Description("Ein Treppen-Modell aus dem Treppen-Designer ('Kategorie / Name'). Leer = Treppe aus dem Treppen-Set erzeugen.")]
+        public string Model { get; set; } = string.Empty;
+
+        [Category("Modell"), DisplayName("Modell mehrmals"), Description("So oft wird das Modell hintereinander gesetzt (jedes Mal um seinen Anstieg höher).")]
+        public int Repeats { get; set; } = 1;
     }
 
     public static class Staircase
@@ -94,6 +103,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             int steps = Math.Clamp(o.Steps, 1, 20), h = Math.Clamp(o.StepHeight, 1, 20), w = Math.Clamp(o.Width, 1, 8), floors = Math.Clamp(o.Floors, 1, 10);
             ushort block = HexList.Parse(set.Block).FirstOrDefault();
             ushort landing = HexList.Parse(set.Landing).FirstOrDefault();
+            // heights like the client stacks them: items with the flag Bridge count half (block 03ee: h 10 → 5)
+            int HeightOf(ushort id)
+            {
+                if (!o.HeightFromTileData || id == 0)
+                {
+                    return h;
+                }
+                int th = UoArtCache.StackHeight(id);
+                return th >= 1 && th <= 30 ? th : h;
+            }
+            if (o.HeightFromTileData)
+            {
+                // the step of one level = the stack height of the block (5), else the height of the stair piece
+                ushort first = HexList.Parse(set.For(Staircase.Opposite(o.Up))).FirstOrDefault();
+                int hb0 = block != 0 ? UoArtCache.StackHeight(block) : 0;
+                int hs = UoArtCache.ItemHeight(first);
+                h = hb0 >= 1 && hb0 <= 30 ? hb0 : hs >= 1 && hs <= 30 ? hs : h;
+            }
             int bottom = o.Downwards ? footZ - floors * steps * h : footZ;
             var placed = new HashSet<(int, int, int)>();
             void Put(ushort id, int x, int y, int z)
@@ -106,13 +133,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             void Column(Point p, ushort top, ushort fill, int topZ)
             {
-                // the piece with its top on topZ, below it blocks down to the bottom
-                Put(top, p.X, p.Y, topZ - h);
+                // the piece with its top on topZ (its own tiledata height), below it blocks stacked from the bottom up
+                int ht = h; // the stair piece / landing lies one level step under the top
+                Put(top, p.X, p.Y, topZ - ht);
                 if (o.Fill)
                 {
-                    for (int z = topZ - 2 * h; z >= bottom; z -= h)
+                    int hb = Math.Max(1, HeightOf(fill));
+                    int z = bottom;
+                    for (int i = 0; i < 40 && z + hb <= topZ - ht; i++, z += hb)
                     {
                         Put(fill, p.X, p.Y, z);
+                    }
+                    if (z < topZ - ht)
+                    {
+                        Put(fill, p.X, p.Y, topZ - ht - hb); // closes a gap when the heights do not add up
                     }
                 }
                 if (cells != null)
@@ -188,6 +222,51 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 baseZ = top;
             }
             return result;
+        }
+
+        /// <summary>
+        /// Stairs by dragging: from <paramref name="a"/> towards <paramref name="b"/> (snapped to an axis) every tile one step higher –
+        /// the stair piece on top, blocks underneath (stacked like the client), <paramref name="width"/> tiles wide.
+        /// </summary>
+        public static List<StaticChange> Run(MapData map, Point a, Point b, int baseZ, int width, ushort stair, ushort block, int levelStep)
+        {
+            var result = new List<StaticChange>();
+            if (stair == 0)
+            {
+                return result;
+            }
+            bool alongX = Math.Abs(b.X - a.X) >= Math.Abs(b.Y - a.Y);
+            int n = alongX ? Math.Abs(b.X - a.X) : Math.Abs(b.Y - a.Y);
+            int sx = alongX ? Math.Sign(b.X - a.X) : 0, sy = alongX ? 0 : Math.Sign(b.Y - a.Y);
+            Point side = alongX ? new Point(0, 1) : new Point(1, 0);
+            int h = Math.Max(1, levelStep);
+            for (int k = 0; k <= n; k++)
+            {
+                for (int c = 0; c < Math.Max(1, width); c++)
+                {
+                    int x = a.X + sx * k + side.X * c, y = a.Y + sy * k + side.Y * c;
+                    if (!map.InBounds(x, y))
+                    {
+                        continue;
+                    }
+                    for (int i = 0; i < k; i++)
+                    {
+                        result.Add(MapData.Add(new StaticItem { Id = block != 0 ? block : stair, X = x, Y = y, Z = Math.Clamp(baseZ + i * h, -128, 127) }));
+                    }
+                    result.Add(MapData.Add(new StaticItem { Id = stair, X = x, Y = y, Z = Math.Clamp(baseZ + k * h, -128, 127) }));
+                }
+            }
+            return result;
+        }
+
+        /// <summary>Direction of the drag (the way up).</summary>
+        public static Compass DirectionOf(Point a, Point b)
+        {
+            if (Math.Abs(b.X - a.X) >= Math.Abs(b.Y - a.Y))
+            {
+                return b.X >= a.X ? Compass.East : Compass.West;
+            }
+            return b.Y >= a.Y ? Compass.South : Compass.North;
         }
 
         /// <summary>

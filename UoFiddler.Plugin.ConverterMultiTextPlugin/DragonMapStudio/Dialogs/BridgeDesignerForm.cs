@@ -147,6 +147,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private static void CopyGen(BridgeGenSettings from, BridgeGenSettings to)
         {
             to.Deck = from.Deck;
+            to.DeckY = from.DeckY;
             to.RailX = from.RailX;
             to.RailY = from.RailY;
             to.Post = from.Post;
@@ -355,6 +356,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 case "Bretter":
                     _gen.Deck = hex;
                     break;
+                case "Bretter N-S":
+                    _gen.DeckY = hex;
+                    break;
                 case "Geländer W-O":
                     _gen.RailX = hex;
                     break;
@@ -538,6 +542,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 }
             }, 98));
             pl.Controls.Add(B("Hilfe", () => _host.Help?.Invoke("bridge"), 98));
+            pl.Controls.Add(B("📋 Log + Bild", () => DesignLog.Export(this, _view, _test, Rectangle.Inflate(_sampleRect, 1, 2), "Bruecke",
+                $"Plan '{_plan}': Breite {_plan.Width}, Länge {_plan.Length}, Anfang {_plan.StartLen}, Ende {_plan.EndLen}, Pfeiler {_plan.Pillar}, Treppe N {_plan.StairNorth} O {_plan.StairEast} S {_plan.StairSouth} W {_plan.StairWest}; " +
+                $"Bogen {_build.Arch}, Bogen aus Stufen {_build.ArchStairs}, {(_alongX ? "West-Ost" : "Nord-Süd")}, {(_sample ? "Muster" : "Vorschau lang " + _length)}"), 98));
             pl.Controls.Add(B("🖼 Pläne mit Bild …", () =>
             {
                 using var tb = new TemplateBrowserForm(true);
@@ -560,7 +567,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             left.Controls.Add(_slotLabel);
             foreach ((string slot, BridgeKit.Role role) in new[]
                      {
-                         ("Bretter", BridgeKit.Role.Deck), ("Geländer W-O", BridgeKit.Role.Rail), ("Geländer N-S", BridgeKit.Role.Rail),
+                         ("Bretter", BridgeKit.Role.Deck), ("Bretter N-S", BridgeKit.Role.Deck), ("Geländer W-O", BridgeKit.Role.Rail), ("Geländer N-S", BridgeKit.Role.Rail),
                          ("Pfosten", BridgeKit.Role.Post), ("Pfeiler", BridgeKit.Role.Pillar), ("Lampe", BridgeKit.Role.Lamp),
                          ("Treppe Nord", BridgeKit.Role.Stairs), ("Treppe Ost", BridgeKit.Role.Stairs), ("Treppe Süd", BridgeKit.Role.Stairs), ("Treppe West", BridgeKit.Role.Stairs)
                      })

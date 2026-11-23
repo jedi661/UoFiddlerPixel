@@ -335,51 +335,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             {
                 return " – " + L.T("ohne Treppen (erst ein Treppen-Set wählen / lernen)");
             }
-            int made = 0;
-            var floorIds = new HashSet<ushort> { 0x053d, 0x053e };
-            for (int f = 0; f < plans.Count - 1; f++)
-            {
-                DungeonPlan up = plans[f], down = plans[f + 1];
-                Point? at = null;
-                // 6 cells in a row along X (4 steps + landing + a free cell), open on both floors, with a free row beside
-                for (int y = 1; y < up.H - 1 && at == null; y++)
-                {
-                    for (int x = 1; x < up.W - 7 && at == null; x++)
-                    {
-                        bool ok = true;
-                        for (int k = -1; k < 6 && ok; k++)
-                        {
-                            ok = up.Floor(x + k, y) && down.Floor(x + k, y) && down.Floor(x + k, y - 1) && up.Floor(x + k, y - 1);
-                        }
-                        if (ok)
-                        {
-                            at = new Point(x, y);
-                        }
-                    }
-                }
-                if (at == null)
-                {
-                    continue;
-                }
-                int topZ = _level - f * fh;
-                var p = new Point(_content.X + at.Value.X, _content.Y + at.Value.Y);
-                var o = new StaircaseSettings { Up = Compass.East, Floors = 1, Steps = Math.Max(1, fh / 5), StepHeight = 5, Width = 1, Downwards = true, TopLanding = true, Fill = true };
-                List<StaticChange> st = Staircase.Build(_work, p, topZ, o, set);
-                // hole in the upper floor over the steps
-                var holes = new List<StaticChange>();
-                for (int k = 0; k < o.Steps; k++)
-                {
-                    int x = p.X + k, y = p.Y;
-                    if (f == 0 && _level >= _ground)
-                    {
-                        _work.SetLand(x, y, 0x0002, _work.LandZ(x, y));
-                    }
-                    holes.AddRange(_work.StaticsAt(x, y).Where(s => s.Z == topZ && floorIds.Contains(s.Id)).ToList().Select(MapData.Remove));
-                }
-                _work.ApplyStatics(holes);
-                _work.ApplyStatics(st);
-                made++;
-            }
+            int made = Workshop.ConnectFloors(_work, _content.Location, plans, _level, fh, _level >= _ground, set, out _);
             return $", {made} " + L.T("Treppen");
         }
 

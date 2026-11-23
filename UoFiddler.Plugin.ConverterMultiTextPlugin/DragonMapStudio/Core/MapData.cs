@@ -500,6 +500,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             return string.IsNullOrEmpty(s.Name) ? what : s.Name + "  (" + what + ")";
         }
 
+        /// <summary>The newest <paramref name="count"/> undo steps (newest first) – for the test log: what a tool really changed.</summary>
+        public List<EditStep> RecentSteps(int count) => _undo.Take(Math.Max(0, count)).ToList();
+
         public bool Undo()
         {
             if (_undo.Count == 0)

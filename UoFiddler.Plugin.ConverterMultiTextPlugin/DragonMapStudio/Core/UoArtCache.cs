@@ -391,6 +391,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
+        /// <summary>
+        /// Height used for stacking, like the client: items with the flag Bridge count half (stone stairs block 03ee: h 10 → 5),
+        /// so a block on a block of stairs lies 5 higher.
+        /// </summary>
+        public static int StackHeight(int id)
+        {
+            try
+            {
+                return TileData.ItemTable[id].CalcHeight;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
         public static bool IsBackground(int id)
         {
             try

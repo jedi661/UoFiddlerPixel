@@ -29,6 +29,49 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
     {
         private readonly List<ToolStripItem> _quickItems = new List<ToolStripItem>();
         private Action _quickChanged;
+        private List<(object o, string title)> _toolSettingsNow = new List<(object, string)>();
+        private TestAssistantForm _tester;
+        private StairDesignerForm _stairDesigner;
+        private List<StairModel> _stairModels;
+
+        private StairModel FindStairModel(string name)
+        {
+            _stairModels ??= StairModel.LoadAll();
+            return _stairModels.FirstOrDefault(m => m.ToString() == name);
+        }
+
+        private void OpenStairDesigner()
+        {
+            if (_stairDesigner != null)
+            {
+                _stairDesigner.Activate();
+                return;
+            }
+            var host = new StairDesignerHost
+            {
+                Map = _cgiMap,
+                Brushes = BrushCfg,
+                Configure = ConfigureLikeMain,
+                CurrentArea = () => isoView.Area,
+                Status = SetStatus,
+                Help = ShowHelp,
+                Use = m =>
+                {
+                    _stairModels = StairModel.LoadAll();
+                    BrushCfg.Staircase.Model = m.ToString();
+                    tabMain.SelectedTab = tabCgi;
+                    SelectCgiTool(IsoTool.Stairs);
+                    UpdateQuickOptions(IsoTool.Stairs);
+                }
+            };
+            _stairDesigner = new StairDesignerForm(host) { Owner = this };
+            _stairDesigner.FormClosed += (s, e) =>
+            {
+                _stairDesigner = null;
+                _stairModels = StairModel.LoadAll();
+            };
+            _stairDesigner.Show(this);
+        }
         private Form _optWindow;
         private ToolStrip _optStrip;
         private TabControl _optTabs;
@@ -79,6 +122,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
                 return list;
             };
+
+            isoView.FindStairModel = FindStairModel;
+            InitMotifs();
 
             isoView.FindScatterSet = name => AllScatterSets().FirstOrDefault(s => s.Name == name || s.Name == "Dragon: " + name);
 
@@ -134,6 +180,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             // ---- map editor: kind of the natural course
             BuildCourseKinds();
 
+            // ---- test assistant: menu Hilfe and a button in the CGI bar
+            var test = new ToolStripMenuItem("🧪 " + L.T("Test-Assistent …"));
+            test.Click += (s, e) => OpenTestAssistant();
+            mnuHelp.DropDownItems.Add(new ToolStripSeparator());
+            mnuHelp.DropDownItems.Add(test);
+            var testBtn = new ToolStripButton("🧪 " + L.T("Test")) { ToolTipText = L.T("Test-Assistent: automatisch prüfen, Prüfliste mit Bildschirmfoto und Daten, Bericht für den Entwickler"), Alignment = ToolStripItemAlignment.Right };
+            testBtn.Click += (s, e) => OpenTestAssistant();
+            toolStripCgi.Items.Add(testBtn);
+
             // ---- windows come back where they were (3 monitors)
             if (_settings.ToolOptionsOpen)
             {
@@ -143,6 +198,104 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 BeginInvoke(new Action(UndockSidePanel));
             }
+        }
+
+        // ================================================================== test assistant
+
+        private void OpenTestAssistant()
+        {
+            if (_tester != null)
+            {
+                _tester.Activate();
+                return;
+            }
+            var host = new TestHost
+            {
+                Map = () => _cgiMap,
+                Brushes = BrushCfg,
+                Configure = ConfigureLikeMain,
+                BuildMark = BuildMark,
+                Status = SetStatus,
+                SelectTool = t =>
+                {
+                    tabMain.SelectedTab = tabCgi;
+                    SelectCgiTool(t);
+                },
+                Open = what =>
+                {
+                    switch (what)
+                    {
+                        case "bridge":
+                            OpenBridgeDesigner();
+                            break;
+                        case "workshop":
+                            tabMain.SelectedTab = tabCgi;
+                            OpenDungeonWorkshop(WorkshopKind.Classic);
+                            break;
+                        case "cellar":
+                            tabMain.SelectedTab = tabCgi;
+                            OpenDungeonWorkshop(WorkshopKind.Cellar);
+                            break;
+                        case "tooloptions":
+                            tabMain.SelectedTab = tabCgi;
+                            if (_optWindow == null)
+                            {
+                                ToggleOptionWindow();
+                            }
+                            break;
+                        case "side":
+                            tabMain.SelectedTab = tabCgi;
+                            if (_sideWindow == null)
+                            {
+                                UndockSidePanel();
+                            }
+                            break;
+                        case "stairdesigner":
+                            OpenStairDesigner();
+                            break;
+                        case "motifdesigner":
+                            OpenMotifDesigner();
+                            break;
+                        case "course":
+                            tabMain.SelectedTab = tabEditor;
+                            SelectTool(MapTool.Course);
+                            break;
+                        case "editor":
+                            tabMain.SelectedTab = tabEditor;
+                            break;
+                        default:
+                            tabMain.SelectedTab = tabCgi;
+                            break;
+                    }
+                },
+                ToolInfo = () =>
+                {
+                    var sb = new System.Text.StringBuilder();
+                    bool cgi = tabMain.SelectedTab == tabCgi;
+                    sb.AppendLine(cgi ? $"CGI-Werkzeug: {CgiToolTitle(isoView.Tool)} ({isoView.Tool})" : $"Karten-Editor-Werkzeug: {mapCanvas.Tool}, Farbe 1 = {mapCanvas.PrimaryIndex}, Farbe 2 = {mapCanvas.SecondaryIndex}, Pinsel {mapCanvas.BrushSize}");
+                    sb.AppendLine($"Pinsel-Radius {isoView.LandRadius}, Item {isoView.PlaceId:x4} {UoArtCache.ItemName(isoView.PlaceId)}, Hue {isoView.PlaceHue}, Land {isoView.PlaceLandId:x4}, Multi {isoView.MultiId}, Z+ {isoView.ZOffset}, unter der Karte {isoView.UnderView}");
+                    sb.AppendLine($"Sets: Wand '{BrushCfg.WallSet}', Treppe '{BrushCfg.StairSet}', Brücken-Plan '{BrushCfg.BridgeTemplate}', Brücken-Set '{BrushCfg.BridgeSet}', Streu '{BrushCfg.ScatterSet}', Varianten '{BrushCfg.VariantSet}', Weg-Stempel '{BrushCfg.RoadStamp}', Lauf-Art '{BrushCfg.CoursePreset}'");
+                    StairSet st = BrushCfg.StairSets.FirstOrDefault(x => x.Name == BrushCfg.StairSet);
+                    if (st != null)
+                    {
+                        sb.AppendLine($"Treppen-Set: N {st.DownNorth} O {st.DownEast} S {st.DownSouth} W {st.DownWest} Block {st.Block} Absatz {st.Landing}");
+                    }
+                    WallSet ws = BrushCfg.WallSets.FirstOrDefault(x => x.Name == BrushCfg.WallSet);
+                    if (ws != null)
+                    {
+                        sb.AppendLine($"Wand-Set: X {ws.AlongX} Y {ws.AlongY} Pfosten {ws.Post} Ecke {ws.Corner}");
+                    }
+                    foreach ((object o, string title) in _toolSettingsNow)
+                    {
+                        sb.AppendLine($"--- {title}:");
+                        sb.AppendLine(JsonSerializer.Serialize(o, o.GetType()));
+                    }
+                    return sb.ToString();
+                }
+            };
+            _tester = new TestAssistantForm(host) { Owner = this };
+            _tester.FormClosed += (s, e) => _tester = null;
+            _tester.Show(this);
         }
 
         // ================================================================== side panel, palettes
@@ -410,12 +563,63 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     break;
                 case IsoTool.Stairs:
                     {
-                        Quick(b.Staircase, "Up", "Floors", "Steps", "Width", "Turn", "Downwards", "TopLanding");
+                        {
+                            AddQuick(new ToolStripSeparator());
+                            AddQuick(new ToolStripLabel(L.T("Modell:")));
+                            var mc = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, AutoSize = false, Width = 170, ToolTipText = L.T("Treppen-Modell aus dem Treppen-Designer – oder Treppe aus dem Treppen-Set erzeugen") };
+                            mc.Items.Add(L.T("(aus Treppen-Set erzeugen)"));
+                            _stairModels ??= StairModel.LoadAll();
+                            foreach (StairModel m in _stairModels)
+                            {
+                                mc.Items.Add(m);
+                            }
+                            mc.SelectedIndex = Math.Max(0, _stairModels.FindIndex(m => m.ToString() == b.Staircase.Model) + 1);
+                            mc.SelectedIndexChanged += (s, e) =>
+                            {
+                                b.Staircase.Model = mc.SelectedItem is StairModel sm ? sm.ToString() : string.Empty;
+                                isoView.Invalidate();
+                            };
+                            AddQuick(mc);
+                            Cmd("Treppen-Designer …", "Eigenes Fenster: Treppen von Hand bauen (Blöcke + Stufen), als Modell nach Kategorie speichern, Log + Bild", OpenStairDesigner);
+                        }
+                        Quick(b.Staircase, "Up", "Repeats", "Floors", "Steps", "Width", "Turn", "Downwards", "TopLanding");
+                        Cmd("Richtungen aus Bild", "Die Stufen des gewählten Treppen-Sets nach ihrer Neigung im Bild den Richtungen zuordnen (wenn die Treppe falsch geneigt ist)", () =>
+                        {
+                            StairSet cur = b.StairSets.FirstOrDefault(x => x.Name == b.StairSet);
+                            if (cur == null)
+                            {
+                                StairSet auto = BridgeKit.AutoStairs(out string seen);
+                                if (string.IsNullOrEmpty(auto.DownNorth))
+                                {
+                                    SetStatus(L.T("Keine Treppen-Gruppe in der TileData gefunden – Stufen im Katalog suchen (Suche: stair) und mit '← ab …' zuordnen."));
+                                    return;
+                                }
+                                b.StairSets.RemoveAll(x => x.Name == auto.Name);
+                                b.StairSets.Add(auto);
+                                b.StairSet = auto.Name;
+                                ApplyStairSet();
+                                MessageBox.Show(this, seen, L.T("Treppe"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                return;
+                            }
+                            StairSet fixedSet = BridgeKit.FixStairs(cur, out string rep);
+                            cur.DownNorth = fixedSet.DownNorth;
+                            cur.DownEast = fixedSet.DownEast;
+                            cur.DownSouth = fixedSet.DownSouth;
+                            cur.DownWest = fixedSet.DownWest;
+                            ApplyStairSet();
+                            isoView.Invalidate();
+                            MessageBox.Show(this, rep, L.T("Treppe") + ": " + cur.Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        });
                         Cmd("Treppe aus Auswahl lernen", "Eine von Hand gebaute Treppe (alle Stücke) auswählen: Stufen je Richtung, Füll-Block und Absatz werden erkannt", LearnStairsFromSelection);
                         all.Add((b.Staircase, L.T("Treppe")));
                         break;
                     }
+                case IsoTool.Motif:
+                    MotifQuickItems();
+                    all.Add((b.MotifDraw, L.T("Muster")));
+                    break;
             }
+            _toolSettingsNow = all;
             FillOptionTabs(t, all);
             if (all.Count > 0 && _optWindow == null)
             {
@@ -959,6 +1163,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
             };
             AddQuick(cb);
+            Cmd("Wand-Set aus TileData", "Ein Wand-Set aus der TileData anlegen: West-Ost-Stück, sein Nord-Süd-Gegenstück (Bild-Erkennung) und ein Pfosten", () =>
+            {
+                string filter = Microsoft.VisualBasic.Interaction.InputBox(L.T("Welche Wand? Teil des Namens (z. B. stone, brick, wooden, sandstone) – leer = die erste passende:"), Text, "stone");
+                WallSet auto = BridgeKit.AutoWall(string.IsNullOrWhiteSpace(filter) ? null : filter.Trim());
+                if (auto == null)
+                {
+                    SetStatus(L.T("Keine Wand mit Gegenstück gefunden – anderen Namen versuchen oder Teile im Set-Editor zuordnen."));
+                    return;
+                }
+                b.WallSets.RemoveAll(w => w.Name == auto.Name);
+                b.WallSets.Add(auto);
+                b.WallSet = auto.Name;
+                ApplyWallSet();
+                FillWallCombos();
+                UpdateQuickOptions(isoView.Tool);
+                SetStatus(L.T("Wand-Set aus TileData") + $": {auto.Name} – X {auto.AlongX}, Y {auto.AlongY}, " + L.T("Pfosten") + $" {auto.Post}");
+            });
             Cmd("Sets bearbeiten …", "Wand-Sets: Teile West-Ost, Nord-Süd, Pfosten (hex) – neu, kopieren, löschen", () =>
             {
                 using var ed = new NamedListEditor(L.T("Wand-Sets"), b.WallSets, () => new WallSet { Name = L.T("Neue Wand") },
@@ -968,6 +1189,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 ed.AddAction("+ Item → Nord-Süd", o => ((WallSet)o).AlongY = (((WallSet)o).AlongY + " " + isoView.PlaceId.ToString("x4")).Trim());
                 ed.AddAction("Item → Pfosten", o => ((WallSet)o).Post = isoView.PlaceId.ToString("x4"));
                 ed.AddAction("Item → Ecke", o => ((WallSet)o).Corner = isoView.PlaceId.ToString("x4"));
+                ed.AddAction("Teile aus TileData vorschlagen", o =>
+                {
+                    WallSet auto = BridgeKit.AutoWall();
+                    if (auto != null)
+                    {
+                        var w = (WallSet)o;
+                        w.AlongX = auto.AlongX;
+                        w.AlongY = auto.AlongY;
+                        w.Post = auto.Post;
+                    }
+                });
                 ed.AddAction("Aus Auswahl (X / Y / Pfosten raten)", o =>
                 {
                     var w = (WallSet)o;

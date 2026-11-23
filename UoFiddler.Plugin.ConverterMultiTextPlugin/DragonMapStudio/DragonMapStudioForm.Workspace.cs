@@ -411,6 +411,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             MapTool.SlopeLine => "Neigungs-Linie",
             MapTool.Course => "Natürlicher Lauf",
             MapTool.Dungeon => "Dungeon",
+            MapTool.Motif => "Muster (Statics)",
             _ => t.ToString()
         };
 
@@ -442,6 +443,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             MapTool.SlopeLine => "Ziehen: Höhe läuft vom Start zum Ende (Farbe 1, sonst Höhen-Ebene)",
             MapTool.Course => "Von der Quelle zur Mündung ziehen · Breite = Pinsel",
             MapTool.Dungeon => "Rechteck aufziehen · Farbe 1 = Boden, Farbe 2 = Wand",
+            MapTool.Motif => "Klick = Muster einmal · Ziehen = wiederholt · in die Statics-Ebene",
             _ => string.Empty
         };
 
@@ -630,6 +632,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             IsoTool.MountainWall => "Bergwall",
             IsoTool.Eraser => "Radierer",
             IsoTool.Stairs => "Treppe",
+            IsoTool.Motif => "Muster",
             _ => t.ToString()
         };
 
@@ -1022,6 +1025,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 {
                     MapTool.PatternBrush => "stamps",
                     MapTool.HalfCircle or MapTool.Triangle or MapTool.SlopeLine or MapTool.Course or MapTool.Dungeon => "shapes",
+                    MapTool.Motif => "motif",
                     _ => "editor"
                 };
             }

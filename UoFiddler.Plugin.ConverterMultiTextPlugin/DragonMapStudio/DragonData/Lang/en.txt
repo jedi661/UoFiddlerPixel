@@ -1783,3 +1783,190 @@ Brücken-Pläne	Bridge plans
 Item → Ecke	item → corner
 Werkzeug-Optionen in ein eigenes Fenster (z. B. auf einen anderen Monitor)	Tool options in their own window (e.g. on another monitor)
 Werkzeug-Optionen wieder in die Leiste	Tool options back into the bar
+# Werkstatt 29: Test-Assistent
+Test-Assistent	Test assistant
+Automatisch prüfen (alle)	Check automatically (all)
+Bericht speichern …	Save report …
+PRÜFLISTE – Schritt für Schritt	CHECK LIST – step by step
+Vorbereiten	Prepare
+Aufnehmen	Capture
+Passt	OK
+Falsch	Wrong
+Unklar	Unclear
+Dein Kommentar (was ist falsch, was hast du erwartet):	Your comment (what is wrong, what did you expect):
+PROTOKOLL – das kommt in den Bericht	LOG – this goes into the report
+So geht's:	How to:
+Das solltest du sehen:	You should see:
+Automatische Prüfung	Automatic check
+Bericht gespeichert	Report saved
+Bericht gespeichert – bitte diese Datei schicken:	Report saved – please send this file:
+Test-Assistent …	Test assistant …
+Test	Test
+Test-Assistent: automatisch prüfen, Prüfliste mit Bildschirmfoto und Daten, Bericht für den Entwickler	Test assistant: automatic checks, check list with screenshot and data, report for the developer
+Automatisch + Bericht	Automatic + report
+Alle automatischen Tests mit Bildern, danach gleich den Bericht (ZIP) speichern	All automatic tests with pictures, then save the report (ZIP) right away
+Wand-Set aus TileData	Wall set from tiledata
+Ein Wand-Set aus der TileData anlegen: West-Ost-Stück, sein Nord-Süd-Gegenstück (Bild-Erkennung) und ein Pfosten	Create a wall set from the tiledata: west – east piece, its north – south partner (art detection) and a post
+Welche Wand? Teil des Namens (z. B. stone, brick, wooden, sandstone) – leer = die erste passende:	Which wall? Part of the name (e.g. stone, brick, wooden, sandstone) – empty = the first that fits:
+Keine Wand mit Gegenstück gefunden – anderen Namen versuchen oder Teile im Set-Editor zuordnen.	No wall with a partner found – try another name or assign pieces in the set editor.
+Teile aus TileData vorschlagen	Suggest pieces from the tiledata
+Bretter N-S	Planks N-S
+Richtungen aus Bild	Directions from the art
+Die Stufen des gewählten Treppen-Sets nach ihrer Neigung im Bild den Richtungen zuordnen (wenn die Treppe falsch geneigt ist)	Assign the steps of the chosen stair set to the directions by their slope in the art (when the stairs slope the wrong way)
+# Werkstatt 32: Treppen-Designer
+Treppen-Designer	Stair designer
+Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken ('Z +' oben = Höhe, 'auf Statics stapeln' an). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	Build: choose block / step in the catalog, click into the test field ('Z +' at the top = height, 'stack on statics' on). Or 'Generate from stair set'. Then mark with 'Area' and 'Take as model'.
+Treppen-Testfeld	Stair test field
+Kein Treppen-Set gewählt – Stufen aus der TileData (Neigung aus dem Bild)	No stair set chosen – steps from the tiledata (slope from the art)
+Erzeugt	Generated
+von Hand ändern, dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	change by hand, then mark with 'Area' and 'Take as model'.
+Das Testfeld ist leer.	The test field is empty.
+Modell übernommen	Model taken
+Anstieg	rise
+'Gebaut hinauf nach' prüfen, dann speichern.	check 'Built going up towards', then save.
+In der CGI-Ansicht eine Treppe der Karte mit 'Bereich' markieren, dann hier übernehmen.	Mark stairs of the map with 'Area' in the CGI view, then take them here.
+Treppe aus der Karte übernommen	Stairs taken from the map
+Modell	Model
+hinauf nach	going up towards
+gedreht, Stufen nach ihrem Bild getauscht	turned, steps swapped by their art
+Erst ein Modell übernehmen.	First take a model.
+Kategorie (Ordner), z. B. Holz, Stein, Keller, Turm:	Category (folder), e.g. wood, stone, cellar, tower:
+Name des Treppen-Modells:	Name of the stair model:
+Höhe über dem Boden für 'Static setzen' (Stufen: 0, 5, 10, 15 …)	Height above the ground for 'Place static' (steps: 0, 5, 10, 15 …)
+IDs	IDs
+KATALOG – Klick = zum Setzen im Testfeld (Block, Stufe, Geländer …) · Rechtsklick = Kategorien	CATALOG – click = place in the test field (block, step, railing …) · right click = categories
+Stufe hinauf nach	step going up towards
+ins Testfeld klicken	click into the test field
+1 Modelle (gespeichert nach Kategorie)	1 Models (saved by category)
+Modell löschen?	Delete model?
+2 Bauen	2 Build
+So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen, 'Z +' setzen, ins Testfeld klicken – oder erzeugen und ändern.	This is how stairs are built: square blocks stepped on top of each other (5 Z each), on every step the sloped stair piece. Choose in the catalog, set 'Z +', click into the test field – or generate and change.
+Testfeld leeren	Clear test field
+Aus Treppen-Set erzeugen	Generate from stair set
+3 Übernehmen und prüfen	3 Take and check
+Als Modell übernehmen	Take as model
+Treppe aus der Karte	Stairs from the map
+Gedreht ansehen:	View turned:
+📋 Log + Bild	📋 Log + picture
+'Log + Bild' speichert ein Bild des Testfelds und jede Stufe mit Position, Höhe, ID, Name und Neigung – schick es dem Entwickler.	'Log + picture' saves a picture of the test field and every step with position, height, id, name and slope – send it to the developer.
+4 Im Studio benutzen	4 Use in the studio
+Erst ein Modell übernehmen oder laden.	First take or load a model.
+Modell ist im Werkzeug Treppe	The model is in the tool Stairs
+klicken setzt es; R dreht, 'Nach unten bauen', 'Modell mehrmals', unter der Karte mit 'Unter der Karte bauen'.	clicking places it; R turns, 'Build downwards', 'Model several times', under the map with 'Build under the map'.
+Log und Bild gespeichert (der Text ist auch in der Zwischenablage):	Log and picture saved (the text is also in the clipboard):
+Modell:	Model:
+Treppen-Modell aus dem Treppen-Designer – oder Treppe aus dem Treppen-Set erzeugen	Stair model from the stair designer – or generate stairs from the stair set
+(aus Treppen-Set erzeugen)	(generate from stair set)
+Treppen-Designer …	Stair designer …
+Treppen-Modell	Stair model
+hinauf	up
+# Werkstatt 33: Höhen im Treppen-Designer
+auf den Stapel (TileData-Höhe)	on top of the stack (tiledata height)
+feste Höhe über dem Boden	fixed height above the ground
+Feste Höhe über dem Boden (Schritt = Höhe des gewählten Teils aus der TileData)	Fixed height above the ground (step = height of the chosen piece from the tiledata)
+Höhe des gewählten Teils laut TileData	Height of the chosen piece according to the tiledata
+Auswahl:	Selection:
+Erst Teile mit 'Auswahl' wählen (Strg = mehrere).	First select pieces with 'Select' (Ctrl = several).
+um die Höhe des Teils (TileData) hoch / runter	up / down by the height of the piece (tiledata)
+um 1 Z	by 1 Z
+Die gewählten Teile auf eine genaue Höhe setzen	Set the chosen pieces to an exact height
+Höhe z der gewählten Teile:	Height z of the chosen pieces:
+Höhe gesetzt	Height set
+Höhen aus der TileData	Heights from the tiledata
+So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z laut TileData), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen und ins Testfeld klicken: 'auf den Stapel' legt jedes Teil auf das oberste – Block auf Block, die Stufe darauf.	This is how stairs are built: square blocks stepped on top of each other (5 Z each according to the tiledata), on every step the sloped stair piece. Choose in the catalog and click into the test field: 'on top of the stack' puts every piece on the topmost one – block on block, the step on top.
+Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken – 'Höhe: auf den Stapel' legt es auf das oberste Teil (Höhen aus der TileData). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	Build: choose block / step in the catalog, click into the test field – 'Height: on top of the stack' puts it on the topmost piece (heights from the tiledata). Or 'Generate from stair set'. Then mark with 'Area' and 'Take as model'.
+# Werkstatt 34
+Auswahl verschieben:	Move selection:
+Gewählte Teile ein Feld verschieben (N = oben rechts, wie im Client)	Move the chosen pieces one tile (N = top right, like the client)
+Auswahl löschen	Delete selection
+Modell aus der Auswahl übernommen	Model taken from the selection
+Dreh-Tabelle prüfen, dann speichern.	check the turn table, then save.
+Dreh-Tabelle	Turn table
+im Katalog doppelklicken setzt hier eine andere Grafik	double click in the catalog sets another graphic here
+'Gedreht ansehen' zeigt es	'View turned' shows it
+💾 Markierte Treppe speichern …	💾 Save marked stairs …
+Mehrere Treppen im Feld: eine mit 'Bereich' markieren oder ihre Teile mit 'Auswahl' (Rahmen) wählen – nur diese wird übernommen.	Several stairs in the field: mark one with 'Area' or select its pieces with 'Select' (frame) – only this one is taken.
+Dreh-Tabelle (Grafik je Richtung)	Turn table (graphic per direction)
+Automatisch füllen	Fill automatically
+Zelle → Katalog	Cell → catalog
+Jetzt im Katalog die Grafik doppelklicken – sie kommt in die gewählte Zelle der Dreh-Tabelle.	Now double click the graphic in the catalog – it goes into the chosen cell of the turn table.
+Je Zeile ein Teil des Modells, Spalten = die Grafik, wenn die Treppe nach N / O / S / W hinauf geht. Zelle anklicken, im Katalog doppelklicken = andere Grafik. Blöcke bleiben gleich.	One piece of the model per row, columns = the graphic when the stairs go up towards N / E / S / W. Click a cell, double click in the catalog = another graphic. Blocks stay the same.
+Stufe	step
+je	each
+Treppe ziehen: keine Stufe für diese Richtung – Modell mit Dreh-Tabelle oder Treppen-Set wählen.	Drag stairs: no step for this direction – choose a model with a turn table or a stair set.
+Treppe gezogen	Stairs dragged
+Treppe: Klick = Modell / Treppe einmal (R dreht) · Ziehen = je Feld eine Stufe mit Blöcken darunter, in Zieh-Richtung hinauf ('Nach unten bauen' = hinunter) · Vorschau am Mauszeiger	Stairs: click = model / stairs once (R turns) · drag = one step per tile with blocks underneath, up in the drag direction ('Build downwards' = down) · preview at the mouse
+
+# Werkstatt 35 – Muster-Baukasten
+Muster-Baukasten	Pattern kit
+Richtung wählen (z. B. Ost = das Muster läuft nach Osten), im Katalog Teile wählen und ins Testfeld bauen, mit 'Bereich' markieren, 'Markiertes als … übernehmen'. Fehlende Richtungen dreht das Studio, oder du baust sie selbst.	Choose a direction (e.g. east = the pattern runs east), pick parts in the catalog and build in the test field, mark with 'Area', 'Take the marked as …'. The studio turns missing directions, or you build them yourself.
+Muster-Testfeld	Pattern test field
+Richtung	Direction
+ändern, markieren, wieder übernehmen	change, mark, take again
+noch leer: bauen oder 'Fehlende Richtungen automatisch'	still empty: build or 'Missing directions automatically'
+Alle vier Richtungen: oben Nord, rechts Ost, unten Süd, links West (so wie im Client: Nord = oben rechts).	All four directions: top north, right east, bottom south, left west (as in the client: north = top right).
+Übernommen als Richtung	Taken as direction
+Treppen erkannt	stairs recognised
+fehlende Richtungen: 'automatisch' oder selbst bauen	missing directions: 'automatically' or build yourself
+Richtungen gedreht (Stufen nach ihrer Neigung, Wände nach ihrem Bild, Blöcke bleiben) – falsche Grafik? Richtung wählen, von Hand ändern, wieder übernehmen.	directions turned (steps by their slope, walls by their image, blocks stay) – wrong graphic? Choose the direction, change by hand, take again.
+Erst eine Richtung übernehmen.	Take a direction first.
+Ziehen getestet: nach Ost (oben), Süd (rechts), West (unten), Nord (links)	Drag tested: east (top), south (right), west (bottom), north (left)
+Kategorie (Ordner), z. B. Burg, Zelte, Mauern, Häuser:	Category (folder), e.g. castle, tents, walls, houses:
+Name des Musters (z. B. Zinnen, Mauer mit Fenster):	Name of the pattern (e.g. battlements, wall with window):
+Nicht alle vier Richtungen sind gebaut. Die fehlenden automatisch drehen?	Not all four directions are built. Turn the missing ones automatically?
+KATALOG – Klick = zum Setzen im Testfeld · Rechtsklick = Kategorien	CATALOG – click = to place in the test field · right click = categories
+stapelt	stacks
+1 Muster (Kategorie → Name → Richtung)	1 Pattern (category → name → direction)
+Neues Muster: Richtung wählen und bauen.	New pattern: choose a direction and build.
+Muster löschen?	Delete the pattern?
+2 Richtung, die ich baue	2 Direction I build
+Richtung = in diese Richtung läuft das Muster beim Ziehen (Ost: eine Mauer West → Ost, die Zinnen zeigen nach Süden …).	Direction = the pattern runs this way when dragging (east: a wall west → east, the battlements face south …).
+✔ Markiertes als diese Richtung übernehmen	✔ Take the marked as this direction
+Fehlende Richtungen automatisch	Missing directions automatically
+Alle neu drehen	Turn all again
+Alle 4 ansehen	View all 4
+3 Ziehen testen	3 Test dragging
+▶ Probe ziehen (alle 4 Richtungen)	▶ Test drag (all 4 directions)
+4 Log und Studio	4 Log and studio
+Muster ist im Werkzeug 'Muster' (CGI) und im Karten-Editor – klicken = einmal, ziehen = wiederholen.	The pattern is in the tool 'Pattern' (CGI) and in the map editor – click = once, drag = repeat.
+Muster wählen …	Choose a pattern …
+Zeichnen …	Drawing …
+Ziehen an / aus, Höhe, Etagen, Abstand, Ersetzen	Drag on / off, height, floors, gap, replace
+Muster-Baukasten …	Pattern kit …
+Muster aus dem Muster-Baukasten: Kategorie ▸ Name ▸ Richtung (beim Ziehen nimmt das Studio die Version der Zieh-Richtung)	Pattern from the pattern kit: category ▸ name ▸ direction (when dragging the studio takes the version of the drag direction)
+(noch keine Muster – Muster-Baukasten öffnen)	(no patterns yet – open the pattern kit)
+gedreht	turned
+Klick = einmal, ziehen = wiederholt in Zieh-Richtung	click = once, drag = repeated in the drag direction
+Erst ein Muster wählen (Leiste oben: Muster ▸ Kategorie ▸ Name ▸ Richtung) – oder im Muster-Baukasten eins bauen.	Choose a pattern first (bar at the top: pattern ▸ category ▸ name ▸ direction) – or build one in the pattern kit.
+Muster: nichts gesetzt (außerhalb der Karte oder Richtung leer).	Pattern: nothing placed (outside the map or direction empty).
+in der Statics-Ebene	in the statics layer
+ersetzt	replaced
+Alle auf der Höhe am Start (gerade, z. B. Zinnen)	All at the height of the start (level, e.g. battlements)
+Jedes Stück auf dem Boden (folgt dem Gelände)	Every piece on the ground (follows the terrain)
+Steigend (Treppen: jedes Stück höher)	Rising (stairs: every piece higher)
+Ziehen wiederholt	Drag repeats
+An = ziehen wiederholt das Muster in Zieh-Richtung. Aus = jeder Klick / Zug setzt es genau einmal.	On = dragging repeats the pattern in the drag direction. Off = every click / drag places it exactly once.
+Richtung beim Klick	Direction on click
+Welche Richtung ein einfacher Klick setzt (beim Ziehen bestimmt die Zieh-Richtung die Richtung). Im Werkzeug dreht R.	Which direction a simple click places (when dragging the drag direction decides). In the tool R turns.
+Gerade auf der Höhe am Start, jedes Stück auf dem Boden, oder steigend wie eine Treppe.	Level at the height of the start, every piece on the ground, or rising like stairs.
+Anstieg je Stück (Z)	Rise per piece (Z)
+Nur 'steigend': so viel höher ist jedes weitere Stück. 0 = automatisch (Treppen im Muster: ihre Höhe, sonst 5).	Only 'rising': every further piece is this much higher. 0 = automatic (stairs in the pattern: their height, otherwise 5).
+Zur Höhe addieren.	Added to the height.
+So oft übereinander in einem Zug (z. B. 2–3 Etagen einer Mauer mit Fenstern).	This many times on top of each other in one go (e.g. 2–3 floors of a wall with windows).
+Abstand der Etagen. 0 = Höhe des Musters.	Distance of the floors. 0 = height of the pattern.
+Abstand (Tiles)	Gap (tiles)
+Lücke zwischen den Wiederholungen (Zelte, Pfosten …).	Space between the repeats (tents, posts …).
+Statics auf den Feldern des Musters vorher entfernen.	Remove statics on the fields of the pattern first.
+Ordner, z. B. Burg, Zelte, Mauern, Häuser.	Folder, e.g. castle, tents, walls, houses.
+Notiz	Note
+Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster, Festungsmauer, Etage mit Decke …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern; im Werkzeug Muster klicken oder ziehen (wiederholt)	Own window: build patterns (battlements, tents, wall with window, fortress wall, floor with ceiling …), one per direction north / east / south / west, save by category; in the tool Pattern click or drag (repeats)
+Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern, Log + Bild	Own window: build patterns (battlements, tents, wall with window …), one per direction north / east / south / west, save by category, log + picture
+Klick = Muster einmal (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe gerade / Boden / steigend, Etagen	Click = pattern once (R turns) · drag = repeated in the drag direction with the version of that direction · height level / ground / rising, floors
+Muster aus dem Muster-Baukasten in die Statics-Ebene: Klick = einmal, Ziehen = wiederholt (Kategorie ▸ Name ▸ Richtung oben in der Leiste)	Pattern from the pattern kit into the statics layer: click = once, drag = repeated (category ▸ name ▸ direction in the bar at the top)
+Muster (Statics)	Pattern (statics)
+Klick = Muster einmal · Ziehen = wiederholt · in die Statics-Ebene	Click = pattern once · drag = repeated · into the statics layer
+Muster: Richtung	Pattern: direction
+Muster: erst ein Muster wählen (Leiste oben / Muster-Baukasten).	Pattern: choose a pattern first (bar at the top / pattern kit).
+Muster: Klick = einmal in der Richtung (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe, Etagen, Abstand oben in der Leiste	Pattern: click = once in the direction (R turns) · drag = repeated in the drag direction with the version of that direction · height, floors, gap in the bar at the top
+Zeichnen	Drawing
+Muster wählen	Choose pattern

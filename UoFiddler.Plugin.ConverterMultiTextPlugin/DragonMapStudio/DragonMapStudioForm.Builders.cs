@@ -658,6 +658,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             p.Add(EdTool("slopeline", "Neigungs-Linie", string.Empty, "Linie, deren Höhe von der Höhe am Start zur Höhe am Ende läuft (Farbe 1 in der passenden Höhe, sonst Höhen-Ebene) – Rampen, Straßen am Hang", MapTool.SlopeLine, AccHeight));
             p.Add(EdTool("course", "Natürlicher Lauf", string.Empty, "Von A nach B ziehen: geschlängelter Fluss / Weg mit Pinselgröße – oder mit dem Muster-Stempel (Statics)", MapTool.Course, AccShape));
             p.Add(EdTool("dungeon", "Dungeon", string.Empty, "Rechteck aufziehen: Räume + Gänge, Farbe 1 = Boden, Farbe 2 = Wand", MapTool.Dungeon, AccCave));
+            p.Add(EdTool("motif", "Muster (Statics)", string.Empty, "Muster aus dem Muster-Baukasten in die Statics-Ebene: Klick = einmal, Ziehen = wiederholt (Kategorie ▸ Name ▸ Richtung oben in der Leiste)", MapTool.Motif, AccShape));
         }
 
         /// <summary>CGI palette: the builders.</summary>
@@ -684,6 +685,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 Help = "Eigenes Fenster: Brücken aus Statics entwerfen (Teile aus der TileData mit Bild, Testfeld, Muster von Hand, aus Karte / Multi), nach Kategorie speichern",
                 Click = OpenBridgeDesigner
             }, "build");
+            add(new ToolPaletteEntry
+            {
+                Key = "stairdesigner", Name = "Treppen-Designer", Accent = ColBuild,
+                Help = "Eigenes Fenster: Treppen von Hand bauen (viereckige Blöcke stufig, oben die geneigte Stufe), Modelle nach Kategorie speichern, im Werkzeug Treppe setzen (hinauf, hinunter, unter der Karte); Log + Bild",
+                Click = OpenStairDesigner
+            }, "build");
+            add(new ToolPaletteEntry
+            {
+                Key = "motifdesigner", Name = "Muster-Baukasten", Accent = ColBuild,
+                Help = "Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster, Festungsmauer, Etage mit Decke …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern; im Werkzeug Muster klicken oder ziehen (wiederholt)",
+                Click = OpenMotifDesigner
+            }, "build");
+            add(CgiTool("motif", "Muster", string.Empty, "Klick = Muster einmal (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe gerade / Boden / steigend, Etagen", IsoTool.Motif, ColBuild), "build");
             add(CgiTool("stairs", "Treppe", string.Empty, "Klick: Stufen nach unten in die Richtung (R dreht), bis zum Boden gefüllt (Treppen-Set)", IsoTool.Stairs, ColBuild), "build");
 
             add(new ToolPaletteEntry

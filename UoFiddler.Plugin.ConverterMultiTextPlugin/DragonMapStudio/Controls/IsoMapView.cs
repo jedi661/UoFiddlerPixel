@@ -129,7 +129,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Eraser,
 
         /// <summary>Click: stairs down in the chosen direction (stair set), filled down to the ground.</summary>
-        Stairs
+        Stairs,
+
+        /// <summary>Motif of the motif designer: click = once, drag = repeated in the drag direction.</summary>
+        Motif
     }
 
     public sealed class StaticPickEventArgs : EventArgs
@@ -1388,9 +1391,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 using var pen = new Pen(Color.FromArgb(200, 255, 170, 0), 2) { DashStyle = DashStyle.Dash };
                 g.DrawPolygon(pen, AreaPoly(new Rectangle(_hover.X + b.X, _hover.Y + b.Y, b.Width, b.Height)));
             }
-            else if (Tool == IsoTool.Stairs && StairSet != null)
+            else if (Tool == IsoTool.Motif)
             {
-                foreach (StaticChange c in Staircase.Build(_map, _hover, PlaceZ(_hover.X, _hover.Y), BrushSettings.Staircase, StairSet)
+                foreach (StaticChange c in MotifPieces(_dragStart ?? _hover, _dragStart.HasValue ? _dragEnd : _hover, out _).Where(c => c.After != null)
+                             .OrderBy(c => c.After.X + c.After.Y).ThenBy(c => c.After.Z).Take(4000))
+                {
+                    parts.Add((c.After.Id, c.After.X, c.After.Y, c.After.Z));
+                }
+            }
+            else if (Tool == IsoTool.Stairs)
+            {
+                List<StaticChange> preview = _dragStart.HasValue && _dragStart.Value != _dragEnd ? StairRunPieces(_dragStart.Value, _dragEnd, out _) : StairPieces(_dragStart ?? _hover);
+                foreach (StaticChange c in preview
                              .OrderBy(c => c.After.X + c.After.Y).ThenBy(c => c.After.Z))
                 {
                     parts.Add((c.After.Id, c.After.X, c.After.Y, c.After.Z));
@@ -1444,7 +1456,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         private int PlaceZ(int x, int y)
         {
-            int baseZ = StackOnStatics ? _map.TopZ(x, y, id => UoArtCache.ItemHeight(id)) : _map.LandZ(x, y);
+            int baseZ = StackOnStatics ? _map.TopZ(x, y, id => UoArtCache.StackHeight(id)) : _map.LandZ(x, y);
             return Math.Clamp(baseZ + ZOffset + (UnderView && !StackOnStatics ? BrushSettings.UnderOffset : 0), -128, 127);
         }
 

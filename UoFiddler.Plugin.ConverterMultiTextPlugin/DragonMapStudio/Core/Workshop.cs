@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – dungeon workshop (pure logic): clear, move, raise a part of a working copy,
  *  * ground level of a place, the built-in style "Klassisch (map0-Log)"
@@ -143,6 +143,62 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// Built-in dungeon style from the analysis of map0 (6035, 25): cave floor 0245–0249, void 0244, walls 0241 / 0242 / 0243
         /// after the UO rule (north / west walls on the void outside, south / east walls on the last floor cell), garbage and blood.
         /// </summary>
+        /// <summary>
+        /// Stairs between dungeon floors (plans[0] = top on <paramref name="level"/>, every next one <paramref name="fh"/> lower):
+        /// in a row open on both floors a flight down from the upper floor, the upper floor above the steps becomes a hole
+        /// (NoDraw land when the top floor lies on the land, floor statics away). Returns the number of stairs; places = their foot cells.
+        /// </summary>
+        public static int ConnectFloors(MapData map, Point origin, List<DungeonPlan> plans, int level, int fh, bool topOnLand, StairSet set, out List<Point> places)
+        {
+            places = new List<Point>();
+            int made = 0;
+            var floorIds = new HashSet<ushort> { 0x053d, 0x053e };
+            for (int f = 0; f < plans.Count - 1; f++)
+            {
+                DungeonPlan up = plans[f], down = plans[f + 1];
+                Point? at = null;
+                // a row of cells along X (step before + 4 steps + landing + a free cell), open on both floors, with a free row beside
+                for (int y = 1; y < up.H - 1 && at == null; y++)
+                {
+                    for (int x = 1; x < up.W - 7 && at == null; x++)
+                    {
+                        bool ok = true;
+                        for (int k = -1; k < 6 && ok; k++)
+                        {
+                            ok = up.Floor(x + k, y) && down.Floor(x + k, y) && down.Floor(x + k, y - 1) && up.Floor(x + k, y - 1);
+                        }
+                        if (ok)
+                        {
+                            at = new Point(x, y);
+                        }
+                    }
+                }
+                if (at == null)
+                {
+                    continue;
+                }
+                int topZ = level - f * fh;
+                var p = new Point(origin.X + at.Value.X, origin.Y + at.Value.Y);
+                var o = new StaircaseSettings { Up = Compass.East, Floors = 1, Steps = Math.Max(1, fh / 5), StepHeight = 5, Width = 1, Downwards = true, TopLanding = true, Fill = true };
+                List<StaticChange> st = Staircase.Build(map, p, topZ, o, set);
+                var holes = new List<StaticChange>();
+                for (int k = 0; k < o.Steps; k++)
+                {
+                    int x = p.X + k, y = p.Y;
+                    if (f == 0 && topOnLand)
+                    {
+                        map.SetLand(x, y, 0x0002, map.LandZ(x, y));
+                    }
+                    holes.AddRange(map.StaticsAt(x, y).Where(s => s.Z == topZ && floorIds.Contains(s.Id)).ToList().Select(MapData.Remove));
+                }
+                map.ApplyStatics(holes);
+                map.ApplyStatics(st);
+                places.Add(p);
+                made++;
+            }
+            return made;
+        }
+
         public static DungeonLook Classic()
         {
             WallRule R(bool onFloor, int mask, int cells, int filled, params string[] stacks) =>

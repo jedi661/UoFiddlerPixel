@@ -1230,3 +1230,71 @@ Brücken, Geländer und Treppen mit Teilen, die automatisch aus TileData (Namen,
 * **Vorlagen mit Bild:** Werkstatt → „🖼 Vorlagen mit Bild …“.
 * **Französisch** ist jetzt vollständig (Menü Sprache / Language / Langue).
 
+## Test-Assistent (seit „Werkstatt 29“)
+
+Menü **Hilfe → 🧪 Test-Assistent** oder Knopf **„🧪 Test“** oben rechts in der CGI-Ansicht. Damit kannst du alles nacheinander prüfen und dem Entwickler genaue Daten schicken.
+
+* **⚙ Automatisch prüfen (alle):** 17 Tests bauen auf kleinen Karten im Speicher – mit deinen Client-Dateien – Brücke, Bogen aus Stufen, Treppenhaus (alle Wenden), Treppe lernen, Drehen mit Teile-Tausch, Wand mit Ecken, Fluss, Küste glätten, Unebenheit, Dungeon mit 2 Etagen, Vorlagen, Katalog, Einstellungen. Jeder Wert steht im Protokoll (welche Teile gefunden wurden, welche Richtung erkannt wurde …). Deine Karte bleibt unverändert.
+* **Prüfliste:** 21 Schritte. Je Schritt „▶ Vorbereiten“ (wählt das Werkzeug / öffnet das Fenster), dann die Aufgabe ausführen, „📷 Aufnehmen“ (Bildschirmfoto aller Studio-Fenster, Werkzeug mit Einstellungen, jedes gesetzte Static und Land-Tile mit ID, Name, Höhe und Richtung), dann **✔ Passt / ✖ Falsch / ? Unklar** mit Kommentar.
+* Fehler des Studios werden mitgeschrieben, solange der Test-Assistent offen ist.
+* **💾 Bericht speichern:** eine ZIP in „Dokumente“ (`DragonMapStudio_Testbericht_….zip`) – diese Datei schicken.
+
+### Nach dem ersten Testbericht (seit „Werkstatt 30“)
+* Die automatischen Tests machen jetzt **Bilder** mit deiner Client-Grafik (Brücke W-O / N-S, Bogen aus Stufen, Treppenhaus in allen Wenden, Treppen je Richtung, Drehen vorher / nachher, Wand, Fluss, Küste vorher / nachher, Dungeon und Treppe zwischen den Etagen). Sie liegen als `autoNN_….png` im Bericht.
+* Neuer Knopf **„⚙💾 Automatisch + Bericht“**: alle Tests mit Bildern und gleich die ZIP.
+* Brücken nehmen jetzt nur die Bretter der richtigen Richtung (W-O oder N-S), im Designer gibt es dafür „Bretter N-S“.
+* Wand: Knopf **„Wand-Set aus TileData“** (z. B. stone → 0025 / 0026 mit Pfosten), im Set-Editor „Teile aus TileData vorschlagen“. Der Test warnt, wenn ein Wand-Set kaputt ist (z. B. 0001 = nodraw).
+* Treppe aus TileData nimmt nur Stufen mit 5 Z Höhe. Katalog-Kategorien ohne „Missing_Name“ und nodraw, „Licht“ ohne Fenster.
+
+### Treppen richtig geneigt (seit „Werkstatt 31“)
+* Die Stufen aus der TileData werden jetzt **nach ihrer Neigung im Bild** den Richtungen zugeordnet (vorher nur der Reihe nach geraten – daher die falschen Neigungen).
+* Beim Werkzeug Treppe: Knopf **„Richtungen aus Bild“** ordnet die Stufen des gewählten Treppen-Sets neu (oder legt ohne Set eines aus der TileData an) und zeigt die Messwerte.
+* Der Test-Assistent schreibt die Messwerte jeder Stufe ins Protokoll, warnt bei falsch zugeordneten Sets und macht größere Einzelbilder je Richtung und je Wende.
+
+## Treppen-Designer (seit „Werkstatt 32“)
+* Palette → **Treppen-Designer** oder beim Werkzeug Treppe „Treppen-Designer …“.
+* Eine Treppe besteht aus **viereckigen Blöcken, stufig übereinander (je 5 Z)**, und oben auf jeder Stufe dem **geneigten Treppenstück**. Im Testfeld von Hand bauen: im Katalog (Kategorie ◆ Treppen) Block oder Stufe wählen, oben „Z +“ (0, 5, 10, 15) und „auf Statics stapeln“, ins Testfeld klicken. Oder „Aus Treppen-Set erzeugen“ und ändern.
+* Mit „Bereich“ markieren → **„Als Modell übernehmen“**, „Gebaut hinauf nach“ prüfen, **„Gedreht ansehen“ N / O / S / W** (die Stufen werden nach ihrem Bild getauscht), **speichern nach Kategorie** (Holz, Stein, Keller, Turm …). „Treppe aus der Karte“ übernimmt eine echte Treppe.
+* **„📋 Log + Bild“** speichert ein Bild und eine Liste jeder Stufe mit Position, Höhe, ID, Name, Höhe des Teils und Neigung (Ordner „Logs“, Text auch in der Zwischenablage) – zum Schicken. Das gibt es jetzt auch im **Brücken-Designer**.
+* **„Im Studio benutzen“**: das Werkzeug Treppe setzt das Modell. Oben „Modell“ wählen (oder „aus Treppen-Set erzeugen“), R dreht, „Modell mehrmals“ = mehrere Etagen hintereinander, „Nach unten bauen“ = der Klick ist das obere Ende, unter der Karte mit „Unter der Karte bauen“ (Keller).
+
+### Höhen im Treppen-Designer (seit „Werkstatt 33“)
+* Oben **„Höhe:“** – **„auf den Stapel (TileData-Höhe)“**: jedes Teil kommt auf das oberste Teil darunter, mit der Höhe aus der TileData (Block 5 auf Block 5, die Stufe darauf). Oder **„feste Höhe über dem Boden“** mit Zahl (Schritt = Höhe des gewählten Teils). Vorher wurden „Z +“ und Stapeln zusammengezählt – daher lag die Stufe 5 zu hoch.
+* Daneben steht die **Höhe des gewählten Teils** laut TileData (z. B. h 5).
+* **Auswahl ▲ h / ▼ h** (um die Teil-Höhe), **+1 / −1** und **„z = …“** (genaue Höhe) für gewählte Teile.
+* Das Erzeugen („Aus Treppen-Set erzeugen“, Werkzeug Treppe) liest Stufen-, Block- und Absatz-Höhe ebenfalls aus der TileData („Höhen aus der TileData“, an).
+
+### Treppen nach deinem Log (seit „Werkstatt 34“)
+* **Stapeln wie im Client:** Teile mit dem TileData-Flag „Bridge“ zählen nur halb so hoch – der Steinblock `03ee` (h 10) und Holz `0721` (h 10) stapeln also alle 5, genau wie in deinen Treppen. Gilt für „auf den Stapel“ / „auf Statics stapeln“ und den Treppenbau.
+* **Werkzeug Treppe – ziehen:** von A nach B ziehen = je Feld **eine Stufe mit Blöcken darunter**, hinauf in Zieh-Richtung („Nach unten bauen“ = hinunter). Ein Klick setzt das Modell / die Treppe wie bisher einmal. Die Stufe und den Block nimmt es aus dem gewählten Modell (oder dem Treppen-Set).
+* **Treppen-Designer:**
+  * **Auswahl verschieben** ▲ N / ▼ S / ◀ W / ▶ O, **Auswahl löschen**, **↶ Rückgängig / ↷ Wiederholen** (auch Strg+Z / Strg+Y).
+  * **„💾 Markierte Treppe speichern …“**: die mit „Bereich“ markierte Treppe – oder die mit „Auswahl“ gewählten Teile – als Modell übernehmen und gleich nach Kategorie speichern. So kannst du mehrere Treppen in ein Feld bauen und jede einzeln speichern.
+  * Die Richtung „hinauf nach“ wird aus den Stufen selbst erkannt.
+  * **Dreh-Tabelle:** je Teil des Modells die Grafik für N / O / S / W (mit Bild). Automatisch gefüllt (Stufen nach ihrer Neigung, Blöcke bleiben gleich); falsche Grafik? Zelle anklicken, im Katalog doppelklicken. „Gedreht ansehen“ und das Werkzeug benutzen die Tabelle.
+
+
+## Muster-Baukasten (seit „Werkstatt 35“)
+Gleicher Baukasten wie der Treppen-Designer – für alles, was sich wiederholt: Burg-Zinnen, Zelte, eine Mauer mit Fenstern, Festungsmauern mit verschiedenen Höhen, eine Etage mit Decke … Öffnen: Palette **Bauen → Muster-Baukasten**, im Werkzeug „Muster“ oder im Karten-Editor („Muster-Baukasten …“).
+
+* **Bauen:** links „Richtung, die ich baue“ wählen (Ost = das Muster läuft beim Ziehen nach Osten). Im Katalog Teile wählen, im Testfeld bauen (Höhe „auf den Stapel“ = TileData-Höhe, oder feste Höhe), Auswahl verschieben N / S / W / O, Z ± Teil-Höhe, kopieren, löschen, Rückgängig / Wiederholen (Strg+Z / Strg+Y).
+* **„✔ Markiertes als diese Richtung übernehmen“:** den mit „Bereich“ markierten Teil (oder die mit „Auswahl“ gewählten Teile). Treppen im Muster werden erkannt (Anstieg 5 Z).
+* **Vier Richtungen:** jede selbst bauen und übernehmen – oder **„Fehlende Richtungen automatisch“** (Wände nach ihrem Bild, Stufen nach ihrer Neigung gedreht, Blöcke bleiben). „Alle 4 ansehen“ zeigt Nord / Ost / Süd / West nebeneinander, „Alle neu drehen“ überschreibt.
+* **Speichern:** Kategorie + Name. Der Baum zeigt **Kategorie ▸ Name ▸ Süd / West / Nord / Ost** (✔ = gebaut). Gespeichert im Ordner `Muster` neben den Einstellungen.
+* **„▶ Probe ziehen“:** zieht das Muster im Testfeld in alle vier Richtungen – so siehst du gleich, ob es sich lückenlos wiederholt. **„📋 Log + Bild“** speichert jedes Teil mit ID, Lage und Höhe.
+* **Zeichnen** (CGI: Werkzeug **„Muster“**, Karten-Editor: **„Muster (Statics)“**, oben in der Leiste Kategorie ▸ Name ▸ Richtung):
+
+| Einstellung | Wirkung |
+|---|---|
+| Klick | Muster einmal in der gewählten Richtung (R dreht) |
+| Ziehen | wiederholt das Muster in Zieh-Richtung mit der Version dieser Richtung |
+| Ziehen wiederholt aus | jeder Klick / Zug setzt es genau einmal |
+| Höhe gerade | alle Stücke auf der Höhe am Start (Zinnen alle gleich hoch) |
+| Höhe Boden | jedes Stück auf dem Gelände |
+| Höhe steigend | jedes Stück höher (Treppen im Muster: ihre Höhe, sonst 5 Z) |
+| Etagen / Etagen-Höhe | 2–3 Etagen in einem Zug übereinander (0 = Höhe des Musters) |
+| Abstand | Lücke zwischen den Wiederholungen (Zelte, Pfosten) |
+| Alte Statics ersetzen | Statics auf den Feldern des Musters vorher entfernen |
+
+* **Karten-Editor:** das Muster landet in der **Statics-Ebene** (Höhe über dem Boden), gelbe Vorschau beim Ziehen, Strg+Z nimmt es zurück.
+* **Test-Assistent:** neuer Selbsttest „Muster-Baukasten“ (Mauer mit Zinnen, vier Richtungen, lückenlos, gleiche Höhe, 2 Etagen – mit Bildern) und ein Prüflisten-Schritt.

@@ -1037,7 +1037,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                          ("Pinsel (B)", MapTool.Brush), ("Pipette (I)", MapTool.Picker), ("Füllen (F)", MapTool.Fill), ("Auswahl (S)", MapTool.Select),
                          ("Höhe +", MapTool.Raise), ("Höhe −", MapTool.Lower), ("Höhleneingang", MapTool.CaveStamp), ("Hand (H)", MapTool.Pan),
                          ("Halbkreis", MapTool.HalfCircle), ("Dreieck", MapTool.Triangle), ("Neigungs-Linie", MapTool.SlopeLine),
-                         ("Natürlicher Lauf", MapTool.Course), ("Dungeon", MapTool.Dungeon)
+                         ("Natürlicher Lauf", MapTool.Course), ("Dungeon", MapTool.Dungeon), ("Muster (Statics)", MapTool.Motif)
                      })
             {
                 tools.DropDownItems.Add(L.T(text), null, (s, a) => SelectTool(tool)).Enabled = mapCanvas.Tool != tool;

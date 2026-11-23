@@ -1775,3 +1775,190 @@ Brücken-Pläne	Plans de pont
 Item → Ecke	objet → coin
 Werkzeug-Optionen in ein eigenes Fenster (z. B. auf einen anderen Monitor)	Options de l'outil dans une fenêtre à part (p. ex. sur un autre écran)
 Werkzeug-Optionen wieder in die Leiste	Options de l'outil de nouveau dans la barre
+# Werkstatt 29: Test-Assistent
+Test-Assistent	Assistant de test
+Automatisch prüfen (alle)	Vérifier automatiquement (tout)
+Bericht speichern …	Enregistrer le rapport …
+PRÜFLISTE – Schritt für Schritt	LISTE DE CONTRÔLE – étape par étape
+Vorbereiten	Préparer
+Aufnehmen	Enregistrer
+Passt	OK
+Falsch	Faux
+Unklar	Pas clair
+Dein Kommentar (was ist falsch, was hast du erwartet):	Votre commentaire (ce qui ne va pas, ce que vous attendiez) :
+PROTOKOLL – das kommt in den Bericht	JOURNAL – ceci va dans le rapport
+So geht's:	Comment faire :
+Das solltest du sehen:	Vous devriez voir :
+Automatische Prüfung	Vérification automatique
+Bericht gespeichert	Rapport enregistré
+Bericht gespeichert – bitte diese Datei schicken:	Rapport enregistré – merci d'envoyer ce fichier :
+Test-Assistent …	Assistant de test …
+Test	Test
+Test-Assistent: automatisch prüfen, Prüfliste mit Bildschirmfoto und Daten, Bericht für den Entwickler	Assistant de test : vérifications automatiques, liste de contrôle avec capture d'écran et données, rapport pour le développeur
+Automatisch + Bericht	Automatique + rapport
+Alle automatischen Tests mit Bildern, danach gleich den Bericht (ZIP) speichern	Tous les tests automatiques avec images, puis enregistrer le rapport (ZIP) aussitôt
+Wand-Set aus TileData	Jeu de mur de la tiledata
+Ein Wand-Set aus der TileData anlegen: West-Ost-Stück, sein Nord-Süd-Gegenstück (Bild-Erkennung) und ein Pfosten	Créer un jeu de mur depuis la tiledata : pièce ouest – est, son pendant nord – sud (détection d'image) et un poteau
+Welche Wand? Teil des Namens (z. B. stone, brick, wooden, sandstone) – leer = die erste passende:	Quel mur ? Partie du nom (p. ex. stone, brick, wooden, sandstone) – vide = le premier qui convient :
+Keine Wand mit Gegenstück gefunden – anderen Namen versuchen oder Teile im Set-Editor zuordnen.	Aucun mur avec pendant trouvé – essayer un autre nom ou attribuer les pièces dans l'éditeur de jeux.
+Teile aus TileData vorschlagen	Proposer des pièces de la tiledata
+Bretter N-S	Planches N-S
+Richtungen aus Bild	Directions depuis l'image
+Die Stufen des gewählten Treppen-Sets nach ihrer Neigung im Bild den Richtungen zuordnen (wenn die Treppe falsch geneigt ist)	Attribuer les marches du jeu d'escalier choisi aux directions selon leur pente dans l'image (si l'escalier penche dans le mauvais sens)
+# Werkstatt 32: Treppen-Designer
+Treppen-Designer	Concepteur d'escaliers
+Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken ('Z +' oben = Höhe, 'auf Statics stapeln' an). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	Construire : choisir bloc / marche dans le catalogue, cliquer dans le terrain d'essai (« Z + » en haut = hauteur, « empiler sur les statics » activé). Ou « Générer depuis le jeu d'escalier ». Puis marquer avec « Zone » et « Reprendre comme modèle ».
+Treppen-Testfeld	Terrain d'essai d'escalier
+Kein Treppen-Set gewählt – Stufen aus der TileData (Neigung aus dem Bild)	Aucun jeu d'escalier choisi – marches de la tiledata (pente depuis l'image)
+Erzeugt	Généré
+von Hand ändern, dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	modifier à la main, puis marquer avec « Zone » et « Reprendre comme modèle ».
+Das Testfeld ist leer.	Le terrain d'essai est vide.
+Modell übernommen	Modèle repris
+Anstieg	montée
+'Gebaut hinauf nach' prüfen, dann speichern.	vérifier « Construit en montant vers », puis enregistrer.
+In der CGI-Ansicht eine Treppe der Karte mit 'Bereich' markieren, dann hier übernehmen.	Marquer un escalier de la carte avec « Zone » dans la vue CGI, puis le reprendre ici.
+Treppe aus der Karte übernommen	Escalier repris de la carte
+Modell	Modèle
+hinauf nach	montant vers
+gedreht, Stufen nach ihrem Bild getauscht	tourné, marches échangées selon leur image
+Erst ein Modell übernehmen.	Reprendre d'abord un modèle.
+Kategorie (Ordner), z. B. Holz, Stein, Keller, Turm:	Catégorie (dossier), p. ex. bois, pierre, cave, tour :
+Name des Treppen-Modells:	Nom du modèle d'escalier :
+Höhe über dem Boden für 'Static setzen' (Stufen: 0, 5, 10, 15 …)	Hauteur au-dessus du sol pour « Poser static » (marches : 0, 5, 10, 15 …)
+IDs	IDs
+KATALOG – Klick = zum Setzen im Testfeld (Block, Stufe, Geländer …) · Rechtsklick = Kategorien	CATALOGUE – clic = poser dans le terrain d'essai (bloc, marche, garde-corps …) · clic droit = catégories
+Stufe hinauf nach	marche montant vers
+ins Testfeld klicken	cliquer dans le terrain d'essai
+1 Modelle (gespeichert nach Kategorie)	1 Modèles (enregistrés par catégorie)
+Modell löschen?	Supprimer le modèle ?
+2 Bauen	2 Construire
+So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen, 'Z +' setzen, ins Testfeld klicken – oder erzeugen und ändern.	Voici comment est construit un escalier : des blocs carrés empilés en marches (5 Z chacun), sur chaque marche la pièce d'escalier inclinée. Choisir dans le catalogue, régler « Z + », cliquer dans le terrain d'essai – ou générer et modifier.
+Testfeld leeren	Vider le terrain d'essai
+Aus Treppen-Set erzeugen	Générer depuis le jeu d'escalier
+3 Übernehmen und prüfen	3 Reprendre et vérifier
+Als Modell übernehmen	Reprendre comme modèle
+Treppe aus der Karte	Escalier depuis la carte
+Gedreht ansehen:	Voir tourné :
+📋 Log + Bild	📋 Journal + image
+'Log + Bild' speichert ein Bild des Testfelds und jede Stufe mit Position, Höhe, ID, Name und Neigung – schick es dem Entwickler.	« Journal + image » enregistre une image du terrain d'essai et chaque marche avec position, hauteur, id, nom et pente – envoyez-le au développeur.
+4 Im Studio benutzen	4 Utiliser dans le studio
+Erst ein Modell übernehmen oder laden.	Reprendre ou charger d'abord un modèle.
+Modell ist im Werkzeug Treppe	Le modèle est dans l'outil Escalier
+klicken setzt es; R dreht, 'Nach unten bauen', 'Modell mehrmals', unter der Karte mit 'Unter der Karte bauen'.	un clic le pose ; R tourne, « Construire vers le bas », « Modèle plusieurs fois », sous la carte avec « Construire sous la carte ».
+Log und Bild gespeichert (der Text ist auch in der Zwischenablage):	Journal et image enregistrés (le texte est aussi dans le presse-papiers) :
+Modell:	Modèle :
+Treppen-Modell aus dem Treppen-Designer – oder Treppe aus dem Treppen-Set erzeugen	Modèle d'escalier du concepteur – ou générer l'escalier depuis le jeu d'escalier
+(aus Treppen-Set erzeugen)	(générer depuis le jeu d'escalier)
+Treppen-Designer …	Concepteur d'escaliers …
+Treppen-Modell	Modèle d'escalier
+hinauf	montée
+# Werkstatt 33: Höhen im Treppen-Designer
+auf den Stapel (TileData-Höhe)	sur la pile (hauteur de la tiledata)
+feste Höhe über dem Boden	hauteur fixe au-dessus du sol
+Feste Höhe über dem Boden (Schritt = Höhe des gewählten Teils aus der TileData)	Hauteur fixe au-dessus du sol (pas = hauteur de la pièce choisie dans la tiledata)
+Höhe des gewählten Teils laut TileData	Hauteur de la pièce choisie selon la tiledata
+Auswahl:	Sélection :
+Erst Teile mit 'Auswahl' wählen (Strg = mehrere).	Sélectionner d'abord des pièces avec « Sélection » (Ctrl = plusieurs).
+um die Höhe des Teils (TileData) hoch / runter	monter / descendre de la hauteur de la pièce (tiledata)
+um 1 Z	de 1 Z
+Die gewählten Teile auf eine genaue Höhe setzen	Mettre les pièces choisies à une hauteur exacte
+Höhe z der gewählten Teile:	Hauteur z des pièces choisies :
+Höhe gesetzt	Hauteur réglée
+Höhen aus der TileData	Hauteurs de la tiledata
+So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z laut TileData), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen und ins Testfeld klicken: 'auf den Stapel' legt jedes Teil auf das oberste – Block auf Block, die Stufe darauf.	Voici comment est construit un escalier : des blocs carrés empilés en marches (5 Z chacun selon la tiledata), sur chaque marche la pièce inclinée. Choisir dans le catalogue et cliquer dans le terrain d'essai : « sur la pile » pose chaque pièce sur la plus haute – bloc sur bloc, la marche dessus.
+Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken – 'Höhe: auf den Stapel' legt es auf das oberste Teil (Höhen aus der TileData). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	Construire : choisir bloc / marche dans le catalogue, cliquer dans le terrain d'essai – « Hauteur : sur la pile » la pose sur la pièce la plus haute (hauteurs de la tiledata). Ou « Générer depuis le jeu d'escalier ». Puis marquer avec « Zone » et « Reprendre comme modèle ».
+# Werkstatt 34
+Auswahl verschieben:	Déplacer la sélection :
+Gewählte Teile ein Feld verschieben (N = oben rechts, wie im Client)	Déplacer les pièces choisies d'une case (N = en haut à droite, comme le client)
+Auswahl löschen	Supprimer la sélection
+Modell aus der Auswahl übernommen	Modèle repris de la sélection
+Dreh-Tabelle prüfen, dann speichern.	vérifier la table de rotation, puis enregistrer.
+Dreh-Tabelle	Table de rotation
+im Katalog doppelklicken setzt hier eine andere Grafik	un double clic dans le catalogue place ici une autre image
+'Gedreht ansehen' zeigt es	« Voir tourné » le montre
+💾 Markierte Treppe speichern …	💾 Enregistrer l'escalier marqué …
+Mehrere Treppen im Feld: eine mit 'Bereich' markieren oder ihre Teile mit 'Auswahl' (Rahmen) wählen – nur diese wird übernommen.	Plusieurs escaliers dans le terrain : en marquer un avec « Zone » ou sélectionner ses pièces avec « Sélection » (cadre) – seul celui-ci est repris.
+Dreh-Tabelle (Grafik je Richtung)	Table de rotation (image par direction)
+Automatisch füllen	Remplir automatiquement
+Zelle → Katalog	Cellule → catalogue
+Jetzt im Katalog die Grafik doppelklicken – sie kommt in die gewählte Zelle der Dreh-Tabelle.	Double-cliquer maintenant l'image dans le catalogue – elle va dans la cellule choisie de la table de rotation.
+Je Zeile ein Teil des Modells, Spalten = die Grafik, wenn die Treppe nach N / O / S / W hinauf geht. Zelle anklicken, im Katalog doppelklicken = andere Grafik. Blöcke bleiben gleich.	Une pièce du modèle par ligne, colonnes = l'image quand l'escalier monte vers N / E / S / O. Cliquer une cellule, double-cliquer dans le catalogue = une autre image. Les blocs restent identiques.
+Stufe	marche
+je	chacune
+Treppe ziehen: keine Stufe für diese Richtung – Modell mit Dreh-Tabelle oder Treppen-Set wählen.	Tirer l'escalier : pas de marche pour cette direction – choisir un modèle avec table de rotation ou un jeu d'escalier.
+Treppe gezogen	Escalier tiré
+Treppe: Klick = Modell / Treppe einmal (R dreht) · Ziehen = je Feld eine Stufe mit Blöcken darunter, in Zieh-Richtung hinauf ('Nach unten bauen' = hinunter) · Vorschau am Mauszeiger	Escalier : clic = modèle / escalier une fois (R tourne) · tirer = une marche par case avec des blocs en dessous, montant dans le sens du tirage (« Construire vers le bas » = descendant) · aperçu à la souris
+
+# Werkstatt 35 – Muster-Baukasten
+Muster-Baukasten	Atelier de motifs
+Richtung wählen (z. B. Ost = das Muster läuft nach Osten), im Katalog Teile wählen und ins Testfeld bauen, mit 'Bereich' markieren, 'Markiertes als … übernehmen'. Fehlende Richtungen dreht das Studio, oder du baust sie selbst.	Choisir une direction (p. ex. est = le motif avance vers l'est), choisir des pièces dans le catalogue et construire dans le terrain d'essai, marquer avec 'Zone', 'Reprendre la sélection comme …'. Le studio tourne les directions manquantes, ou tu les construis toi-même.
+Muster-Testfeld	Terrain d'essai des motifs
+Richtung	Direction
+ändern, markieren, wieder übernehmen	modifier, marquer, reprendre
+noch leer: bauen oder 'Fehlende Richtungen automatisch'	encore vide : construire ou 'Directions manquantes automatiquement'
+Alle vier Richtungen: oben Nord, rechts Ost, unten Süd, links West (so wie im Client: Nord = oben rechts).	Les quatre directions : en haut nord, à droite est, en bas sud, à gauche ouest (comme dans le client : nord = en haut à droite).
+Übernommen als Richtung	Repris comme direction
+Treppen erkannt	escaliers reconnus
+fehlende Richtungen: 'automatisch' oder selbst bauen	directions manquantes : 'automatiquement' ou les construire soi-même
+Richtungen gedreht (Stufen nach ihrer Neigung, Wände nach ihrem Bild, Blöcke bleiben) – falsche Grafik? Richtung wählen, von Hand ändern, wieder übernehmen.	directions tournées (marches selon leur pente, murs selon leur image, les blocs restent) – mauvais graphisme ? Choisir la direction, modifier à la main, reprendre.
+Erst eine Richtung übernehmen.	Reprendre d'abord une direction.
+Ziehen getestet: nach Ost (oben), Süd (rechts), West (unten), Nord (links)	Tracé testé : est (en haut), sud (à droite), ouest (en bas), nord (à gauche)
+Kategorie (Ordner), z. B. Burg, Zelte, Mauern, Häuser:	Catégorie (dossier), p. ex. château, tentes, murs, maisons :
+Name des Musters (z. B. Zinnen, Mauer mit Fenster):	Nom du motif (p. ex. créneaux, mur avec fenêtre) :
+Nicht alle vier Richtungen sind gebaut. Die fehlenden automatisch drehen?	Les quatre directions ne sont pas toutes construites. Tourner automatiquement celles qui manquent ?
+KATALOG – Klick = zum Setzen im Testfeld · Rechtsklick = Kategorien	CATALOGUE – clic = à poser dans le terrain d'essai · clic droit = catégories
+stapelt	s'empile
+1 Muster (Kategorie → Name → Richtung)	1 Motif (catégorie → nom → direction)
+Neues Muster: Richtung wählen und bauen.	Nouveau motif : choisir une direction et construire.
+Muster löschen?	Supprimer le motif ?
+2 Richtung, die ich baue	2 Direction que je construis
+Richtung = in diese Richtung läuft das Muster beim Ziehen (Ost: eine Mauer West → Ost, die Zinnen zeigen nach Süden …).	Direction = le motif avance dans ce sens quand on tire (est : un mur ouest → est, les créneaux regardent vers le sud …).
+✔ Markiertes als diese Richtung übernehmen	✔ Reprendre la sélection pour cette direction
+Fehlende Richtungen automatisch	Directions manquantes automatiquement
+Alle neu drehen	Tout retourner
+Alle 4 ansehen	Voir les 4
+3 Ziehen testen	3 Tester le tracé
+▶ Probe ziehen (alle 4 Richtungen)	▶ Tracé d'essai (les 4 directions)
+4 Log und Studio	4 Journal et studio
+Muster ist im Werkzeug 'Muster' (CGI) und im Karten-Editor – klicken = einmal, ziehen = wiederholen.	Le motif est dans l'outil 'Motif' (CGI) et dans l'éditeur de carte – clic = une fois, tirer = répéter.
+Muster wählen …	Choisir un motif …
+Zeichnen …	Dessin …
+Ziehen an / aus, Höhe, Etagen, Abstand, Ersetzen	Tirer oui / non, hauteur, étages, écart, remplacer
+Muster-Baukasten …	Atelier de motifs …
+Muster aus dem Muster-Baukasten: Kategorie ▸ Name ▸ Richtung (beim Ziehen nimmt das Studio die Version der Zieh-Richtung)	Motif de l'atelier de motifs : catégorie ▸ nom ▸ direction (en tirant, le studio prend la version de la direction du tracé)
+(noch keine Muster – Muster-Baukasten öffnen)	(pas encore de motifs – ouvrir l'atelier de motifs)
+gedreht	tourné
+Klick = einmal, ziehen = wiederholt in Zieh-Richtung	clic = une fois, tirer = répété dans la direction du tracé
+Erst ein Muster wählen (Leiste oben: Muster ▸ Kategorie ▸ Name ▸ Richtung) – oder im Muster-Baukasten eins bauen.	Choisir d'abord un motif (barre en haut : motif ▸ catégorie ▸ nom ▸ direction) – ou en construire un dans l'atelier de motifs.
+Muster: nichts gesetzt (außerhalb der Karte oder Richtung leer).	Motif : rien posé (hors de la carte ou direction vide).
+in der Statics-Ebene	dans le calque des statics
+ersetzt	remplacés
+Alle auf der Höhe am Start (gerade, z. B. Zinnen)	Tous à la hauteur du départ (droit, p. ex. créneaux)
+Jedes Stück auf dem Boden (folgt dem Gelände)	Chaque pièce sur le sol (suit le terrain)
+Steigend (Treppen: jedes Stück höher)	Montant (escaliers : chaque pièce plus haut)
+Ziehen wiederholt	Tirer répète
+An = ziehen wiederholt das Muster in Zieh-Richtung. Aus = jeder Klick / Zug setzt es genau einmal.	Oui = tirer répète le motif dans la direction du tracé. Non = chaque clic / tracé le pose une seule fois.
+Richtung beim Klick	Direction au clic
+Welche Richtung ein einfacher Klick setzt (beim Ziehen bestimmt die Zieh-Richtung die Richtung). Im Werkzeug dreht R.	Quelle direction un simple clic pose (en tirant, c'est la direction du tracé). Dans l'outil, R tourne.
+Gerade auf der Höhe am Start, jedes Stück auf dem Boden, oder steigend wie eine Treppe.	Droit à la hauteur du départ, chaque pièce sur le sol, ou montant comme un escalier.
+Anstieg je Stück (Z)	Montée par pièce (Z)
+Nur 'steigend': so viel höher ist jedes weitere Stück. 0 = automatisch (Treppen im Muster: ihre Höhe, sonst 5).	Seulement 'montant' : chaque pièce suivante est plus haute de cette valeur. 0 = automatique (escaliers dans le motif : leur hauteur, sinon 5).
+Zur Höhe addieren.	Ajouté à la hauteur.
+So oft übereinander in einem Zug (z. B. 2–3 Etagen einer Mauer mit Fenstern).	Autant de fois superposé en un seul tracé (p. ex. 2–3 étages d'un mur avec fenêtres).
+Abstand der Etagen. 0 = Höhe des Musters.	Écart entre les étages. 0 = hauteur du motif.
+Abstand (Tiles)	Écart (tuiles)
+Lücke zwischen den Wiederholungen (Zelte, Pfosten …).	Espace entre les répétitions (tentes, poteaux …).
+Statics auf den Feldern des Musters vorher entfernen.	Retirer d'abord les statics sur les cases du motif.
+Ordner, z. B. Burg, Zelte, Mauern, Häuser.	Dossier, p. ex. château, tentes, murs, maisons.
+Notiz	Note
+Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster, Festungsmauer, Etage mit Decke …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern; im Werkzeug Muster klicken oder ziehen (wiederholt)	Fenêtre séparée : construire des motifs (créneaux, tentes, mur avec fenêtre, rempart, étage avec plafond …), un par direction nord / est / sud / ouest, enregistrer par catégorie ; dans l'outil Motif cliquer ou tirer (répété)
+Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern, Log + Bild	Fenêtre séparée : construire des motifs (créneaux, tentes, mur avec fenêtre …), un par direction nord / est / sud / ouest, enregistrer par catégorie, journal + image
+Klick = Muster einmal (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe gerade / Boden / steigend, Etagen	Clic = motif une fois (R tourne) · tirer = répété dans la direction du tracé avec la version de cette direction · hauteur droite / sol / montante, étages
+Muster aus dem Muster-Baukasten in die Statics-Ebene: Klick = einmal, Ziehen = wiederholt (Kategorie ▸ Name ▸ Richtung oben in der Leiste)	Motif de l'atelier dans le calque des statics : clic = une fois, tirer = répété (catégorie ▸ nom ▸ direction dans la barre en haut)
+Muster (Statics)	Motif (statics)
+Klick = Muster einmal · Ziehen = wiederholt · in die Statics-Ebene	Clic = motif une fois · tirer = répété · dans le calque des statics
+Muster: Richtung	Motif : direction
+Muster: erst ein Muster wählen (Leiste oben / Muster-Baukasten).	Motif : choisir d'abord un motif (barre en haut / atelier de motifs).
+Muster: Klick = einmal in der Richtung (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe, Etagen, Abstand oben in der Leiste	Motif : clic = une fois dans la direction (R tourne) · tirer = répété dans la direction du tracé avec la version de cette direction · hauteur, étages, écart dans la barre en haut
+Zeichnen	Dessin
+Muster wählen	Choisir un motif
