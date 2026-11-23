@@ -169,6 +169,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 Map = () => _cgiMap,
                 Brushes = BrushCfg,
+                Configure = ConfigureLikeMain,
                 BuildMark = BuildMark,
                 Status = SetStatus,
                 SelectTool = t =>
@@ -1062,6 +1063,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
             };
             AddQuick(cb);
+            Cmd("Wand-Set aus TileData", "Ein Wand-Set aus der TileData anlegen: West-Ost-Stück, sein Nord-Süd-Gegenstück (Bild-Erkennung) und ein Pfosten", () =>
+            {
+                string filter = Microsoft.VisualBasic.Interaction.InputBox(L.T("Welche Wand? Teil des Namens (z. B. stone, brick, wooden, sandstone) – leer = die erste passende:"), Text, "stone");
+                WallSet auto = BridgeKit.AutoWall(string.IsNullOrWhiteSpace(filter) ? null : filter.Trim());
+                if (auto == null)
+                {
+                    SetStatus(L.T("Keine Wand mit Gegenstück gefunden – anderen Namen versuchen oder Teile im Set-Editor zuordnen."));
+                    return;
+                }
+                b.WallSets.RemoveAll(w => w.Name == auto.Name);
+                b.WallSets.Add(auto);
+                b.WallSet = auto.Name;
+                ApplyWallSet();
+                FillWallCombos();
+                UpdateQuickOptions(isoView.Tool);
+                SetStatus(L.T("Wand-Set aus TileData") + $": {auto.Name} – X {auto.AlongX}, Y {auto.AlongY}, " + L.T("Pfosten") + $" {auto.Post}");
+            });
             Cmd("Sets bearbeiten …", "Wand-Sets: Teile West-Ost, Nord-Süd, Pfosten (hex) – neu, kopieren, löschen", () =>
             {
                 using var ed = new NamedListEditor(L.T("Wand-Sets"), b.WallSets, () => new WallSet { Name = L.T("Neue Wand") },
@@ -1071,6 +1089,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 ed.AddAction("+ Item → Nord-Süd", o => ((WallSet)o).AlongY = (((WallSet)o).AlongY + " " + isoView.PlaceId.ToString("x4")).Trim());
                 ed.AddAction("Item → Pfosten", o => ((WallSet)o).Post = isoView.PlaceId.ToString("x4"));
                 ed.AddAction("Item → Ecke", o => ((WallSet)o).Corner = isoView.PlaceId.ToString("x4"));
+                ed.AddAction("Teile aus TileData vorschlagen", o =>
+                {
+                    WallSet auto = BridgeKit.AutoWall();
+                    if (auto != null)
+                    {
+                        var w = (WallSet)o;
+                        w.AlongX = auto.AlongX;
+                        w.AlongY = auto.AlongY;
+                        w.Post = auto.Post;
+                    }
+                });
                 ed.AddAction("Aus Auswahl (X / Y / Pfosten raten)", o =>
                 {
                     var w = (WallSet)o;

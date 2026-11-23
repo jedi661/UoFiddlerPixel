@@ -1803,3 +1803,11 @@ Bericht gespeichert – bitte diese Datei schicken:	Report saved – please send
 Test-Assistent …	Test assistant …
 Test	Test
 Test-Assistent: automatisch prüfen, Prüfliste mit Bildschirmfoto und Daten, Bericht für den Entwickler	Test assistant: automatic checks, check list with screenshot and data, report for the developer
+Automatisch + Bericht	Automatic + report
+Alle automatischen Tests mit Bildern, danach gleich den Bericht (ZIP) speichern	All automatic tests with pictures, then save the report (ZIP) right away
+Wand-Set aus TileData	Wall set from tiledata
+Ein Wand-Set aus der TileData anlegen: West-Ost-Stück, sein Nord-Süd-Gegenstück (Bild-Erkennung) und ein Pfosten	Create a wall set from the tiledata: west – east piece, its north – south partner (art detection) and a post
+Welche Wand? Teil des Namens (z. B. stone, brick, wooden, sandstone) – leer = die erste passende:	Which wall? Part of the name (e.g. stone, brick, wooden, sandstone) – empty = the first that fits:
+Keine Wand mit Gegenstück gefunden – anderen Namen versuchen oder Teile im Set-Editor zuordnen.	No wall with a partner found – try another name or assign pieces in the set editor.
+Teile aus TileData vorschlagen	Suggest pieces from the tiledata
+Bretter N-S	Planks N-S

@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 23.11.2026 – Werkstatt 29“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 23.11.2026 – Werkstatt 30“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -169,6 +169,13 @@
    * `Dialogs/TestAssistantForm.cs`: Prüfliste (21 Schritte) mit Vorbereiten, 📷 Aufnehmen (Bildschirmfoto aller Fenster, Werkzeug + Einstellungen, alle Änderungen seit Schritt-Beginn über `MapData.RecentSteps`), ✔ / ✖ / ? + Kommentar, Fehler-Mitschnitt (FirstChanceException), Bericht-ZIP in „Dokumente“.
    * `Workshop.ConnectFloors` (Treppen zwischen Etagen) aus der Werkstatt in den Kern verschoben, damit es testbar ist.
    * **Wenn der Besitzer einen Testbericht schickt:** `bericht.txt` zuerst, dann `automatisch_details.txt`, dann die `schrittNN_daten.txt` der ✖-Schritte.
+
+20. **Neu (Werkstatt 30) nach dem ersten Testbericht:**
+   * Bericht zeigte: Brücken-Bretter W-O / N-S gemischt → `BridgeGenSettings.DeckY`, `AutoPieces` wählt Bretter nach Bild-Richtung (z. B. acb9 / acba „log bridge“).
+   * Wand-Set des Besitzers „Mauer“ hatte X = 0001 (nodraw) → `BridgeKit.AutoWall` + Knopf „Wand-Set aus TileData“ (z. B. 0025 / 0026 stone wall), Test warnt bei kaputten Sets.
+   * `AutoStairs` nur Stufen mit Höhe 5 (03ee ist h10). Kategorien ohne Missing_Name / nodraw / Fenster im Licht.
+   * Automatische Tests machen jetzt Bilder (`TestPicture`, gezeichnet mit `IsoMapView` und der echten Art, `autoNN_*.png`), Knopf „Automatisch + Bericht“.
+   * Daten aus dem Bericht (Client des Besitzers): TileData 1 114 112 Items (erweitert), höchste ID ffdc; Geländer 07d7 / 07d8 „railing“, Pfosten 0013, Pfeiler 00db, Treppen 03ef–0402 „stone stairs“, 070a… „marble stairs“.
 
 ## Offen / als Nächstes
 

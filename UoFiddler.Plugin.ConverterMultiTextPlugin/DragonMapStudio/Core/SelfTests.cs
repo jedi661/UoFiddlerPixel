@@ -26,8 +26,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         Info
     }
 
+    /// <summary>A test map to draw as a picture (with the client art) for the report.</summary>
+    public sealed class TestPicture
+    {
+        public string Title;
+        public MapData Map;
+        public Rectangle Area;
+    }
+
     public sealed class TestResult
     {
+        [System.Text.Json.Serialization.JsonIgnore]
+        public List<TestPicture> Pictures { get; set; } = new List<TestPicture>();
+
         public string Area { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public TestStatus Status { get; set; }
@@ -43,6 +54,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private sealed class Ctx
         {
             public readonly StringBuilder Log = new StringBuilder();
+            public readonly List<TestPicture> Pictures = new List<TestPicture>();
+
+            /// <summary>Keeps the test map for a picture (a copy of the area, so later changes of the test do not show).</summary>
+            public void Picture(string title, MapData map, Rectangle area)
+            {
+                area.Intersect(new Rectangle(0, 0, map.Width, map.Height));
+                Rectangle big = Rectangle.Inflate(area, 4, 4);
+                big.Intersect(new Rectangle(0, 0, map.Width, map.Height));
+                MapData copy = map.CopyRegion(big, out Point o);
+                Pictures.Add(new TestPicture { Title = title, Map = copy, Area = new Rectangle(area.X - o.X, area.Y - o.Y, area.Width, area.Height) });
+            }
             public TestStatus Status = TestStatus.Ok;
             public string Summary = string.Empty;
 
@@ -120,7 +142,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             return new TestResult
             {
                 Area = area, Name = name, Status = c.Status, Details = c.Log.ToString(), Milliseconds = sw.Elapsed.TotalMilliseconds,
-                Summary = c.Summary.Length > 0 ? c.Summary : first.Trim()
+                Summary = c.Summary.Length > 0 ? c.Summary : first.Trim(),
+                Pictures = c.Pictures
             };
         }
 
@@ -159,7 +182,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private static StairSet ChosenStairs(CgiBrushSettings b, out bool fake)
         {
             StairSet s = b.StairSets.FirstOrDefault(x => x.Name == b.StairSet);
-            fake = s == null || HexList.Parse(s.DownNorth + " " + s.DownEast + " " + s.DownSouth + " " + s.DownWest).Length < 4;
+            static bool Full(StairSet x) => x != null && HexList.Parse(x.DownNorth + " " + x.DownEast + " " + x.DownSouth + " " + x.DownWest).Length >= 4;
+            if (!Full(s) && ClientLoaded())
+            {
+                try
+                {
+                    s = BridgeKit.AutoStairs(); // pictures with real art even without a chosen set
+                }
+                catch (Exception)
+                {
+                    s = null;
+                }
+            }
+            fake = !Full(s);
             return fake ? new StairSet { Name = "Test", DownNorth = "7001", DownEast = "7002", DownSouth = "7003", DownWest = "7004", Block = "7010", Landing = "7020" } : s;
         }
 
@@ -269,14 +304,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 var e = alongX ? new Point(40, 32) : new Point(32, 40);
                 List<StaticChange> ch = BridgeKit.Build(m, a, e, t, new BridgeSettings { Width = 3, Arch = 4, Railings = true, Stairs = false }, new Random(1));
                 var st = ch.Select(x => x.After).ToList();
-                ushort deck = HexList.Parse(g.Deck)[0];
-                int decks = st.Count(s => HexList.Parse(g.Deck).Contains(s.Id));
+                int decks = st.Count(s => HexList.Parse(g.Deck + " " + g.DeckY).Contains(s.Id));
                 c.Line($"{(alongX ? "West-Ost" : "Nord-Süd")}: {st.Count} Statics, Bretter {decks}, z {st.Min(s => s.Z)}…{st.Max(s => s.Z)}");
                 foreach (IGrouping<ushort, StaticItem> grp in st.GroupBy(s => s.Id).OrderByDescending(x => x.Count()))
                 {
                     c.Line($"   {grp.Count()} × {Item(grp.Key)}");
                 }
                 c.Check(decks == 31 * 3, $"Bretter = Länge × Breite (31 × 3 = 93, gebaut {decks})");
+                ushort[] want = HexList.Parse(alongX ? g.Deck : (string.IsNullOrEmpty(g.DeckY) ? g.Deck : g.DeckY));
+                int wrongDir = st.Count(s => HexList.Parse(g.Deck + " " + g.DeckY).Contains(s.Id) && !want.Contains(s.Id));
+                c.Check(wrongDir == 0, $"nur Bretter der Richtung {(alongX ? "West-Ost" : "Nord-Süd")} ({string.Join(" ", want.Select(i => i.ToString("x4")))}), falsche: {wrongDir}");
+                m.Apply(ch);
+                c.Picture($"Brücke {(alongX ? "West-Ost" : "Nord-Süd")}", m, alongX ? new Rectangle(8, 28, 35, 9) : new Rectangle(28, 8, 9, 35));
                 ushort[] rail = HexList.Parse(alongX ? g.RailX : g.RailY);
                 if (rail.Length > 0)
                 {
@@ -291,6 +330,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             c.Line(fake ? "Kein vollständiges Treppen-Set gewählt – Platzhalter-Stufen." : $"Treppen-Set '{set.Name}': N {set.DownNorth}, O {set.DownEast}, S {set.DownSouth}, W {set.DownWest}");
             var g = new BridgeGenSettings { Deck = "7100", RailX = "7101", RailY = "7102", Width = 3 };
             BridgeTemplate t = BridgeKit.Generate(g, "Test");
+            BridgeGenSettings real = ClientLoaded() ? BridgeKit.AutoPieces() : null;
             t.StairWest = set.DownWest;
             t.StairEast = set.DownEast;
             MapData m = Map(64, 64, 0x00A8, -5);
@@ -301,6 +341,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             c.Check(steps == 8, $"4 Stufen hinauf + 4 hinunter (gefunden {steps})");
             // the water lies on −5: deck on −5 + 20 = 15
             c.Check(middle.Where(s => s.Id == 0x7100).All(s => s.Z == 15), "Bretter oben flach (Ufer −5 + Bogen 20 = 15)");
+            if (real != null && !string.IsNullOrEmpty(real.Deck))
+            {
+                // the same with the real pieces, for the picture
+                real.Width = 3;
+                BridgeTemplate rt = BridgeKit.Generate(real, "Echt");
+                rt.StairWest = set.DownWest;
+                rt.StairEast = set.DownEast;
+                MapData m2 = Map(64, 64, 0x00A8, -5);
+                m2.Apply(BridgeKit.Build(m2, new Point(10, 32), new Point(40, 32), rt, new BridgeSettings { Width = 3, Arch = 20, ArchStairs = true, Stairs = false }, new Random(1)));
+                c.Picture("Bogen aus Stufen (echte Teile)", m2, new Rectangle(8, 28, 35, 9));
+            }
         }
 
         private static void AutoStairs(Ctx c)
@@ -324,7 +375,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private static void StaircaseShapes(Ctx c, CgiBrushSettings b)
         {
             StairSet set = ChosenStairs(b, out bool fake);
-            c.Line(fake ? "Platzhalter-Treppe (kein vollständiges Set gewählt)." : $"Treppen-Set '{set.Name}'.");
+            c.Line(fake ? "Platzhalter-Treppe (kein vollständiges Set gewählt)." : $"Treppen-Set '{set.Name}': N {set.DownNorth} O {set.DownEast} S {set.DownSouth} W {set.DownWest} Block {set.Block} Absatz {set.Landing}");
+            StairPicture(c, set);
             foreach (StairTurn turn in Enum.GetValues(typeof(StairTurn)))
             {
                 foreach (int width in new[] { 1, 2 })
@@ -356,6 +408,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
         }
 
+        private static void StairPicture(Ctx c, StairSet set)
+        {
+            MapData m = Map(64, 64, 3, 0);
+            int i = 0;
+            foreach (StairTurn turn in Enum.GetValues(typeof(StairTurn)))
+            {
+                var o = new StaircaseSettings { Up = Compass.West, Floors = 2, Steps = 4, Width = 1, Turn = turn };
+                m.Apply(Staircase.Build(m, new Point(20 + (i % 2) * 24, 14 + (i / 2) * 26), 0, o, set));
+                i++;
+            }
+            c.Picture("Treppenhaus: gerade, rechts, links, zurück (je 2 Etagen)", m, new Rectangle(4, 4, 56, 56));
+        }
+
         private static void StairLearn(Ctx c, CgiBrushSettings b)
         {
             StairSet set = ChosenStairs(b, out _);
@@ -368,6 +433,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 m.Apply(Staircase.Build(m, new Point(15 + n * 16, 40), 0, o, set));
                 n++;
             }
+            c.Picture("Je eine Treppe in jede Richtung (hinauf: N, O, S, W)", m, new Rectangle(8, 30, 70, 16));
             StairSet learned = Staircase.Learn(m.AllStatics().ToList(), "gelernt", out string report);
             c.Line(report);
             c.Check(learned.DownNorth == set.DownNorth.Split(' ')[0], $"hinunter Nord {learned.DownNorth} = {set.DownNorth}");
@@ -403,11 +469,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
             }
             MapData m = Map(32, 32, 3, 0);
-            if (ids.Count > 0)
+            ushort dirId = ids.FirstOrDefault(i => BridgeKit.Orientation(i) > 0);
+            if (dirId != 0)
             {
-                m.Apply(new List<StaticChange> { MapData.Add(new StaticItem { Id = ids[0], X = 10, Y = 10 }), MapData.Add(new StaticItem { Id = ids[0], X = 11, Y = 10 }) });
+                var wall = new List<StaticChange>();
+                for (int x = 8; x < 16; x++)
+                {
+                    wall.Add(MapData.Add(new StaticItem { Id = dirId, X = x, Y = 12 }));
+                }
+                m.Apply(wall);
+                c.Picture($"Vor dem Drehen: {dirId:x4} West-Ost", m, new Rectangle(4, 4, 20, 20));
                 m.Apply(CgiBrushes.TransformStatics(m, m.AllStatics().ToList(), 1, false, false));
                 c.Line("Nach Drehen: " + string.Join(", ", m.AllStatics().Select(s => $"{s.Id:x4} ({s.X},{s.Y})")));
+                c.Picture("Nach Drehen 90°", m, new Rectangle(4, 4, 20, 20));
+                c.Check(m.AllStatics().All(s => s.Id != dirId), $"nach dem Drehen ist kein {dirId:x4} mehr übrig (getauscht)");
             }
             if (swapped == 0)
             {
@@ -419,11 +494,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private static void WallPath(Ctx c, CgiBrushSettings b)
         {
             WallSet set = b.WallSets.FirstOrDefault(x => x.Name == b.WallSet);
-            bool fake = set == null || HexList.Parse(set.AlongX + set.AlongY).Length == 0;
-            if (fake)
+            if (set != null)
             {
-                set = new WallSet { Name = "Test", AlongX = "7201", AlongY = "7202", Post = "7203", Corner = "7204" };
-                c.Line("Kein Wand-Set gewählt – Platzhalter.");
+                c.Line($"Dein Wand-Set '{set.Name}': X '{set.AlongX}', Y '{set.AlongY}', Pfosten '{set.Post}', Ecke '{set.Corner}'");
+            }
+            bool Bad(string ids) => HexList.Parse(ids).Length == 0 || HexList.Parse(ids).Any(i => i <= 2);
+            if (set == null || Bad(set.AlongX) || Bad(set.AlongY))
+            {
+                if (set != null)
+                {
+                    c.Warn($"Dein Wand-Set '{set.Name}' ist unvollständig (X oder Y fehlt oder ist 0000–0002 = nodraw) – Knopf 'Wand-Set aus TileData' beim Werkzeug Wand.");
+                }
+                WallSet auto = ClientLoaded() ? BridgeKit.AutoWall("stone") ?? BridgeKit.AutoWall() : null;
+                set = auto ?? new WallSet { Name = "Test", AlongX = "7201", AlongY = "7202", Post = "7203", Corner = "7204" };
+                c.Line(auto != null ? $"Test mit Wand-Set aus der TileData: {auto.Name} X {auto.AlongX} Y {auto.AlongY} Pfosten {auto.Post}" : "Test mit Platzhaltern.");
             }
             MapData m = Map(48, 48, 3, 0);
             var pts = new List<Point> { new Point(5, 5), new Point(20, 5), new Point(20, 20), new Point(10, 25) };
@@ -449,6 +533,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             c.Line("Plan (- W-O, | N-S, + Ecke, o Pfosten):");
             c.Line(sb.ToString());
             c.Check(st.Count == st.Select(s => (s.X, s.Y, s.Z)).Distinct().Count(), "kein Teil doppelt");
+            c.Picture("Wand Punkt zu Punkt, Dicke 2", m, new Rectangle(3, 3, 22, 25));
         }
 
         private static void River(Ctx c, CgiBrushSettings b)
@@ -482,6 +567,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 c.Line($"Breite {w0}→{w1}, Grund {bed}: Wasser {water}, nach Übergängen {after}, Wasser-Statics {ws.Count}{(ws.Count > 0 ? $" auf z {ws[0].After.Z}" : string.Empty)}");
                 c.Line($"   Querschnitt Anfang [{Cross(x0)}]  Ende [{Cross(x1)}]");
                 c.Check(after > 0, $"Mitte bleibt Wasser (Breite {w0}→{w1})");
+                c.Picture($"Fluss {w0}→{w1}" + (bed > 0 ? $", Grund {bed} + Wasser-Statics" : string.Empty), m, new Rectangle(2, 18, 92, 28));
                 if (bed > 0)
                 {
                     c.Check(ws.Count > 0 && ws[0].After.Z == 5, "Grund wie Küste: Wasser-Statics auf dem Spiegel (z 5)");
@@ -508,11 +594,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             var o = new CoastSmoothSettings();
             var area = new Rectangle(0, 0, 64, 64);
             int before = CoastSmoother.FindErrors(m, area, coast, o).Count;
+            c.Picture("Küste vorher", m, new Rectangle(16, 16, 30, 30));
             CoastEdit e = CoastSmoother.Smooth(m, area, coast, o, new Random(1));
             e.ApplyTo(m);
             int after = CoastSmoother.FindErrors(m, area, coast, o).Count;
             c.Line($"Zacken vorher {before}, nachher {after}, geänderte Land-Tiles {e.Land.Count}, Statics {e.Statics.Count}");
             c.Check(after < before || before == 0, "weniger Zacken nach dem Glätten");
+            c.Picture("Küste nachher", m, new Rectangle(16, 16, 30, 30));
         }
 
         private static void Noise(Ctx c)
@@ -552,6 +640,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             c.Line($"Einrichtung gesetzt: {st.Count(s => s.Id == 0x0b2c || s.Id == 0x0b5d)}");
             c.Line($"Treppen zwischen den Etagen: {stairs} {(fake ? "(Platzhalter-Treppe)" : $"(Set '{set.Name}')")} bei " + string.Join(", ", places.Select(p => $"({p.X}, {p.Y})")));
             c.Check(plans[0].Rooms.Count > 0 && plans[1].Rooms.Count > 0, "beide Etagen haben Räume");
+            c.Picture("Dungeon (obere Etage)", m, area);
+            if (places.Count > 0)
+            {
+                c.Picture("Treppe zwischen den Etagen (Ausschnitt)", m, new Rectangle(places[0].X - 4, places[0].Y - 5, 14, 10));
+            }
             c.Check(stairs == 1, "eine Treppe verbindet die Etagen");
             foreach (Point p in places)
             {

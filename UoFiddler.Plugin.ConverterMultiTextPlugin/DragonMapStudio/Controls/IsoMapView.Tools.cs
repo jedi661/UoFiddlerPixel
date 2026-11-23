@@ -814,6 +814,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             if (set != null && (HexList.Parse(set.DeckX).Length > 0 || HexList.Parse(set.DeckY).Length > 0))
             {
                 g.Deck = HexList.Parse(set.DeckX).Length > 0 ? set.DeckX : set.DeckY;
+                g.DeckY = HexList.Parse(set.DeckY).Length > 0 ? set.DeckY : string.Empty;
                 g.RailX = set.RailX;
                 g.RailY = set.RailY;
                 g.Post = set.Post;

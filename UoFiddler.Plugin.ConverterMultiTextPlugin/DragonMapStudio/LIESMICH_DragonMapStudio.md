@@ -1239,3 +1239,10 @@ Menü **Hilfe → 🧪 Test-Assistent** oder Knopf **„🧪 Test“** oben rech
 * Fehler des Studios werden mitgeschrieben, solange der Test-Assistent offen ist.
 * **💾 Bericht speichern:** eine ZIP in „Dokumente“ (`DragonMapStudio_Testbericht_….zip`) – diese Datei schicken.
 
+### Nach dem ersten Testbericht (seit „Werkstatt 30“)
+* Die automatischen Tests machen jetzt **Bilder** mit deiner Client-Grafik (Brücke W-O / N-S, Bogen aus Stufen, Treppenhaus in allen Wenden, Treppen je Richtung, Drehen vorher / nachher, Wand, Fluss, Küste vorher / nachher, Dungeon und Treppe zwischen den Etagen). Sie liegen als `autoNN_….png` im Bericht.
+* Neuer Knopf **„⚙💾 Automatisch + Bericht“**: alle Tests mit Bildern und gleich die ZIP.
+* Brücken nehmen jetzt nur die Bretter der richtigen Richtung (W-O oder N-S), im Designer gibt es dafür „Bretter N-S“.
+* Wand: Knopf **„Wand-Set aus TileData“** (z. B. stone → 0025 / 0026 mit Pfosten), im Set-Editor „Teile aus TileData vorschlagen“. Der Test warnt, wenn ein Wand-Set kaputt ist (z. B. 0001 = nodraw).
+* Treppe aus TileData nimmt nur Stufen mit 5 Z Höhe. Katalog-Kategorien ohne „Missing_Name“ und nodraw, „Licht“ ohne Fenster.
+

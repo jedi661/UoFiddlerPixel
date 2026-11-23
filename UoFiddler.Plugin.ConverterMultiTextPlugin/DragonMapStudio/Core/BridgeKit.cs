@@ -93,8 +93,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
     /// <summary>Settings of the generator "Brücke aus Teilen".</summary>
     public sealed class BridgeGenSettings
     {
-        [Category("Teile"), DisplayName("Bretter (hex)")]
+        [Category("Teile"), DisplayName("Bretter (hex)"), Description("Bretter einer Brücke West-Ost (oder ohne Richtung).")]
         public string Deck { get; set; } = string.Empty;
+
+        [Category("Teile"), DisplayName("Bretter Nord-Süd (hex)"), Description("Bretter einer Brücke Nord-Süd. Leer = das Gegenstück der West-Ost-Bretter (gleicher Name, Bild in die andere Richtung).")]
+        public string DeckY { get; set; } = string.Empty;
 
         [Category("Teile"), DisplayName("Geländer West-Ost (hex)")]
         public string RailX { get; set; } = string.Empty;
@@ -403,8 +406,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public static BridgeGenSettings AutoPieces()
         {
             var g = new BridgeGenSettings();
+            // planks by direction: a west – east board and its north – south partner (not both mixed on one bridge)
             List<int> deck = Find(Role.Deck, 40);
-            g.Deck = string.Join(" ", deck.Take(2).Select(i => i.ToString("x4")));
+            int dx = deck.FirstOrDefault(i => Orientation(i) > 0);
+            if (dx != 0)
+            {
+                ushort dy = Turned((ushort)dx);
+                g.Deck = dx.ToString("x4");
+                g.DeckY = dy != dx ? dy.ToString("x4") : deck.FirstOrDefault(i => Orientation(i) < 0).ToString("x4");
+            }
+            else
+            {
+                g.Deck = deck.Count > 0 ? deck[0].ToString("x4") : string.Empty;
+            }
             List<int> rail = Find(Role.Rail, 80);
             int rx = rail.FirstOrDefault(i => Orientation(i) > 0);
             int ry = rx != 0 ? Turned((ushort)rx) : 0;
@@ -421,6 +435,31 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             return g;
         }
 
+        /// <summary>A wall set from the tiledata: a west – east wall piece, its north – south partner, a post of the same name without direction.</summary>
+        public static WallSet AutoWall(string nameFilter = null)
+        {
+            foreach (int id in Find(Role.Wall, 400))
+            {
+                string name = UoArtCache.ItemName(id).Trim().ToLowerInvariant();
+                if (nameFilter != null && !name.Contains(nameFilter.ToLowerInvariant()) || Orientation(id) <= 0)
+                {
+                    continue;
+                }
+                ushort y = Turned((ushort)id);
+                if (y == id)
+                {
+                    continue;
+                }
+                int post = Enumerable.Range(Math.Max(1, id - 8), 17).FirstOrDefault(c => c != id && c != y &&
+                    UoArtCache.ItemName(c).Trim().ToLowerInvariant() == name && Orientation(c) == 0 && UoArtCache.ItemHeight(c) >= UoArtCache.ItemHeight(id));
+                return new WallSet
+                {
+                    Name = UoArtCache.ItemName(id).Trim() + $" ({id:x4})", AlongX = id.ToString("x4"), AlongY = y.ToString("x4"), Post = post != 0 ? post.ToString("x4") : string.Empty
+                };
+            }
+            return null;
+        }
+
         /// <summary>Stairs of the tiledata sorted by direction (from the flags / art): N, E, S, W – empty when none.</summary>
         public static StairSet AutoStairs()
         {
@@ -430,7 +469,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             foreach (int id in stairs)
             {
                 string name = UoArtCache.ItemName(id).Trim().ToLowerInvariant();
-                var group = Enumerable.Range(id, 4).Where(c => UoArtCache.ItemName(c).Trim().ToLowerInvariant() == name).ToList();
+                // four pieces of the same name and the same step height (a block of 10 is no step)
+                int h = UoArtCache.ItemHeight(id);
+                if (h != 5)
+                {
+                    continue;
+                }
+                var group = Enumerable.Range(id, 4).Where(c => UoArtCache.ItemName(c).Trim().ToLowerInvariant() == name && UoArtCache.ItemHeight(c) == h).ToList();
                 if (group.Count == 4)
                 {
                     // order of the original stair groups: south, east, north, west (up direction) → walking down the other way
@@ -458,7 +503,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 Name = name, Width = w, StartLen = 1, EndLen = 1, Length = period + 2, Pillar = g.Pillar, PillarEvery = Math.Max(2, g.PillarEvery),
                 Note = "Aus Teilen erzeugt"
             };
-            ushort[] deck = HexList.Parse(g.Deck);
+            ushort[] deckX = HexList.Parse(g.Deck);
+            ushort[] deckY = HexList.Parse(g.DeckY);
             ushort[] railX = HexList.Parse(g.RailX);
             ushort[] railY = HexList.Parse(g.RailY);
             ushort[] post = HexList.Parse(g.Post);
@@ -467,6 +513,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 List<BridgePart> parts = dir == 0 ? t.PartsX : t.PartsY;
                 ushort[] rail = dir == 0 ? railX : railY.Length > 0 ? railY : railX.Select(Turned).ToArray();
+                ushort[] deck = dir == 0 ? deckX : deckY.Length > 0 ? deckY : deckX.Select(Turned).ToArray();
                 for (int a = 0; a < t.Length; a++)
                 {
                     bool end = a == 0 || a == t.Length - 1;

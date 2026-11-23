@@ -147,6 +147,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private static void CopyGen(BridgeGenSettings from, BridgeGenSettings to)
         {
             to.Deck = from.Deck;
+            to.DeckY = from.DeckY;
             to.RailX = from.RailX;
             to.RailY = from.RailY;
             to.Post = from.Post;
@@ -355,6 +356,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 case "Bretter":
                     _gen.Deck = hex;
                     break;
+                case "Bretter N-S":
+                    _gen.DeckY = hex;
+                    break;
                 case "Geländer W-O":
                     _gen.RailX = hex;
                     break;
@@ -560,7 +564,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             left.Controls.Add(_slotLabel);
             foreach ((string slot, BridgeKit.Role role) in new[]
                      {
-                         ("Bretter", BridgeKit.Role.Deck), ("Geländer W-O", BridgeKit.Role.Rail), ("Geländer N-S", BridgeKit.Role.Rail),
+                         ("Bretter", BridgeKit.Role.Deck), ("Bretter N-S", BridgeKit.Role.Deck), ("Geländer W-O", BridgeKit.Role.Rail), ("Geländer N-S", BridgeKit.Role.Rail),
                          ("Pfosten", BridgeKit.Role.Post), ("Pfeiler", BridgeKit.Role.Pillar), ("Lampe", BridgeKit.Role.Lamp),
                          ("Treppe Nord", BridgeKit.Role.Stairs), ("Treppe Ost", BridgeKit.Role.Stairs), ("Treppe Süd", BridgeKit.Role.Stairs), ("Treppe West", BridgeKit.Role.Stairs)
                      })

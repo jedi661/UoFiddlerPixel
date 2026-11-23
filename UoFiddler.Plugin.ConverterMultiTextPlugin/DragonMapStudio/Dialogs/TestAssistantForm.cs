@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – test assistant
  *  *
@@ -39,6 +39,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
 
         public string BuildMark;
         public Action<string> Status;
+
+        /// <summary>Gives a CGI view the settings of the studio (art, transitions …) – for the pictures of the automatic tests.</summary>
+        public Action<IsoMapView> Configure;
     }
 
     public sealed class TestAssistantForm : Form
@@ -176,11 +179,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             var bar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Font = new Font("Segoe UI", 9.5f) };
             var auto = new ToolStripButton("⚙ " + L.T("Automatisch prüfen (alle)")) { Font = new Font("Segoe UI", 9.5f, FontStyle.Bold) };
             auto.Click += (s, e) => RunAuto();
+            var autoAll = new ToolStripButton("⚙💾 " + L.T("Automatisch + Bericht")) { ToolTipText = L.T("Alle automatischen Tests mit Bildern, danach gleich den Bericht (ZIP) speichern") };
+            autoAll.Click += (s, e) =>
+            {
+                RunAuto();
+                SaveReport();
+            };
             var report = new ToolStripButton("💾 " + L.T("Bericht speichern …"));
             report.Click += (s, e) => SaveReport();
             var folder = new ToolStripButton("📂 " + L.T("Ordner"));
             folder.Click += (s, e) => System.Diagnostics.Process.Start("explorer.exe", _folder);
-            bar.Items.AddRange(new ToolStripItem[] { auto, new ToolStripSeparator(), report, folder });
+            bar.Items.AddRange(new ToolStripItem[] { auto, autoAll, new ToolStripSeparator(), report, folder });
 
             var split = new SplitContainer { Dock = DockStyle.Fill, SplitterDistance = 300, FixedPanel = FixedPanel.Panel1 };
             _list.DrawMode = DrawMode.OwnerDrawFixed;
@@ -413,6 +422,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 {
                     TestResult r = SelfTests.Run(area, name, run);
                     _auto.Add(r);
+                    int idx = _auto.Count, nr = 0;
+                    foreach (TestPicture pic in r.Pictures)
+                    {
+                        string file = SavePicture(pic, $"auto{idx:00}_{++nr}_{Safe(pic.Title)}.png");
+                        if (file != null)
+                        {
+                            all.AppendLine("   Bild: " + file);
+                        }
+                    }
                     Log($"{(r.Status == TestStatus.Ok ? "✔" : r.Status == TestStatus.Warn ? "⚠" : r.Status == TestStatus.Fail ? "✖" : "·")} {r.Area}: {r.Name} – {r.Summary} ({r.Milliseconds:0} ms)");
                     all.AppendLine($"######## [{r.Status}] {r.Area}: {r.Name} ({r.Milliseconds:0} ms)");
                     all.AppendLine(r.Details);
@@ -426,8 +444,67 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             File.WriteAllText(Path.Combine(_folder, "automatisch_details.txt"), all.ToString());
             File.WriteAllText(Path.Combine(_folder, "automatisch.json"), JsonSerializer.Serialize(_auto, new JsonSerializerOptions { WriteIndented = true }));
             int ok = _auto.Count(r => r.Status == TestStatus.Ok), warn = _auto.Count(r => r.Status == TestStatus.Warn), fail = _auto.Count(r => r.Status == TestStatus.Fail);
-            Log($"⚙ Fertig: {ok} in Ordnung, {warn} Hinweise, {fail} Fehler – Einzelheiten in automatisch_details.txt");
+            Log($"⚙ Fertig: {ok} in Ordnung, {warn} Hinweise, {fail} Fehler, {Directory.GetFiles(_folder, "auto*.png").Length} Bilder – Einzelheiten in automatisch_details.txt");
             _host.Status?.Invoke(L.T("Automatische Prüfung") + $": {ok} ✔, {warn} ⚠, {fail} ✖");
+        }
+
+        // ================================================================== pictures of the automatic tests
+
+        private static string Safe(string s) => string.Concat(s.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_')).Trim('_');
+
+        /// <summary>Draws a test map like the client (with the real art) into a PNG of the report folder; null on failure.</summary>
+        private string SavePicture(TestPicture pic, string file)
+        {
+            Form f = null;
+            try
+            {
+                f = new Form
+                {
+                    FormBorderStyle = FormBorderStyle.None, ShowInTaskbar = false, StartPosition = FormStartPosition.Manual,
+                    Location = new Point(-4000, -4000), Size = new Size(1100, 760), Opacity = 0
+                };
+                var view = new IsoMapView { Dock = DockStyle.Fill };
+                f.Controls.Add(view);
+                _host.Configure?.Invoke(view);
+                view.BrushSettings = new CgiBrushSettings();
+                view.UnderView = false;
+                view.MaxZ = 127;
+                view.ShowGrid = true;
+                view.ShowStatics = true;
+                view.Tool = IsoTool.Select;
+                f.Show();
+                view.SetMap(pic.Map);
+                // zoom so the area fits: a tile is 44 pixels wide, the area spans (w + h) / 2 tiles across the screen
+                double need = Math.Min(view.Width / ((pic.Area.Width + pic.Area.Height) * 22.0 + 60), view.Height / ((pic.Area.Width + pic.Area.Height) * 11.0 + 200));
+                for (int i = 0; i < 20 && view.Zoom > need && view.Zoom > 0.25; i++)
+                {
+                    view.ZoomStep(-1);
+                }
+                view.CenterOn(pic.Area.X + pic.Area.Width / 2.0, pic.Area.Y + pic.Area.Height / 2.0);
+                view.Refresh(true);
+                using var bmp = new Bitmap(view.Width, view.Height);
+                view.DrawToBitmap(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    using var font = new Font("Segoe UI", 11f, FontStyle.Bold);
+                    using var back = new SolidBrush(Color.FromArgb(190, 15, 23, 42));
+                    SizeF sz = g.MeasureString(pic.Title, font);
+                    g.FillRectangle(back, 6, 6, sz.Width + 12, sz.Height + 6);
+                    g.DrawString(pic.Title, font, Brushes.White, 12, 9);
+                }
+                bmp.Save(Path.Combine(_folder, file), ImageFormat.Png);
+                return file;
+            }
+            catch (Exception ex)
+            {
+                Log("Bild für '" + pic.Title + "' fehlgeschlagen: " + ex.Message);
+                return null;
+            }
+            finally
+            {
+                f?.Close();
+                f?.Dispose();
+            }
         }
 
         // ================================================================== errors of the studio

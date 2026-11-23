@@ -1795,3 +1795,11 @@ Bericht gespeichert – bitte diese Datei schicken:	Rapport enregistré – merc
 Test-Assistent …	Assistant de test …
 Test	Test
 Test-Assistent: automatisch prüfen, Prüfliste mit Bildschirmfoto und Daten, Bericht für den Entwickler	Assistant de test : vérifications automatiques, liste de contrôle avec capture d'écran et données, rapport pour le développeur
+Automatisch + Bericht	Automatique + rapport
+Alle automatischen Tests mit Bildern, danach gleich den Bericht (ZIP) speichern	Tous les tests automatiques avec images, puis enregistrer le rapport (ZIP) aussitôt
+Wand-Set aus TileData	Jeu de mur de la tiledata
+Ein Wand-Set aus der TileData anlegen: West-Ost-Stück, sein Nord-Süd-Gegenstück (Bild-Erkennung) und ein Pfosten	Créer un jeu de mur depuis la tiledata : pièce ouest – est, son pendant nord – sud (détection d'image) et un poteau
+Welche Wand? Teil des Namens (z. B. stone, brick, wooden, sandstone) – leer = die erste passende:	Quel mur ? Partie du nom (p. ex. stone, brick, wooden, sandstone) – vide = le premier qui convient :
+Keine Wand mit Gegenstück gefunden – anderen Namen versuchen oder Teile im Set-Editor zuordnen.	Aucun mur avec pendant trouvé – essayer un autre nom ou attribuer les pièces dans l'éditeur de jeux.
+Teile aus TileData vorschlagen	Proposer des pièces de la tiledata
+Bretter N-S	Planches N-S
