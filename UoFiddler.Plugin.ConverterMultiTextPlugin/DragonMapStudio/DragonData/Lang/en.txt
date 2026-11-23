@@ -1860,3 +1860,18 @@ Treppen-Modell aus dem Treppen-Designer – oder Treppe aus dem Treppen-Set erze
 Treppen-Designer …	Stair designer …
 Treppen-Modell	Stair model
 hinauf	up
+# Werkstatt 33: Höhen im Treppen-Designer
+auf den Stapel (TileData-Höhe)	on top of the stack (tiledata height)
+feste Höhe über dem Boden	fixed height above the ground
+Feste Höhe über dem Boden (Schritt = Höhe des gewählten Teils aus der TileData)	Fixed height above the ground (step = height of the chosen piece from the tiledata)
+Höhe des gewählten Teils laut TileData	Height of the chosen piece according to the tiledata
+Auswahl:	Selection:
+Erst Teile mit 'Auswahl' wählen (Strg = mehrere).	First select pieces with 'Select' (Ctrl = several).
+um die Höhe des Teils (TileData) hoch / runter	up / down by the height of the piece (tiledata)
+um 1 Z	by 1 Z
+Die gewählten Teile auf eine genaue Höhe setzen	Set the chosen pieces to an exact height
+Höhe z der gewählten Teile:	Height z of the chosen pieces:
+Höhe gesetzt	Height set
+Höhen aus der TileData	Heights from the tiledata
+So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z laut TileData), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen und ins Testfeld klicken: 'auf den Stapel' legt jedes Teil auf das oberste – Block auf Block, die Stufe darauf.	This is how stairs are built: square blocks stepped on top of each other (5 Z each according to the tiledata), on every step the sloped stair piece. Choose in the catalog and click into the test field: 'on top of the stack' puts every piece on the topmost one – block on block, the step on top.
+Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken – 'Höhe: auf den Stapel' legt es auf das oberste Teil (Höhen aus der TileData). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	Build: choose block / step in the catalog, click into the test field – 'Height: on top of the stack' puts it on the topmost piece (heights from the tiledata). Or 'Generate from stair set'. Then mark with 'Area' and 'Take as model'.

@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – stair designer: build stairs by hand in a test field (blocks stepped up, the sloped stair
  *  *  piece on top), generate one from a stair set, take one from the map, save models by category, give a model
@@ -40,6 +40,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private PropertyGrid _modelGrid;
         private readonly StaircaseSettings _gen = new StaircaseSettings { Up = Compass.North, Floors = 1, Turn = StairTurn.Straight };
         private Compass _previewUp = Compass.North;
+        private ToolStripLabel _pieceHeight;
+        private NumericUpDown _zStep;
 
         public StairDesignerForm(StairDesignerHost host)
         {
@@ -53,7 +55,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             NewField();
             FillModels(null);
             _catalog.ShowCategory(ArtKind.Static, "Treppen");
-            Say(L.T("Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken ('Z +' oben = Höhe, 'auf Statics stapeln' an). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'."));
+            Say(L.T("Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken – 'Höhe: auf den Stapel' legt es auf das oberste Teil (Höhen aus der TileData). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'."));
         }
 
         private void Say(string text)
@@ -210,13 +212,60 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             Tool("Löschen", IsoTool.Delete);
             Tool("Radierer", IsoTool.Eraser);
             tools.Items.Add(new ToolStripSeparator());
-            tools.Items.Add(new ToolStripLabel("Z +"));
-            var z = new NumericUpDown { Minimum = -60, Maximum = 120, Increment = 5, Width = 55 };
-            z.ValueChanged += (s, e) => _view.ZOffset = (int)z.Value;
-            tools.Items.Add(new ToolStripControlHost(z) { ToolTipText = L.T("Höhe über dem Boden für 'Static setzen' (Stufen: 0, 5, 10, 15 …)") });
-            var stack = new ToolStripButton(L.T("auf Statics stapeln")) { CheckOnClick = true, Checked = true };
-            stack.CheckedChanged += (s, e) => _view.StackOnStatics = stack.Checked;
-            tools.Items.Add(stack);
+            // height of the next piece: on top of the stack (tiledata heights, block on block) or a fixed z over the ground
+            tools.Items.Add(new ToolStripLabel(L.T("Höhe:")));
+            var mode = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, AutoSize = false, Width = 175 };
+            mode.Items.AddRange(new object[] { L.T("auf den Stapel (TileData-Höhe)"), L.T("feste Höhe über dem Boden") });
+            mode.SelectedIndex = 0;
+            var z = new NumericUpDown { Minimum = -60, Maximum = 120, Increment = 5, Width = 55, Enabled = false };
+            void ApplyMode()
+            {
+                bool stack = mode.SelectedIndex == 0;
+                _view.StackOnStatics = stack;
+                _view.ZOffset = stack ? 0 : (int)z.Value;
+                z.Enabled = !stack;
+            }
+            mode.SelectedIndexChanged += (s, e) => ApplyMode();
+            z.ValueChanged += (s, e) => ApplyMode();
+            tools.Items.Add(mode);
+            tools.Items.Add(new ToolStripControlHost(z) { ToolTipText = L.T("Feste Höhe über dem Boden (Schritt = Höhe des gewählten Teils aus der TileData)") });
+            _pieceHeight = new ToolStripLabel("h –") { ToolTipText = L.T("Höhe des gewählten Teils laut TileData") };
+            tools.Items.Add(_pieceHeight);
+            _zStep = z;
+            tools.Items.Add(new ToolStripSeparator());
+            // move the selected pieces up / down by their height or by 1
+            tools.Items.Add(new ToolStripLabel(L.T("Auswahl:")));
+            void Move(int dz, bool byHeight)
+            {
+                if (_view.Selection.Count == 0)
+                {
+                    Say(L.T("Erst Teile mit 'Auswahl' wählen (Strg = mehrere)."));
+                    return;
+                }
+                int step = byHeight ? Math.Max(1, _view.Selection.Max(s2 => Math.Max(1, UoArtCache.ItemHeight(s2.Id)))) : 1;
+                _view.MoveSelection(0, 0, dz * step, false);
+            }
+            foreach ((string text, int dz, bool byH) in new[] { ("▲ h", 1, true), ("▼ h", -1, true), ("+1", 1, false), ("−1", -1, false) })
+            {
+                var mb = new ToolStripButton(text) { ToolTipText = byH ? L.T("um die Höhe des Teils (TileData) hoch / runter") : L.T("um 1 Z") };
+                mb.Click += (s, e) => Move(dz, byH);
+                tools.Items.Add(mb);
+            }
+            var setZ = new ToolStripButton("z = …") { ToolTipText = L.T("Die gewählten Teile auf eine genaue Höhe setzen") };
+            setZ.Click += (s, e) =>
+            {
+                if (_view.Selection.Count == 0)
+                {
+                    Say(L.T("Erst Teile mit 'Auswahl' wählen (Strg = mehrere)."));
+                    return;
+                }
+                string v = Microsoft.VisualBasic.Interaction.InputBox(L.T("Höhe z der gewählten Teile:"), Text, _view.Selection.First().Z.ToString());
+                if (int.TryParse(v, out int nz))
+                {
+                    _view.ModifySelection(s2 => s2.Z = Math.Clamp(nz, -128, 127), L.T("Höhe gesetzt") + $": z {nz}");
+                }
+            };
+            tools.Items.Add(setZ);
             var grid = new ToolStripButton(L.T("Gitter")) { CheckOnClick = true, Checked = true };
             grid.Click += (s, e) =>
             {
@@ -261,6 +310,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 {
                     _view.PlaceId = (ushort)e.Id;
                     _view.Tool = IsoTool.Place;
+                    int ih = UoArtCache.ItemHeight(e.Id);
+                    _pieceHeight.Text = $"h {ih}";
+                    if (ih > 0 && _zStep != null)
+                    {
+                        _zStep.Increment = ih;
+                    }
                     Compass? up = null;
                     try
                     {
@@ -318,7 +373,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             left.Controls.Add(new Label
             {
                 AutoSize = false, Width = 310, Height = 64, ForeColor = Color.FromArgb(71, 85, 105),
-                Text = L.T("So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen, 'Z +' setzen, ins Testfeld klicken – oder erzeugen und ändern.")
+                Text = L.T("So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z laut TileData), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen und ins Testfeld klicken: 'auf den Stapel' legt jedes Teil auf das oberste – Block auf Block, die Stufe darauf.")
             });
             var gl = Line();
             gl.Controls.Add(B("Testfeld leeren", NewField, 148));

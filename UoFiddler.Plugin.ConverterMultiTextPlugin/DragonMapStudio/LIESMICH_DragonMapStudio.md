@@ -1258,3 +1258,9 @@ Menü **Hilfe → 🧪 Test-Assistent** oder Knopf **„🧪 Test“** oben rech
 * **„📋 Log + Bild“** speichert ein Bild und eine Liste jeder Stufe mit Position, Höhe, ID, Name, Höhe des Teils und Neigung (Ordner „Logs“, Text auch in der Zwischenablage) – zum Schicken. Das gibt es jetzt auch im **Brücken-Designer**.
 * **„Im Studio benutzen“**: das Werkzeug Treppe setzt das Modell. Oben „Modell“ wählen (oder „aus Treppen-Set erzeugen“), R dreht, „Modell mehrmals“ = mehrere Etagen hintereinander, „Nach unten bauen“ = der Klick ist das obere Ende, unter der Karte mit „Unter der Karte bauen“ (Keller).
 
+### Höhen im Treppen-Designer (seit „Werkstatt 33“)
+* Oben **„Höhe:“** – **„auf den Stapel (TileData-Höhe)“**: jedes Teil kommt auf das oberste Teil darunter, mit der Höhe aus der TileData (Block 5 auf Block 5, die Stufe darauf). Oder **„feste Höhe über dem Boden“** mit Zahl (Schritt = Höhe des gewählten Teils). Vorher wurden „Z +“ und Stapeln zusammengezählt – daher lag die Stufe 5 zu hoch.
+* Daneben steht die **Höhe des gewählten Teils** laut TileData (z. B. h 5).
+* **Auswahl ▲ h / ▼ h** (um die Teil-Höhe), **+1 / −1** und **„z = …“** (genaue Höhe) für gewählte Teile.
+* Das Erzeugen („Aus Treppen-Set erzeugen“, Werkzeug Treppe) liest Stufen-, Block- und Absatz-Höhe ebenfalls aus der TileData („Höhen aus der TileData“, an).
+

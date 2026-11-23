@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 23.11.2026 – Werkstatt 32“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 23.11.2026 – Werkstatt 33“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -180,6 +180,8 @@
 21. **Neu (Werkstatt 31):** Treppen-Neigung aus dem Art-Bild (`BridgeKit.StairUp`: Oberkante links / Mitte / rechts gegen einen flachen Block, mit künstlichen Bildern geprüft), `AutoStairs` ordnet danach zu (Fallback: alte Reihenfolge, als „geraten“ markiert), `FixStairs` + Knopf „Richtungen aus Bild“ beim Werkzeug Treppe. Test protokolliert die Messwerte je Stufe; Testbilder je Richtung / Wende einzeln und größer. Anlass: Testbericht 20261123_2155 zeigte falsch geneigte Treppen (03ef–03f2 nur der Reihe nach zugeordnet).
 
 22. **Neu (Werkstatt 32):** Treppen-Designer (`Dialogs/StairDesignerForm.cs`) mit Modellen `Core/StairModel.cs` (`SettingsFolder/Treppen/<Kategorie>`; Drehen: Positionen + Stufen nach `StairUp`, sonst `Turned`), Werkzeug Treppe mit „Modell“ und „Modell mehrmals“ (`StaircaseSettings.Model/Repeats`, `IsoMapView.StairPieces`). „📋 Log + Bild“ (`Dialogs/DesignLog.cs`, `SettingsFolder/Logs`) in Treppen- und Brücken-Designer. Selbsttest „Treppen-Modell“, Prüflisten-Schritt Treppen-Designer.
+
+23. **Neu (Werkstatt 33):** Treppen-Designer „Höhe: auf den Stapel (TileData-Höhe)“ / „feste Höhe“ (vorher addierten sich Z + und Stapeln → Stufe 5 zu hoch), Teil-Höhe aus der TileData angezeigt, Auswahl ▲ h / ▼ h / ±1 / z = …; `StaircaseSettings.HeightFromTileData` (Stufen-, Block-, Absatz-Höhe aus der TileData, Blöcke von unten gestapelt).
 
 ## Offen / als Nächstes
 

@@ -43,8 +43,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Category("Treppe"), DisplayName("Stufen je Lauf"), Description("Original: 4 Stufen × 5 Z = 20 Z = eine Etage.")]
         public int Steps { get; set; } = 4;
 
-        [Category("Treppe"), DisplayName("Stufen-Höhe (Z)")]
+        [Category("Treppe"), DisplayName("Stufen-Höhe (Z)"), Description("Nur wenn 'Höhen aus der TileData' aus ist.")]
         public int StepHeight { get; set; } = 5;
+
+        [Category("Treppe"), DisplayName("Höhen aus der TileData"), Description("An = Stufen-, Block- und Absatz-Höhe stehen in der TileData (normal 5) und werden von dort gelesen. Aus = 'Stufen-Höhe'.")]
+        public bool HeightFromTileData { get; set; } = true;
 
         [Category("Treppe"), DisplayName("Breite (Tiles)")]
         public int Width { get; set; } = 1;
@@ -100,6 +103,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             int steps = Math.Clamp(o.Steps, 1, 20), h = Math.Clamp(o.StepHeight, 1, 20), w = Math.Clamp(o.Width, 1, 8), floors = Math.Clamp(o.Floors, 1, 10);
             ushort block = HexList.Parse(set.Block).FirstOrDefault();
             ushort landing = HexList.Parse(set.Landing).FirstOrDefault();
+            // heights of the pieces from the tiledata (a step, a block: normally 5)
+            int HeightOf(ushort id)
+            {
+                if (!o.HeightFromTileData || id == 0)
+                {
+                    return h;
+                }
+                int th = UoArtCache.ItemHeight(id);
+                return th >= 1 && th <= 30 ? th : h;
+            }
+            if (o.HeightFromTileData)
+            {
+                ushort first = HexList.Parse(set.For(Staircase.Opposite(o.Up))).FirstOrDefault();
+                h = HeightOf(first);
+            }
             int bottom = o.Downwards ? footZ - floors * steps * h : footZ;
             var placed = new HashSet<(int, int, int)>();
             void Put(ushort id, int x, int y, int z)
@@ -112,13 +130,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             void Column(Point p, ushort top, ushort fill, int topZ)
             {
-                // the piece with its top on topZ, below it blocks down to the bottom
-                Put(top, p.X, p.Y, topZ - h);
+                // the piece with its top on topZ (its own tiledata height), below it blocks stacked from the bottom up
+                int ht = HeightOf(top);
+                Put(top, p.X, p.Y, topZ - ht);
                 if (o.Fill)
                 {
-                    for (int z = topZ - 2 * h; z >= bottom; z -= h)
+                    int hb = Math.Max(1, HeightOf(fill));
+                    int z = bottom;
+                    for (int i = 0; i < 40 && z + hb <= topZ - ht; i++, z += hb)
                     {
                         Put(fill, p.X, p.Y, z);
+                    }
+                    if (z < topZ - ht)
+                    {
+                        Put(fill, p.X, p.Y, topZ - ht - hb); // closes a gap when the heights do not add up
                     }
                 }
                 if (cells != null)

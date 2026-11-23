@@ -1852,3 +1852,18 @@ Treppen-Modell aus dem Treppen-Designer – oder Treppe aus dem Treppen-Set erze
 Treppen-Designer …	Concepteur d'escaliers …
 Treppen-Modell	Modèle d'escalier
 hinauf	montée
+# Werkstatt 33: Höhen im Treppen-Designer
+auf den Stapel (TileData-Höhe)	sur la pile (hauteur de la tiledata)
+feste Höhe über dem Boden	hauteur fixe au-dessus du sol
+Feste Höhe über dem Boden (Schritt = Höhe des gewählten Teils aus der TileData)	Hauteur fixe au-dessus du sol (pas = hauteur de la pièce choisie dans la tiledata)
+Höhe des gewählten Teils laut TileData	Hauteur de la pièce choisie selon la tiledata
+Auswahl:	Sélection :
+Erst Teile mit 'Auswahl' wählen (Strg = mehrere).	Sélectionner d'abord des pièces avec « Sélection » (Ctrl = plusieurs).
+um die Höhe des Teils (TileData) hoch / runter	monter / descendre de la hauteur de la pièce (tiledata)
+um 1 Z	de 1 Z
+Die gewählten Teile auf eine genaue Höhe setzen	Mettre les pièces choisies à une hauteur exacte
+Höhe z der gewählten Teile:	Hauteur z des pièces choisies :
+Höhe gesetzt	Hauteur réglée
+Höhen aus der TileData	Hauteurs de la tiledata
+So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z laut TileData), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen und ins Testfeld klicken: 'auf den Stapel' legt jedes Teil auf das oberste – Block auf Block, die Stufe darauf.	Voici comment est construit un escalier : des blocs carrés empilés en marches (5 Z chacun selon la tiledata), sur chaque marche la pièce inclinée. Choisir dans le catalogue et cliquer dans le terrain d'essai : « sur la pile » pose chaque pièce sur la plus haute – bloc sur bloc, la marche dessus.
+Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken – 'Höhe: auf den Stapel' legt es auf das oberste Teil (Höhen aus der TileData). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	Construire : choisir bloc / marche dans le catalogue, cliquer dans le terrain d'essai – « Hauteur : sur la pile » la pose sur la pièce la plus haute (hauteurs de la tiledata). Ou « Générer depuis le jeu d'escalier ». Puis marquer avec « Zone » et « Reprendre comme modèle ».
