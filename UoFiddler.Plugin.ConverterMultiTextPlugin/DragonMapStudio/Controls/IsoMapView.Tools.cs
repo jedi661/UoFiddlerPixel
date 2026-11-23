@@ -70,7 +70,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                                                      t == IsoTool.Noise || t == IsoTool.Variants || t == IsoTool.TransitionBrush || t == IsoTool.Eraser;
 
         private static bool IsClickTool(IsoTool t) => t == IsoTool.Wall || t == IsoTool.Road || t == IsoTool.Ramp || t == IsoTool.Measure ||
-                                                      t == IsoTool.Lasso || t == IsoTool.MagicWand || t == IsoTool.Stairs || IsBuildTool(t);
+                                                      t == IsoTool.Lasso || t == IsoTool.MagicWand || t == IsoTool.Stairs || t == IsoTool.Motif || IsBuildTool(t);
 
         /// <summary>Drag tools of the builders: bridge (line), cellar and dungeon (rectangle), course (line).</summary>
         private static bool IsBuildTool(IsoTool t) => t == IsoTool.Bridge || t == IsoTool.Cellar || t == IsoTool.Dungeon || t == IsoTool.Course || t == IsoTool.MountainWall;
@@ -397,6 +397,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     Message?.Invoke(this, $"{_points.Count} " + L.T("Punkte – weiter klicken · Doppelklick, Rechtsklick oder Enter = fertig · Rücktaste = letzten Punkt weg · Esc = abbrechen"));
                     Invalidate();
                     return true;
+                case IsoTool.Motif:
                 case IsoTool.Stairs:
                     // click = the model / staircase once, drag = one step per tile
                     _dragStart = tile;
@@ -530,6 +531,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 case IsoTool.Course:
                     PlaceCourse(a0, b0);
                     break;
+                case IsoTool.Motif:
+                    PlaceMotif(a0, b0);
+                    break;
                 case IsoTool.Stairs:
                     if (a0 == b0)
                     {
@@ -548,6 +552,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Keys of the point tools and the new edits. True = handled.</summary>
         private bool ToolKeyDown(KeyEventArgs e)
         {
+            if (Tool == IsoTool.Motif && e.KeyCode == Keys.R && !e.Control)
+            {
+                BrushSettings.MotifDraw.Direction = (Compass)(((int)BrushSettings.MotifDraw.Direction + 1) % 4);
+                Message?.Invoke(this, L.T("Muster: Richtung") + " " + L.T(Core.Motif.DirName(BrushSettings.MotifDraw.Direction)));
+                Invalidate();
+                return true;
+            }
             if (Tool == IsoTool.Stairs && e.KeyCode == Keys.R && !e.Control)
             {
                 BrushSettings.Staircase.Up = (Compass)(((int)BrushSettings.Staircase.Up + 1) % 4);
@@ -871,6 +882,38 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             int before = _map.UndoCount;
             _map.Apply(changes);
             Finished(_map.UndoCount > before ? changes.Count : 0, L.T("Brücke") + $" ({source})");
+        }
+
+        /// <summary>Motif by "Kategorie / Name" (motif designer).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<string, Motif> FindMotif { get; set; }
+
+        /// <summary>Pieces of the motif for a click / drag (preview and building).</summary>
+        public List<StaticChange> MotifPieces(Point a, Point b, out string info)
+        {
+            info = string.Empty;
+            Motif m = string.IsNullOrEmpty(BrushSettings.Motif) ? null : FindMotif?.Invoke(BrushSettings.Motif);
+            if (m == null)
+            {
+                return new List<StaticChange>();
+            }
+            int under = UnderView ? BrushSettings.UnderOffset : 0;
+            List<StaticChange> ch = m.Build(_map, a, b, BrushSettings.MotifDraw, ZOffset + under, out Compass dir, out int n);
+            info = $"'{m}' {L.T(Core.Motif.DirName(dir))} × {n}" + (BrushSettings.MotifDraw.Floors > 1 ? $", {BrushSettings.MotifDraw.Floors} " + L.T("Etagen") : string.Empty);
+            return ch;
+        }
+
+        private void PlaceMotif(Point a, Point b)
+        {
+            List<StaticChange> ch = MotifPieces(a, b, out string info);
+            if (ch.Count == 0)
+            {
+                Message?.Invoke(this, L.T("Muster: erst ein Muster wählen (Leiste oben / Muster-Baukasten)."));
+                return;
+            }
+            int before = _map.UndoCount;
+            _map.Apply(ch);
+            Finished(_map.UndoCount > before ? ch.Count : 0, L.T("Muster") + " " + info);
         }
 
         /// <summary>Stair model by "Kategorie / Name" (stair designer).</summary>
@@ -1376,6 +1419,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             IsoTool.Scatter => L.T("Streu-Pinsel: Ziehen verteilt das Set (Reiter Pinsel) – Dichte, Abstand, Boden-Filter · Strg+Ziehen entfernt Statics des Sets · Pinsel oben · ein Zug = ein Rückgängig-Schritt"),
             IsoTool.Eraser => L.T("Radierer: Ziehen löscht alle Statics im Pinsel (Größe oben / [ ]) · Strg = Land zur Leere · Einstellungen im Reiter Pinsel"),
+            IsoTool.Motif => L.T("Muster: Klick = einmal in der Richtung (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe, Etagen, Abstand oben in der Leiste"),
             IsoTool.Stairs => L.T("Treppe: Klick = Modell / Treppe einmal (R dreht) · Ziehen = je Feld eine Stufe mit Blöcken darunter, in Zieh-Richtung hinauf ('Nach unten bauen' = hinunter) · Vorschau am Mauszeiger"),
             IsoTool.HueBrush => L.T("Hue-Pinsel: Ziehen färbt alle Statics im Pinsel mit der Hue (Reiter Items) · Strg = Hue 0 (Original)"),
             IsoTool.River => L.T("Fluss: Ziehen gräbt ein Bett – Wasser-Tiles auf 'Tiefe' unter dem Startpunkt, weiches Ufer, danach Übergänge (Reiter Pinsel → Fluss) · Pinsel oben = Breite"),

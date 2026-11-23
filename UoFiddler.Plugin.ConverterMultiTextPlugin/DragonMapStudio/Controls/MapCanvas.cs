@@ -57,7 +57,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         Course,
 
         /// <summary>Drag a rectangle: the dungeon generator fills it (colour 1 = floor, colour 2 = walls).</summary>
-        Dungeon
+        Dungeon,
+
+        /// <summary>Click / drag: a motif of the "Muster-Baukasten" into the statics layer (repeated along the drag).</summary>
+        Motif
     }
 
     public sealed class MapClickEventArgs : EventArgs
@@ -268,6 +271,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         /// <summary>Tool "Dungeon": the rectangle was dragged – the form builds the dungeon.</summary>
         public event EventHandler<Rectangle> DungeonRequested;
+
+        /// <summary>Tool "Muster": click (a == b) or drag from a to b – the form puts the motif into the statics layer.</summary>
+        public event Action<Point, Point> MotifRequested;
+
+        /// <summary>Preview of the tool "Muster": the cells the motif would cover for a click / drag from a to b.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<Point, Point, IReadOnlyCollection<Point>> MotifPreview { get; set; }
 
         /// <summary>Colour written into a cell by the colour tools (see <see cref="CellColour"/>).</summary>
         private ushort PaintCell(int x, int y, ushort current, ushort chosen) => CellColour == null ? chosen : CellColour(x, y, current, chosen);
@@ -859,6 +869,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                             g.DrawLine(arrow, s, t);
                         }
                         break;
+                    case MapTool.Motif:
+                        {
+                            IReadOnlyCollection<Point> cells = MotifPreview?.Invoke(_start, _cursor);
+                            if (cells != null)
+                            {
+                                using var fill = new SolidBrush(Color.FromArgb(140, 251, 191, 36));
+                                foreach (Point c in cells)
+                                {
+                                    PointF c0 = MapToScreen(c.X, c.Y), c1 = MapToScreen(c.X + 1, c.Y + 1);
+                                    g.FillRectangle(fill, c0.X, c0.Y, Math.Max(1, c1.X - c0.X), Math.Max(1, c1.Y - c0.Y));
+                                }
+                            }
+                            using var arrow = new Pen(Color.Orange, 2) { EndCap = LineCap.ArrowAnchor };
+                            g.DrawLine(arrow, MapToScreen(_start.X + 0.5, _start.Y + 0.5), MapToScreen(_cursor.X + 0.5, _cursor.Y + 0.5));
+                            break;
+                        }
                     case MapTool.HalfCircle:
                     case MapTool.Triangle:
                         {
@@ -936,7 +962,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         private static bool IsShapeTool(MapTool t) =>
             t == MapTool.Line || t == MapTool.Rectangle || t == MapTool.FilledRectangle || t == MapTool.Ellipse || t == MapTool.FilledEllipse ||
-            t == MapTool.HalfCircle || t == MapTool.Triangle || t == MapTool.SlopeLine || t == MapTool.Course || t == MapTool.Dungeon;
+            t == MapTool.HalfCircle || t == MapTool.Triangle || t == MapTool.SlopeLine || t == MapTool.Course || t == MapTool.Dungeon || t == MapTool.Motif;
 
         private static Rectangle NormRect(Point a, Point b) =>
             Rectangle.FromLTRB(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
@@ -1237,6 +1263,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 case MapTool.SlopeLine: return "Neigungs-Linie";
                 case MapTool.Course: return "Natürlicher Lauf";
                 case MapTool.Dungeon: return "Dungeon";
+                case MapTool.Motif: return "Muster";
                 default: return t.ToString();
             }
         }
@@ -1337,6 +1364,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         private void DrawShape(Point a, Point b, ushort color)
         {
+            if (_tool == MapTool.Motif)
+            {
+                // statics only: the form makes its own undo step (no pixels touched here)
+                MotifRequested?.Invoke(a, b);
+                return;
+            }
             Rectangle r = NormRect(a, b);
             var touch = new Rectangle(r.X - BrushSize, r.Y - BrushSize, r.Width + 2 * BrushSize + 1, r.Height + 2 * BrushSize + 1);
             _history?.Touch(touch);

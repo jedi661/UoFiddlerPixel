@@ -125,6 +125,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             S("Treppe", "Treppen-Designer: Modell bauen und setzen",
                 "Treppen-Designer öffnen (▶). Im Katalog Block und Stufe wählen, mit 'Z +' (0, 5, 10, 15) eine Treppe von Hand bauen – oder 'Aus Treppen-Set erzeugen'. Mit 'Bereich' markieren, 'Als Modell übernehmen', 'Gedreht ansehen' N / O / S / W, '📋 Log + Bild', speichern, 'Im Studio benutzen' und auf die Karte klicken. 📷 Aufnehmen.",
                 "Die Treppe steigt in jeder Richtung richtig an (Blöcke stufig, oben die Stufe); Log und Bild liegen im Ordner Logs.", () => _host.Open?.Invoke("stairdesigner"));
+            S("Muster", "Muster-Baukasten: Zinnen bauen, vier Richtungen, ziehen",
+                "Muster-Baukasten öffnen (▶). Richtung 'Ost' wählen, im Katalog eine Mauer und Zinnen wählen und ein Stück (2–3 Tiles) bauen, mit 'Bereich' markieren, 'Markiertes als diese Richtung übernehmen', 'Fehlende Richtungen automatisch', 'Alle 4 ansehen', '▶ Probe ziehen', '📋 Log + Bild', speichern (Kategorie Burg). 'Im Studio benutzen' und auf der Karte in alle vier Richtungen ziehen; einmal mit Etagen 2. 📷 Aufnehmen.",
+                "Das Muster wiederholt sich lückenlos in Zieh-Richtung, jede Richtung zeigt die passenden Teile, alle Stücke auf gleicher Höhe; mit 2 Etagen steht es doppelt übereinander. Im Karten-Editor (Werkzeug 'Muster (Statics)') landen die Statics in der Statics-Ebene.", () => _host.Open?.Invoke("motifdesigner"));
             S("Drehen", "Drehen 90° tauscht Wände",
                 "Mit Wand / Zaun eine Wand West-Ost ziehen, mit 'Bereich' markieren und R (drehen) drücken. 📷 Aufnehmen.",
                 "Die Wand liegt jetzt Nord-Süd und benutzt die Nord-Süd-Teile (nicht mehr quer stehende Teile).", Tool(IsoTool.Wall));

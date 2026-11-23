@@ -112,6 +112,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 ("Treppe", "Treppenhaus: Höhe, Absatz, gefüllt, alle Wenden", c => StaircaseShapes((Ctx)c, b)),
                 ("Treppe", "Treppe lernen (bauen → lernen → vergleichen)", c => StairLearn((Ctx)c, b)),
                 ("Treppe", "Treppen-Modell: aufnehmen, in alle Richtungen drehen, mehrmals", c => StairModels((Ctx)c, b)),
+                ("Muster", "Muster-Baukasten: Zinnen-Mauer, 4 Richtungen, ziehen, 2 Etagen", c => Motifs((Ctx)c, b)),
                 ("Drehen", "Drehen 90°: gerichtete Teile tauschen", c => RotateSwap((Ctx)c, b)),
                 ("Wand", "Wand Punkt zu Punkt, Dicke, Ecken", c => WallPath((Ctx)c, b)),
                 ("Fluss", "Fluss-Lauf: Breite, Mitte bleibt Wasser, Grund wie Küste", c => River((Ctx)c, b)),
@@ -492,6 +493,59 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 c.Warn("Kein Treppen-Set – Platzhalter-Stufen (ohne Bild).");
             }
+        }
+
+        private static void Motifs(Ctx c, CgiBrushSettings b)
+        {
+            WallSet w = b.WallSets.FirstOrDefault(x => x.Name == b.WallSet);
+            ushort wall = w != null ? HexList.Parse(w.AlongX).FirstOrDefault() : (ushort)0;
+            if (wall == 0)
+            {
+                wall = (ushort)BridgeKit.Find(BridgeKit.Role.Wall, 10).FirstOrDefault(i => BridgeKit.Orientation(i) > 0);
+            }
+            if (wall == 0)
+            {
+                c.Warn("Keine Mauer gefunden – Platzhalter 0x0026.");
+                wall = 0x0026;
+            }
+            int h = Math.Max(5, UoArtCache.StackHeight(wall));
+            var m = new Motif { Name = "Test-Zinnen", Category = "Test" };
+            // east: 3 tiles of wall, battlements on the 1st and 3rd tile
+            m.SetVariant(Compass.East, new List<PieceStatic>
+            {
+                new PieceStatic { X = 0, Id = wall }, new PieceStatic { X = 1, Id = wall }, new PieceStatic { X = 2, Id = wall },
+                new PieceStatic { X = 0, Z = h, Id = wall }, new PieceStatic { X = 2, Z = h, Id = wall }
+            });
+            int turned = m.AutoVariants();
+            c.Line($"Mauer {Item(wall)}, Stapel-Höhe {h}, {turned} Richtungen gedreht");
+            c.Line(m.Describe());
+            c.Check(new[] { Compass.North, Compass.East, Compass.South, Compass.West }.All(m.Has), "alle vier Richtungen vorhanden");
+            MapData map = Map(64, 64, 3, 0);
+            var o = new MotifDrawSettings();
+            foreach ((Point a, Point e, Compass want) in new[]
+                     {
+                         (new Point(10, 8), new Point(40, 8), Compass.East), (new Point(52, 10), new Point(52, 40), Compass.South),
+                         (new Point(40, 54), new Point(10, 54), Compass.West), (new Point(6, 46), new Point(6, 16), Compass.North)
+                     })
+            {
+                List<StaticChange> ch = m.Build(map, a, e, o, 0, out Compass dir, out int n);
+                map.Apply(ch);
+                var cells = ch.Select(x => dir == Compass.East || dir == Compass.West ? x.After.X : x.After.Y).Distinct().OrderBy(v => v).ToList();
+                bool closed = cells.Count == cells.Max() - cells.Min() + 1;
+                c.Line($"Ziehen {want}: Richtung {dir}, {n}× , {ch.Count} Statics, Felder {cells.Min()}–{cells.Max()}, z {string.Join(",", ch.Select(x => x.After.Z).Distinct())}");
+                c.Check(dir == want, $"{want}: Zieh-Richtung erkannt");
+                c.Check(closed, $"{want}: lückenlos wiederholt");
+                c.Check(ch.Select(x => x.After.Z).Distinct().Count() == 2, $"{want}: alle Stücke auf gleicher Höhe (Mauer + Zinnen)");
+            }
+            c.Picture("Muster in alle vier Richtungen gezogen (oben Ost, rechts Süd, unten West, links Nord)", map, new Rectangle(0, 0, 64, 64));
+            MapData two = Map(32, 32, 3, 0);
+            o.Floors = 2;
+            List<StaticChange> fl = m.Build(two, new Point(6, 12), new Point(20, 12), o, 0, out _, out _);
+            two.Apply(fl);
+            int top = fl.Max(x => x.After.Z);
+            c.Line($"2 Etagen: {fl.Count} Statics, oben z {top}");
+            c.Check(top >= 2 * h, "2 Etagen stehen übereinander");
+            c.Picture("Muster mit 2 Etagen", two, new Rectangle(2, 4, 24, 20));
         }
 
         private static void RotateSwap(Ctx c, CgiBrushSettings b)

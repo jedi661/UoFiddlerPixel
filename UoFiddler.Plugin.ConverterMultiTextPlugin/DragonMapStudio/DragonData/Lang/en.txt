@@ -1896,3 +1896,77 @@ je	each
 Treppe ziehen: keine Stufe für diese Richtung – Modell mit Dreh-Tabelle oder Treppen-Set wählen.	Drag stairs: no step for this direction – choose a model with a turn table or a stair set.
 Treppe gezogen	Stairs dragged
 Treppe: Klick = Modell / Treppe einmal (R dreht) · Ziehen = je Feld eine Stufe mit Blöcken darunter, in Zieh-Richtung hinauf ('Nach unten bauen' = hinunter) · Vorschau am Mauszeiger	Stairs: click = model / stairs once (R turns) · drag = one step per tile with blocks underneath, up in the drag direction ('Build downwards' = down) · preview at the mouse
+
+# Werkstatt 35 – Muster-Baukasten
+Muster-Baukasten	Pattern kit
+Richtung wählen (z. B. Ost = das Muster läuft nach Osten), im Katalog Teile wählen und ins Testfeld bauen, mit 'Bereich' markieren, 'Markiertes als … übernehmen'. Fehlende Richtungen dreht das Studio, oder du baust sie selbst.	Choose a direction (e.g. east = the pattern runs east), pick parts in the catalog and build in the test field, mark with 'Area', 'Take the marked as …'. The studio turns missing directions, or you build them yourself.
+Muster-Testfeld	Pattern test field
+Richtung	Direction
+ändern, markieren, wieder übernehmen	change, mark, take again
+noch leer: bauen oder 'Fehlende Richtungen automatisch'	still empty: build or 'Missing directions automatically'
+Alle vier Richtungen: oben Nord, rechts Ost, unten Süd, links West (so wie im Client: Nord = oben rechts).	All four directions: top north, right east, bottom south, left west (as in the client: north = top right).
+Übernommen als Richtung	Taken as direction
+Treppen erkannt	stairs recognised
+fehlende Richtungen: 'automatisch' oder selbst bauen	missing directions: 'automatically' or build yourself
+Richtungen gedreht (Stufen nach ihrer Neigung, Wände nach ihrem Bild, Blöcke bleiben) – falsche Grafik? Richtung wählen, von Hand ändern, wieder übernehmen.	directions turned (steps by their slope, walls by their image, blocks stay) – wrong graphic? Choose the direction, change by hand, take again.
+Erst eine Richtung übernehmen.	Take a direction first.
+Ziehen getestet: nach Ost (oben), Süd (rechts), West (unten), Nord (links)	Drag tested: east (top), south (right), west (bottom), north (left)
+Kategorie (Ordner), z. B. Burg, Zelte, Mauern, Häuser:	Category (folder), e.g. castle, tents, walls, houses:
+Name des Musters (z. B. Zinnen, Mauer mit Fenster):	Name of the pattern (e.g. battlements, wall with window):
+Nicht alle vier Richtungen sind gebaut. Die fehlenden automatisch drehen?	Not all four directions are built. Turn the missing ones automatically?
+KATALOG – Klick = zum Setzen im Testfeld · Rechtsklick = Kategorien	CATALOG – click = to place in the test field · right click = categories
+stapelt	stacks
+1 Muster (Kategorie → Name → Richtung)	1 Pattern (category → name → direction)
+Neues Muster: Richtung wählen und bauen.	New pattern: choose a direction and build.
+Muster löschen?	Delete the pattern?
+2 Richtung, die ich baue	2 Direction I build
+Richtung = in diese Richtung läuft das Muster beim Ziehen (Ost: eine Mauer West → Ost, die Zinnen zeigen nach Süden …).	Direction = the pattern runs this way when dragging (east: a wall west → east, the battlements face south …).
+✔ Markiertes als diese Richtung übernehmen	✔ Take the marked as this direction
+Fehlende Richtungen automatisch	Missing directions automatically
+Alle neu drehen	Turn all again
+Alle 4 ansehen	View all 4
+3 Ziehen testen	3 Test dragging
+▶ Probe ziehen (alle 4 Richtungen)	▶ Test drag (all 4 directions)
+4 Log und Studio	4 Log and studio
+Muster ist im Werkzeug 'Muster' (CGI) und im Karten-Editor – klicken = einmal, ziehen = wiederholen.	The pattern is in the tool 'Pattern' (CGI) and in the map editor – click = once, drag = repeat.
+Muster wählen …	Choose a pattern …
+Zeichnen …	Drawing …
+Ziehen an / aus, Höhe, Etagen, Abstand, Ersetzen	Drag on / off, height, floors, gap, replace
+Muster-Baukasten …	Pattern kit …
+Muster aus dem Muster-Baukasten: Kategorie ▸ Name ▸ Richtung (beim Ziehen nimmt das Studio die Version der Zieh-Richtung)	Pattern from the pattern kit: category ▸ name ▸ direction (when dragging the studio takes the version of the drag direction)
+(noch keine Muster – Muster-Baukasten öffnen)	(no patterns yet – open the pattern kit)
+gedreht	turned
+Klick = einmal, ziehen = wiederholt in Zieh-Richtung	click = once, drag = repeated in the drag direction
+Erst ein Muster wählen (Leiste oben: Muster ▸ Kategorie ▸ Name ▸ Richtung) – oder im Muster-Baukasten eins bauen.	Choose a pattern first (bar at the top: pattern ▸ category ▸ name ▸ direction) – or build one in the pattern kit.
+Muster: nichts gesetzt (außerhalb der Karte oder Richtung leer).	Pattern: nothing placed (outside the map or direction empty).
+in der Statics-Ebene	in the statics layer
+ersetzt	replaced
+Alle auf der Höhe am Start (gerade, z. B. Zinnen)	All at the height of the start (level, e.g. battlements)
+Jedes Stück auf dem Boden (folgt dem Gelände)	Every piece on the ground (follows the terrain)
+Steigend (Treppen: jedes Stück höher)	Rising (stairs: every piece higher)
+Ziehen wiederholt	Drag repeats
+An = ziehen wiederholt das Muster in Zieh-Richtung. Aus = jeder Klick / Zug setzt es genau einmal.	On = dragging repeats the pattern in the drag direction. Off = every click / drag places it exactly once.
+Richtung beim Klick	Direction on click
+Welche Richtung ein einfacher Klick setzt (beim Ziehen bestimmt die Zieh-Richtung die Richtung). Im Werkzeug dreht R.	Which direction a simple click places (when dragging the drag direction decides). In the tool R turns.
+Gerade auf der Höhe am Start, jedes Stück auf dem Boden, oder steigend wie eine Treppe.	Level at the height of the start, every piece on the ground, or rising like stairs.
+Anstieg je Stück (Z)	Rise per piece (Z)
+Nur 'steigend': so viel höher ist jedes weitere Stück. 0 = automatisch (Treppen im Muster: ihre Höhe, sonst 5).	Only 'rising': every further piece is this much higher. 0 = automatic (stairs in the pattern: their height, otherwise 5).
+Zur Höhe addieren.	Added to the height.
+So oft übereinander in einem Zug (z. B. 2–3 Etagen einer Mauer mit Fenstern).	This many times on top of each other in one go (e.g. 2–3 floors of a wall with windows).
+Abstand der Etagen. 0 = Höhe des Musters.	Distance of the floors. 0 = height of the pattern.
+Abstand (Tiles)	Gap (tiles)
+Lücke zwischen den Wiederholungen (Zelte, Pfosten …).	Space between the repeats (tents, posts …).
+Statics auf den Feldern des Musters vorher entfernen.	Remove statics on the fields of the pattern first.
+Ordner, z. B. Burg, Zelte, Mauern, Häuser.	Folder, e.g. castle, tents, walls, houses.
+Notiz	Note
+Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster, Festungsmauer, Etage mit Decke …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern; im Werkzeug Muster klicken oder ziehen (wiederholt)	Own window: build patterns (battlements, tents, wall with window, fortress wall, floor with ceiling …), one per direction north / east / south / west, save by category; in the tool Pattern click or drag (repeats)
+Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern, Log + Bild	Own window: build patterns (battlements, tents, wall with window …), one per direction north / east / south / west, save by category, log + picture
+Klick = Muster einmal (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe gerade / Boden / steigend, Etagen	Click = pattern once (R turns) · drag = repeated in the drag direction with the version of that direction · height level / ground / rising, floors
+Muster aus dem Muster-Baukasten in die Statics-Ebene: Klick = einmal, Ziehen = wiederholt (Kategorie ▸ Name ▸ Richtung oben in der Leiste)	Pattern from the pattern kit into the statics layer: click = once, drag = repeated (category ▸ name ▸ direction in the bar at the top)
+Muster (Statics)	Pattern (statics)
+Klick = Muster einmal · Ziehen = wiederholt · in die Statics-Ebene	Click = pattern once · drag = repeated · into the statics layer
+Muster: Richtung	Pattern: direction
+Muster: erst ein Muster wählen (Leiste oben / Muster-Baukasten).	Pattern: choose a pattern first (bar at the top / pattern kit).
+Muster: Klick = einmal in der Richtung (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe, Etagen, Abstand oben in der Leiste	Pattern: click = once in the direction (R turns) · drag = repeated in the drag direction with the version of that direction · height, floors, gap in the bar at the top
+Zeichnen	Drawing
+Muster wählen	Choose pattern

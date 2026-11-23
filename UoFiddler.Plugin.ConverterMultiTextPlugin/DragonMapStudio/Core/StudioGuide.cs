@@ -884,6 +884,56 @@ Workshop → layout → “Floors”: this many levels below each other (20 Z ea
             },
             new GuideTopic
             {
+                Key = "motif", Group = "Bauen|Building", TitleDe = "Muster-Baukasten (Zinnen, Zelte, Mauern …)", TitleEn = "Pattern kit (battlements, tents, walls …)",
+                De = @"# Muster-Baukasten
+Gleicher Baukasten wie der Treppen-Designer – für alles, was sich wiederholt: Burg-Zinnen, Zelte, eine Mauer mit Fenstern, Festungsmauern mit verschiedenen Höhen, eine Etage mit Decke …
+
+## Bauen
+1. Muster-Baukasten öffnen (Palette Bauen, Werkzeug Muster ▸ „Muster-Baukasten …“ oder Karten-Editor).
+2. „Richtung, die ich baue“ wählen: Ost = das Muster läuft beim Ziehen nach Osten (eine Mauer West → Ost).
+3. Im Katalog Teile wählen, im Testfeld bauen (Höhe „auf den Stapel“ oder feste Höhe). Auswahl verschieben N / S / W / O, Z ± Teil-Höhe, Rückgängig / Wiederholen.
+4. Mit „Bereich“ markieren (oder Teile mit Auswahl) → „Markiertes als diese Richtung übernehmen“. Treppen im Muster werden erkannt (Anstieg 5 Z).
+5. Die anderen Richtungen selbst bauen und übernehmen – oder „Fehlende Richtungen automatisch“ (Wände / Stufen werden gedreht und getauscht). „Alle 4 ansehen“ zeigt Nord, Ost, Süd, West.
+6. „Speichern …“: Kategorie + Name. Im Baum steht dann Kategorie ▸ Name ▸ Süd / West / Nord / Ost.
+
+## Zeichnen (CGI: Werkzeug „Muster“, Karten-Editor: „Muster (Statics)“)
+Klick | Muster einmal in der gewählten Richtung (R dreht)
+Ziehen | wiederholt das Muster in Zieh-Richtung, mit der Version dieser Richtung
+Ziehen wiederholt aus | jeder Zug setzt es genau einmal
+Höhe gerade | alle Stücke auf der Höhe am Start (Zinnen)
+Höhe Boden | jedes Stück auf dem Gelände
+Höhe steigend | jedes Stück höher (Treppen: deren Höhe, sonst 5 Z)
+Etagen / Etagen-Höhe | 2–3 Etagen in einem Zug übereinander
+Abstand | Lücke zwischen den Wiederholungen (Zelte, Pfosten)
+Ersetzen | alte Statics auf den Feldern vorher entfernen
+
+Im Karten-Editor landen die Statics in der Statics-Ebene (Höhe über dem Boden), Strg+Z nimmt sie zurück. „📋 Log + Bild“ im Baukasten speichert jedes Teil mit ID, Lage und Höhe.",
+                En = @"# Pattern kit
+The same bench as the stair designer – for everything that repeats: battlements, tents, a wall with windows, fortress walls of different heights, a floor with ceiling …
+
+## Building
+1. Open the pattern kit (palette Building, tool Pattern ▸ “Pattern kit …” or the map editor).
+2. Choose “Direction I build”: East = the pattern runs east when dragging (a wall west → east).
+3. Pick parts in the catalog and build in the test field (height “on the stack” or fixed). Move the selection N / S / W / E, Z ± part height, undo / redo.
+4. Mark with “Area” (or parts with Select) → “Take the marked as this direction”. Stairs in the pattern are recognised (rise 5 Z).
+5. Build the other directions yourself – or “Missing directions automatically” (walls / steps are turned and swapped). “View all 4” shows north, east, south, west.
+6. “Save …”: category + name. The tree then shows category ▸ name ▸ south / west / north / east.
+
+## Drawing (CGI: tool “Pattern”, map editor: “Pattern (statics)”)
+Click | the pattern once in the chosen direction (R turns)
+Drag | repeats the pattern in the drag direction, with the version of that direction
+Drag repeats off | every drag places it exactly once
+Height level | all pieces at the height of the start (battlements)
+Height ground | every piece on the terrain
+Height rising | every piece higher (stairs: their height, otherwise 5 Z)
+Floors / floor height | 2–3 floors on top of each other in one go
+Gap | space between the repeats (tents, posts)
+Replace | remove old statics on the fields first
+
+In the map editor the statics go into the statics layer (height above the ground), Ctrl+Z takes them back. “📋 Log + picture” in the kit saves every part with id, position and height."
+            },
+            new GuideTopic
+            {
                 Key = "test", Group = "Anleitung|Guide", TitleDe = "Test-Assistent (Bericht für den Entwickler)", TitleEn = "Test assistant (report for the developer)",
                 De = @"# Test-Assistent
 Menü Hilfe → 🧪 Test-Assistent oder der Knopf „🧪 Test“ oben rechts in der CGI-Ansicht.

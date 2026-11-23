@@ -1888,3 +1888,77 @@ je	chacune
 Treppe ziehen: keine Stufe für diese Richtung – Modell mit Dreh-Tabelle oder Treppen-Set wählen.	Tirer l'escalier : pas de marche pour cette direction – choisir un modèle avec table de rotation ou un jeu d'escalier.
 Treppe gezogen	Escalier tiré
 Treppe: Klick = Modell / Treppe einmal (R dreht) · Ziehen = je Feld eine Stufe mit Blöcken darunter, in Zieh-Richtung hinauf ('Nach unten bauen' = hinunter) · Vorschau am Mauszeiger	Escalier : clic = modèle / escalier une fois (R tourne) · tirer = une marche par case avec des blocs en dessous, montant dans le sens du tirage (« Construire vers le bas » = descendant) · aperçu à la souris
+
+# Werkstatt 35 – Muster-Baukasten
+Muster-Baukasten	Atelier de motifs
+Richtung wählen (z. B. Ost = das Muster läuft nach Osten), im Katalog Teile wählen und ins Testfeld bauen, mit 'Bereich' markieren, 'Markiertes als … übernehmen'. Fehlende Richtungen dreht das Studio, oder du baust sie selbst.	Choisir une direction (p. ex. est = le motif avance vers l'est), choisir des pièces dans le catalogue et construire dans le terrain d'essai, marquer avec 'Zone', 'Reprendre la sélection comme …'. Le studio tourne les directions manquantes, ou tu les construis toi-même.
+Muster-Testfeld	Terrain d'essai des motifs
+Richtung	Direction
+ändern, markieren, wieder übernehmen	modifier, marquer, reprendre
+noch leer: bauen oder 'Fehlende Richtungen automatisch'	encore vide : construire ou 'Directions manquantes automatiquement'
+Alle vier Richtungen: oben Nord, rechts Ost, unten Süd, links West (so wie im Client: Nord = oben rechts).	Les quatre directions : en haut nord, à droite est, en bas sud, à gauche ouest (comme dans le client : nord = en haut à droite).
+Übernommen als Richtung	Repris comme direction
+Treppen erkannt	escaliers reconnus
+fehlende Richtungen: 'automatisch' oder selbst bauen	directions manquantes : 'automatiquement' ou les construire soi-même
+Richtungen gedreht (Stufen nach ihrer Neigung, Wände nach ihrem Bild, Blöcke bleiben) – falsche Grafik? Richtung wählen, von Hand ändern, wieder übernehmen.	directions tournées (marches selon leur pente, murs selon leur image, les blocs restent) – mauvais graphisme ? Choisir la direction, modifier à la main, reprendre.
+Erst eine Richtung übernehmen.	Reprendre d'abord une direction.
+Ziehen getestet: nach Ost (oben), Süd (rechts), West (unten), Nord (links)	Tracé testé : est (en haut), sud (à droite), ouest (en bas), nord (à gauche)
+Kategorie (Ordner), z. B. Burg, Zelte, Mauern, Häuser:	Catégorie (dossier), p. ex. château, tentes, murs, maisons :
+Name des Musters (z. B. Zinnen, Mauer mit Fenster):	Nom du motif (p. ex. créneaux, mur avec fenêtre) :
+Nicht alle vier Richtungen sind gebaut. Die fehlenden automatisch drehen?	Les quatre directions ne sont pas toutes construites. Tourner automatiquement celles qui manquent ?
+KATALOG – Klick = zum Setzen im Testfeld · Rechtsklick = Kategorien	CATALOGUE – clic = à poser dans le terrain d'essai · clic droit = catégories
+stapelt	s'empile
+1 Muster (Kategorie → Name → Richtung)	1 Motif (catégorie → nom → direction)
+Neues Muster: Richtung wählen und bauen.	Nouveau motif : choisir une direction et construire.
+Muster löschen?	Supprimer le motif ?
+2 Richtung, die ich baue	2 Direction que je construis
+Richtung = in diese Richtung läuft das Muster beim Ziehen (Ost: eine Mauer West → Ost, die Zinnen zeigen nach Süden …).	Direction = le motif avance dans ce sens quand on tire (est : un mur ouest → est, les créneaux regardent vers le sud …).
+✔ Markiertes als diese Richtung übernehmen	✔ Reprendre la sélection pour cette direction
+Fehlende Richtungen automatisch	Directions manquantes automatiquement
+Alle neu drehen	Tout retourner
+Alle 4 ansehen	Voir les 4
+3 Ziehen testen	3 Tester le tracé
+▶ Probe ziehen (alle 4 Richtungen)	▶ Tracé d'essai (les 4 directions)
+4 Log und Studio	4 Journal et studio
+Muster ist im Werkzeug 'Muster' (CGI) und im Karten-Editor – klicken = einmal, ziehen = wiederholen.	Le motif est dans l'outil 'Motif' (CGI) et dans l'éditeur de carte – clic = une fois, tirer = répéter.
+Muster wählen …	Choisir un motif …
+Zeichnen …	Dessin …
+Ziehen an / aus, Höhe, Etagen, Abstand, Ersetzen	Tirer oui / non, hauteur, étages, écart, remplacer
+Muster-Baukasten …	Atelier de motifs …
+Muster aus dem Muster-Baukasten: Kategorie ▸ Name ▸ Richtung (beim Ziehen nimmt das Studio die Version der Zieh-Richtung)	Motif de l'atelier de motifs : catégorie ▸ nom ▸ direction (en tirant, le studio prend la version de la direction du tracé)
+(noch keine Muster – Muster-Baukasten öffnen)	(pas encore de motifs – ouvrir l'atelier de motifs)
+gedreht	tourné
+Klick = einmal, ziehen = wiederholt in Zieh-Richtung	clic = une fois, tirer = répété dans la direction du tracé
+Erst ein Muster wählen (Leiste oben: Muster ▸ Kategorie ▸ Name ▸ Richtung) – oder im Muster-Baukasten eins bauen.	Choisir d'abord un motif (barre en haut : motif ▸ catégorie ▸ nom ▸ direction) – ou en construire un dans l'atelier de motifs.
+Muster: nichts gesetzt (außerhalb der Karte oder Richtung leer).	Motif : rien posé (hors de la carte ou direction vide).
+in der Statics-Ebene	dans le calque des statics
+ersetzt	remplacés
+Alle auf der Höhe am Start (gerade, z. B. Zinnen)	Tous à la hauteur du départ (droit, p. ex. créneaux)
+Jedes Stück auf dem Boden (folgt dem Gelände)	Chaque pièce sur le sol (suit le terrain)
+Steigend (Treppen: jedes Stück höher)	Montant (escaliers : chaque pièce plus haut)
+Ziehen wiederholt	Tirer répète
+An = ziehen wiederholt das Muster in Zieh-Richtung. Aus = jeder Klick / Zug setzt es genau einmal.	Oui = tirer répète le motif dans la direction du tracé. Non = chaque clic / tracé le pose une seule fois.
+Richtung beim Klick	Direction au clic
+Welche Richtung ein einfacher Klick setzt (beim Ziehen bestimmt die Zieh-Richtung die Richtung). Im Werkzeug dreht R.	Quelle direction un simple clic pose (en tirant, c'est la direction du tracé). Dans l'outil, R tourne.
+Gerade auf der Höhe am Start, jedes Stück auf dem Boden, oder steigend wie eine Treppe.	Droit à la hauteur du départ, chaque pièce sur le sol, ou montant comme un escalier.
+Anstieg je Stück (Z)	Montée par pièce (Z)
+Nur 'steigend': so viel höher ist jedes weitere Stück. 0 = automatisch (Treppen im Muster: ihre Höhe, sonst 5).	Seulement 'montant' : chaque pièce suivante est plus haute de cette valeur. 0 = automatique (escaliers dans le motif : leur hauteur, sinon 5).
+Zur Höhe addieren.	Ajouté à la hauteur.
+So oft übereinander in einem Zug (z. B. 2–3 Etagen einer Mauer mit Fenstern).	Autant de fois superposé en un seul tracé (p. ex. 2–3 étages d'un mur avec fenêtres).
+Abstand der Etagen. 0 = Höhe des Musters.	Écart entre les étages. 0 = hauteur du motif.
+Abstand (Tiles)	Écart (tuiles)
+Lücke zwischen den Wiederholungen (Zelte, Pfosten …).	Espace entre les répétitions (tentes, poteaux …).
+Statics auf den Feldern des Musters vorher entfernen.	Retirer d'abord les statics sur les cases du motif.
+Ordner, z. B. Burg, Zelte, Mauern, Häuser.	Dossier, p. ex. château, tentes, murs, maisons.
+Notiz	Note
+Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster, Festungsmauer, Etage mit Decke …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern; im Werkzeug Muster klicken oder ziehen (wiederholt)	Fenêtre séparée : construire des motifs (créneaux, tentes, mur avec fenêtre, rempart, étage avec plafond …), un par direction nord / est / sud / ouest, enregistrer par catégorie ; dans l'outil Motif cliquer ou tirer (répété)
+Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern, Log + Bild	Fenêtre séparée : construire des motifs (créneaux, tentes, mur avec fenêtre …), un par direction nord / est / sud / ouest, enregistrer par catégorie, journal + image
+Klick = Muster einmal (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe gerade / Boden / steigend, Etagen	Clic = motif une fois (R tourne) · tirer = répété dans la direction du tracé avec la version de cette direction · hauteur droite / sol / montante, étages
+Muster aus dem Muster-Baukasten in die Statics-Ebene: Klick = einmal, Ziehen = wiederholt (Kategorie ▸ Name ▸ Richtung oben in der Leiste)	Motif de l'atelier dans le calque des statics : clic = une fois, tirer = répété (catégorie ▸ nom ▸ direction dans la barre en haut)
+Muster (Statics)	Motif (statics)
+Klick = Muster einmal · Ziehen = wiederholt · in die Statics-Ebene	Clic = motif une fois · tirer = répété · dans le calque des statics
+Muster: Richtung	Motif : direction
+Muster: erst ein Muster wählen (Leiste oben / Muster-Baukasten).	Motif : choisir d'abord un motif (barre en haut / atelier de motifs).
+Muster: Klick = einmal in der Richtung (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe, Etagen, Abstand oben in der Leiste	Motif : clic = une fois dans la direction (R tourne) · tirer = répété dans la direction du tracé avec la version de cette direction · hauteur, étages, écart dans la barre en haut
+Zeichnen	Dessin
+Muster wählen	Choisir un motif

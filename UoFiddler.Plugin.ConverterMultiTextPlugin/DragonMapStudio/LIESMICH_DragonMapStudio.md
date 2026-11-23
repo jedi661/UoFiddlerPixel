@@ -1273,3 +1273,28 @@ Menü **Hilfe → 🧪 Test-Assistent** oder Knopf **„🧪 Test“** oben rech
   * Die Richtung „hinauf nach“ wird aus den Stufen selbst erkannt.
   * **Dreh-Tabelle:** je Teil des Modells die Grafik für N / O / S / W (mit Bild). Automatisch gefüllt (Stufen nach ihrer Neigung, Blöcke bleiben gleich); falsche Grafik? Zelle anklicken, im Katalog doppelklicken. „Gedreht ansehen“ und das Werkzeug benutzen die Tabelle.
 
+
+## Muster-Baukasten (seit „Werkstatt 35“)
+Gleicher Baukasten wie der Treppen-Designer – für alles, was sich wiederholt: Burg-Zinnen, Zelte, eine Mauer mit Fenstern, Festungsmauern mit verschiedenen Höhen, eine Etage mit Decke … Öffnen: Palette **Bauen → Muster-Baukasten**, im Werkzeug „Muster“ oder im Karten-Editor („Muster-Baukasten …“).
+
+* **Bauen:** links „Richtung, die ich baue“ wählen (Ost = das Muster läuft beim Ziehen nach Osten). Im Katalog Teile wählen, im Testfeld bauen (Höhe „auf den Stapel“ = TileData-Höhe, oder feste Höhe), Auswahl verschieben N / S / W / O, Z ± Teil-Höhe, kopieren, löschen, Rückgängig / Wiederholen (Strg+Z / Strg+Y).
+* **„✔ Markiertes als diese Richtung übernehmen“:** den mit „Bereich“ markierten Teil (oder die mit „Auswahl“ gewählten Teile). Treppen im Muster werden erkannt (Anstieg 5 Z).
+* **Vier Richtungen:** jede selbst bauen und übernehmen – oder **„Fehlende Richtungen automatisch“** (Wände nach ihrem Bild, Stufen nach ihrer Neigung gedreht, Blöcke bleiben). „Alle 4 ansehen“ zeigt Nord / Ost / Süd / West nebeneinander, „Alle neu drehen“ überschreibt.
+* **Speichern:** Kategorie + Name. Der Baum zeigt **Kategorie ▸ Name ▸ Süd / West / Nord / Ost** (✔ = gebaut). Gespeichert im Ordner `Muster` neben den Einstellungen.
+* **„▶ Probe ziehen“:** zieht das Muster im Testfeld in alle vier Richtungen – so siehst du gleich, ob es sich lückenlos wiederholt. **„📋 Log + Bild“** speichert jedes Teil mit ID, Lage und Höhe.
+* **Zeichnen** (CGI: Werkzeug **„Muster“**, Karten-Editor: **„Muster (Statics)“**, oben in der Leiste Kategorie ▸ Name ▸ Richtung):
+
+| Einstellung | Wirkung |
+|---|---|
+| Klick | Muster einmal in der gewählten Richtung (R dreht) |
+| Ziehen | wiederholt das Muster in Zieh-Richtung mit der Version dieser Richtung |
+| Ziehen wiederholt aus | jeder Klick / Zug setzt es genau einmal |
+| Höhe gerade | alle Stücke auf der Höhe am Start (Zinnen alle gleich hoch) |
+| Höhe Boden | jedes Stück auf dem Gelände |
+| Höhe steigend | jedes Stück höher (Treppen im Muster: ihre Höhe, sonst 5 Z) |
+| Etagen / Etagen-Höhe | 2–3 Etagen in einem Zug übereinander (0 = Höhe des Musters) |
+| Abstand | Lücke zwischen den Wiederholungen (Zelte, Pfosten) |
+| Alte Statics ersetzen | Statics auf den Feldern des Musters vorher entfernen |
+
+* **Karten-Editor:** das Muster landet in der **Statics-Ebene** (Höhe über dem Boden), gelbe Vorschau beim Ziehen, Strg+Z nimmt es zurück.
+* **Test-Assistent:** neuer Selbsttest „Muster-Baukasten“ (Mauer mit Zinnen, vier Richtungen, lückenlos, gleiche Höhe, 2 Etagen – mit Bildern) und ein Prüflisten-Schritt.

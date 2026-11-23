@@ -233,6 +233,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         }
                         break;
                     }
+                case "motif":
+                case "motifdesigner":
+                    {
+                        // a stretch of battlements
+                        using var stone = new SolidBrush(Color.FromArgb(168, 162, 158));
+                        using var pen = new Pen(Color.FromArgb(87, 83, 78), 1f);
+                        g.FillRectangle(stone, 2, 10, 20, 11);
+                        g.DrawRectangle(pen, 2, 10, 20, 11);
+                        for (int i = 0; i < 3; i++)
+                        {
+                            g.FillRectangle(stone, 2 + i * 8, 5, 4, 5);
+                            g.DrawRectangle(pen, 2 + i * 8, 5, 4, 5);
+                        }
+                        using var win = new SolidBrush(Color.FromArgb(30, 41, 59));
+                        g.FillRectangle(win, 7, 13, 3, 4);
+                        g.FillRectangle(win, 15, 13, 3, 4);
+                        if (key == "motifdesigner")
+                        {
+                            using var arrow = new Pen(Color.FromArgb(180, 83, 9), 2f) { EndCap = System.Drawing.Drawing2D.LineCap.ArrowAnchor };
+                            g.DrawLine(arrow, 4, 2, 20, 2);
+                        }
+                        break;
+                    }
                 case "bridgedesigner":
                     {
                         using var wood = new SolidBrush(Color.FromArgb(146, 64, 14));

@@ -124,6 +124,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             };
 
             isoView.FindStairModel = FindStairModel;
+            InitMotifs();
 
             isoView.FindScatterSet = name => AllScatterSets().FirstOrDefault(s => s.Name == name || s.Name == "Dragon: " + name);
 
@@ -251,6 +252,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                             break;
                         case "stairdesigner":
                             OpenStairDesigner();
+                            break;
+                        case "motifdesigner":
+                            OpenMotifDesigner();
                             break;
                         case "course":
                             tabMain.SelectedTab = tabEditor;
@@ -610,6 +614,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                         all.Add((b.Staircase, L.T("Treppe")));
                         break;
                     }
+                case IsoTool.Motif:
+                    MotifQuickItems();
+                    all.Add((b.MotifDraw, L.T("Muster")));
+                    break;
             }
             _toolSettingsNow = all;
             FillOptionTabs(t, all);
