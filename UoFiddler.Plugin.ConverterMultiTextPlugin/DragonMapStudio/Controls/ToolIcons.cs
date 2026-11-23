@@ -218,6 +218,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         g.DrawLine(blue, 15, 10, 18, 10);
                         break;
                     }
+                case "stairdesigner":
                 case "stairs":
                     {
                         using var st = new SolidBrush(Color.FromArgb(168, 162, 158));

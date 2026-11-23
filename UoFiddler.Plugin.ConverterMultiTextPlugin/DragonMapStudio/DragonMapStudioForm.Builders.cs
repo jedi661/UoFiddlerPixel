@@ -684,6 +684,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 Help = "Eigenes Fenster: Brücken aus Statics entwerfen (Teile aus der TileData mit Bild, Testfeld, Muster von Hand, aus Karte / Multi), nach Kategorie speichern",
                 Click = OpenBridgeDesigner
             }, "build");
+            add(new ToolPaletteEntry
+            {
+                Key = "stairdesigner", Name = "Treppen-Designer", Accent = ColBuild,
+                Help = "Eigenes Fenster: Treppen von Hand bauen (viereckige Blöcke stufig, oben die geneigte Stufe), Modelle nach Kategorie speichern, im Werkzeug Treppe setzen (hinauf, hinunter, unter der Karte); Log + Bild",
+                Click = OpenStairDesigner
+            }, "build");
             add(CgiTool("stairs", "Treppe", string.Empty, "Klick: Stufen nach unten in die Richtung (R dreht), bis zum Boden gefüllt (Treppen-Set)", IsoTool.Stairs, ColBuild), "build");
 
             add(new ToolPaletteEntry

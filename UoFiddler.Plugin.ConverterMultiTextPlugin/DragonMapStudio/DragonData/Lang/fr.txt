@@ -1805,3 +1805,50 @@ Teile aus TileData vorschlagen	Proposer des pièces de la tiledata
 Bretter N-S	Planches N-S
 Richtungen aus Bild	Directions depuis l'image
 Die Stufen des gewählten Treppen-Sets nach ihrer Neigung im Bild den Richtungen zuordnen (wenn die Treppe falsch geneigt ist)	Attribuer les marches du jeu d'escalier choisi aux directions selon leur pente dans l'image (si l'escalier penche dans le mauvais sens)
+# Werkstatt 32: Treppen-Designer
+Treppen-Designer	Concepteur d'escaliers
+Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken ('Z +' oben = Höhe, 'auf Statics stapeln' an). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	Construire : choisir bloc / marche dans le catalogue, cliquer dans le terrain d'essai (« Z + » en haut = hauteur, « empiler sur les statics » activé). Ou « Générer depuis le jeu d'escalier ». Puis marquer avec « Zone » et « Reprendre comme modèle ».
+Treppen-Testfeld	Terrain d'essai d'escalier
+Kein Treppen-Set gewählt – Stufen aus der TileData (Neigung aus dem Bild)	Aucun jeu d'escalier choisi – marches de la tiledata (pente depuis l'image)
+Erzeugt	Généré
+von Hand ändern, dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	modifier à la main, puis marquer avec « Zone » et « Reprendre comme modèle ».
+Das Testfeld ist leer.	Le terrain d'essai est vide.
+Modell übernommen	Modèle repris
+Anstieg	montée
+'Gebaut hinauf nach' prüfen, dann speichern.	vérifier « Construit en montant vers », puis enregistrer.
+In der CGI-Ansicht eine Treppe der Karte mit 'Bereich' markieren, dann hier übernehmen.	Marquer un escalier de la carte avec « Zone » dans la vue CGI, puis le reprendre ici.
+Treppe aus der Karte übernommen	Escalier repris de la carte
+Modell	Modèle
+hinauf nach	montant vers
+gedreht, Stufen nach ihrem Bild getauscht	tourné, marches échangées selon leur image
+Erst ein Modell übernehmen.	Reprendre d'abord un modèle.
+Kategorie (Ordner), z. B. Holz, Stein, Keller, Turm:	Catégorie (dossier), p. ex. bois, pierre, cave, tour :
+Name des Treppen-Modells:	Nom du modèle d'escalier :
+Höhe über dem Boden für 'Static setzen' (Stufen: 0, 5, 10, 15 …)	Hauteur au-dessus du sol pour « Poser static » (marches : 0, 5, 10, 15 …)
+IDs	IDs
+KATALOG – Klick = zum Setzen im Testfeld (Block, Stufe, Geländer …) · Rechtsklick = Kategorien	CATALOGUE – clic = poser dans le terrain d'essai (bloc, marche, garde-corps …) · clic droit = catégories
+Stufe hinauf nach	marche montant vers
+ins Testfeld klicken	cliquer dans le terrain d'essai
+1 Modelle (gespeichert nach Kategorie)	1 Modèles (enregistrés par catégorie)
+Modell löschen?	Supprimer le modèle ?
+2 Bauen	2 Construire
+So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen, 'Z +' setzen, ins Testfeld klicken – oder erzeugen und ändern.	Voici comment est construit un escalier : des blocs carrés empilés en marches (5 Z chacun), sur chaque marche la pièce d'escalier inclinée. Choisir dans le catalogue, régler « Z + », cliquer dans le terrain d'essai – ou générer et modifier.
+Testfeld leeren	Vider le terrain d'essai
+Aus Treppen-Set erzeugen	Générer depuis le jeu d'escalier
+3 Übernehmen und prüfen	3 Reprendre et vérifier
+Als Modell übernehmen	Reprendre comme modèle
+Treppe aus der Karte	Escalier depuis la carte
+Gedreht ansehen:	Voir tourné :
+📋 Log + Bild	📋 Journal + image
+'Log + Bild' speichert ein Bild des Testfelds und jede Stufe mit Position, Höhe, ID, Name und Neigung – schick es dem Entwickler.	« Journal + image » enregistre une image du terrain d'essai et chaque marche avec position, hauteur, id, nom et pente – envoyez-le au développeur.
+4 Im Studio benutzen	4 Utiliser dans le studio
+Erst ein Modell übernehmen oder laden.	Reprendre ou charger d'abord un modèle.
+Modell ist im Werkzeug Treppe	Le modèle est dans l'outil Escalier
+klicken setzt es; R dreht, 'Nach unten bauen', 'Modell mehrmals', unter der Karte mit 'Unter der Karte bauen'.	un clic le pose ; R tourne, « Construire vers le bas », « Modèle plusieurs fois », sous la carte avec « Construire sous la carte ».
+Log und Bild gespeichert (der Text ist auch in der Zwischenablage):	Journal et image enregistrés (le texte est aussi dans le presse-papiers) :
+Modell:	Modèle :
+Treppen-Modell aus dem Treppen-Designer – oder Treppe aus dem Treppen-Set erzeugen	Modèle d'escalier du concepteur – ou générer l'escalier depuis le jeu d'escalier
+(aus Treppen-Set erzeugen)	(générer depuis le jeu d'escalier)
+Treppen-Designer …	Concepteur d'escaliers …
+Treppen-Modell	Modèle d'escalier
+hinauf	montée

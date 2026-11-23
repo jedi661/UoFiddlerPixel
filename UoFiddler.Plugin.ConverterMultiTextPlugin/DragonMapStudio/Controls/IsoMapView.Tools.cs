@@ -860,8 +860,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             Finished(_map.UndoCount > before ? changes.Count : 0, L.T("Brücke") + $" ({source})");
         }
 
+        /// <summary>Stair model by "Kategorie / Name" (stair designer).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<string, StairModel> FindStairModel { get; set; }
+
+        /// <summary>The statics the tool "Treppe" would set at a tile: the chosen model, else the staircase of the stair set.</summary>
+        public List<StaticChange> StairPieces(Point tile)
+        {
+            StaircaseSettings o = BrushSettings.Staircase;
+            StairModel model = string.IsNullOrEmpty(o.Model) ? null : FindStairModel?.Invoke(o.Model);
+            int z = PlaceZ(tile.X, tile.Y);
+            if (model != null)
+            {
+                return model.Build(_map, tile, z, o.Up, o.Repeats, o.Downwards);
+            }
+            return StairSet == null ? new List<StaticChange>() : Staircase.Build(_map, tile, z, o, StairSet);
+        }
+
         private void PlaceStairs(Point tile)
         {
+            if (!string.IsNullOrEmpty(BrushSettings.Staircase.Model) && FindStairModel?.Invoke(BrushSettings.Staircase.Model) != null)
+            {
+                List<StaticChange> mc = StairPieces(tile);
+                int b0 = _map.UndoCount;
+                _map.Apply(mc);
+                Finished(_map.UndoCount > b0 ? mc.Count : 0, L.T("Treppen-Modell") + $" '{BrushSettings.Staircase.Model}' × {BrushSettings.Staircase.Repeats}, " + L.T("hinauf") + $" {BrushSettings.Staircase.Up}");
+                return;
+            }
             StairSet set = StairSet;
             if (set == null || HexList.Parse(set.DownNorth + " " + set.DownEast + " " + set.DownSouth + " " + set.DownWest).Length == 0)
             {

@@ -1251,3 +1251,10 @@ Menü **Hilfe → 🧪 Test-Assistent** oder Knopf **„🧪 Test“** oben rech
 * Beim Werkzeug Treppe: Knopf **„Richtungen aus Bild“** ordnet die Stufen des gewählten Treppen-Sets neu (oder legt ohne Set eines aus der TileData an) und zeigt die Messwerte.
 * Der Test-Assistent schreibt die Messwerte jeder Stufe ins Protokoll, warnt bei falsch zugeordneten Sets und macht größere Einzelbilder je Richtung und je Wende.
 
+## Treppen-Designer (seit „Werkstatt 32“)
+* Palette → **Treppen-Designer** oder beim Werkzeug Treppe „Treppen-Designer …“.
+* Eine Treppe besteht aus **viereckigen Blöcken, stufig übereinander (je 5 Z)**, und oben auf jeder Stufe dem **geneigten Treppenstück**. Im Testfeld von Hand bauen: im Katalog (Kategorie ◆ Treppen) Block oder Stufe wählen, oben „Z +“ (0, 5, 10, 15) und „auf Statics stapeln“, ins Testfeld klicken. Oder „Aus Treppen-Set erzeugen“ und ändern.
+* Mit „Bereich“ markieren → **„Als Modell übernehmen“**, „Gebaut hinauf nach“ prüfen, **„Gedreht ansehen“ N / O / S / W** (die Stufen werden nach ihrem Bild getauscht), **speichern nach Kategorie** (Holz, Stein, Keller, Turm …). „Treppe aus der Karte“ übernimmt eine echte Treppe.
+* **„📋 Log + Bild“** speichert ein Bild und eine Liste jeder Stufe mit Position, Höhe, ID, Name, Höhe des Teils und Neigung (Ordner „Logs“, Text auch in der Zwischenablage) – zum Schicken. Das gibt es jetzt auch im **Brücken-Designer**.
+* **„Im Studio benutzen“**: das Werkzeug Treppe setzt das Modell. Oben „Modell“ wählen (oder „aus Treppen-Set erzeugen“), R dreht, „Modell mehrmals“ = mehrere Etagen hintereinander, „Nach unten bauen“ = der Klick ist das obere Ende, unter der Karte mit „Unter der Karte bauen“ (Keller).
+

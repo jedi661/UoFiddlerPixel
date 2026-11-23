@@ -1813,3 +1813,50 @@ Teile aus TileData vorschlagen	Suggest pieces from the tiledata
 Bretter N-S	Planks N-S
 Richtungen aus Bild	Directions from the art
 Die Stufen des gewählten Treppen-Sets nach ihrer Neigung im Bild den Richtungen zuordnen (wenn die Treppe falsch geneigt ist)	Assign the steps of the chosen stair set to the directions by their slope in the art (when the stairs slope the wrong way)
+# Werkstatt 32: Treppen-Designer
+Treppen-Designer	Stair designer
+Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken ('Z +' oben = Höhe, 'auf Statics stapeln' an). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	Build: choose block / step in the catalog, click into the test field ('Z +' at the top = height, 'stack on statics' on). Or 'Generate from stair set'. Then mark with 'Area' and 'Take as model'.
+Treppen-Testfeld	Stair test field
+Kein Treppen-Set gewählt – Stufen aus der TileData (Neigung aus dem Bild)	No stair set chosen – steps from the tiledata (slope from the art)
+Erzeugt	Generated
+von Hand ändern, dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	change by hand, then mark with 'Area' and 'Take as model'.
+Das Testfeld ist leer.	The test field is empty.
+Modell übernommen	Model taken
+Anstieg	rise
+'Gebaut hinauf nach' prüfen, dann speichern.	check 'Built going up towards', then save.
+In der CGI-Ansicht eine Treppe der Karte mit 'Bereich' markieren, dann hier übernehmen.	Mark stairs of the map with 'Area' in the CGI view, then take them here.
+Treppe aus der Karte übernommen	Stairs taken from the map
+Modell	Model
+hinauf nach	going up towards
+gedreht, Stufen nach ihrem Bild getauscht	turned, steps swapped by their art
+Erst ein Modell übernehmen.	First take a model.
+Kategorie (Ordner), z. B. Holz, Stein, Keller, Turm:	Category (folder), e.g. wood, stone, cellar, tower:
+Name des Treppen-Modells:	Name of the stair model:
+Höhe über dem Boden für 'Static setzen' (Stufen: 0, 5, 10, 15 …)	Height above the ground for 'Place static' (steps: 0, 5, 10, 15 …)
+IDs	IDs
+KATALOG – Klick = zum Setzen im Testfeld (Block, Stufe, Geländer …) · Rechtsklick = Kategorien	CATALOG – click = place in the test field (block, step, railing …) · right click = categories
+Stufe hinauf nach	step going up towards
+ins Testfeld klicken	click into the test field
+1 Modelle (gespeichert nach Kategorie)	1 Models (saved by category)
+Modell löschen?	Delete model?
+2 Bauen	2 Build
+So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen, 'Z +' setzen, ins Testfeld klicken – oder erzeugen und ändern.	This is how stairs are built: square blocks stepped on top of each other (5 Z each), on every step the sloped stair piece. Choose in the catalog, set 'Z +', click into the test field – or generate and change.
+Testfeld leeren	Clear test field
+Aus Treppen-Set erzeugen	Generate from stair set
+3 Übernehmen und prüfen	3 Take and check
+Als Modell übernehmen	Take as model
+Treppe aus der Karte	Stairs from the map
+Gedreht ansehen:	View turned:
+📋 Log + Bild	📋 Log + picture
+'Log + Bild' speichert ein Bild des Testfelds und jede Stufe mit Position, Höhe, ID, Name und Neigung – schick es dem Entwickler.	'Log + picture' saves a picture of the test field and every step with position, height, id, name and slope – send it to the developer.
+4 Im Studio benutzen	4 Use in the studio
+Erst ein Modell übernehmen oder laden.	First take or load a model.
+Modell ist im Werkzeug Treppe	The model is in the tool Stairs
+klicken setzt es; R dreht, 'Nach unten bauen', 'Modell mehrmals', unter der Karte mit 'Unter der Karte bauen'.	clicking places it; R turns, 'Build downwards', 'Model several times', under the map with 'Build under the map'.
+Log und Bild gespeichert (der Text ist auch in der Zwischenablage):	Log and picture saved (the text is also in the clipboard):
+Modell:	Model:
+Treppen-Modell aus dem Treppen-Designer – oder Treppe aus dem Treppen-Set erzeugen	Stair model from the stair designer – or generate stairs from the stair set
+(aus Treppen-Set erzeugen)	(generate from stair set)
+Treppen-Designer …	Stair designer …
+Treppen-Modell	Stair model
+hinauf	up

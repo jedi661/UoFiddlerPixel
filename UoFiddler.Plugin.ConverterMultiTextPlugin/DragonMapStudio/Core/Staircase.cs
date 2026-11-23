@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – staircases like in the client
  *  *
@@ -60,6 +60,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Category("Treppe"), DisplayName("Bis zum Boden füllen"), Description("Unter Stufen und Absätzen Blöcke bis zum Fuß – massiv wie im Original.")]
         public bool Fill { get; set; } = true;
+
+        [Category("Modell"), DisplayName("Modell"), Description("Ein Treppen-Modell aus dem Treppen-Designer ('Kategorie / Name'). Leer = Treppe aus dem Treppen-Set erzeugen.")]
+        public string Model { get; set; } = string.Empty;
+
+        [Category("Modell"), DisplayName("Modell mehrmals"), Description("So oft wird das Modell hintereinander gesetzt (jedes Mal um seinen Anstieg höher).")]
+        public int Repeats { get; set; } = 1;
     }
 
     public static class Staircase

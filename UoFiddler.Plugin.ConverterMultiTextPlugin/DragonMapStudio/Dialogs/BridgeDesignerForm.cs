@@ -542,6 +542,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 }
             }, 98));
             pl.Controls.Add(B("Hilfe", () => _host.Help?.Invoke("bridge"), 98));
+            pl.Controls.Add(B("📋 Log + Bild", () => DesignLog.Export(this, _view, _test, Rectangle.Inflate(_sampleRect, 1, 2), "Bruecke",
+                $"Plan '{_plan}': Breite {_plan.Width}, Länge {_plan.Length}, Anfang {_plan.StartLen}, Ende {_plan.EndLen}, Pfeiler {_plan.Pillar}, Treppe N {_plan.StairNorth} O {_plan.StairEast} S {_plan.StairSouth} W {_plan.StairWest}; " +
+                $"Bogen {_build.Arch}, Bogen aus Stufen {_build.ArchStairs}, {(_alongX ? "West-Ost" : "Nord-Süd")}, {(_sample ? "Muster" : "Vorschau lang " + _length)}"), 98));
             pl.Controls.Add(B("🖼 Pläne mit Bild …", () =>
             {
                 using var tb = new TemplateBrowserForm(true);

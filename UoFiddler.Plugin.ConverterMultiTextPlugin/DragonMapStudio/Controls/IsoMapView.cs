@@ -1388,9 +1388,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 using var pen = new Pen(Color.FromArgb(200, 255, 170, 0), 2) { DashStyle = DashStyle.Dash };
                 g.DrawPolygon(pen, AreaPoly(new Rectangle(_hover.X + b.X, _hover.Y + b.Y, b.Width, b.Height)));
             }
-            else if (Tool == IsoTool.Stairs && StairSet != null)
+            else if (Tool == IsoTool.Stairs)
             {
-                foreach (StaticChange c in Staircase.Build(_map, _hover, PlaceZ(_hover.X, _hover.Y), BrushSettings.Staircase, StairSet)
+                foreach (StaticChange c in StairPieces(_hover)
                              .OrderBy(c => c.After.X + c.After.Y).ThenBy(c => c.After.Z))
                 {
                     parts.Add((c.After.Id, c.After.X, c.After.Y, c.After.Z));

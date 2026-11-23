@@ -31,6 +31,47 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private Action _quickChanged;
         private List<(object o, string title)> _toolSettingsNow = new List<(object, string)>();
         private TestAssistantForm _tester;
+        private StairDesignerForm _stairDesigner;
+        private List<StairModel> _stairModels;
+
+        private StairModel FindStairModel(string name)
+        {
+            _stairModels ??= StairModel.LoadAll();
+            return _stairModels.FirstOrDefault(m => m.ToString() == name);
+        }
+
+        private void OpenStairDesigner()
+        {
+            if (_stairDesigner != null)
+            {
+                _stairDesigner.Activate();
+                return;
+            }
+            var host = new StairDesignerHost
+            {
+                Map = _cgiMap,
+                Brushes = BrushCfg,
+                Configure = ConfigureLikeMain,
+                CurrentArea = () => isoView.Area,
+                Status = SetStatus,
+                Help = ShowHelp,
+                Use = m =>
+                {
+                    _stairModels = StairModel.LoadAll();
+                    BrushCfg.Staircase.Model = m.ToString();
+                    tabMain.SelectedTab = tabCgi;
+                    SelectCgiTool(IsoTool.Stairs);
+                    UpdateQuickOptions(IsoTool.Stairs);
+                }
+            };
+            _stairDesigner = new StairDesignerForm(host) { Owner = this };
+            _stairDesigner.FormClosed += (s, e) =>
+            {
+                _stairDesigner = null;
+                _stairModels = StairModel.LoadAll();
+            };
+            _stairDesigner.Show(this);
+        }
         private Form _optWindow;
         private ToolStrip _optStrip;
         private TabControl _optTabs;
@@ -81,6 +122,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
                 return list;
             };
+
+            isoView.FindStairModel = FindStairModel;
 
             isoView.FindScatterSet = name => AllScatterSets().FirstOrDefault(s => s.Name == name || s.Name == "Dragon: " + name);
 
@@ -205,6 +248,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                             {
                                 UndockSidePanel();
                             }
+                            break;
+                        case "stairdesigner":
+                            OpenStairDesigner();
                             break;
                         case "course":
                             tabMain.SelectedTab = tabEditor;
@@ -513,7 +559,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     break;
                 case IsoTool.Stairs:
                     {
-                        Quick(b.Staircase, "Up", "Floors", "Steps", "Width", "Turn", "Downwards", "TopLanding");
+                        {
+                            AddQuick(new ToolStripSeparator());
+                            AddQuick(new ToolStripLabel(L.T("Modell:")));
+                            var mc = new ToolStripComboBox { DropDownStyle = ComboBoxStyle.DropDownList, AutoSize = false, Width = 170, ToolTipText = L.T("Treppen-Modell aus dem Treppen-Designer – oder Treppe aus dem Treppen-Set erzeugen") };
+                            mc.Items.Add(L.T("(aus Treppen-Set erzeugen)"));
+                            _stairModels ??= StairModel.LoadAll();
+                            foreach (StairModel m in _stairModels)
+                            {
+                                mc.Items.Add(m);
+                            }
+                            mc.SelectedIndex = Math.Max(0, _stairModels.FindIndex(m => m.ToString() == b.Staircase.Model) + 1);
+                            mc.SelectedIndexChanged += (s, e) =>
+                            {
+                                b.Staircase.Model = mc.SelectedItem is StairModel sm ? sm.ToString() : string.Empty;
+                                isoView.Invalidate();
+                            };
+                            AddQuick(mc);
+                            Cmd("Treppen-Designer …", "Eigenes Fenster: Treppen von Hand bauen (Blöcke + Stufen), als Modell nach Kategorie speichern, Log + Bild", OpenStairDesigner);
+                        }
+                        Quick(b.Staircase, "Up", "Repeats", "Floors", "Steps", "Width", "Turn", "Downwards", "TopLanding");
                         Cmd("Richtungen aus Bild", "Die Stufen des gewählten Treppen-Sets nach ihrer Neigung im Bild den Richtungen zuordnen (wenn die Treppe falsch geneigt ist)", () =>
                         {
                             StairSet cur = b.StairSets.FirstOrDefault(x => x.Name == b.StairSet);

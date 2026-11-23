@@ -122,6 +122,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             S("Treppe", "Treppenhaus setzen",
                 "Werkzeug Treppe: einmal klicken (1 Etage), dann Etagen 2 mit Wende 'rechts herum', dann 'zurück'. R dreht. Nach jeder Treppe 📷 Aufnehmen.",
                 "4 Stufen je Lauf (5 Z), ein flaches Feld, nächster Lauf; alles bis unten gefüllt, Stufen zeigen in die richtige Richtung.", Tool(IsoTool.Stairs));
+            S("Treppe", "Treppen-Designer: Modell bauen und setzen",
+                "Treppen-Designer öffnen (▶). Im Katalog Block und Stufe wählen, mit 'Z +' (0, 5, 10, 15) eine Treppe von Hand bauen – oder 'Aus Treppen-Set erzeugen'. Mit 'Bereich' markieren, 'Als Modell übernehmen', 'Gedreht ansehen' N / O / S / W, '📋 Log + Bild', speichern, 'Im Studio benutzen' und auf die Karte klicken. 📷 Aufnehmen.",
+                "Die Treppe steigt in jeder Richtung richtig an (Blöcke stufig, oben die Stufe); Log und Bild liegen im Ordner Logs.", () => _host.Open?.Invoke("stairdesigner"));
             S("Drehen", "Drehen 90° tauscht Wände",
                 "Mit Wand / Zaun eine Wand West-Ost ziehen, mit 'Bereich' markieren und R (drehen) drücken. 📷 Aufnehmen.",
                 "Die Wand liegt jetzt Nord-Süd und benutzt die Nord-Süd-Teile (nicht mehr quer stehende Teile).", Tool(IsoTool.Wall));

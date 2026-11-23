@@ -111,6 +111,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 ("Treppe", "Treppen-Gruppe aus der TileData", c => AutoStairs((Ctx)c)),
                 ("Treppe", "Treppenhaus: Höhe, Absatz, gefüllt, alle Wenden", c => StaircaseShapes((Ctx)c, b)),
                 ("Treppe", "Treppe lernen (bauen → lernen → vergleichen)", c => StairLearn((Ctx)c, b)),
+                ("Treppe", "Treppen-Modell: aufnehmen, in alle Richtungen drehen, mehrmals", c => StairModels((Ctx)c, b)),
                 ("Drehen", "Drehen 90°: gerichtete Teile tauschen", c => RotateSwap((Ctx)c, b)),
                 ("Wand", "Wand Punkt zu Punkt, Dicke, Ecken", c => WallPath((Ctx)c, b)),
                 ("Fluss", "Fluss-Lauf: Breite, Mitte bleibt Wasser, Grund wie Küste", c => River((Ctx)c, b)),
@@ -465,6 +466,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             c.Check(learned.DownEast == set.DownEast.Split(' ')[0], $"hinunter Ost {learned.DownEast} = {set.DownEast}");
             c.Check(learned.DownSouth == set.DownSouth.Split(' ')[0], $"hinunter Süd {learned.DownSouth} = {set.DownSouth}");
             c.Check(learned.DownWest == set.DownWest.Split(' ')[0], $"hinunter West {learned.DownWest} = {set.DownWest}");
+        }
+
+        private static void StairModels(Ctx c, CgiBrushSettings b)
+        {
+            StairSet set = ChosenStairs(b, out bool fake);
+            MapData m = Map(48, 48, 3, 0);
+            m.Apply(Staircase.Build(m, new Point(20, 30), 0, new StaircaseSettings { Up = Compass.North, Floors = 1, Width = 2 }, set));
+            var all = m.AllStatics().ToList();
+            Rectangle r = Rectangle.FromLTRB(all.Min(s => s.X), all.Min(s => s.Y), all.Max(s => s.X) + 1, all.Max(s => s.Y) + 1);
+            StairModel model = StairModel.Capture(m, r, Compass.North, 0, "Test");
+            c.Line(model.Describe());
+            foreach (Compass up in new[] { Compass.North, Compass.East, Compass.South, Compass.West })
+            {
+                MapData t = Map(48, 48, 3, 0);
+                List<StaticChange> ch = model.Build(t, new Point(20, 20), 0, up, 2, false);
+                t.Apply(ch);
+                var st = ch.Select(x => x.After).ToList();
+                var ids = st.GroupBy(s => s.Id).Select(g => $"{g.Count()}×{g.Key:x4}");
+                c.Line($"hinauf {up}: {st.Count} Statics, oben z {st.Max(s => s.Z)}, Teile {string.Join(" ", ids)}");
+                c.Check(st.Max(s => s.Z) >= model.Rise, $"{up}: zweimal hintereinander steigt weiter an");
+                c.Picture($"Treppen-Modell hinauf nach {up} (2×)", t, new Rectangle(14, 10, 20, 20));
+            }
+            if (fake)
+            {
+                c.Warn("Kein Treppen-Set – Platzhalter-Stufen (ohne Bild).");
+            }
         }
 
         private static void RotateSwap(Ctx c, CgiBrushSettings b)

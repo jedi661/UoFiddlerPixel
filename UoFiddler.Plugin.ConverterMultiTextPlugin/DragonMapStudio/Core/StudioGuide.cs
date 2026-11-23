@@ -844,6 +844,13 @@ Breite | so viele Tiles breit, der Absatz wächst mit
 - Eine Treppe von Hand bauen (Stufen in mehreren Richtungen, Blöcke darunter, Absatz), alle Stücke auswählen und „Treppe aus Auswahl lernen“: Stufe je Richtung, Füll-Block und Absatz werden erkannt und als Treppen-Set gespeichert.
 - Eine fertige Treppe lässt sich in der Werkstatt als Vorlage speichern und überall wieder einsetzen.
 
+## Treppen-Designer (eigenes Fenster)
+- Eine Treppe besteht aus viereckigen Blöcken, stufig übereinander (je 5 Z), und oben auf jeder Stufe dem geneigten Treppenstück.
+- Im Testfeld von Hand bauen: im Katalog Block / Stufe wählen, „Z +“ (0, 5, 10, 15) einstellen, klicken. Oder „Aus Treppen-Set erzeugen“ und ändern.
+- Mit „Bereich“ markieren → „Als Modell übernehmen“ (Richtung „Gebaut hinauf nach“ prüfen), „Gedreht ansehen“ N / O / S / W, speichern nach Kategorie.
+- „Treppe aus der Karte“ übernimmt eine echte Treppe. „📋 Log + Bild“ speichert Bild und jede Stufe mit ID, Höhe und Neigung – zum Schicken.
+- „Im Studio benutzen“: das Werkzeug Treppe setzt das Modell (R dreht, „Modell mehrmals“, „Nach unten bauen“, unter der Karte mit „Unter der Karte bauen“).
+
 ## Brücke mit Bogen aus Stufen
 Im Brücken-Designer „Bogen aus Stufen“ und den Regler „Bogen“ (z. B. 20 = 4 Stufen) einstellen: die Brücke steigt in Stufen an, ist oben flach und geht auf der anderen Seite wieder hinunter. Regler auch für Länge und Breite.
 
@@ -861,6 +868,13 @@ Width | this many tiles wide, the landing grows with it
 ## Learn stairs
 - Build a stair by hand (steps in several directions, blocks below, landing), select all pieces and “Learn stairs from selection”: the step per direction, filling block and landing are found and saved as a stair set.
 - A finished stair can be saved as a template in the workshop and placed anywhere again.
+
+## Stair designer (own window)
+- Stairs are square blocks stepped on top of each other (5 Z each) with the sloped stair piece on every step.
+- Build by hand in the test field: choose block / step in the catalog, set “Z +” (0, 5, 10, 15), click. Or “Generate from stair set” and change it.
+- Mark with “Area” → “Take as model” (check “Built going up towards”), “View turned” N / E / S / W, save by category.
+- “Stairs from the map” takes real stairs. “📋 Log + picture” saves a picture and every step with id, height and slope – to send.
+- “Use in the studio”: the tool Stairs places the model (R turns, “Model several times”, “Build downwards”, under the map with “Build under the map”).
 
 ## Bridge with an arch of steps
 In the bridge designer switch on “Arch of steps” and set the slider “Arch” (e.g. 20 = 4 steps): the bridge rises in steps, is flat on top and goes down on the other side. Sliders for length and width too.
