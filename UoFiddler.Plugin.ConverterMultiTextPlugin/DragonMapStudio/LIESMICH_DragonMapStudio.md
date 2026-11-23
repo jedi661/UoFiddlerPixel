@@ -1230,3 +1230,12 @@ Brücken, Geländer und Treppen mit Teilen, die automatisch aus TileData (Namen,
 * **Vorlagen mit Bild:** Werkstatt → „🖼 Vorlagen mit Bild …“.
 * **Französisch** ist jetzt vollständig (Menü Sprache / Language / Langue).
 
+## Test-Assistent (seit „Werkstatt 29“)
+
+Menü **Hilfe → 🧪 Test-Assistent** oder Knopf **„🧪 Test“** oben rechts in der CGI-Ansicht. Damit kannst du alles nacheinander prüfen und dem Entwickler genaue Daten schicken.
+
+* **⚙ Automatisch prüfen (alle):** 17 Tests bauen auf kleinen Karten im Speicher – mit deinen Client-Dateien – Brücke, Bogen aus Stufen, Treppenhaus (alle Wenden), Treppe lernen, Drehen mit Teile-Tausch, Wand mit Ecken, Fluss, Küste glätten, Unebenheit, Dungeon mit 2 Etagen, Vorlagen, Katalog, Einstellungen. Jeder Wert steht im Protokoll (welche Teile gefunden wurden, welche Richtung erkannt wurde …). Deine Karte bleibt unverändert.
+* **Prüfliste:** 21 Schritte. Je Schritt „▶ Vorbereiten“ (wählt das Werkzeug / öffnet das Fenster), dann die Aufgabe ausführen, „📷 Aufnehmen“ (Bildschirmfoto aller Studio-Fenster, Werkzeug mit Einstellungen, jedes gesetzte Static und Land-Tile mit ID, Name, Höhe und Richtung), dann **✔ Passt / ✖ Falsch / ? Unklar** mit Kommentar.
+* Fehler des Studios werden mitgeschrieben, solange der Test-Assistent offen ist.
+* **💾 Bericht speichern:** eine ZIP in „Dokumente“ (`DragonMapStudio_Testbericht_….zip`) – diese Datei schicken.
+

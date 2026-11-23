@@ -1775,3 +1775,23 @@ Brücken-Pläne	Plans de pont
 Item → Ecke	objet → coin
 Werkzeug-Optionen in ein eigenes Fenster (z. B. auf einen anderen Monitor)	Options de l'outil dans une fenêtre à part (p. ex. sur un autre écran)
 Werkzeug-Optionen wieder in die Leiste	Options de l'outil de nouveau dans la barre
+# Werkstatt 29: Test-Assistent
+Test-Assistent	Assistant de test
+Automatisch prüfen (alle)	Vérifier automatiquement (tout)
+Bericht speichern …	Enregistrer le rapport …
+PRÜFLISTE – Schritt für Schritt	LISTE DE CONTRÔLE – étape par étape
+Vorbereiten	Préparer
+Aufnehmen	Enregistrer
+Passt	OK
+Falsch	Faux
+Unklar	Pas clair
+Dein Kommentar (was ist falsch, was hast du erwartet):	Votre commentaire (ce qui ne va pas, ce que vous attendiez) :
+PROTOKOLL – das kommt in den Bericht	JOURNAL – ceci va dans le rapport
+So geht's:	Comment faire :
+Das solltest du sehen:	Vous devriez voir :
+Automatische Prüfung	Vérification automatique
+Bericht gespeichert	Rapport enregistré
+Bericht gespeichert – bitte diese Datei schicken:	Rapport enregistré – merci d'envoyer ce fichier :
+Test-Assistent …	Assistant de test …
+Test	Test
+Test-Assistent: automatisch prüfen, Prüfliste mit Bildschirmfoto und Daten, Bericht für den Entwickler	Assistant de test : vérifications automatiques, liste de contrôle avec capture d'écran et données, rapport pour le développeur

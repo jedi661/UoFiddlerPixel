@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 23.11.2026 – Werkstatt 28“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 23.11.2026 – Werkstatt 29“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -163,6 +163,12 @@
    * Dungeon mit Etagen (`DungeonSettings.Floors`, `ConnectFloors` in der Werkstatt), Einrichtung lernen und an Wänden setzen (`DungeonLook.Furniture/FurniturePercent`).
    * `CoastSoft` ab Werk an (einmalig über `StudioSettings.SettingsLevel` 28), Vorlagen-Browser mit Bildern `Dialogs/TemplateBrowserForm.cs`.
    * Französisch `DragonData/Lang/fr.txt` jetzt vollständig (alle Texte wie en.txt).
+
+19. **Neu (Werkstatt 29): Test-Assistent**
+   * `Core/SelfTests.cs`: 17 automatische Tests auf Karten im Speicher mit den Client-Dateien des Besitzers, jeder Wert im Protokoll.
+   * `Dialogs/TestAssistantForm.cs`: Prüfliste (21 Schritte) mit Vorbereiten, 📷 Aufnehmen (Bildschirmfoto aller Fenster, Werkzeug + Einstellungen, alle Änderungen seit Schritt-Beginn über `MapData.RecentSteps`), ✔ / ✖ / ? + Kommentar, Fehler-Mitschnitt (FirstChanceException), Bericht-ZIP in „Dokumente“.
+   * `Workshop.ConnectFloors` (Treppen zwischen Etagen) aus der Werkstatt in den Kern verschoben, damit es testbar ist.
+   * **Wenn der Besitzer einen Testbericht schickt:** `bericht.txt` zuerst, dann `automatisch_details.txt`, dann die `schrittNN_daten.txt` der ✖-Schritte.
 
 ## Offen / als Nächstes
 

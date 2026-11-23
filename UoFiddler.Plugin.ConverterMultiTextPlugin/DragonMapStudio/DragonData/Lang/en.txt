@@ -1783,3 +1783,23 @@ Brücken-Pläne	Bridge plans
 Item → Ecke	item → corner
 Werkzeug-Optionen in ein eigenes Fenster (z. B. auf einen anderen Monitor)	Tool options in their own window (e.g. on another monitor)
 Werkzeug-Optionen wieder in die Leiste	Tool options back into the bar
+# Werkstatt 29: Test-Assistent
+Test-Assistent	Test assistant
+Automatisch prüfen (alle)	Check automatically (all)
+Bericht speichern …	Save report …
+PRÜFLISTE – Schritt für Schritt	CHECK LIST – step by step
+Vorbereiten	Prepare
+Aufnehmen	Capture
+Passt	OK
+Falsch	Wrong
+Unklar	Unclear
+Dein Kommentar (was ist falsch, was hast du erwartet):	Your comment (what is wrong, what did you expect):
+PROTOKOLL – das kommt in den Bericht	LOG – this goes into the report
+So geht's:	How to:
+Das solltest du sehen:	You should see:
+Automatische Prüfung	Automatic check
+Bericht gespeichert	Report saved
+Bericht gespeichert – bitte diese Datei schicken:	Report saved – please send this file:
+Test-Assistent …	Test assistant …
+Test	Test
+Test-Assistent: automatisch prüfen, Prüfliste mit Bildschirmfoto und Daten, Bericht für den Entwickler	Test assistant: automatic checks, check list with screenshot and data, report for the developer

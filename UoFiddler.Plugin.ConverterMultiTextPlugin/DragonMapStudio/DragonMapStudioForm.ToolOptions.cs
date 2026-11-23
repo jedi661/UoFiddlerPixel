@@ -29,6 +29,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
     {
         private readonly List<ToolStripItem> _quickItems = new List<ToolStripItem>();
         private Action _quickChanged;
+        private List<(object o, string title)> _toolSettingsNow = new List<(object, string)>();
+        private TestAssistantForm _tester;
         private Form _optWindow;
         private ToolStrip _optStrip;
         private TabControl _optTabs;
@@ -134,6 +136,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             // ---- map editor: kind of the natural course
             BuildCourseKinds();
 
+            // ---- test assistant: menu Hilfe and a button in the CGI bar
+            var test = new ToolStripMenuItem("🧪 " + L.T("Test-Assistent …"));
+            test.Click += (s, e) => OpenTestAssistant();
+            mnuHelp.DropDownItems.Add(new ToolStripSeparator());
+            mnuHelp.DropDownItems.Add(test);
+            var testBtn = new ToolStripButton("🧪 " + L.T("Test")) { ToolTipText = L.T("Test-Assistent: automatisch prüfen, Prüfliste mit Bildschirmfoto und Daten, Bericht für den Entwickler"), Alignment = ToolStripItemAlignment.Right };
+            testBtn.Click += (s, e) => OpenTestAssistant();
+            toolStripCgi.Items.Add(testBtn);
+
             // ---- windows come back where they were (3 monitors)
             if (_settings.ToolOptionsOpen)
             {
@@ -143,6 +154,97 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 BeginInvoke(new Action(UndockSidePanel));
             }
+        }
+
+        // ================================================================== test assistant
+
+        private void OpenTestAssistant()
+        {
+            if (_tester != null)
+            {
+                _tester.Activate();
+                return;
+            }
+            var host = new TestHost
+            {
+                Map = () => _cgiMap,
+                Brushes = BrushCfg,
+                BuildMark = BuildMark,
+                Status = SetStatus,
+                SelectTool = t =>
+                {
+                    tabMain.SelectedTab = tabCgi;
+                    SelectCgiTool(t);
+                },
+                Open = what =>
+                {
+                    switch (what)
+                    {
+                        case "bridge":
+                            OpenBridgeDesigner();
+                            break;
+                        case "workshop":
+                            tabMain.SelectedTab = tabCgi;
+                            OpenDungeonWorkshop(WorkshopKind.Classic);
+                            break;
+                        case "cellar":
+                            tabMain.SelectedTab = tabCgi;
+                            OpenDungeonWorkshop(WorkshopKind.Cellar);
+                            break;
+                        case "tooloptions":
+                            tabMain.SelectedTab = tabCgi;
+                            if (_optWindow == null)
+                            {
+                                ToggleOptionWindow();
+                            }
+                            break;
+                        case "side":
+                            tabMain.SelectedTab = tabCgi;
+                            if (_sideWindow == null)
+                            {
+                                UndockSidePanel();
+                            }
+                            break;
+                        case "course":
+                            tabMain.SelectedTab = tabEditor;
+                            SelectTool(MapTool.Course);
+                            break;
+                        case "editor":
+                            tabMain.SelectedTab = tabEditor;
+                            break;
+                        default:
+                            tabMain.SelectedTab = tabCgi;
+                            break;
+                    }
+                },
+                ToolInfo = () =>
+                {
+                    var sb = new System.Text.StringBuilder();
+                    bool cgi = tabMain.SelectedTab == tabCgi;
+                    sb.AppendLine(cgi ? $"CGI-Werkzeug: {CgiToolTitle(isoView.Tool)} ({isoView.Tool})" : $"Karten-Editor-Werkzeug: {mapCanvas.Tool}, Farbe 1 = {mapCanvas.PrimaryIndex}, Farbe 2 = {mapCanvas.SecondaryIndex}, Pinsel {mapCanvas.BrushSize}");
+                    sb.AppendLine($"Pinsel-Radius {isoView.LandRadius}, Item {isoView.PlaceId:x4} {UoArtCache.ItemName(isoView.PlaceId)}, Hue {isoView.PlaceHue}, Land {isoView.PlaceLandId:x4}, Multi {isoView.MultiId}, Z+ {isoView.ZOffset}, unter der Karte {isoView.UnderView}");
+                    sb.AppendLine($"Sets: Wand '{BrushCfg.WallSet}', Treppe '{BrushCfg.StairSet}', Brücken-Plan '{BrushCfg.BridgeTemplate}', Brücken-Set '{BrushCfg.BridgeSet}', Streu '{BrushCfg.ScatterSet}', Varianten '{BrushCfg.VariantSet}', Weg-Stempel '{BrushCfg.RoadStamp}', Lauf-Art '{BrushCfg.CoursePreset}'");
+                    StairSet st = BrushCfg.StairSets.FirstOrDefault(x => x.Name == BrushCfg.StairSet);
+                    if (st != null)
+                    {
+                        sb.AppendLine($"Treppen-Set: N {st.DownNorth} O {st.DownEast} S {st.DownSouth} W {st.DownWest} Block {st.Block} Absatz {st.Landing}");
+                    }
+                    WallSet ws = BrushCfg.WallSets.FirstOrDefault(x => x.Name == BrushCfg.WallSet);
+                    if (ws != null)
+                    {
+                        sb.AppendLine($"Wand-Set: X {ws.AlongX} Y {ws.AlongY} Pfosten {ws.Post} Ecke {ws.Corner}");
+                    }
+                    foreach ((object o, string title) in _toolSettingsNow)
+                    {
+                        sb.AppendLine($"--- {title}:");
+                        sb.AppendLine(JsonSerializer.Serialize(o, o.GetType()));
+                    }
+                    return sb.ToString();
+                }
+            };
+            _tester = new TestAssistantForm(host) { Owner = this };
+            _tester.FormClosed += (s, e) => _tester = null;
+            _tester.Show(this);
         }
 
         // ================================================================== side panel, palettes
@@ -416,6 +518,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                         break;
                     }
             }
+            _toolSettingsNow = all;
             FillOptionTabs(t, all);
             if (all.Count > 0 && _optWindow == null)
             {

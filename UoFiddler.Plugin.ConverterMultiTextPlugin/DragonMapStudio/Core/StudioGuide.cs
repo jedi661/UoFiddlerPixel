@@ -870,6 +870,44 @@ Workshop → layout → “Floors”: this many levels below each other (20 Z ea
             },
             new GuideTopic
             {
+                Key = "test", Group = "Anleitung|Guide", TitleDe = "Test-Assistent (Bericht für den Entwickler)", TitleEn = "Test assistant (report for the developer)",
+                De = @"# Test-Assistent
+Menü Hilfe → 🧪 Test-Assistent oder der Knopf „🧪 Test“ oben rechts in der CGI-Ansicht.
+
+## 1. Automatisch prüfen
+„⚙ Automatisch prüfen (alle)“ baut auf kleinen Karten im Speicher Brücke, Treppen, Fluss, Wand, Dungeon mit Etagen, Vorlage usw. – mit deinen Client-Dateien – und schreibt alle Werte ins Protokoll (welche Teile die TileData-Suche findet, welche Richtung erkannt wird, ob die Treppe 20 Z hat …). Die echte Karte bleibt unverändert.
+
+## 2. Prüfliste
+Links die Schritte. Je Schritt:
+▶ Vorbereiten | wählt das Werkzeug / öffnet das Fenster
+So geht's | was du tun sollst
+Das solltest du sehen | was herauskommen soll
+📷 Aufnehmen | Bildschirmfoto aller Studio-Fenster + Werkzeug mit Einstellungen + jedes Static / Land-Tile, das das Werkzeug seit Beginn des Schritts gesetzt hat (ID, Name, Position, Höhe, Richtung)
+✔ / ✖ / ? | passt, falsch, unklar – mit Kommentar
+Weiter | nächster Schritt
+
+## 3. Bericht
+„💾 Bericht speichern“ packt alles in eine ZIP in „Dokumente“ (Bericht, Bilder, Daten, Fehler des Studios, Einstellungen). Diese Datei schickst du dem Entwickler.",
+                En = @"# Test assistant
+Menu Help → 🧪 Test assistant or the button “🧪 Test” at the top right of the CGI view.
+
+## 1. Automatic checks
+“⚙ Check automatically (all)” builds bridge, stairs, river, wall, dungeon with floors, template etc. on small maps in memory – with your client files – and writes every value into the log (which pieces the tiledata search finds, which direction is detected, whether the stairs have 20 Z …). The real map stays unchanged.
+
+## 2. Check list
+The steps on the left. For every step:
+▶ Prepare | chooses the tool / opens the window
+How to | what you should do
+You should see | what should come out
+📷 Capture | screenshot of all studio windows + tool with settings + every static / land tile the tool placed since the start of the step (id, name, position, height, direction)
+✔ / ✖ / ? | OK, wrong, unclear – with a comment
+Next | next step
+
+## 3. Report
+“💾 Save report” packs everything into one ZIP in “Documents” (report, pictures, data, errors of the studio, settings). Send this file to the developer."
+            },
+            new GuideTopic
+            {
                 Key = "keys", Group = "Übersicht|Overview", TitleDe = "Alle Tasten", TitleEn = "All keys",
                 De = @"# Alle Tasten
 ## Überall
