@@ -899,6 +899,8 @@ Gleicher Baukasten wie der Treppen-Designer – für alles, was sich wiederholt:
 ## Zeichnen (CGI: Werkzeug „Muster“, Karten-Editor: „Muster (Statics)“)
 Klick | Muster einmal in der gewählten Richtung (R dreht)
 Ziehen | wiederholt das Muster in Zieh-Richtung, mit der Version dieser Richtung
+Wiederholen | „Reihe fortsetzen“: eine Mauer wird länger · „Kopien nebeneinander“: das Muster mehrmals hintereinander
+Erlaubte Richtungen | im Baukasten je Muster (z. B. nur Nord–Süd); nur diese werden gedreht und gezeichnet
 Ziehen wiederholt aus | jeder Zug setzt es genau einmal
 Höhe gerade | alle Stücke auf der Höhe am Start (Zinnen)
 Höhe Boden | jedes Stück auf dem Gelände
@@ -922,6 +924,8 @@ The same bench as the stair designer – for everything that repeats: battlement
 ## Drawing (CGI: tool “Pattern”, map editor: “Pattern (statics)”)
 Click | the pattern once in the chosen direction (R turns)
 Drag | repeats the pattern in the drag direction, with the version of that direction
+Repeat | “Continue the row”: a wall gets longer · “Copies side by side”: the pattern several times one behind the other
+Allowed directions | per pattern in the kit (e.g. only north–south); only these are turned and drawn
 Drag repeats off | every drag places it exactly once
 Height level | all pieces at the height of the start (battlements)
 Height ground | every piece on the terrain

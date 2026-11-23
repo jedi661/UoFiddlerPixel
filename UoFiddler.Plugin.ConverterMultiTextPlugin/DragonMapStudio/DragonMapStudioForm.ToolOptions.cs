@@ -415,12 +415,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             toolStripCgiLand.SuspendLayout();
-            foreach (ToolStripItem i in _quickItems)
-            {
-                i.Owner?.Items.Remove(i);
-                i.Dispose();
-            }
-            _quickItems.Clear();
+            ClearQuickItems();
             _quickChanged = null;
             CgiBrushSettings b = BrushCfg;
             var all = new List<(object o, string title)>();
@@ -686,12 +681,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 UpdateQuickOptions(isoView.Tool);
             };
             // the items move from the bar into the window
-            foreach (ToolStripItem i in _quickItems)
-            {
-                i.Owner?.Items.Remove(i);
-                i.Dispose();
-            }
-            _quickItems.Clear();
+            ClearQuickItems();
             _optWindow = f;
             _settings.ToolOptionsOpen = true;
             f.Show(this);
@@ -793,6 +783,69 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             script.Controls.Add(bar);
             _optTabs.TabPages.Add(script);
             pick.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// Takes the quick options out of their bar. First all are removed, disposed only afterwards (later, when the bar
+        /// has done its layout): the overflow (») of a full bar still measures removed items while the others are taken
+        /// out – a disposed one there crashed with ObjectDisposedException (e.g. when opening the dungeon workshop).
+        /// </summary>
+        private void ClearQuickItems()
+        {
+            List<ToolStripItem> items = _quickItems.ToList();
+            _quickItems.Clear();
+            List<ToolStrip> owners = items.Select(i => i.Owner).Where(o => o != null && !o.IsDisposed).Distinct().ToList();
+            foreach (ToolStrip o in owners)
+            {
+                o.SuspendLayout();
+            }
+            foreach (ToolStripItem i in items)
+            {
+                try
+                {
+                    if (!i.IsDisposed)
+                    {
+                        i.Owner?.Items.Remove(i);
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    // already gone with its window
+                }
+            }
+            foreach (ToolStrip o in owners)
+            {
+                try
+                {
+                    o.ResumeLayout(o != toolStripCgiLand);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // window closed
+                }
+            }
+            void DisposeAll()
+            {
+                foreach (ToolStripItem i in items)
+                {
+                    try
+                    {
+                        i.Dispose();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // fine
+                    }
+                }
+            }
+            if (IsHandleCreated && !IsDisposed)
+            {
+                BeginInvoke((Action)DisposeAll);
+            }
+            else
+            {
+                DisposeAll();
+            }
         }
 
         private void AddQuick(ToolStripItem item)

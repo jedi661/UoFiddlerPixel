@@ -1970,3 +1970,26 @@ Muster: erst ein Muster wählen (Leiste oben / Muster-Baukasten).	Pattern: choos
 Muster: Klick = einmal in der Richtung (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe, Etagen, Abstand oben in der Leiste	Pattern: click = once in the direction (R turns) · drag = repeated in the drag direction with the version of that direction · height, floors, gap in the bar at the top
 Zeichnen	Drawing
 Muster wählen	Choose pattern
+
+# Werkstatt 36
+Reihe fortsetzen (Mauer wird länger)	Continue the row (the wall gets longer)
+Kopien nebeneinander (hintereinander gestellt)	Copies side by side (one behind the other)
+Reihe fortsetzen: beim Ziehen wird die Version genommen, die in Zieh-Richtung läuft – eine Mauer wird länger. Kopien nebeneinander: das Muster so wie es ist mehrmals hintereinander stellen.	Continue the row: when dragging the version running in the drag direction is used – a wall gets longer. Copies side by side: the pattern as it is, placed several times one behind the other.
+nicht erlaubt	not allowed
+Erlaubt	Allowed
+Erlaubte Richtungen (nur diese werden gedreht und gezeichnet):	Allowed directions (only these are turned and drawn):
+speichern nicht vergessen	don't forget to save
+nur N–S	only N–S
+nur O–W	only E–W
+nur diese	only this
+Nicht alle erlaubten Richtungen sind gebaut. Die fehlenden automatisch drehen?	Not all allowed directions are built. Turn the missing ones automatically?
+West → Ost	west → east
+Nord → Süd	north → south
+Das Markierte läuft	The marked part runs
+die Richtung	the direction
+läuft aber quer dazu.	runs across it, though.
+Ja = als Richtung	Yes = take as direction
+übernehmen (beim Ziehen wird die Mauer länger)	(the wall gets longer when dragging)
+Nein = trotzdem als	No = still as
+(z. B. Zelte, Reihe von Kopien nebeneinander)	(e.g. tents, a row of copies side by side)
+Richtung = in diese Richtung läuft das Muster beim Ziehen. Ost / West: die Mauer läuft West → Ost (auf dem Bild „\“), Nord / Süd: Nord → Süd („/“).	Direction = the pattern runs this way when dragging. East / west: the wall runs west → east (on screen “\”), north / south: north → south (“/”).

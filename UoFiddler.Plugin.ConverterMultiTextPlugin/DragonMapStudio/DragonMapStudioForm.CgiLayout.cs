@@ -175,7 +175,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         /// <summary>Shown in the window title: which state of the studio is running (to check that a new build is really used).</summary>
-        public const string BuildMark = "Stand 23.11.2026 – Werkstatt 35";
+        public const string BuildMark = "Stand 23.11.2026 – Werkstatt 36";
         private PictureBox _picStampPreview;
         private ToolStripButton _tsbStaticIds;
         private bool _cgiLayoutBuilt;

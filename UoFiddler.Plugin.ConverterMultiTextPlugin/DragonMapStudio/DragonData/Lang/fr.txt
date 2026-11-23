@@ -1962,3 +1962,26 @@ Muster: erst ein Muster wählen (Leiste oben / Muster-Baukasten).	Motif : choisi
 Muster: Klick = einmal in der Richtung (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe, Etagen, Abstand oben in der Leiste	Motif : clic = une fois dans la direction (R tourne) · tirer = répété dans la direction du tracé avec la version de cette direction · hauteur, étages, écart dans la barre en haut
 Zeichnen	Dessin
 Muster wählen	Choisir un motif
+
+# Werkstatt 36
+Reihe fortsetzen (Mauer wird länger)	Continuer la rangée (le mur s'allonge)
+Kopien nebeneinander (hintereinander gestellt)	Copies côte à côte (l'une derrière l'autre)
+Reihe fortsetzen: beim Ziehen wird die Version genommen, die in Zieh-Richtung läuft – eine Mauer wird länger. Kopien nebeneinander: das Muster so wie es ist mehrmals hintereinander stellen.	Continuer la rangée : en tirant, la version qui suit la direction du tracé est utilisée – un mur s'allonge. Copies côte à côte : le motif tel quel, posé plusieurs fois l'un derrière l'autre.
+nicht erlaubt	non autorisé
+Erlaubt	Autorisé
+Erlaubte Richtungen (nur diese werden gedreht und gezeichnet):	Directions autorisées (seules celles-ci sont tournées et dessinées) :
+speichern nicht vergessen	ne pas oublier d'enregistrer
+nur N–S	seulement N–S
+nur O–W	seulement E–O
+nur diese	seulement celle-ci
+Nicht alle erlaubten Richtungen sind gebaut. Die fehlenden automatisch drehen?	Les directions autorisées ne sont pas toutes construites. Tourner automatiquement celles qui manquent ?
+West → Ost	ouest → est
+Nord → Süd	nord → sud
+Das Markierte läuft	La sélection va
+die Richtung	la direction
+läuft aber quer dazu.	va pourtant en travers.
+Ja = als Richtung	Oui = reprendre comme direction
+übernehmen (beim Ziehen wird die Mauer länger)	(le mur s'allonge en tirant)
+Nein = trotzdem als	Non = quand même comme
+(z. B. Zelte, Reihe von Kopien nebeneinander)	(p. ex. tentes, rangée de copies côte à côte)
+Richtung = in diese Richtung läuft das Muster beim Ziehen. Ost / West: die Mauer läuft West → Ost (auf dem Bild „\“), Nord / Süd: Nord → Süd („/“).	Direction = le motif avance dans ce sens quand on tire. Est / ouest : le mur va d'ouest en est (à l'écran « \ »), nord / sud : du nord au sud (« / »).

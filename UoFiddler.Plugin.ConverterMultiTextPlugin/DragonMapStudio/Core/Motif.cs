@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – motifs ("Muster-Baukasten"): pieces built by hand (battlements, tents, a wall with windows,
  *  *  a fortress wall with towers …) with a version for every direction (north, east, south, west).
@@ -31,8 +31,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         Rise
     }
 
+    public enum MotifRepeat
+    {
+        [Description("Reihe fortsetzen (Mauer wird länger)")]
+        Along,
+
+        [Description("Kopien nebeneinander (hintereinander gestellt)")]
+        Across
+    }
+
     public sealed class MotifDrawSettings
     {
+        [Category("Zeichnen"), DisplayName("Wiederholen"), Description("Reihe fortsetzen: beim Ziehen wird die Version genommen, die in Zieh-Richtung läuft – eine Mauer wird länger. Kopien nebeneinander: das Muster so wie es ist mehrmals hintereinander stellen.")]
+        public MotifRepeat Repeat { get; set; } = MotifRepeat.Along;
+
         [Category("Zeichnen"), DisplayName("Ziehen wiederholt"), Description("An = ziehen wiederholt das Muster in Zieh-Richtung. Aus = jeder Klick / Zug setzt es genau einmal.")]
         public bool Drag { get; set; } = true;
 
@@ -71,6 +83,86 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         [Category("Muster"), DisplayName("Notiz")]
         public string Note { get; set; } = string.Empty;
+
+        /// <summary>Directions this motif may be drawn in (e.g. only north – south). Not allowed ones are never turned or drawn.</summary>
+        [Browsable(false)]
+        public bool AllowNorth { get; set; } = true;
+
+        [Browsable(false)]
+        public bool AllowEast { get; set; } = true;
+
+        [Browsable(false)]
+        public bool AllowSouth { get; set; } = true;
+
+        [Browsable(false)]
+        public bool AllowWest { get; set; } = true;
+
+        public bool Allowed(Compass c) => c switch
+        {
+            Compass.North => AllowNorth,
+            Compass.East => AllowEast,
+            Compass.South => AllowSouth,
+            _ => AllowWest
+        };
+
+        public void SetAllowed(Compass c, bool on)
+        {
+            switch (c)
+            {
+                case Compass.North:
+                    AllowNorth = on;
+                    break;
+                case Compass.East:
+                    AllowEast = on;
+                    break;
+                case Compass.South:
+                    AllowSouth = on;
+                    break;
+                default:
+                    AllowWest = on;
+                    break;
+            }
+            if (!AllowNorth && !AllowEast && !AllowSouth && !AllowWest)
+            {
+                AllowEast = true;
+            }
+        }
+
+        /// <summary>Allowed directions as text ("Nord, Süd").</summary>
+        public string AllowedText() => string.Join(", ", new[] { Compass.North, Compass.East, Compass.South, Compass.West }.Where(Allowed).Select(DirName));
+
+        /// <summary>
+        /// The axis a set of pieces runs along: +1 = west – east (x), −1 = north – south (y), 0 = square / unknown.
+        /// From the footprint; a single row / square uses the art of the walls in it.
+        /// </summary>
+        public static int AxisOf(List<PieceStatic> v)
+        {
+            if (v == null || v.Count == 0)
+            {
+                return 0;
+            }
+            int w = v.Max(p => p.X) - v.Min(p => p.X) + 1, h = v.Max(p => p.Y) - v.Min(p => p.Y) + 1;
+            if (w != h)
+            {
+                return w > h ? 1 : -1;
+            }
+            int sum = 0;
+            foreach (ushort id in v.Select(p => p.Id).Distinct())
+            {
+                try
+                {
+                    sum += BridgeKit.Orientation(id);
+                }
+                catch (Exception)
+                {
+                    // no art (tests without client files)
+                }
+            }
+            return Math.Sign(sum);
+        }
+
+        /// <summary>The axis a direction runs along: east / west = +1 (x), north / south = −1 (y).</summary>
+        public static int AxisOf(Compass c) => c == Compass.East || c == Compass.West ? 1 : -1;
 
         [Browsable(false)]
         public List<PieceStatic> North { get; set; } = new List<PieceStatic>();
@@ -169,7 +261,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>The missing directions turned from a built one (the first built one, or <paramref name="from"/>).</summary>
         public int AutoVariants(Compass? from = null, bool overwrite = false)
         {
-            Compass src = from ?? new[] { Compass.East, Compass.South, Compass.North, Compass.West }.FirstOrDefault(Has);
+            Compass src = from ?? new[] { Compass.East, Compass.South, Compass.North, Compass.West }.Where(Allowed).Concat(new[] { Compass.East, Compass.South, Compass.North, Compass.West }).FirstOrDefault(Has);
             if (!Has(src))
             {
                 return 0;
@@ -177,6 +269,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             int made = 0;
             foreach (Compass c in new[] { Compass.North, Compass.East, Compass.South, Compass.West })
             {
+                if (!Allowed(c))
+                {
+                    continue;
+                }
                 if (c != src && (overwrite || !Has(c)))
                 {
                     SetVariant(c, Turn(Variant(src), src, c));
@@ -215,20 +311,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         {
             var result = new List<(int, int, int, ushort, ushort)>();
             bool drag = o.Drag && a != b;
-            dir = drag ? Staircase.DirectionOf(a, b) : o.Direction;
-            List<PieceStatic> v = Variant(dir);
-            if (v.Count == 0)
+            Compass want = drag ? Staircase.DirectionOf(a, b) : o.Direction;
+            if (!new[] { Compass.North, Compass.East, Compass.South, Compass.West }.Any(c => Allowed(c) && Has(c)))
             {
                 AutoVariants();
-                v = Variant(dir);
             }
+            dir = ChooseVariant(want, drag && o.Repeat == MotifRepeat.Along);
+            List<PieceStatic> v = Variant(dir);
             repeats = 0;
             if (v.Count == 0)
             {
                 return result;
             }
+
+            // where the copies go: along the drag; "Reihe fortsetzen" with a direction that runs the other way
+            // (only north – south allowed, dragged east …): along the axis of the motif, as far as the drag reaches there
+            Compass step = want;
+            if (drag && o.Repeat == MotifRepeat.Along)
+            {
+                int axis = AxisOf(v);
+                if (axis == 0)
+                {
+                    axis = AxisOf(dir);
+                }
+                if (axis != AxisOf(want))
+                {
+                    step = axis > 0 ? (b.X >= a.X ? Compass.East : Compass.West) : (b.Y >= a.Y ? Compass.South : Compass.North);
+                }
+            }
             int w = v.Max(p => p.X) + 1, h = v.Max(p => p.Y) + 1;
-            bool alongX = dir == Compass.East || dir == Compass.West;
+            bool alongX = step == Compass.East || step == Compass.West;
             int period = (alongX ? w : h) + Math.Max(0, o.Gap);
             int dist = alongX ? Math.Abs(b.X - a.X) : Math.Abs(b.Y - a.Y);
             int n = drag ? dist / Math.Max(1, period) + 1 : 1;
@@ -239,7 +351,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             for (int k = 0; k < n; k++)
             {
                 int ox = a.X, oy = a.Y;
-                switch (dir)
+                switch (step)
                 {
                     case Compass.East:
                         ox = a.X + k * period;
@@ -264,6 +376,57 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 }
             }
             return result;
+        }
+
+        /// <summary>
+        /// The version to draw for a wanted direction: only allowed, built ones (missing allowed ones are turned).
+        /// <paramref name="alongDrag"/>: prefer a version that runs along the wanted direction (a wall continues instead of
+        /// standing side by side) – the wanted one, its opposite, then the others.
+        /// </summary>
+        public Compass ChooseVariant(Compass want, bool alongDrag)
+        {
+            var order = new List<Compass> { want, Staircase.Opposite(want), Staircase.RightOf(want), Staircase.LeftOf(want) };
+            List<Compass> usable = order.Where(c => Allowed(c) && Has(c)).ToList();
+            if (usable.Count == 0)
+            {
+                AutoVariants();
+                usable = order.Where(c => Allowed(c) && Has(c)).ToList();
+            }
+            if (usable.Count == 0)
+            {
+                usable = order.Where(Has).ToList();
+            }
+            if (usable.Count == 0)
+            {
+                return want;
+            }
+            if (alongDrag)
+            {
+                int axis = AxisOf(want);
+                foreach (Compass c in usable)
+                {
+                    int ax = AxisOf(Variant(c));
+                    if (ax == axis || ax == 0)
+                    {
+                        return c;
+                    }
+                }
+            }
+            return usable[0];
+        }
+
+        /// <summary>The next allowed direction after <paramref name="c"/> (R in the tool).</summary>
+        public Compass NextAllowed(Compass c)
+        {
+            for (int i = 1; i <= 4; i++)
+            {
+                var n = (Compass)(((int)c + i) % 4);
+                if (Allowed(n))
+                {
+                    return n;
+                }
+            }
+            return c;
         }
 
         /// <summary>The changes for the CGI map (optionally removing what stood there).</summary>
@@ -301,7 +464,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             foreach (Compass c in new[] { Compass.North, Compass.East, Compass.South, Compass.West })
             {
                 List<PieceStatic> v = Variant(c);
-                sb.AppendLine($"== {DirName(c)}: {v.Count} Teile, Höhe {HeightOf(c)}, Treppen-Anstieg {StairRise(c)}");
+                sb.AppendLine($"== {DirName(c)}{(Allowed(c) ? string.Empty : " (nicht erlaubt)")}: {v.Count} Teile, läuft {(AxisOf(v) > 0 ? "West-Ost" : AxisOf(v) < 0 ? "Nord-Süd" : "quadratisch")}, Höhe {HeightOf(c)}, Treppen-Anstieg {StairRise(c)}");
                 foreach (PieceStatic p in v.OrderBy(p => p.Y).ThenBy(p => p.X).ThenBy(p => p.Z))
                 {
                     sb.AppendLine($"  ({p.X},{p.Y}) z {p.Z,3}  {p.Id:x4} {UoArtCache.ItemName(p.Id),-20} h{UoArtCache.ItemHeight(p.Id)} (stapelt {UoArtCache.StackHeight(p.Id)})" + (p.Hue != 0 ? $" hue {p.Hue}" : string.Empty));

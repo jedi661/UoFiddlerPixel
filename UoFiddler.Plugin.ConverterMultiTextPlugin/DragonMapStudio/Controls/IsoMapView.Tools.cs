@@ -554,7 +554,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             if (Tool == IsoTool.Motif && e.KeyCode == Keys.R && !e.Control)
             {
-                BrushSettings.MotifDraw.Direction = (Compass)(((int)BrushSettings.MotifDraw.Direction + 1) % 4);
+                Motif rm = string.IsNullOrEmpty(BrushSettings.Motif) ? null : FindMotif?.Invoke(BrushSettings.Motif);
+                BrushSettings.MotifDraw.Direction = rm != null ? rm.NextAllowed(BrushSettings.MotifDraw.Direction) : (Compass)(((int)BrushSettings.MotifDraw.Direction + 1) % 4);
                 Message?.Invoke(this, L.T("Muster: Richtung") + " " + L.T(Core.Motif.DirName(BrushSettings.MotifDraw.Direction)));
                 Invalidate();
                 return true;
