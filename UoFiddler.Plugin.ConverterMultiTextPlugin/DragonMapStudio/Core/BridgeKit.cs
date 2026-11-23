@@ -461,33 +461,168 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         }
 
         /// <summary>Stairs of the tiledata sorted by direction (from the flags / art): N, E, S, W – empty when none.</summary>
-        public static StairSet AutoStairs()
+        public static StairSet AutoStairs() => AutoStairs(out _);
+
+        /// <summary>
+        /// Stairs of the tiledata: pieces of the same name and step height 5, their slope read from the art
+        /// (<see cref="StairUp"/>), one piece for every direction. <paramref name="report"/> lists what was seen.
+        /// </summary>
+        public static StairSet AutoStairs(out string report)
         {
             var set = new StairSet { Name = "Treppe (TileData)" };
-            List<int> stairs = Find(Role.Stairs, 60);
-            // in the original art the stair pieces come in groups of four directions with the same name
-            foreach (int id in stairs)
+            var log = new System.Text.StringBuilder();
+            var byName = new Dictionary<string, Dictionary<Compass, int>>();
+            var order = new List<string>();
+            foreach (int id in Find(Role.Stairs, 200))
             {
-                string name = UoArtCache.ItemName(id).Trim().ToLowerInvariant();
-                // four pieces of the same name and the same step height (a block of 10 is no step)
-                int h = UoArtCache.ItemHeight(id);
-                if (h != 5)
+                if (UoArtCache.ItemHeight(id) != 5)
                 {
                     continue;
                 }
-                var group = Enumerable.Range(id, 4).Where(c => UoArtCache.ItemName(c).Trim().ToLowerInvariant() == name && UoArtCache.ItemHeight(c) == h).ToList();
-                if (group.Count == 4)
+                Compass? up = StairUp(id, out string info);
+                string name = UoArtCache.ItemName(id).Trim().ToLowerInvariant();
+                log.AppendLine($"   {id:x4} {name}: hinauf {(up?.ToString() ?? "?")}  ({info})");
+                if (up == null)
                 {
-                    // order of the original stair groups: south, east, north, west (up direction) → walking down the other way
-                    set.DownNorth = group[0].ToString("x4");
-                    set.DownWest = group[1].ToString("x4");
-                    set.DownSouth = group[2].ToString("x4");
-                    set.DownEast = group[3].ToString("x4");
-                    set.Name = "Treppe " + name + $" ({id:x4})";
-                    return set;
+                    continue;
+                }
+                if (!byName.TryGetValue(name, out Dictionary<Compass, int> d))
+                {
+                    byName[name] = d = new Dictionary<Compass, int>();
+                    order.Add(name);
+                }
+                if (!d.ContainsKey(up.Value))
+                {
+                    d[up.Value] = id;
                 }
             }
+            foreach (string name in order)
+            {
+                Dictionary<Compass, int> d = byName[name];
+                if (d.Count < 4)
+                {
+                    continue;
+                }
+                // a piece that goes up towards north is walked down towards south
+                set.DownSouth = d[Compass.North].ToString("x4");
+                set.DownNorth = d[Compass.South].ToString("x4");
+                set.DownWest = d[Compass.East].ToString("x4");
+                set.DownEast = d[Compass.West].ToString("x4");
+                set.Name = "Treppe " + name;
+                log.AppendLine($"Gewählt '{name}': hinunter N {set.DownNorth}, O {set.DownEast}, S {set.DownSouth}, W {set.DownWest}");
+                break;
+            }
+            if (string.IsNullOrEmpty(set.DownNorth))
+            {
+                // fall back: the first group of four in id order (direction not known – please check)
+                foreach (int id in Find(Role.Stairs, 60).Where(i => UoArtCache.ItemHeight(i) == 5))
+                {
+                    string name = UoArtCache.ItemName(id).Trim().ToLowerInvariant();
+                    var group = Enumerable.Range(id, 4).Where(c => UoArtCache.ItemName(c).Trim().ToLowerInvariant() == name && UoArtCache.ItemHeight(c) == 5).ToList();
+                    if (group.Count == 4)
+                    {
+                        set.DownNorth = group[0].ToString("x4");
+                        set.DownWest = group[1].ToString("x4");
+                        set.DownSouth = group[2].ToString("x4");
+                        set.DownEast = group[3].ToString("x4");
+                        set.Name = "Treppe " + name + " (Richtung geraten)";
+                        log.AppendLine("Bild-Erkennung fand keine vollständige Gruppe – Reihenfolge geraten: " + set.Name);
+                        break;
+                    }
+                }
+            }
+            report = log.ToString();
             return set;
+        }
+
+        /// <summary>
+        /// Direction a stair piece goes UP, read from its art: the top outline of a flat block falls 1 : 1 from the top corner
+        /// to the left and the right corner. A step that rises towards north drops its left (south-west) corner, towards west
+        /// its right (north-east) corner, towards south the top corner falls against the left one, towards east against the right one.
+        /// </summary>
+        public static Compass? StairUp(int id, out string info)
+        {
+            info = string.Empty;
+            Bitmap art = UoArtCache.Static(id, 0);
+            if (art == null || art.Width < 40)
+            {
+                info = "kein Bild";
+                return null;
+            }
+            int w = art.Width, h = art.Height;
+            var data = art.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            var px = new int[w * h];
+            try
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    System.Runtime.InteropServices.Marshal.Copy(data.Scan0 + y * data.Stride, px, y * w, w);
+                }
+            }
+            finally
+            {
+                art.UnlockBits(data);
+            }
+            int Top(int x)
+            {
+                for (int y = 0; y < h; y++)
+                {
+                    if (((uint)px[y * w + x] >> 24) >= 128)
+                    {
+                        return y;
+                    }
+                }
+                return h;
+            }
+            int mid = w / 2, xl = 3, xr = w - 4;
+            int tl = Top(xl), tt = Top(mid), tr = Top(xr);
+            double devL = (tl - tt) - (mid - xl), devR = (tr - tt) - (xr - mid);
+            info = $"oben links {tl}, Mitte {tt}, rechts {tr}, Abweichung links {devL:+0;-0;0}, rechts {devR:+0;-0;0}";
+            if (Math.Max(Math.Abs(devL), Math.Abs(devR)) < 2)
+            {
+                return null;
+            }
+            if (Math.Abs(devL) >= Math.Abs(devR))
+            {
+                return devL > 0 ? Compass.North : Compass.South;
+            }
+            return devR > 0 ? Compass.West : Compass.East;
+        }
+
+        /// <summary>Puts the pieces of a stair set on the right directions (from their art); unknown pieces stay.</summary>
+        public static StairSet FixStairs(StairSet s, out string report)
+        {
+            var ids = HexList.Parse(s.DownNorth + " " + s.DownEast + " " + s.DownSouth + " " + s.DownWest).Distinct().ToList();
+            var fixedSet = new StairSet { Name = s.Name, Block = s.Block, Landing = s.Landing, DownNorth = s.DownNorth, DownEast = s.DownEast, DownSouth = s.DownSouth, DownWest = s.DownWest };
+            var log = new System.Text.StringBuilder();
+            foreach (ushort id in ids)
+            {
+                Compass? up = StairUp(id, out string info);
+                log.AppendLine($"{id:x4}: hinauf {(up?.ToString() ?? "?")} ({info})");
+                if (up == null)
+                {
+                    continue;
+                }
+                string hex = id.ToString("x4");
+                switch (up.Value)
+                {
+                    case Compass.North:
+                        fixedSet.DownSouth = hex;
+                        break;
+                    case Compass.South:
+                        fixedSet.DownNorth = hex;
+                        break;
+                    case Compass.East:
+                        fixedSet.DownWest = hex;
+                        break;
+                    default:
+                        fixedSet.DownEast = hex;
+                        break;
+                }
+            }
+            log.AppendLine($"→ hinunter N {fixedSet.DownNorth}, O {fixedSet.DownEast}, S {fixedSet.DownSouth}, W {fixedSet.DownWest}");
+            report = log.ToString();
+            return fixedSet;
         }
 
         /// <summary>A bridge plan from pieces: deck, railings with posts, lamps, pillars (sample 1 + period + 1 tiles).</summary>

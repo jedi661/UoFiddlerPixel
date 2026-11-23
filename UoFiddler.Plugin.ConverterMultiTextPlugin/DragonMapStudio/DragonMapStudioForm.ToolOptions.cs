@@ -514,6 +514,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 case IsoTool.Stairs:
                     {
                         Quick(b.Staircase, "Up", "Floors", "Steps", "Width", "Turn", "Downwards", "TopLanding");
+                        Cmd("Richtungen aus Bild", "Die Stufen des gewählten Treppen-Sets nach ihrer Neigung im Bild den Richtungen zuordnen (wenn die Treppe falsch geneigt ist)", () =>
+                        {
+                            StairSet cur = b.StairSets.FirstOrDefault(x => x.Name == b.StairSet);
+                            if (cur == null)
+                            {
+                                StairSet auto = BridgeKit.AutoStairs(out string seen);
+                                if (string.IsNullOrEmpty(auto.DownNorth))
+                                {
+                                    SetStatus(L.T("Keine Treppen-Gruppe in der TileData gefunden – Stufen im Katalog suchen (Suche: stair) und mit '← ab …' zuordnen."));
+                                    return;
+                                }
+                                b.StairSets.RemoveAll(x => x.Name == auto.Name);
+                                b.StairSets.Add(auto);
+                                b.StairSet = auto.Name;
+                                ApplyStairSet();
+                                MessageBox.Show(this, seen, L.T("Treppe"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                return;
+                            }
+                            StairSet fixedSet = BridgeKit.FixStairs(cur, out string rep);
+                            cur.DownNorth = fixedSet.DownNorth;
+                            cur.DownEast = fixedSet.DownEast;
+                            cur.DownSouth = fixedSet.DownSouth;
+                            cur.DownWest = fixedSet.DownWest;
+                            ApplyStairSet();
+                            isoView.Invalidate();
+                            MessageBox.Show(this, rep, L.T("Treppe") + ": " + cur.Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        });
                         Cmd("Treppe aus Auswahl lernen", "Eine von Hand gebaute Treppe (alle Stücke) auswählen: Stufen je Richtung, Füll-Block und Absatz werden erkannt", LearnStairsFromSelection);
                         all.Add((b.Staircase, L.T("Treppe")));
                         break;

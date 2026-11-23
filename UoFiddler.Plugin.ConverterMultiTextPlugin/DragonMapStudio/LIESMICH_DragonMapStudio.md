@@ -1246,3 +1246,8 @@ Menü **Hilfe → 🧪 Test-Assistent** oder Knopf **„🧪 Test“** oben rech
 * Wand: Knopf **„Wand-Set aus TileData“** (z. B. stone → 0025 / 0026 mit Pfosten), im Set-Editor „Teile aus TileData vorschlagen“. Der Test warnt, wenn ein Wand-Set kaputt ist (z. B. 0001 = nodraw).
 * Treppe aus TileData nimmt nur Stufen mit 5 Z Höhe. Katalog-Kategorien ohne „Missing_Name“ und nodraw, „Licht“ ohne Fenster.
 
+### Treppen richtig geneigt (seit „Werkstatt 31“)
+* Die Stufen aus der TileData werden jetzt **nach ihrer Neigung im Bild** den Richtungen zugeordnet (vorher nur der Reihe nach geraten – daher die falschen Neigungen).
+* Beim Werkzeug Treppe: Knopf **„Richtungen aus Bild“** ordnet die Stufen des gewählten Treppen-Sets neu (oder legt ohne Set eines aus der TileData an) und zeigt die Messwerte.
+* Der Test-Assistent schreibt die Messwerte jeder Stufe ins Protokoll, warnt bei falsch zugeordneten Sets und macht größere Einzelbilder je Richtung und je Wende.
+

@@ -1803,3 +1803,5 @@ Welche Wand? Teil des Namens (z. B. stone, brick, wooden, sandstone) – leer = 
 Keine Wand mit Gegenstück gefunden – anderen Namen versuchen oder Teile im Set-Editor zuordnen.	Aucun mur avec pendant trouvé – essayer un autre nom ou attribuer les pièces dans l'éditeur de jeux.
 Teile aus TileData vorschlagen	Proposer des pièces de la tiledata
 Bretter N-S	Planches N-S
+Richtungen aus Bild	Directions depuis l'image
+Die Stufen des gewählten Treppen-Sets nach ihrer Neigung im Bild den Richtungen zuordnen (wenn die Treppe falsch geneigt ist)	Attribuer les marches du jeu d'escalier choisi aux directions selon leur pente dans l'image (si l'escalier penche dans le mauvais sens)

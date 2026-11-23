@@ -363,19 +363,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 ItemData d = TileData.ItemTable[id];
                 c.Line($"   {Item(id)}  Flags: {d.Flags}");
             }
-            StairSet s = BridgeKit.AutoStairs();
+            StairSet s = BridgeKit.AutoStairs(out string seen);
+            c.Line("Neigung aus dem Bild (Oberkante links / Mitte / rechts):");
+            c.Line(seen);
             c.Line($"Automatische Gruppe '{s.Name}': hinunter N {s.DownNorth}, O {s.DownEast}, S {s.DownSouth}, W {s.DownWest}");
             if (string.IsNullOrEmpty(s.DownNorth))
             {
                 c.Warn("Keine Vierer-Gruppe gefunden – Treppe lernen benutzen.");
             }
-            c.Summary = string.IsNullOrEmpty(s.DownNorth) ? "keine Gruppe" : $"{s.Name} (Reihenfolge geraten – bitte im Werkzeug prüfen)";
+            c.Summary = string.IsNullOrEmpty(s.DownNorth) ? "keine Gruppe" : $"{s.Name}: hinunter N {s.DownNorth}, O {s.DownEast}, S {s.DownSouth}, W {s.DownWest}";
+            if (s.Name.Contains("geraten"))
+            {
+                c.Warn("Richtung der Stufen nicht aus dem Bild erkannt – bitte 'Treppe aus Auswahl lernen'.");
+            }
         }
 
         private static void StaircaseShapes(Ctx c, CgiBrushSettings b)
         {
             StairSet set = ChosenStairs(b, out bool fake);
             c.Line(fake ? "Platzhalter-Treppe (kein vollständiges Set gewählt)." : $"Treppen-Set '{set.Name}': N {set.DownNorth} O {set.DownEast} S {set.DownSouth} W {set.DownWest} Block {set.Block} Absatz {set.Landing}");
+            if (!fake)
+            {
+                StairSet check = BridgeKit.FixStairs(set, out string rep);
+                c.Line("Prüfung der Neigung aus dem Bild:");
+                c.Line(rep);
+                if (check.DownNorth != set.DownNorth || check.DownEast != set.DownEast || check.DownSouth != set.DownSouth || check.DownWest != set.DownWest)
+                {
+                    c.Warn("Laut Bild passen die Stufen des Sets nicht zu ihren Richtungen – Knopf 'Richtungen aus Bild' beim Werkzeug Treppe.");
+                }
+            }
             StairPicture(c, set);
             foreach (StairTurn turn in Enum.GetValues(typeof(StairTurn)))
             {
@@ -418,7 +434,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 m.Apply(Staircase.Build(m, new Point(20 + (i % 2) * 24, 14 + (i / 2) * 26), 0, o, set));
                 i++;
             }
-            c.Picture("Treppenhaus: gerade, rechts, links, zurück (je 2 Etagen)", m, new Rectangle(4, 4, 56, 56));
+            string[] names = { "gerade", "rechts herum", "links herum", "zurück" };
+            for (int k = 0; k < 4; k++)
+            {
+                int x = 20 + (k % 2) * 24, y = 14 + (k / 2) * 26;
+                c.Picture($"Treppenhaus {names[k]} (2 Etagen, hinauf nach West)", m, new Rectangle(x - 12, y - 6, 16, 16));
+            }
         }
 
         private static void StairLearn(Ctx c, CgiBrushSettings b)
@@ -433,7 +454,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 m.Apply(Staircase.Build(m, new Point(15 + n * 16, 40), 0, o, set));
                 n++;
             }
-            c.Picture("Je eine Treppe in jede Richtung (hinauf: N, O, S, W)", m, new Rectangle(8, 30, 70, 16));
+            string[] dirs = { "Nord", "Ost", "Süd", "West" };
+            for (int k = 0; k < 4; k++)
+            {
+                c.Picture($"Treppe hinauf nach {dirs[k]} (Klick bei {15 + k * 16}, 40)", m, new Rectangle(15 + k * 16 - 6, 34, 13, 13));
+            }
             StairSet learned = Staircase.Learn(m.AllStatics().ToList(), "gelernt", out string report);
             c.Line(report);
             c.Check(learned.DownNorth == set.DownNorth.Split(' ')[0], $"hinunter Nord {learned.DownNorth} = {set.DownNorth}");

@@ -480,6 +480,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 {
                     view.ZoomStep(-1);
                 }
+                // small areas: bigger (up to 2×) so the single pieces can be seen
+                for (int i = 0; i < 6 && view.Zoom < 2; i++)
+                {
+                    double before = view.Zoom;
+                    view.ZoomStep(1);
+                    if (view.Zoom > need)
+                    {
+                        if (before != view.Zoom)
+                        {
+                            view.ZoomStep(-1);
+                        }
+                        break;
+                    }
+                }
                 view.CenterOn(pic.Area.X + pic.Area.Width / 2.0, pic.Area.Y + pic.Area.Height / 2.0);
                 view.Refresh(true);
                 using var bmp = new Bitmap(view.Width, view.Height);

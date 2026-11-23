@@ -1811,3 +1811,5 @@ Welche Wand? Teil des Namens (z. B. stone, brick, wooden, sandstone) – leer = 
 Keine Wand mit Gegenstück gefunden – anderen Namen versuchen oder Teile im Set-Editor zuordnen.	No wall with a partner found – try another name or assign pieces in the set editor.
 Teile aus TileData vorschlagen	Suggest pieces from the tiledata
 Bretter N-S	Planks N-S
+Richtungen aus Bild	Directions from the art
+Die Stufen des gewählten Treppen-Sets nach ihrer Neigung im Bild den Richtungen zuordnen (wenn die Treppe falsch geneigt ist)	Assign the steps of the chosen stair set to the directions by their slope in the art (when the stairs slope the wrong way)
