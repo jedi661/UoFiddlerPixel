@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – motifs ("Muster-Baukasten") in the studio: the tool "Muster" of the CGI view, the designer
  *  *  window, the chooser Kategorie ▸ Name ▸ Richtung and the tool "Muster" of the map editor (statics layer).
@@ -88,15 +88,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                         {
                             Motif mm = m;
                             Compass cc = c;
-                            var dn = new ToolStripMenuItem(L.T(Motif.DirName(c)) + (m.Has(c) ? string.Empty : " (" + L.T("gedreht") + ")"))
+                            var dn = new ToolStripMenuItem(L.T(Motif.DirName(c)) + (!m.Allowed(c) ? " (" + L.T("nicht erlaubt") + ")" : m.Has(c) ? string.Empty : " (" + L.T("gedreht") + ")"))
                             {
-                                Checked = m.ToString() == BrushCfg.Motif && BrushCfg.MotifDraw.Direction == c
+                                Checked = m.ToString() == BrushCfg.Motif && BrushCfg.MotifDraw.Direction == c,
+                                Enabled = m.Allowed(c)
                             };
                             dn.Click += (s2, e2) => ChooseMotif(mm, cc, changed);
                             mn.DropDownItems.Add(dn);
                         }
                         Motif m0 = m;
-                        mn.Click += (s2, e2) => ChooseMotif(m0, BrushCfg.MotifDraw.Direction, changed);
+                        mn.Click += (s2, e2) => ChooseMotif(m0, m0.Allowed(BrushCfg.MotifDraw.Direction) ? BrushCfg.MotifDraw.Direction : m0.NextAllowed(BrushCfg.MotifDraw.Direction), changed);
                         cn.DropDownItems.Add(mn);
                     }
                     dd.DropDownItems.Add(cn);
@@ -128,7 +129,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             ToolStripDropDownButton dd = null;
             dd = MotifChooser(() => dd.Text = MotifLabel());
             AddQuick(dd);
-            Quick(BrushCfg.MotifDraw, "Drag", "Direction", "Height", "Rise", "Floors", "FloorHeight", "Gap", "ZOffset", "Replace");
+            Quick(BrushCfg.MotifDraw, "Drag", "Repeat", "Direction", "Height", "Rise", "Floors", "FloorHeight", "Gap", "ZOffset", "Replace");
             Cmd("Muster-Baukasten …", "Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern, Log + Bild", OpenMotifDesigner);
         }
 

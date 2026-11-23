@@ -1298,3 +1298,9 @@ Gleicher Baukasten wie der Treppen-Designer – für alles, was sich wiederholt:
 
 * **Karten-Editor:** das Muster landet in der **Statics-Ebene** (Höhe über dem Boden), gelbe Vorschau beim Ziehen, Strg+Z nimmt es zurück.
 * **Test-Assistent:** neuer Selbsttest „Muster-Baukasten“ (Mauer mit Zinnen, vier Richtungen, lückenlos, gleiche Höhe, 2 Etagen – mit Bildern) und ein Prüflisten-Schritt.
+
+### Muster nach deinem ersten Test (seit „Werkstatt 36“)
+* **Ziehen setzt die Reihe fort:** neue Einstellung **„Wiederholen“**. **„Reihe fortsetzen“** (Standard) nimmt beim Ziehen die Version, die in Zieh-Richtung läuft – eine Mauer wird länger, statt nebeneinander kopiert zu werden. Das klappt auch bei schon gespeicherten Mustern, bei denen die Mauer quer zur gewählten Richtung gebaut wurde. **„Kopien nebeneinander“** ist das bisherige Verhalten: das Muster so wie es ist mehrmals hintereinander (z. B. Zelte, mehrere Mauern parallel).
+* **Beim Übernehmen** prüft der Baukasten, ob das Markierte zur Richtung passt (Ost / West läuft West → Ost „\“, Nord / Süd läuft Nord → Süd „/“). Wenn nicht, fragt er: als passende Richtung übernehmen (Ja) oder trotzdem (Nein).
+* **Erlaubte Richtungen** je Muster: Häkchen Nord / Ost / Süd / West, Knöpfe „alle“, „nur N–S“, „nur O–W“, „nur diese“ – 1, 2, 3 oder 4 Richtungen. Nur erlaubte Richtungen werden automatisch gedreht und gezeichnet; im Menü sind die anderen ausgegraut, R springt nur zwischen erlaubten. Zieht man quer zu einem Muster, das nur in eine Achse darf, wird es entlang seiner Achse gesetzt (so weit der Zug dort reicht).
+* **Absturz behoben:** „ObjectDisposedException“ in `UpdateQuickOptions` (z. B. beim Öffnen der Dungeon-Werkstatt), wenn die Optionsleiste voll war und Felder im Überlauf „»“ lagen – die alten Felder werden jetzt erst entfernt und danach entsorgt.

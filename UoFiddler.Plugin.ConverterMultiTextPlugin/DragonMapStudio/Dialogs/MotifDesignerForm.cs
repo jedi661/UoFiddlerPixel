@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – motif designer ("Muster-Baukasten"): the same building bench as the stair designer, for
  *  *  anything – battlements, tents, a wall with windows, a fortress wall, a floor with ceiling …
@@ -41,6 +41,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private readonly Label _status = new Label { Dock = DockStyle.Bottom, Height = 22, TextAlign = ContentAlignment.MiddleLeft, BackColor = Color.FromArgb(30, 41, 59), ForeColor = Color.White };
         private readonly TreeView _tree = new TreeView { Width = 310, Height = 220, HideSelection = false };
         private readonly Dictionary<Compass, RadioButton> _dirButtons = new Dictionary<Compass, RadioButton>();
+        private readonly Dictionary<Compass, CheckBox> _allowBoxes = new Dictionary<Compass, CheckBox>();
+        private bool _allowSync;
         private readonly MotifDrawSettings _draw = new MotifDrawSettings { Drag = true };
         private MapData _test;
         private Motif _motif = new Motif();
@@ -122,13 +124,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             {
                 [Compass.North] = new Point(30, 6), [Compass.East] = new Point(44, 28), [Compass.South] = new Point(30, 46), [Compass.West] = new Point(8, 28)
             };
-            foreach (Compass c in Dirs)
+            foreach (Compass c in Dirs.Where(_motif.Allowed))
             {
                 Put(_motif.Variant(c), at[c]);
             }
             _test.ClearHistory();
             _view.Refresh(true);
-            Say(L.T("Alle vier Richtungen: oben Nord, rechts Ost, unten Süd, links West (so wie im Client: Nord = oben rechts)."));
+            Say(L.T("Alle vier Richtungen: oben Nord, rechts Ost, unten Süd, links West (so wie im Client: Nord = oben rechts).") + " " + L.T("Erlaubt") + ": " + string.Join(", ", Dirs.Where(_motif.Allowed).Select(c => L.T(Motif.DirName(c)))));
         }
 
         private void TakeMarked()
@@ -157,6 +159,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             {
                 Say(L.T("Im markierten Bereich sind keine Statics."));
                 return;
+            }
+            int axis = Motif.AxisOf(parts);
+            if (axis != 0 && axis != Motif.AxisOf(_building))
+            {
+                Compass fits = Staircase.RightOf(_building);
+                string runs = axis > 0 ? L.T("West → Ost") : L.T("Nord → Süd");
+                DialogResult r = MessageBox.Show(this,
+                    L.T("Das Markierte läuft") + " " + runs + ", " + L.T("die Richtung") + " " + L.T(Motif.DirName(_building)) + " " + L.T("läuft aber quer dazu.") + "\n\n" +
+                    L.T("Ja = als Richtung") + " " + L.T(Motif.DirName(fits)) + " " + L.T("übernehmen (beim Ziehen wird die Mauer länger)") + "\n" +
+                    L.T("Nein = trotzdem als") + " " + L.T(Motif.DirName(_building)) + " " + L.T("(z. B. Zelte, Reihe von Kopien nebeneinander)"),
+                    Text, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (r == DialogResult.Cancel)
+                {
+                    return;
+                }
+                if (r == DialogResult.Yes)
+                {
+                    _building = fits;
+                    if (!_motif.Allowed(fits))
+                    {
+                        _motif.SetAllowed(fits, true);
+                        SyncAllow();
+                    }
+                    if (_dirButtons.TryGetValue(fits, out RadioButton rb))
+                    {
+                        _allowSync = true;
+                        rb.Checked = true;
+                        _allowSync = false;
+                    }
+                }
             }
             _motif.SetVariant(_building, parts);
             FillTree(_motif.ToString());
@@ -213,7 +245,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                     mn.Tag = use;
                     foreach (Compass c in new[] { Compass.South, Compass.West, Compass.North, Compass.East })
                     {
-                        TreeNode dn = mn.Nodes.Add((use.Has(c) ? "✔ " : "· ") + L.T(Motif.DirName(c)) + $" ({use.Variant(c).Count})");
+                        TreeNode dn = mn.Nodes.Add((!use.Allowed(c) ? "✖ " : use.Has(c) ? "✔ " : "· ") + L.T(Motif.DirName(c)) + (use.Allowed(c) ? $" ({use.Variant(c).Count})" : " – " + L.T("nicht erlaubt")));
                         dn.Tag = (use, c);
                     }
                     if (use.ToString() == select)
@@ -249,7 +281,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             }
             _motif.Category = cat.Trim();
             _motif.Name = name.Trim();
-            if (Dirs.Any(c => !_motif.Has(c)) && MessageBox.Show(this, L.T("Nicht alle vier Richtungen sind gebaut. Die fehlenden automatisch drehen?"), Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (Dirs.Any(c => _motif.Allowed(c) && !_motif.Has(c)) && MessageBox.Show(this, L.T("Nicht alle erlaubten Richtungen sind gebaut. Die fehlenden automatisch drehen?"), Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 _motif.AutoVariants();
             }
@@ -257,6 +289,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             _grid.SelectedObject = _motif;
             FillTree(_motif.ToString());
             Say(L.T("Gespeichert") + ": " + path + " – " + string.Join(", ", Dirs.Select(c => L.T(Motif.DirName(c)) + (_motif.Has(c) ? " ✔" : " –"))));
+        }
+
+        /// <summary>Check boxes of the allowed directions = the motif.</summary>
+        private void SyncAllow()
+        {
+            _allowSync = true;
+            foreach (KeyValuePair<Compass, CheckBox> kv in _allowBoxes)
+            {
+                kv.Value.Checked = _motif.Allowed(kv.Key);
+            }
+            foreach (KeyValuePair<Compass, RadioButton> kv in _dirButtons)
+            {
+                kv.Value.ForeColor = _motif.Allowed(kv.Key) ? SystemColors.ControlText : Color.FromArgb(148, 163, 184);
+            }
+            _allowSync = false;
         }
 
         // ================================================================== user interface
@@ -406,12 +453,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 if (e.Node?.Tag is Motif m)
                 {
                     _motif = m;
+                    SyncAllow();
                     _grid.SelectedObject = _motif;
                     ShowAll();
                 }
                 else if (e.Node?.Tag is ValueTuple<Motif, Compass> mc)
                 {
                     _motif = mc.Item1;
+                    SyncAllow();
                     _grid.SelectedObject = _motif;
                     ShowVariant(mc.Item2);
                 }
@@ -421,6 +470,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             ml.Controls.Add(B("Neu", () =>
             {
                 _motif = new Motif();
+                SyncAllow();
                 _grid.SelectedObject = _motif;
                 NewField();
                 FillTree(null);
@@ -450,7 +500,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 Compass cc = c;
                 r.CheckedChanged += (s, e) =>
                 {
-                    if (r.Checked && _building != cc)
+                    if (r.Checked && _building != cc && !_allowSync)
                     {
                         ShowVariant(cc);
                     }
@@ -461,9 +511,48 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             left.Controls.Add(dl);
             left.Controls.Add(new Label
             {
-                AutoSize = false, Width = 310, Height = 34, ForeColor = Color.FromArgb(71, 85, 105),
-                Text = L.T("Richtung = in diese Richtung läuft das Muster beim Ziehen (Ost: eine Mauer West → Ost, die Zinnen zeigen nach Süden …).")
+                AutoSize = false, Width = 310, Height = 48, ForeColor = Color.FromArgb(71, 85, 105),
+                Text = L.T("Richtung = in diese Richtung läuft das Muster beim Ziehen. Ost / West: die Mauer läuft West → Ost (auf dem Bild „\\“), Nord / Süd: Nord → Süd („/“).")
             });
+            left.Controls.Add(new Label { Text = L.T("Erlaubte Richtungen (nur diese werden gedreht und gezeichnet):"), AutoSize = false, Width = 310, Height = 18 });
+            var al = Line();
+            foreach (Compass c in Dirs)
+            {
+                var cb = new CheckBox { Text = L.T(Motif.DirName(c)), AutoSize = true, Checked = true, Margin = new Padding(6, 2, 6, 0) };
+                Compass cc = c;
+                cb.CheckedChanged += (s, e) =>
+                {
+                    if (_allowSync)
+                    {
+                        return;
+                    }
+                    _motif.SetAllowed(cc, cb.Checked);
+                    SyncAllow();
+                    FillTree(_motif.ToString());
+                    Say(L.T("Erlaubt") + ": " + string.Join(", ", Dirs.Where(_motif.Allowed).Select(d => L.T(Motif.DirName(d)))) + " – " + L.T("speichern nicht vergessen"));
+                };
+                _allowBoxes[c] = cb;
+                al.Controls.Add(cb);
+            }
+            void Only(params Compass[] cs)
+            {
+                foreach (Compass c in Dirs)
+                {
+                    _motif.SetAllowed(c, true);
+                }
+                foreach (Compass c in Dirs.Where(d => !cs.Contains(d)))
+                {
+                    _motif.SetAllowed(c, false);
+                }
+                SyncAllow();
+                FillTree(_motif.ToString());
+                Say(L.T("Erlaubt") + ": " + string.Join(", ", Dirs.Where(_motif.Allowed).Select(d => L.T(Motif.DirName(d)))) + " – " + L.T("speichern nicht vergessen"));
+            }
+            al.Controls.Add(B("alle", () => Only(Dirs), 50));
+            al.Controls.Add(B("nur N–S", () => Only(Compass.North, Compass.South), 70));
+            al.Controls.Add(B("nur O–W", () => Only(Compass.East, Compass.West), 70));
+            al.Controls.Add(B("nur diese", () => Only(_building), 80));
+            left.Controls.Add(al);
             var tl = Line();
             tl.Controls.Add(B("✔ Markiertes als diese Richtung übernehmen", TakeMarked, 300));
             tl.Controls.Add(B("Fehlende Richtungen automatisch", () => AutoTurn(false), 200));
@@ -486,9 +575,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                     Say(L.T("Erst eine Richtung übernehmen."));
                     return;
                 }
-                if (Dirs.Any(c => !_motif.Has(c)))
+                if (Dirs.Any(c => _motif.Allowed(c) && !_motif.Has(c)))
                 {
                     _motif.AutoVariants();
+                }
+                if (!_motif.Allowed(_building))
+                {
+                    _building = _motif.NextAllowed(_building);
                 }
                 _motif.Save();
                 FillTree(_motif.ToString());
