@@ -1723,3 +1723,63 @@ Neu	New
 Kopie	Copy
 Name des Wegs:	Name of the road:
 Name des Musters:	Name of the pattern:
+# Werkstatt 28: Treppenhaus, Brücken-Regler, Optionen-Fenster, Ideen
++ Set mischen	+ Mix set
+Ein weiteres Streu-Set dazumischen (oder wieder herausnehmen)	Mix in another scatter set (or take it out again)
+Werkzeug-Optionen	Tool options
+Hinweis	Note
+Dieses Werkzeug hat keine weiteren Einstellungen – die Knöpfe oben sind alles.	This tool has no further settings – the buttons above are all.
+Skript (JSON)	Script (JSON)
+Erst eine von Hand gebaute Treppe auswählen (Rahmen ziehen oder Strg+Klick, alle Stücke), dann lernen.	First select a stair built by hand (drag a frame or Ctrl+click, all pieces), then learn.
+Treppen-Set gelernt	Stair set learned
+Werkzeug Treppe zeigt es als Vorschau	the tool Stairs shows it as a preview
+Treppe aus Auswahl lernen	Learn stairs from selection
+Laden …	Load …
+mit Bild	with pictures
+Doppelklick = übernehmen	double click = take
+Länge	Length
+Breite gilt für Pläne aus Teilen – ein Plan von Hand / aus der Karte behält seine Breite.	Width applies to plans from pieces – a plan by hand / from the map keeps its width.
+Bogen	Arch
+Bogen aus Stufen (Treppe hinauf, oben flach, hinunter)	Arch of steps (stairs up, flat on top, down)
+Für den Bogen aus Stufen braucht der Plan Treppen-Stufen (Knöpfe 'Treppe …' links) – West / Ost für West-Ost-Brücken, Nord / Süd für Nord-Süd.	The arch of steps needs stair steps in the plan (buttons 'Stairs …' on the left) – west / east for west – east bridges, north / south for north – south.
+🖼 Pläne mit Bild …	🖼 Plans with pictures …
+Etagen	floors
+ohne Treppen (erst ein Treppen-Set wählen / lernen)	without stairs (choose / learn a stair set first)
+Treppen	stairs
+🖼 Vorlagen mit Bild …	🖼 Templates with pictures …
+Treppe hinauf Richtung	Stairs up towards
+Treppe: erst ein Treppen-Set wählen – oder eine Treppe von Hand bauen, auswählen und 'Treppe aus Auswahl lernen'.	Stairs: first choose a stair set – or build a stair by hand, select it and 'Learn stairs from selection'.
+Treppe: Klick = Fuß der Treppe – Läufe zu 4 Stufen (je 5 Z = 20 Z), dazwischen ein Absatz, Wende gerade / rechts / links / zurück, bis unten gefüllt · R = Richtung drehen · Vorschau am Mauszeiger	Stairs: click = foot of the stairs – flights of 4 steps (5 Z each = 20 Z), a landing in between, turn straight / right / left / back, filled down to the bottom · R = turn direction · preview at the mouse
+Gerade weiter	Straight on
+Rechts herum (L, mehrere Etagen = Wendel)	Right (L, several floors = spiral)
+Links herum (L, mehrere Etagen = Wendel)	Left (L, several floors = spiral)
+Zurück (U, neben dem Lauf)	Back (U, beside the flight)
+Richtung (hinauf)	Direction (up)
+Stufen je Lauf	Steps per flight
+Original: 4 Stufen × 5 Z = 20 Z = eine Etage.	Original: 4 steps × 5 Z = 20 Z = one floor.
+Stufen-Höhe (Z)	Step height (Z)
+Wende nach jedem Lauf	Turn after every flight
+Absatz oben	Landing on top
+Nach unten bauen	Build downwards
+Bis zum Boden füllen	Fill down to the bottom
+Weitere Sets mischen	Mix more sets
+Rand ausdünnen (%)	Thin out at the edge (%)
+Weiche Wellen	Soft waves
+Hügel (nur nach oben)	Hills (only up)
+Mulden (nur nach unten)	Hollows (only down)
+Grate / Kämme	Ridges
+Rillen (Furchen in eine Richtung)	Furrows (in one direction)
+Stufen (Terrassen-Wellen)	Steps (terrace waves)
+Grob (jedes Tile zufällig)	Rough (every tile at random)
+Bogen aus Stufen	Arch of steps
+Etagen-Höhe (Z)	Floor height (Z)
+Fluss (Wasser, Ufer)	River (water, banks)
+Berg-Kamm (Fels, Hang)	Mountain ridge (rock, slope)
+Eigene Farben	Own colours
+Muster-Stempel (Land + Statics)	Pattern stamp (land + statics)
+Einrichtung je Wandfeld (%)	Furniture per wall cell (%)
+Werkstatt-Vorlagen	Workshop templates
+Brücken-Pläne	Bridge plans
+Item → Ecke	item → corner
+Werkzeug-Optionen in ein eigenes Fenster (z. B. auf einen anderen Monitor)	Tool options in their own window (e.g. on another monitor)
+Werkzeug-Optionen wieder in die Leiste	Tool options back into the bar

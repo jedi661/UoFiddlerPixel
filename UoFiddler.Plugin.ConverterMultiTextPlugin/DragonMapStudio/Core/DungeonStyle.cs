@@ -71,6 +71,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public List<string> Decor { get; set; } = new List<string>();
 
+        [Category("Statics"), DisplayName("Einrichtung je Wandfeld (%)"), Description("So oft steht an einem Bodenfeld neben der Wand Einrichtung (Tische, Stühle, Kisten, Steine) wie im gelernten Dungeon.")]
+        public double FurniturePercent { get; set; }
+
+        /// <summary>Furniture learned from the original ("id@dz" stacks), set next to walls.</summary>
+        [Browsable(false)]
+        public List<string> Furniture { get; set; } = new List<string>();
+
         [Browsable(false)]
         public List<WallRule> Walls { get; set; } = new List<WallRule>();
 
@@ -186,6 +193,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             var rules = new Dictionary<(bool, int), WallRule>();
             var idCount = new Dictionary<(ushort id, int dz, string where), int>();
             int openCells = 0, decorCells = 0, wallStacks = 0, innerCells = 0;
+            int nearWallCells = 0, furnitureCells = 0;
+            var furnitureList = new List<string>();
             var decor = new List<string>();
             var rnd = new Random(1);
             WallRule Rule(bool onFloor, int mask)
@@ -232,6 +241,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     var wallPart = new List<string>();
                     var hung = new List<string>();
                     var loose = new List<string>();
+                    var furniture = new List<string>();
                     foreach (StaticItem st in statics)
                     {
                         int dz = st.Z - fz;
@@ -250,6 +260,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                                 break;
                             case "Deko":
                                 loose.Add(entry);
+                                break;
+                            case "Einrichtung":
+                                furniture.Add(entry);
                                 break;
                         }
                         var key = (st.Id, dz, role);
@@ -289,6 +302,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                             Sample(rule.Extras, string.Join(" ", hung));
                         }
                     }
+                    if (floor && wallPart.Count == 0 && Mask(Floor, x, y) != 15)
+                    {
+                        nearWallCells++;
+                        if (furniture.Count > 0)
+                        {
+                            furnitureCells++;
+                            if (furnitureList.Count < 300)
+                            {
+                                furnitureList.Add(string.Join(" ", furniture));
+                            }
+                        }
+                    }
                     if (floor && wallPart.Count == 0)
                     {
                         openCells++;
@@ -307,6 +332,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             look.FloorStatics = string.Join(" ", floorStatics.Where(kv => kv.Value * 10 >= openCells).OrderByDescending(kv => kv.Value).Take(8).Select(kv => kv.Key));
             look.Walls = rules.Values.Where(r => r.Cells > 0).OrderBy(r => r.OnFloor).ThenBy(r => r.Mask).ToList();
             look.Decor = decor;
+            look.Furniture = furnitureList;
+            look.FurniturePercent = nearWallCells == 0 ? 0 : Math.Round(furnitureCells * 100.0 / nearWallCells, 1);
             look.DecorPercent = openCells == 0 ? 0 : Math.Round(decorCells * 100.0 / openCells, 1);
             int floorCells = openCells;
 
@@ -318,7 +345,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             sb.AppendLine($"Bereich / area: {area.X},{area.Y} {area.Width}×{area.Height}");
             sb.AppendLine($"Void-Land (außen / outside): {string.Join(" ", voidTiles.Select(v => $"{v:x4} {UoArtCache.LandName(v)}"))}");
             sb.AppendLine($"Offene Bodenfelder / open floor cells: {floorCells}, Wand-Stapel / wall stacks: {wallStacks} (davon Innenwände / inner walls {innerCells}), lose Deko / loose decor: {decorCells} ({look.DecorPercent} %)");
-            sb.AppendLine("Rollen / roles: Wand = Wand-Flag oder auf der Leere · Wand-Deko = Fackeln, Bilder, Teppiche (an der Wand) · Deko = lose (Schutt, Blut, Knochen, Spinnweben) · Einrichtung = Tische, Stühle, Steine, Treppen (wird nicht zufällig gesetzt) · Boden = flache Boden-Statics");
+            sb.AppendLine("Rollen / roles: Wand = Wand-Flag oder auf der Leere · Wand-Deko = Fackeln, Bilder, Teppiche (an der Wand) · Deko = lose (Schutt, Blut, Knochen, Spinnweben) · Einrichtung = Tische, Stühle, Steine, Treppen (wird an Wänden gesetzt, so oft wie im Original) · Boden = flache Boden-Statics");
             sb.AppendLine();
             sb.AppendLine("BODEN-LAND (Textur) / FLOOR LAND:");
             foreach (var kv in floorLand.OrderByDescending(kv => kv.Value).Take(20))
@@ -470,6 +497,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     if (open && !wallHere && look.Decor.Count > 0 && rnd.NextDouble() * 100 < look.DecorPercent)
                     {
                         Put(look.Decor[rnd.Next(look.Decor.Count)]);
+                    }
+                    else if (open && !wallHere && mask != 15 && (look.Furniture?.Count ?? 0) > 0 && rnd.NextDouble() * 100 < look.FurniturePercent)
+                    {
+                        // furniture stands next to the walls like in the learned dungeon
+                        Put(look.Furniture[rnd.Next(look.Furniture.Count)]);
                     }
                 }
             }

@@ -134,7 +134,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public bool CoastProfile { get; set; } = true;
 
         [Category("6 Küste"), DisplayName("Küste weich (ohne Zacken)"), Description("Die Höhen am Ufer folgen dem echten Abstand zur Küstenlinie statt den Zell-Stufen: schräge und unruhige Küsten bekommen keine Sand-Zacken mehr, der Meeresgrund fällt über 'Abfall-Breite' Tiles auf seine Tiefe. Wie 'Küste glätten' in der CGI-Ansicht.")]
-        public bool CoastSoft { get; set; }
+        public bool CoastSoft { get; set; } = true;
 
         [Category("6 Küste"), DisplayName("Küste weich: Abfall-Breite"), Description("Tiles von der Wasserlinie bis zur vollen Tiefe des Meeresgrunds (Standard 3).")]
         public double CoastSoftDrop { get; set; } = 3;

@@ -1203,3 +1203,30 @@ Brücken, Geländer und Treppen mit Teilen, die automatisch aus TileData (Namen,
 * **Multi setzen:** „✖ Multi-Auswahl löschen“. Im Reiter Multis erscheint das Bild sofort (auch beim Tippen der ID), darunter ein **Katalog aller Multis** mit Suche.
 * **Berg, Brücke, Treppe, Rampe, Plateau, Streuen:** die wichtigsten Werte ebenso oben.
 
+## Treppenhaus, Brücken-Regler, Optionen-Fenster und mehr (seit „Werkstatt 28“)
+
+### Treppen wie im Original
+* Werkzeug **Treppe**: Klick = Fuß. Je Lauf **4 Stufen zu 5 Z = 20 Z = eine Etage**, danach **ein flaches Feld (Absatz)**, dann der nächste Lauf. Alles bis unten gefüllt.
+* Einstellbar (Leiste oben): Richtung hinauf (R dreht), **Etagen**, Stufen je Lauf, Breite, **Wende** (gerade, rechts herum, links herum = Wendeltreppe, zurück = U), Absatz oben, **nach unten bauen** (vom Haus in den Keller). Vorschau am Mauszeiger.
+* **„Treppe aus Auswahl lernen“**: eine von Hand gebaute Treppe auswählen – Stufe je Richtung, Füll-Block und Absatz werden erkannt und als Treppen-Set gespeichert. Ganze Treppen-Muster als Werkstatt-Vorlage speichern.
+
+### Brücken
+* Brücken-Designer: **Regler für Länge, Breite und Bogen**, Testfeld größer (bis 90 Tiles lang).
+* **„Bogen aus Stufen“**: die Brücke steigt in Stufen (je 5 Z) an, ist oben flach und geht wieder hinunter (Treppen-Stufen im Plan nötig). Auch in der CGI-Leiste beim Werkzeug Brücke.
+* „🖼 Pläne mit Bild …“ zeigt alle gespeicherten Pläne als Bilder.
+
+### Werkzeug-Optionen als eigenes Fenster
+* In der Optionsleiste **⧉**: alle Werte des Werkzeugs in ein eigenes Fenster (z. B. auf einen anderen Monitor). Oben die Knöpfe und Felder, darunter **Tabs** mit allen Einstellungen und **„Skript (JSON)“** zum Anpassen, Übernehmen, Kopieren, Speichern und Laden. **⇤** holt sie zurück in die Leiste.
+* Das Fenster und die gelöste Seitenleiste merken sich ihre Position und gehen beim nächsten Start wieder dort auf.
+
+### Weitere Verbesserungen
+* **Drehen um 90°** (Bereich / Auswahl) tauscht gerichtete Teile (Wände, Zäune, Geländer) gegen die Teile der anderen Richtung.
+* **Wand-Ecken:** Wand-Set mit „Ecke“ – an L- und T-Ecken kommt das Eckstück („Item → Ecke“ im Set-Editor).
+* **Streuen:** weitere Sets dazumischen („+ Set mischen“) und **Rand ausdünnen** für natürliche Waldränder.
+* **Kartenübersicht:** Lesezeichen (gold, mit Namen) und Fehlerstellen (rot) werden angezeigt.
+* **Dungeon mit Etagen:** Werkstatt → Grundriss → „Etagen“ – mehrere Ebenen untereinander, verbunden mit Treppen (Treppen-Set nötig).
+* **Einrichtung lernen:** beim Stil-Lernen werden Tische, Stühle, Kisten usw. erkannt und beim Bauen an die Wände gestellt, so oft wie im Original.
+* **Weiche Küste** beim Bauen aus der Farbkarte ist jetzt ab Werk an.
+* **Vorlagen mit Bild:** Werkstatt → „🖼 Vorlagen mit Bild …“.
+* **Französisch** ist jetzt vollständig (Menü Sprache / Language / Langue).
+

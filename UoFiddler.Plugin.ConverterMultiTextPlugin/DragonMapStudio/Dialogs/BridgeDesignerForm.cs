@@ -32,8 +32,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
 
     public sealed class BridgeDesignerForm : Form
     {
-        private const int MapW = 64;
-        private const int MapH = 48;
+        private const int MapW = 112;
+        private const int MapH = 112;
         private const int Bank = 0;
         private const int WaterZ = -5;
 
@@ -118,7 +118,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             Point b = _alongX ? new Point(along0 + len - 1, mid) : new Point(mid, along0 + len - 1);
             var o = new BridgeSettings
             {
-                Width = w, Arch = _sample ? 0 : _build.Arch, ZOffset = _build.ZOffset, Railings = true, Stairs = !_sample && _build.Stairs
+                Width = w, Arch = _sample ? 0 : _build.Arch, ZOffset = _build.ZOffset, Railings = true, Stairs = !_sample && _build.Stairs, ArchStairs = _build.ArchStairs
             };
             BridgeTemplate t = _plan;
             if (_sample)
@@ -333,6 +333,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             _host.Brushes.Bridge.Arch = _build.Arch;
             _host.Brushes.Bridge.ZOffset = _build.ZOffset;
             _host.Brushes.Bridge.Stairs = _build.Stairs;
+            _host.Brushes.Bridge.ArchStairs = _build.ArchStairs;
             _host.Use?.Invoke(_plan);
             Say(L.T("Plan ist jetzt im Brücken-Werkzeug der CGI-Ansicht") + $" ('{_plan}', {path}) – " + L.T("dort von Ufer zu Ufer ziehen."));
         }
@@ -537,6 +538,19 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 }
             }, 98));
             pl.Controls.Add(B("Hilfe", () => _host.Help?.Invoke("bridge"), 98));
+            pl.Controls.Add(B("🖼 Pläne mit Bild …", () =>
+            {
+                using var tb = new TemplateBrowserForm(true);
+                if (tb.ShowDialog(this) == DialogResult.OK && tb.Selected is BridgeTemplate t)
+                {
+                    _plan = Clone(t);
+                    _plan.Category = t.Category;
+                    _planGrid.SelectedObject = _plan;
+                    _alongX = _plan.PartsX.Count > 0 || _plan.PartsY.Count == 0;
+                    _sample = true;
+                    ShowPlan();
+                }
+            }, 300));
             left.Controls.Add(pl);
             _planGrid = new PropertyGrid { Width = 310, Height = 260, ToolbarVisible = false, HelpVisible = true, PropertySort = PropertySort.Categorized, SelectedObject = _plan };
             _planGrid.PropertyValueChanged += (s, e) => ShowPlan();
@@ -585,17 +599,61 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 ShowPlan();
             }, 90));
             tf.Controls.Add(new Label { Text = L.T("Länge:"), AutoSize = true, Margin = new Padding(3, 8, 0, 0) });
-            var len = new NumericUpDown { Minimum = 3, Maximum = 40, Value = _length, Width = 55 };
+            left.Controls.Add(tf);
+            // sliders: length, width, arch (the long preview follows at once)
+            Label Value(string text) => new Label { Text = text, AutoSize = false, Width = 300, Height = 16, Margin = new Padding(3, 4, 0, 0) };
+            TrackBar Slider(int min, int max, int value) => new TrackBar { Minimum = min, Maximum = max, Value = Math.Clamp(value, min, max), Width = 300, TickFrequency = Math.Max(1, (max - min) / 10), AutoSize = false, Height = 30 };
+            Label lenText = Value(L.T("Länge") + $": {_length} Tiles");
+            TrackBar len = Slider(3, 90, _length);
             len.ValueChanged += (s, e) =>
             {
-                _length = (int)len.Value;
-                if (!_sample)
+                _length = len.Value;
+                lenText.Text = L.T("Länge") + $": {_length} Tiles";
+                _sample = false;
+                ShowPlan();
+            };
+            Label widthText = Value(L.T("Breite") + $": {_gen.Width} Tiles");
+            TrackBar width = Slider(1, 12, 3);
+            width.ValueChanged += (s, e) =>
+            {
+                _gen.Width = width.Value;
+                _build.Width = width.Value;
+                widthText.Text = L.T("Breite") + $": {width.Value} Tiles";
+                _genGrid.Refresh();
+                if (_plan.Note == "Aus Teilen erzeugt")
                 {
-                    ShowPlan();
+                    FromPieces();
+                }
+                else
+                {
+                    Say(L.T("Breite gilt für Pläne aus Teilen – ein Plan von Hand / aus der Karte behält seine Breite."));
                 }
             };
-            tf.Controls.Add(len);
-            left.Controls.Add(tf);
+            Label archText = Value(L.T("Bogen") + $": {_build.Arch} Z");
+            TrackBar arch = Slider(0, 40, _build.Arch);
+            arch.ValueChanged += (s, e) =>
+            {
+                _build.Arch = arch.Value;
+                archText.Text = L.T("Bogen") + $": {_build.Arch} Z" + (_build.ArchStairs ? $" = {_build.Arch / 5} " + L.T("Stufen") : string.Empty);
+                _sample = false;
+                ShowPlan();
+            };
+            var stairsArch = new CheckBox { Text = L.T("Bogen aus Stufen (Treppe hinauf, oben flach, hinunter)"), AutoSize = true, Checked = _build.ArchStairs };
+            stairsArch.CheckedChanged += (s, e) =>
+            {
+                _build.ArchStairs = stairsArch.Checked;
+                if (_build.ArchStairs && _build.Arch < 10)
+                {
+                    arch.Value = 20;
+                }
+                if (_build.ArchStairs && (string.IsNullOrEmpty(_plan.StairWest) || string.IsNullOrEmpty(_plan.StairEast)))
+                {
+                    Say(L.T("Für den Bogen aus Stufen braucht der Plan Treppen-Stufen (Knöpfe 'Treppe …' links) – West / Ost für West-Ost-Brücken, Nord / Süd für Nord-Süd."));
+                }
+                _sample = false;
+                ShowPlan();
+            };
+            left.Controls.AddRange(new Control[] { lenText, len, widthText, width, archText, arch, stairsArch });
             var build = new PropertyGrid { Width = 310, Height = 170, ToolbarVisible = false, HelpVisible = false, PropertySort = PropertySort.Categorized, SelectedObject = _build };
             build.PropertyValueChanged += (s, e) =>
             {

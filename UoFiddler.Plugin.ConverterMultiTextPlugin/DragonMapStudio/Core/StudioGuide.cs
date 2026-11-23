@@ -830,6 +830,46 @@ Mountain / bridge / stairs | peak, steepness … / width, arch, Z, stairs / dire
             },
             new GuideTopic
             {
+                Key = "stairs", Group = "Bauen|Building", TitleDe = "Treppen und Treppenhaus", TitleEn = "Stairs and staircase",
+                De = @"# Treppen wie im Original
+Eine Treppe hat je Lauf 4 Stufen zu 5 Z – zusammen 20 Z = eine Etage. Nach jedem Lauf kommt ein flaches Feld (Absatz), dann der nächste Lauf. Alles ist bis unten gefüllt, die Treppe steht massiv.
+
+Klick | Fuß der Treppe (mit „Nach unten bauen“: oberes Ende, z. B. vom Haus in den Keller)
+R | Richtung (hinauf) drehen
+Etagen | so viele Läufe übereinander
+Wende | gerade weiter, rechts herum, links herum (mehrere Etagen = Wendeltreppe), zurück (U neben dem Lauf)
+Breite | so viele Tiles breit, der Absatz wächst mit
+
+## Treppe lernen
+- Eine Treppe von Hand bauen (Stufen in mehreren Richtungen, Blöcke darunter, Absatz), alle Stücke auswählen und „Treppe aus Auswahl lernen“: Stufe je Richtung, Füll-Block und Absatz werden erkannt und als Treppen-Set gespeichert.
+- Eine fertige Treppe lässt sich in der Werkstatt als Vorlage speichern und überall wieder einsetzen.
+
+## Brücke mit Bogen aus Stufen
+Im Brücken-Designer „Bogen aus Stufen“ und den Regler „Bogen“ (z. B. 20 = 4 Stufen) einstellen: die Brücke steigt in Stufen an, ist oben flach und geht auf der anderen Seite wieder hinunter. Regler auch für Länge und Breite.
+
+## Dungeon mit Etagen
+Werkstatt → Grundriss → „Etagen“: so viele Ebenen untereinander (je 20 Z), jede mit eigenem Grundriss, verbunden mit einer Treppe (4 Stufen) in einem Raum, der auf beiden Ebenen frei ist. Über der Treppe bekommt die obere Ebene ein Loch.",
+                En = @"# Stairs like the original
+A flight has 4 steps of 5 Z – together 20 Z = one floor. After every flight comes a flat field (landing), then the next flight. Everything is filled down to the bottom, the stairs stand solid.
+
+Click | foot of the stairs (with “Build downwards”: top end, e.g. from the house into the cellar)
+R | turn the direction (up)
+Floors | this many flights on top of each other
+Turn | straight on, right, left (several floors = spiral staircase), back (U beside the flight)
+Width | this many tiles wide, the landing grows with it
+
+## Learn stairs
+- Build a stair by hand (steps in several directions, blocks below, landing), select all pieces and “Learn stairs from selection”: the step per direction, filling block and landing are found and saved as a stair set.
+- A finished stair can be saved as a template in the workshop and placed anywhere again.
+
+## Bridge with an arch of steps
+In the bridge designer switch on “Arch of steps” and set the slider “Arch” (e.g. 20 = 4 steps): the bridge rises in steps, is flat on top and goes down on the other side. Sliders for length and width too.
+
+## Dungeon with floors
+Workshop → layout → “Floors”: this many levels below each other (20 Z each), every one with its own layout, connected by stairs (4 steps) in a room that is open on both levels. Above the stairs the upper level gets a hole."
+            },
+            new GuideTopic
+            {
                 Key = "keys", Group = "Übersicht|Overview", TitleDe = "Alle Tasten", TitleEn = "All keys",
                 De = @"# Alle Tasten
 ## Überall
