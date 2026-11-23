@@ -19,6 +19,43 @@ using System.Text.Json;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 {
+    /// <summary>
+    /// One piece of a model in all four directions: the graphic used when the model goes up towards north, east, south, west.
+    /// A block without direction has the same id four times. Set automatically from the art, changed by hand in the designer.
+    /// </summary>
+    public sealed class StairTurn4
+    {
+        public ushort N { get; set; }
+        public ushort E { get; set; }
+        public ushort S { get; set; }
+        public ushort W { get; set; }
+
+        public ushort this[Compass c]
+        {
+            get => c switch { Compass.North => N, Compass.East => E, Compass.South => S, _ => W };
+            set
+            {
+                switch (c)
+                {
+                    case Compass.North:
+                        N = value;
+                        break;
+                    case Compass.East:
+                        E = value;
+                        break;
+                    case Compass.South:
+                        S = value;
+                        break;
+                    default:
+                        W = value;
+                        break;
+                }
+            }
+        }
+
+        public bool Contains(ushort id) => N == id || E == id || S == id || W == id;
+    }
+
     public sealed class StairModel
     {
         [Category("Modell"), DisplayName("Name")]
@@ -42,6 +79,65 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public List<PieceStatic> Parts { get; set; } = new List<PieceStatic>();
 
+        /// <summary>Graphics of every piece for the four directions (the model as built = its column <see cref="Up"/>).</summary>
+        [Browsable(false)]
+        public List<StairTurn4> Turns { get; set; } = new List<StairTurn4>();
+
+        /// <summary>The row of the turn table for a piece of the model (as built).</summary>
+        public StairTurn4 TurnOf(ushort id) => Turns.FirstOrDefault(t => t[Up] == id);
+
+        /// <summary>Fills the turn table: stair pieces by their slope (same name), railings / walls by their art, blocks stay.</summary>
+        public void AutoTurns(bool keepExisting = true)
+        {
+            foreach (ushort id in Parts.Select(p => p.Id).Distinct())
+            {
+                if (keepExisting && TurnOf(id) != null)
+                {
+                    continue;
+                }
+                Turns.RemoveAll(t => t[Up] == id);
+                var row = new StairTurn4();
+                foreach (Compass c in new[] { Compass.North, Compass.East, Compass.South, Compass.West })
+                {
+                    row[c] = TurnedPiece(id, ((int)c - (int)Up + 4) % 4);
+                }
+                Turns.Add(row);
+            }
+            Turns.RemoveAll(t => !Parts.Any(p => p.Id == t[Up]));
+        }
+
+        /// <summary>Direction the model goes up, read from its stair pieces (most of them), null when none says it.</summary>
+        public Compass? GuessUp()
+        {
+            var votes = Parts.Select(p => UpOf(p.Id)).Where(u => u != null).GroupBy(u => u.Value).OrderByDescending(g => g.Count()).FirstOrDefault();
+            return votes?.Key;
+        }
+
+        /// <summary>For dragging: the stair piece going up towards <paramref name="up"/> and the block (most common piece without slope).</summary>
+        public (ushort stair, ushort block) StepPieces(Compass up)
+        {
+            int q = (((int)up - (int)Up) % 4 + 4) % 4;
+            ushort stairBuilt = Parts.Where(p => UpOf(p.Id) == Up).GroupBy(p => p.Id).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
+            ushort block = Parts.Where(p => UpOf(p.Id) == null).GroupBy(p => p.Id).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
+            return (stairBuilt == 0 ? (ushort)0 : Piece(stairBuilt, q), block == 0 ? (ushort)0 : Piece(block, q));
+        }
+
+        /// <summary>The piece of the model turned by q quarter turns: from the turn table, else automatic.</summary>
+        public ushort Piece(ushort id, int q)
+        {
+            q = ((q % 4) + 4) % 4;
+            StairTurn4 row = TurnOf(id);
+            if (row != null)
+            {
+                ushort t = row[(Compass)(((int)Up + q) % 4)];
+                if (t != 0)
+                {
+                    return t;
+                }
+            }
+            return TurnedPiece(id, q);
+        }
+
         public override string ToString() => Category + " / " + Name;
 
         /// <summary>The statics of a rectangle; heights relative to <paramref name="groundZ"/>, positions to the top left corner.</summary>
@@ -60,8 +156,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             }
             if (m.Parts.Count > 0)
             {
-                m.Rise = m.Parts.Max(p => p.Z + Math.Max(0, UoArtCache.ItemHeight(p.Id))) - m.Parts.Min(p => p.Z);
-                m.Run = up == Compass.North || up == Compass.South ? r.Height : r.Width;
+                // the direction from the stair pieces themselves (their slope), else the one given
+                Compass? guess = m.GuessUp();
+                if (guess != null)
+                {
+                    m.Up = guess.Value;
+                }
+                m.Rise = m.Parts.Max(p => p.Z + Math.Max(0, UoArtCache.StackHeight(p.Id))) - m.Parts.Min(p => p.Z);
+                m.Run = m.Up == Compass.North || m.Up == Compass.South ? r.Height : r.Width;
+                m.AutoTurns(false);
             }
             return m;
         }
@@ -71,7 +174,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private static readonly Dictionary<(ushort, int), ushort> _turned = new Dictionary<(ushort, int), ushort>();
         private static readonly Dictionary<ushort, Compass?> _up = new Dictionary<ushort, Compass?>();
 
-        private static Compass? UpOf(ushort id)
+        public static Compass? UpOf(ushort id)
         {
             lock (_up)
             {
@@ -133,8 +236,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                     }
                 }
             }
-            else if (q % 2 == 1)
+            else if (q % 2 == 1 && !UoArtCache.ItemHas(id, Ultima.TileFlag.Surface))
             {
+                // railings, walls: the partner with the art the other way; blocks and floors (surface) stay
                 try
                 {
                     result = BridgeKit.Turned(id);
@@ -187,7 +291,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 {
                     int tx = at.X + x - minX + step.X * Run * r, ty = at.Y + y - minY + step.Y * Run * r;
                     int tz = Math.Clamp(baseZ + p.Z + Rise * r, -128, 127);
-                    ushort id = TurnedPiece(p.Id, q);
+                    ushort id = Piece(p.Id, q);
                     if (!map.InBounds(tx, ty) || !placed.Add((tx, ty, tz, id)))
                     {
                         continue;

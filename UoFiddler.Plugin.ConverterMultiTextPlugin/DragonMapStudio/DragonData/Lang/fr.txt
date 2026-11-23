@@ -1867,3 +1867,24 @@ Höhe gesetzt	Hauteur réglée
 Höhen aus der TileData	Hauteurs de la tiledata
 So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z laut TileData), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen und ins Testfeld klicken: 'auf den Stapel' legt jedes Teil auf das oberste – Block auf Block, die Stufe darauf.	Voici comment est construit un escalier : des blocs carrés empilés en marches (5 Z chacun selon la tiledata), sur chaque marche la pièce inclinée. Choisir dans le catalogue et cliquer dans le terrain d'essai : « sur la pile » pose chaque pièce sur la plus haute – bloc sur bloc, la marche dessus.
 Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken – 'Höhe: auf den Stapel' legt es auf das oberste Teil (Höhen aus der TileData). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	Construire : choisir bloc / marche dans le catalogue, cliquer dans le terrain d'essai – « Hauteur : sur la pile » la pose sur la pièce la plus haute (hauteurs de la tiledata). Ou « Générer depuis le jeu d'escalier ». Puis marquer avec « Zone » et « Reprendre comme modèle ».
+# Werkstatt 34
+Auswahl verschieben:	Déplacer la sélection :
+Gewählte Teile ein Feld verschieben (N = oben rechts, wie im Client)	Déplacer les pièces choisies d'une case (N = en haut à droite, comme le client)
+Auswahl löschen	Supprimer la sélection
+Modell aus der Auswahl übernommen	Modèle repris de la sélection
+Dreh-Tabelle prüfen, dann speichern.	vérifier la table de rotation, puis enregistrer.
+Dreh-Tabelle	Table de rotation
+im Katalog doppelklicken setzt hier eine andere Grafik	un double clic dans le catalogue place ici une autre image
+'Gedreht ansehen' zeigt es	« Voir tourné » le montre
+💾 Markierte Treppe speichern …	💾 Enregistrer l'escalier marqué …
+Mehrere Treppen im Feld: eine mit 'Bereich' markieren oder ihre Teile mit 'Auswahl' (Rahmen) wählen – nur diese wird übernommen.	Plusieurs escaliers dans le terrain : en marquer un avec « Zone » ou sélectionner ses pièces avec « Sélection » (cadre) – seul celui-ci est repris.
+Dreh-Tabelle (Grafik je Richtung)	Table de rotation (image par direction)
+Automatisch füllen	Remplir automatiquement
+Zelle → Katalog	Cellule → catalogue
+Jetzt im Katalog die Grafik doppelklicken – sie kommt in die gewählte Zelle der Dreh-Tabelle.	Double-cliquer maintenant l'image dans le catalogue – elle va dans la cellule choisie de la table de rotation.
+Je Zeile ein Teil des Modells, Spalten = die Grafik, wenn die Treppe nach N / O / S / W hinauf geht. Zelle anklicken, im Katalog doppelklicken = andere Grafik. Blöcke bleiben gleich.	Une pièce du modèle par ligne, colonnes = l'image quand l'escalier monte vers N / E / S / O. Cliquer une cellule, double-cliquer dans le catalogue = une autre image. Les blocs restent identiques.
+Stufe	marche
+je	chacune
+Treppe ziehen: keine Stufe für diese Richtung – Modell mit Dreh-Tabelle oder Treppen-Set wählen.	Tirer l'escalier : pas de marche pour cette direction – choisir un modèle avec table de rotation ou un jeu d'escalier.
+Treppe gezogen	Escalier tiré
+Treppe: Klick = Modell / Treppe einmal (R dreht) · Ziehen = je Feld eine Stufe mit Blöcken darunter, in Zieh-Richtung hinauf ('Nach unten bauen' = hinunter) · Vorschau am Mauszeiger	Escalier : clic = modèle / escalier une fois (R tourne) · tirer = une marche par case avec des blocs en dessous, montant dans le sens du tirage (« Construire vers le bas » = descendant) · aperçu à la souris

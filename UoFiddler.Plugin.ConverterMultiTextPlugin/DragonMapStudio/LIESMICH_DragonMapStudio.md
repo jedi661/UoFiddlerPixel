@@ -1264,3 +1264,12 @@ Menü **Hilfe → 🧪 Test-Assistent** oder Knopf **„🧪 Test“** oben rech
 * **Auswahl ▲ h / ▼ h** (um die Teil-Höhe), **+1 / −1** und **„z = …“** (genaue Höhe) für gewählte Teile.
 * Das Erzeugen („Aus Treppen-Set erzeugen“, Werkzeug Treppe) liest Stufen-, Block- und Absatz-Höhe ebenfalls aus der TileData („Höhen aus der TileData“, an).
 
+### Treppen nach deinem Log (seit „Werkstatt 34“)
+* **Stapeln wie im Client:** Teile mit dem TileData-Flag „Bridge“ zählen nur halb so hoch – der Steinblock `03ee` (h 10) und Holz `0721` (h 10) stapeln also alle 5, genau wie in deinen Treppen. Gilt für „auf den Stapel“ / „auf Statics stapeln“ und den Treppenbau.
+* **Werkzeug Treppe – ziehen:** von A nach B ziehen = je Feld **eine Stufe mit Blöcken darunter**, hinauf in Zieh-Richtung („Nach unten bauen“ = hinunter). Ein Klick setzt das Modell / die Treppe wie bisher einmal. Die Stufe und den Block nimmt es aus dem gewählten Modell (oder dem Treppen-Set).
+* **Treppen-Designer:**
+  * **Auswahl verschieben** ▲ N / ▼ S / ◀ W / ▶ O, **Auswahl löschen**, **↶ Rückgängig / ↷ Wiederholen** (auch Strg+Z / Strg+Y).
+  * **„💾 Markierte Treppe speichern …“**: die mit „Bereich“ markierte Treppe – oder die mit „Auswahl“ gewählten Teile – als Modell übernehmen und gleich nach Kategorie speichern. So kannst du mehrere Treppen in ein Feld bauen und jede einzeln speichern.
+  * Die Richtung „hinauf nach“ wird aus den Stufen selbst erkannt.
+  * **Dreh-Tabelle:** je Teil des Modells die Grafik für N / O / S / W (mit Bild). Automatisch gefüllt (Stufen nach ihrer Neigung, Blöcke bleiben gleich); falsche Grafik? Zelle anklicken, im Katalog doppelklicken. „Gedreht ansehen“ und das Werkzeug benutzen die Tabelle.
+

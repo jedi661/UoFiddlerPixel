@@ -8,7 +8,7 @@
 * **Mein Teil:** nur `UoFiddler.Plugin.ConverterMultiTextPlugin/DragonMapStudio/**` und die `.csproj` des Plugins. Am restlichen UoFiddler ändere ich nichts.
   * Alles bis einschließlich Commit `4120625` („New design“) stammt vom Besitzer selbst.
   * Alles danach stammt von Claude.
-* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 23.11.2026 – Werkstatt 33“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
+* **Stand:** siehe letzter Commit auf dem Branch. Im Fenstertitel steht **„Stand 23.11.2026 – Werkstatt 34“**. Das ist `BuildMark` in `DragonMapStudioForm.CgiLayout.cs` und wird bei jeder Änderung hochgezählt, damit man sieht, ob die neue DLL läuft.
 * **Arbeitsweise:**
   * Antworten auf Deutsch.
   * Nach jeder Änderung `DragonMapStudio_Hoehleneingang.zip` im Repo-Hauptordner neu bauen.
@@ -182,6 +182,8 @@
 22. **Neu (Werkstatt 32):** Treppen-Designer (`Dialogs/StairDesignerForm.cs`) mit Modellen `Core/StairModel.cs` (`SettingsFolder/Treppen/<Kategorie>`; Drehen: Positionen + Stufen nach `StairUp`, sonst `Turned`), Werkzeug Treppe mit „Modell“ und „Modell mehrmals“ (`StaircaseSettings.Model/Repeats`, `IsoMapView.StairPieces`). „📋 Log + Bild“ (`Dialogs/DesignLog.cs`, `SettingsFolder/Logs`) in Treppen- und Brücken-Designer. Selbsttest „Treppen-Modell“, Prüflisten-Schritt Treppen-Designer.
 
 23. **Neu (Werkstatt 33):** Treppen-Designer „Höhe: auf den Stapel (TileData-Höhe)“ / „feste Höhe“ (vorher addierten sich Z + und Stapeln → Stufe 5 zu hoch), Teil-Höhe aus der TileData angezeigt, Auswahl ▲ h / ▼ h / ±1 / z = …; `StaircaseSettings.HeightFromTileData` (Stufen-, Block-, Absatz-Höhe aus der TileData, Blöcke von unten gestapelt).
+
+24. **Neu (Werkstatt 34)** nach dem Log des Besitzers (Treppe_20261123_225537): Steinblock `03ee` h10 / Holz `0721` h10 haben das Flag Bridge → der Client stapelt sie mit halber Höhe (5). Neu `UoArtCache.StackHeight` (= `ItemData.CalcHeight`) für das Stapeln in der CGI-Ansicht und im Treppenbau. Erkannte Neigungen stimmen mit den Treppen des Besitzers überein (03ef N, 03f0 W, 03f1 S, 03f2 O; Holz 0722 N, 0723 W; Ecken 03f3–03f6). Treppen-Modelle haben eine Dreh-Tabelle (`StairTurn4`, auto + von Hand), `GuessUp`, Blöcke werden beim Drehen nicht mehr getauscht. Werkzeug Treppe: Ziehen = `Staircase.Run` (je Feld eine Stufe, Blöcke darunter). Designer: Auswahl verschieben / löschen, Rückgängig mit Text + Strg+Z/Y, „Markierte Treppe speichern“, Modell aus Auswahl.
 
 ## Offen / als Nächstes
 

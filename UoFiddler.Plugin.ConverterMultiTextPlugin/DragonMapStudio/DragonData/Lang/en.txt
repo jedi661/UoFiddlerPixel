@@ -1875,3 +1875,24 @@ Höhe gesetzt	Height set
 Höhen aus der TileData	Heights from the tiledata
 So ist eine Treppe aufgebaut: viereckige Blöcke stufig übereinander (je 5 Z laut TileData), oben auf jeder Stufe das geneigte Treppenstück. Im Katalog wählen und ins Testfeld klicken: 'auf den Stapel' legt jedes Teil auf das oberste – Block auf Block, die Stufe darauf.	This is how stairs are built: square blocks stepped on top of each other (5 Z each according to the tiledata), on every step the sloped stair piece. Choose in the catalog and click into the test field: 'on top of the stack' puts every piece on the topmost one – block on block, the step on top.
 Bauen: im Katalog Block / Stufe wählen, ins Testfeld klicken – 'Höhe: auf den Stapel' legt es auf das oberste Teil (Höhen aus der TileData). Oder 'Aus Treppen-Set erzeugen'. Dann mit 'Bereich' markieren und 'Als Modell übernehmen'.	Build: choose block / step in the catalog, click into the test field – 'Height: on top of the stack' puts it on the topmost piece (heights from the tiledata). Or 'Generate from stair set'. Then mark with 'Area' and 'Take as model'.
+# Werkstatt 34
+Auswahl verschieben:	Move selection:
+Gewählte Teile ein Feld verschieben (N = oben rechts, wie im Client)	Move the chosen pieces one tile (N = top right, like the client)
+Auswahl löschen	Delete selection
+Modell aus der Auswahl übernommen	Model taken from the selection
+Dreh-Tabelle prüfen, dann speichern.	check the turn table, then save.
+Dreh-Tabelle	Turn table
+im Katalog doppelklicken setzt hier eine andere Grafik	double click in the catalog sets another graphic here
+'Gedreht ansehen' zeigt es	'View turned' shows it
+💾 Markierte Treppe speichern …	💾 Save marked stairs …
+Mehrere Treppen im Feld: eine mit 'Bereich' markieren oder ihre Teile mit 'Auswahl' (Rahmen) wählen – nur diese wird übernommen.	Several stairs in the field: mark one with 'Area' or select its pieces with 'Select' (frame) – only this one is taken.
+Dreh-Tabelle (Grafik je Richtung)	Turn table (graphic per direction)
+Automatisch füllen	Fill automatically
+Zelle → Katalog	Cell → catalog
+Jetzt im Katalog die Grafik doppelklicken – sie kommt in die gewählte Zelle der Dreh-Tabelle.	Now double click the graphic in the catalog – it goes into the chosen cell of the turn table.
+Je Zeile ein Teil des Modells, Spalten = die Grafik, wenn die Treppe nach N / O / S / W hinauf geht. Zelle anklicken, im Katalog doppelklicken = andere Grafik. Blöcke bleiben gleich.	One piece of the model per row, columns = the graphic when the stairs go up towards N / E / S / W. Click a cell, double click in the catalog = another graphic. Blocks stay the same.
+Stufe	step
+je	each
+Treppe ziehen: keine Stufe für diese Richtung – Modell mit Dreh-Tabelle oder Treppen-Set wählen.	Drag stairs: no step for this direction – choose a model with a turn table or a stair set.
+Treppe gezogen	Stairs dragged
+Treppe: Klick = Modell / Treppe einmal (R dreht) · Ziehen = je Feld eine Stufe mit Blöcken darunter, in Zieh-Richtung hinauf ('Nach unten bauen' = hinunter) · Vorschau am Mauszeiger	Stairs: click = model / stairs once (R turns) · drag = one step per tile with blocks underneath, up in the drag direction ('Build downwards' = down) · preview at the mouse

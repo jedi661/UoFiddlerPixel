@@ -1390,7 +1390,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             else if (Tool == IsoTool.Stairs)
             {
-                foreach (StaticChange c in StairPieces(_hover)
+                List<StaticChange> preview = _dragStart.HasValue && _dragStart.Value != _dragEnd ? StairRunPieces(_dragStart.Value, _dragEnd, out _) : StairPieces(_dragStart ?? _hover);
+                foreach (StaticChange c in preview
                              .OrderBy(c => c.After.X + c.After.Y).ThenBy(c => c.After.Z))
                 {
                     parts.Add((c.After.Id, c.After.X, c.After.Y, c.After.Z));
@@ -1444,7 +1445,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         private int PlaceZ(int x, int y)
         {
-            int baseZ = StackOnStatics ? _map.TopZ(x, y, id => UoArtCache.ItemHeight(id)) : _map.LandZ(x, y);
+            int baseZ = StackOnStatics ? _map.TopZ(x, y, id => UoArtCache.StackHeight(id)) : _map.LandZ(x, y);
             return Math.Clamp(baseZ + ZOffset + (UnderView && !StackOnStatics ? BrushSettings.UnderOffset : 0), -128, 127);
         }
 

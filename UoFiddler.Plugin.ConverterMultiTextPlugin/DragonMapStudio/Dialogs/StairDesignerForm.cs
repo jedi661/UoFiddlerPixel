@@ -40,6 +40,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private PropertyGrid _modelGrid;
         private readonly StaircaseSettings _gen = new StaircaseSettings { Up = Compass.North, Floors = 1, Turn = StairTurn.Straight };
         private Compass _previewUp = Compass.North;
+        private bool _turnsArmed;
         private ToolStripLabel _pieceHeight;
         private NumericUpDown _zStep;
 
@@ -51,6 +52,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             MinimumSize = new Size(1000, 640);
             StartPosition = FormStartPosition.CenterParent;
             Font = new Font("Segoe UI", 9f);
+            KeyPreview = true;
+            KeyDown += (s, e) =>
+            {
+                if (e.Control && e.KeyCode == Keys.Z && !(ActiveControl is TextBox))
+                {
+                    _view.Undo();
+                    e.Handled = true;
+                }
+                else if (e.Control && e.KeyCode == Keys.Y && !(ActiveControl is TextBox))
+                {
+                    _view.Redo();
+                    e.Handled = true;
+                }
+            };
             BuildUi();
             NewField();
             FillModels(null);
@@ -96,6 +111,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private void TakeModel()
         {
             Rectangle r = Marked;
+            if (_view.Selection.Count > 0 && _view.Area.IsEmpty)
+            {
+                // exactly the selected pieces (several stairs in the field: only this one)
+                var sel = _view.Selection.ToList();
+                r = Rectangle.FromLTRB(sel.Min(s => s.X), sel.Min(s => s.Y), sel.Max(s => s.X) + 1, sel.Max(s => s.Y) + 1);
+                var only = new MapData(Size0, Size0, Enumerable.Repeat((ushort)3, Size0 * Size0).ToArray(), new sbyte[Size0 * Size0]);
+                only.Apply(sel.Select(s => MapData.Add(s.Copy())).ToList());
+                StairModel ms = StairModel.Capture(only, r, _model.Up, 0, _model.Name);
+                ms.Category = _model.Category;
+                ms.Note = _model.Note;
+                _model = ms;
+                _modelGrid.SelectedObject = _model;
+                FillTurns();
+                Say(L.T("Modell aus der Auswahl übernommen") + $": {ms.Parts.Count} " + L.T("Teile") + $", " + L.T("hinauf nach") + $" {ms.Up}");
+                return;
+            }
             if (_view.Area.IsEmpty)
             {
                 // the used part of the field
@@ -112,8 +143,82 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             m.Note = _model.Note;
             _model = m;
             _modelGrid.SelectedObject = _model;
-            Say(L.T("Modell übernommen") + $": {m.Parts.Count} " + L.T("Teile") + $", " + L.T("Anstieg") + $" {m.Rise} Z, " + L.T("Länge") + $" {m.Run} – " +
-                L.T("'Gebaut hinauf nach' prüfen, dann speichern."));
+            FillTurns();
+            Say(L.T("Modell übernommen") + $": {m.Parts.Count} " + L.T("Teile") + $", " + L.T("Anstieg") + $" {m.Rise} Z, " + L.T("Länge") + $" {m.Run}, " + L.T("hinauf nach") + $" {m.Up} – " +
+                L.T("Dreh-Tabelle prüfen, dann speichern."));
+        }
+
+        /// <summary>Marks → model → save in one go.</summary>
+        private void TakeAndSave()
+        {
+            TakeModel();
+            if (_model.Parts.Count > 0)
+            {
+                SaveModel();
+            }
+        }
+
+        // ------------------------------------------------------------------ turn table
+
+        private readonly DataGridView _turns = new DataGridView
+        {
+            Width = 310, Height = 260, AllowUserToAddRows = false, AllowUserToDeleteRows = false, RowHeadersVisible = false, ReadOnly = true,
+            SelectionMode = DataGridViewSelectionMode.CellSelect, MultiSelect = false, BackgroundColor = Color.FromArgb(40, 40, 40)
+        };
+
+        private void SetupTurns()
+        {
+            foreach ((string name, string head) in new[] { ("N", "N"), ("E", "O"), ("S", "S"), ("W", "W") })
+            {
+                _turns.Columns.Add(new DataGridViewImageColumn { Name = name, HeaderText = head, ImageLayout = DataGridViewImageCellLayout.Zoom, Width = 70 });
+            }
+            _turns.RowTemplate.Height = 56;
+            _turns.CellClick += (s, e) =>
+            {
+                if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
+                {
+                    StairTurn4 row = _model.Turns[e.RowIndex];
+                    Compass c = (Compass)e.ColumnIndex;
+                    Say(L.T("Dreh-Tabelle") + $": " + L.T("hinauf nach") + $" {c} = {row[c]:x4} {UoArtCache.ItemName(row[c])} – " + L.T("im Katalog doppelklicken setzt hier eine andere Grafik"));
+                }
+            };
+        }
+
+        private void FillTurns()
+        {
+            _turns.Rows.Clear();
+            if (_model.Turns.Count == 0 && _model.Parts.Count > 0)
+            {
+                _model.AutoTurns(false);
+            }
+            foreach (StairTurn4 t in _model.Turns)
+            {
+                int i = _turns.Rows.Add();
+                foreach (Compass c in new[] { Compass.North, Compass.East, Compass.South, Compass.West })
+                {
+                    _turns.Rows[i].Cells[(int)c].Value = UoArtCache.Static(t[c], 0);
+                    _turns.Rows[i].Cells[(int)c].ToolTipText = $"{t[c]:x4} {UoArtCache.ItemName(t[c])}";
+                }
+            }
+        }
+
+        /// <summary>Double click in the catalog with a cell of the turn table chosen: that graphic for that direction.</summary>
+        private bool AssignTurn(int id)
+        {
+            if (_turns.CurrentCell == null || !_turns.Focused && !_turns.ContainsFocus && _turns.CurrentCell.RowIndex < 0 || _model.Turns.Count == 0)
+            {
+                return false;
+            }
+            int r = _turns.CurrentCell.RowIndex, c = _turns.CurrentCell.ColumnIndex;
+            if (r < 0 || r >= _model.Turns.Count || c < 0 || c > 3)
+            {
+                return false;
+            }
+            _model.Turns[r][(Compass)c] = (ushort)id;
+            _turnsArmed = false;
+            FillTurns();
+            Say(L.T("Dreh-Tabelle") + $": " + L.T("hinauf nach") + $" {(Compass)c} = {id:x4} {UoArtCache.ItemName(id)} – " + L.T("'Gedreht ansehen' zeigt es"));
+            return true;
         }
 
         private void TakeFromMap()
@@ -130,6 +235,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             m.Note = $"Aus der Karte ({r.X}, {r.Y}, {r.Width}×{r.Height})";
             _model = m;
             _modelGrid.SelectedObject = _model;
+            FillTurns();
             ShowModel(_model.Up);
             Say(L.T("Treppe aus der Karte übernommen") + $": {m.Parts.Count} " + L.T("Teile") + $", " + L.T("Anstieg") + $" {m.Rise} Z.");
         }
@@ -282,11 +388,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             zin.Click += (s, e) => _view.ZoomStep(1);
             var zout = new ToolStripButton("Zoom −");
             zout.Click += (s, e) => _view.ZoomStep(-1);
-            var undo = new ToolStripButton("↶");
+            var undo = new ToolStripButton("↶ " + L.T("Rückgängig")) { ToolTipText = "Strg+Z" };
             undo.Click += (s, e) => _view.Undo();
-            var redo = new ToolStripButton("↷");
+            var redo = new ToolStripButton("↷ " + L.T("Wiederholen")) { ToolTipText = "Strg+Y" };
             redo.Click += (s, e) => _view.Redo();
             tools.Items.AddRange(new ToolStripItem[] { grid, ids, zin, zout, undo, redo });
+            // second row: move the selected pieces north / south / west / east
+            var moveBar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
+            moveBar.Items.Add(new ToolStripLabel(L.T("Auswahl verschieben:")));
+            foreach ((string text, int dx, int dy) in new[] { ("▲ N", 0, -1), ("▼ S", 0, 1), ("◀ W", -1, 0), ("▶ O", 1, 0) })
+            {
+                var mb = new ToolStripButton(text) { ToolTipText = L.T("Gewählte Teile ein Feld verschieben (N = oben rechts, wie im Client)") };
+                mb.Click += (s, e) =>
+                {
+                    if (_view.Selection.Count == 0)
+                    {
+                        Say(L.T("Erst Teile mit 'Auswahl' wählen (Strg = mehrere)."));
+                        return;
+                    }
+                    _view.MoveSelection(dx, dy, 0, false);
+                };
+                moveBar.Items.Add(mb);
+            }
+            var del = new ToolStripButton("✖ " + L.T("Auswahl löschen"));
+            del.Click += (s, e) => _view.DeleteSelection();
+            moveBar.Items.Add(del);
+            right.Panel1.Controls.Add(moveBar);
             right.Panel1.Controls.Add(_view);
             right.Panel1.Controls.Add(tools);
             right.Panel2.Controls.Add(_catalog);
@@ -304,8 +431,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             _view.StackOnStatics = true;
             _view.ZOffset = 0;
             _view.Message += (s, t) => Say(t);
+            _view.Enter += (s, e) => _turnsArmed = false;
             _catalog.Picked += (s, e) =>
             {
+                if (e.Activated && e.Kind == ArtKind.Static && _turnsArmed && AssignTurn(e.Id))
+                {
+                    return;
+                }
                 if (e.Kind == ArtKind.Static)
                 {
                     _view.PlaceId = (ushort)e.Id;
@@ -350,6 +482,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 {
                     _model = m;
                     _modelGrid.SelectedObject = _model;
+                    FillTurns();
                     ShowModel(m.Up);
                 }
             };
@@ -385,7 +518,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             var tl = Line();
             tl.Controls.Add(B("Als Modell übernehmen", TakeModel, 148));
             tl.Controls.Add(B("Treppe aus der Karte", TakeFromMap, 148));
+            tl.Controls.Add(B("💾 Markierte Treppe speichern …", TakeAndSave, 300));
             left.Controls.Add(tl);
+            left.Controls.Add(new Label
+            {
+                AutoSize = false, Width = 310, Height = 34, ForeColor = Color.FromArgb(71, 85, 105),
+                Text = L.T("Mehrere Treppen im Feld: eine mit 'Bereich' markieren oder ihre Teile mit 'Auswahl' (Rahmen) wählen – nur diese wird übernommen.")
+            });
+            left.Controls.Add(Head("Dreh-Tabelle (Grafik je Richtung)", Color.FromArgb(8, 145, 178)));
+            SetupTurns();
+            _turns.Enter += (s, e) => _turnsArmed = true;
+            left.Controls.Add(_turns);
+            var tt = Line();
+            tt.Controls.Add(B("Automatisch füllen", () =>
+            {
+                _model.Turns.Clear();
+                _model.AutoTurns(false);
+                FillTurns();
+            }, 148));
+            tt.Controls.Add(B("Zelle → Katalog", () =>
+            {
+                _turnsArmed = true;
+                Say(L.T("Jetzt im Katalog die Grafik doppelklicken – sie kommt in die gewählte Zelle der Dreh-Tabelle."));
+            }, 148));
+            left.Controls.Add(tt);
+            left.Controls.Add(new Label
+            {
+                AutoSize = false, Width = 310, Height = 48, ForeColor = Color.FromArgb(71, 85, 105),
+                Text = L.T("Je Zeile ein Teil des Modells, Spalten = die Grafik, wenn die Treppe nach N / O / S / W hinauf geht. Zelle anklicken, im Katalog doppelklicken = andere Grafik. Blöcke bleiben gleich.")
+            });
             var rl = Line();
             rl.Controls.Add(new Label { Text = L.T("Gedreht ansehen:"), AutoSize = true, Margin = new Padding(3, 8, 3, 0) });
             foreach ((string t, Compass c) in new[] { ("N", Compass.North), ("O", Compass.East), ("S", Compass.South), ("W", Compass.West) })

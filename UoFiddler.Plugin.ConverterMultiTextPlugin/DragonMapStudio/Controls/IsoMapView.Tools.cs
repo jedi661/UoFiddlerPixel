@@ -398,7 +398,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     Invalidate();
                     return true;
                 case IsoTool.Stairs:
-                    PlaceStairs(tile);
+                    // click = the model / staircase once, drag = one step per tile
+                    _dragStart = tile;
+                    _dragEnd = tile;
+                    Invalidate();
                     return true;
                 case IsoTool.MagicWand:
                     SetMask(CgiBrushes.Wand(_map, tile.X, tile.Y, BrushSettings.Wand, LandFamily), ModifierKeys, L.T("Zauberstab"));
@@ -526,6 +529,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     break;
                 case IsoTool.Course:
                     PlaceCourse(a0, b0);
+                    break;
+                case IsoTool.Stairs:
+                    if (a0 == b0)
+                    {
+                        PlaceStairs(a0);
+                    }
+                    else
+                    {
+                        PlaceStairRun(a0, b0);
+                    }
                     break;
             }
             Invalidate();
@@ -875,6 +888,47 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 return model.Build(_map, tile, z, o.Up, o.Repeats, o.Downwards);
             }
             return StairSet == null ? new List<StaticChange>() : Staircase.Build(_map, tile, z, o, StairSet);
+        }
+
+        /// <summary>Stairs by dragging: one stair piece per tile with blocks underneath (pieces from the model or the stair set).</summary>
+        public List<StaticChange> StairRunPieces(Point a, Point b, out string info)
+        {
+            StaircaseSettings o = BrushSettings.Staircase;
+            bool down = o.Downwards;
+            Point from = down ? b : a, to = down ? a : b;
+            Compass up = Staircase.DirectionOf(from, to);
+            ushort stair, block;
+            StairModel model = string.IsNullOrEmpty(o.Model) ? null : FindStairModel?.Invoke(o.Model);
+            if (model != null)
+            {
+                (stair, block) = model.StepPieces(up);
+            }
+            else
+            {
+                stair = HexList.Parse(StairSet?.For(Staircase.Opposite(up))).FirstOrDefault();
+                block = HexList.Parse(StairSet?.Block).FirstOrDefault();
+            }
+            int hb = block != 0 ? UoArtCache.StackHeight(block) : 0;
+            int hs = UoArtCache.ItemHeight(stair);
+            int h = hb >= 1 && hb <= 30 ? hb : hs >= 1 && hs <= 30 ? hs : 5;
+            int n = Math.Max(Math.Abs(b.X - a.X), Math.Abs(b.Y - a.Y));
+            int z = PlaceZ(a.X, a.Y);
+            int baseZ = down ? z - n * h : z;
+            info = $"{n + 1} " + L.T("Stufen") + $" " + L.T("hinauf nach") + $" {up}, " + L.T("Stufe") + $" {stair:x4}, Block {block:x4}, " + L.T("je") + $" {h} Z";
+            return Staircase.Run(_map, from, to, baseZ, o.Width, stair, block, h);
+        }
+
+        private void PlaceStairRun(Point a, Point b)
+        {
+            List<StaticChange> ch = StairRunPieces(a, b, out string info);
+            if (ch.Count == 0)
+            {
+                Message?.Invoke(this, L.T("Treppe ziehen: keine Stufe für diese Richtung – Modell mit Dreh-Tabelle oder Treppen-Set wählen."));
+                return;
+            }
+            int before = _map.UndoCount;
+            _map.Apply(ch);
+            Finished(_map.UndoCount > before ? ch.Count : 0, L.T("Treppe gezogen") + ": " + info);
         }
 
         private void PlaceStairs(Point tile)
@@ -1322,7 +1376,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             IsoTool.Scatter => L.T("Streu-Pinsel: Ziehen verteilt das Set (Reiter Pinsel) – Dichte, Abstand, Boden-Filter · Strg+Ziehen entfernt Statics des Sets · Pinsel oben · ein Zug = ein Rückgängig-Schritt"),
             IsoTool.Eraser => L.T("Radierer: Ziehen löscht alle Statics im Pinsel (Größe oben / [ ]) · Strg = Land zur Leere · Einstellungen im Reiter Pinsel"),
-            IsoTool.Stairs => L.T("Treppe: Klick = Fuß der Treppe – Läufe zu 4 Stufen (je 5 Z = 20 Z), dazwischen ein Absatz, Wende gerade / rechts / links / zurück, bis unten gefüllt · R = Richtung drehen · Vorschau am Mauszeiger"),
+            IsoTool.Stairs => L.T("Treppe: Klick = Modell / Treppe einmal (R dreht) · Ziehen = je Feld eine Stufe mit Blöcken darunter, in Zieh-Richtung hinauf ('Nach unten bauen' = hinunter) · Vorschau am Mauszeiger"),
             IsoTool.HueBrush => L.T("Hue-Pinsel: Ziehen färbt alle Statics im Pinsel mit der Hue (Reiter Items) · Strg = Hue 0 (Original)"),
             IsoTool.River => L.T("Fluss: Ziehen gräbt ein Bett – Wasser-Tiles auf 'Tiefe' unter dem Startpunkt, weiches Ufer, danach Übergänge (Reiter Pinsel → Fluss) · Pinsel oben = Breite"),
             IsoTool.Plateau => L.T("Plateau: Ziehen flacht auf die Höhe unter dem ersten Klick ab (oder 'Höhe ='), Art Terrassen = Stufen · Härte für weiche Ränder (Reiter Pinsel)"),
