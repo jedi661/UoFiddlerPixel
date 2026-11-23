@@ -1228,4 +1228,5 @@ Brücken, Geländer und Treppen mit Teilen, die automatisch aus TileData (Namen,
 * **Einrichtung lernen:** beim Stil-Lernen werden Tische, Stühle, Kisten usw. erkannt und beim Bauen an die Wände gestellt, so oft wie im Original.
 * **Weiche Küste** beim Bauen aus der Farbkarte ist jetzt ab Werk an.
 * **Vorlagen mit Bild:** Werkstatt → „🖼 Vorlagen mit Bild …“.
+* **Französisch** ist jetzt vollständig (Menü Sprache / Language / Langue).
 

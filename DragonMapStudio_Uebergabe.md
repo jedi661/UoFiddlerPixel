@@ -162,6 +162,7 @@
    * Drehen 90° tauscht gerichtete Teile (`CgiBrushes.TurnedId` über `BridgeKit.Turned`), Wand-Ecken (`WallSet.Corner`), Streu-Sets mischen + Rand ausdünnen, Übersichtskarte zeigt Lesezeichen + Fehler (`MapNavigator.Markers`).
    * Dungeon mit Etagen (`DungeonSettings.Floors`, `ConnectFloors` in der Werkstatt), Einrichtung lernen und an Wänden setzen (`DungeonLook.Furniture/FurniturePercent`).
    * `CoastSoft` ab Werk an (einmalig über `StudioSettings.SettingsLevel` 28), Vorlagen-Browser mit Bildern `Dialogs/TemplateBrowserForm.cs`.
+   * Französisch `DragonData/Lang/fr.txt` jetzt vollständig (alle Texte wie en.txt).
 
 ## Offen / als Nächstes
 
@@ -174,4 +175,3 @@
 * Ausbau-Ideen: Wand-Sets mit Vorlagen ausliefern, Ecken automatisch (L-Formen), Streu-Pinsel mit mehreren Sets und Rand-Ausdünnung, Drehen mit Austausch der gerichteten IDs, Lesezeichen in der Kartenübersicht anzeigen.
 * Werkzeuge 20 in der Oberfläche testen lassen: Palette, Abdocken, Optionsleiste, Kontextmenü, F1, Höhe behalten, Küste glätten (sieht die Küste wirklich ohne Zacken aus?).
 * Danach evtl. `CoastSoft` ab Werk einschalten.
-* Ideen: Kartenübersicht erweitern (Lesezeichen, Fehler-Markierungen), Paletten-Spaltenzahl einstellbar, französische Texte (`fr.txt`).

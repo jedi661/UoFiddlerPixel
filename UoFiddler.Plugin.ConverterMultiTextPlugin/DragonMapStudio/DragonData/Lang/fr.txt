@@ -1,4 +1,4 @@
-# Dragon Map Studio – Français
+﻿# Dragon Map Studio – Français
 # Deutsch<TAB>Français  (\n = new line). Add or change lines as you like; the file is read when the language is chosen.
  · nass, ohne Textur (wird flach gezeichnet)	 · humide, sans texture (dessinée à plat)
 &Anleitung	&Guide
@@ -707,3 +707,1071 @@ keine Gruppe	aucun groupe
 nicht definiert	non définie
 vorhanden	présent
 Übergang zwischen zwei Gruppen, auf Wunsch mit Beispiel-Datei (12 Standard-Muster)	Transition entre deux groupes, avec fichier exemple (12 motifs standard) si souhaité
+# Werkzeuge 20 … Werkstatt 28
+ · Umschalt+Rechtsklick / Menütaste = Menü · F1 = Hilfe	 · Maj+clic droit / touche menu = menu · F1 = aide
+2D-Ansicht (T)	Vue 2D (T)
+Alle Einträge der Höhen-Ebene löschen? (Strg+Z geht)	Supprimer toutes les entrées de la couche de hauteur ? (Ctrl+Z fonctionne)
+Alle Küsten der Karte ohne Zacken (ein Rückgängig-Schritt)	Toutes les côtes de la carte sans dents (une seule étape d'annulation)
+Ansicht	Affichage
+Ansicht verschieben (auch Leertaste oder mittlere Maus)	Déplacer la vue (aussi espace ou bouton du milieu)
+Ausschneiden	Couper
+Auswahl als Farb-Stempel speichern	Enregistrer la sélection comme tampon de couleur
+Auswahl mit Farbe 1 füllen (Strg+F)	Remplir la sélection avec la couleur 1 (Ctrl+F)
+Auswahl mit Farbe 2 füllen (Entf)	Remplir la sélection avec la couleur 2 (Suppr)
+Bereich als Farb-Stempel	Zone comme tampon de couleur
+Bereich aufziehen · Strg+C / X / V · Entf · Strg+F · V = CGI-Vorschau · Rechtsklick = Menü	Tracer une zone · Ctrl+C / X / V · Suppr · Ctrl+F · V = aperçu CGI · clic droit = menu
+Bereich auswerten (Log)	Analyser la zone (journal)
+Bereich markieren (Werkzeug)	Marquer une zone (outil)
+Bereich mit dem Land-Tile füllen	Remplir la zone avec la tuile de terrain
+Berg	Montagne
+Berg (M)	Montagne (M)
+Berg ab der Bodenhöhe aufbauen (Reiter Berg)	Élever une montagne depuis la hauteur du sol (onglet Montagne)
+Berg formen (M)	Former une montagne (M)
+Berg formen (Reiter Berg)	Former une montagne (onglet Montagne)
+Beschriftung	Étiquettes
+Die CGI-Karte wurde inzwischen gewechselt – nichts geändert.	La carte CGI a été modifiée entre-temps – rien n'a changé.
+Diese Stelle im Karten-Editor zeigen	Afficher cet endroit dans l'éditeur de carte
+Ein Stempel als Pinsel (Straßen, Flüsse) – ohne gewählten Stempel öffnet sich das Stempel-Menü	Un tampon comme pinceau (routes, rivières) – sans tampon choisi, le menu des tampons s'ouvre
+Einfügen	Coller
+Eingang	Entrée
+Einstellungen (Reiter Küste / Wasser)	Paramètres (onglet Côte / eau)
+Eintrag hier löschen	Supprimer l'entrée ici
+Einträge entfernt (Strg+Z holt sie zurück).	entrées supprimées (Ctrl+Z les rétablit).
+Einzelne Punkte im Pinsel	Points isolés dans le pinceau
+Ellipse gefüllt	Ellipse pleine
+Fehler zeigen	Afficher les erreurs
+Fehlerstellen geglättet	endroits erronés lissés
+Füllen (F)	Remplir (F)
+Füllt die zusammenhängende gleiche Farbe	Remplit les cellules reliées de la même couleur
+Ganze Karte	Carte entière
+Ganze Karte glätten	Lisser toute la carte
+Ganze Karte löschen …	Supprimer sur toute la carte …
+Ganze Karte prüfen (Probleme)	Vérifier toute la carte (problèmes)
+Ganzen Strich rückgängig (Strg+Umschalt+Z)	Annuler tout le trait (Ctrl+Maj+Z)
+Gebäude / Böden aus dem Reiter Vorlagen	Bâtiments / sols de l'onglet Modèles
+Gefülltes Rechteck	Rectangle plein
+Glätten (G)	Lisser (G)
+Heben (Bild↑)	Élever (Page↑)
+Herauszoomen	Dézoomer
+Herauszoomen (−)	Dézoomer (−)
+Hier gibt es keine Einträge der Höhen-Ebene.	Il n'y a pas d'entrées de la couche de hauteur ici.
+Hilfe (F1)	Aide (F1)
+Hineinzoomen	Zoomer
+Hineinzoomen (+)	Zoomer (+)
+Höhe behalten	Garder la hauteur
+Höhe behalten (Pinsel, Linie, Formen, Füllen)	Garder la hauteur (pinceau, ligne, formes, remplissage)
+Höhe behalten (an / aus)	Garder la hauteur (oui / non)
+Höhe behalten: an – Pinsel, Linie, Formen und Füllen nehmen die Farbe der Gruppe auf der Höhe des Bodens; fehlt sie (z. B. Holzboden nur Z 0), merkt sich die Höhen-Ebene die Höhe.	Garder la hauteur : oui – pinceau, ligne, formes et remplissage prennent la couleur du groupe à la hauteur du sol ; s'il n'y en a pas (p. ex. plancher seulement en Z 0), la couche de hauteur retient la hauteur.
+Höhe behalten: aus – jede Farbe hat ihre eigene Höhe.	Garder la hauteur : non – chaque couleur a sa propre hauteur.
+Höhen (ab Zoom 12)	Hauteurs (à partir du zoom 12)
+Höhen / IDs einblenden	Afficher hauteurs / ids
+Höhen an die Nachbarn angleichen	Ajuster les hauteurs aux voisins
+Höhen glätten	Lisser les hauteurs
+Höhen glätten (G)	Lisser les hauteurs (G)
+Höhen-Ebene	Couche de hauteur
+Höhen-Ebene ausgeblendet.	Couche de hauteur masquée.
+Höhen-Ebene löschen	Supprimer la couche de hauteur
+Höhen-Ebene zeigen	Afficher la couche de hauteur
+Höhlen-Stempel	Tampon de grotte
+Höhleneingang	Entrée de grotte
+Höhleneingang am Bergfuß malen	Peindre une entrée de grotte au pied de la montagne
+Im Bereich glätten (J)	Lisser dans la zone (J)
+In den Berg ziehen: Boden auf einer Höhe, Rand wird Wand	Tirer dans la montagne : sol à une hauteur, le bord devient mur
+In der Auswahl löschen	Supprimer dans la sélection
+Item aus dem Katalog (Reiter Items) setzen · Rechtsklick auf ein Static = aufnehmen	Placer l'objet du catalogue (onglet Objets) · clic droit sur un static = le prendre
+Item übernehmen (zum Setzen)	Prendre l'objet (pour le placer)
+Karte	Carte
+Karte → Farbkarte	Carte → carte de couleurs
+Kein Werkzeug, ein Schalter: Pinsel, Linie, Formen und Füllen behalten die Höhe des Bodens – fehlt die Farbe auf dieser Höhe, merkt sie sich die Höhen-Ebene	Pas un outil, un interrupteur : pinceau, ligne, formes et remplissage gardent la hauteur du sol – si la couleur n'existe pas à cette hauteur, la couche de hauteur la retient
+Keine CGI-Karte geladen.	Aucune carte CGI chargée.
+Keine Küsten-Fehler gefunden	Aucune erreur de côte trouvée
+Keine Küsten-Fehler gefunden.	Aucune erreur de côte trouvée.
+Klick färbt das Static mit der Hue (Reiter Items)	Un clic colore le static avec la teinte (onglet Objets)
+Klick füllt die gleiche Farbe	Un clic remplit la même couleur
+Klick löscht ein Static	Un clic supprime un static
+Klick neben den Berg = Eingang · Umschalt = unsichtbar (1d) · Rechtsklick = wieder Berg	Clic à côté de la montagne = entrée · Maj = invisible (1d) · clic droit = de nouveau montagne
+Klick neben den Berg · Umschalt = unsichtbar · Rechts = Berg	Clic à côté de la montagne · Maj = invisible · droit = montagne
+Klick vor eine Bergwand = ganzer Eingang · Strg+Klick = entfernen	Clic devant une paroi = entrée complète · Ctrl+clic = supprimer
+Kopieren	Copier
+Küste (K)	Côte (K)
+Küste anpassen (K)	Façonner la côte (K)
+Küste geglättet	Côte lissée
+Küste glätten (J)	Lisser la côte (J)
+Küste glätten (ohne Zacken)	Lisser la côte (sans dents)
+Küste glätten fehlgeschlagen	Le lissage de la côte a échoué
+Küste glätten – ohne Zacken (J)	Lisser la côte – sans dents (J)
+Küste glätten: nichts zu ändern (keine Küste im Bereich oder schon glatt).	Lisser la côte : rien à changer (pas de côte dans la zone ou déjà lisse).
+Küste glätten: runder Pinsel – Ziehen über die Küste macht die Ufer-Höhen weich (keine Sand-Zacken), begradigt Spitzen und 1-Tile-Buchten, Statics gehen mit (Reiter Küste / Wasser) · Pinsel oben · Bereich + J = ganzer Bereich · ein Zug = ein Rückgängig-Schritt	Lisser la côte : pinceau rond – passer sur la côte adoucit les hauteurs du rivage (pas de dents de sable), redresse pointes et encoches d'une tuile, les statics suivent (onglet Côte / eau) · pinceau en haut · zone + J = toute la zone · un trait = une étape d'annulation
+Küste wie das Original	Côte comme l'original
+Küste: Zacke / Spitze / Bucht	Côte : dent / pointe / encoche
+Küste: glätte die ganze Karte …	Côte : lissage de toute la carte …
+Küste: nichts zu ändern	Côte : rien à changer
+Küste: suche Fehlerstellen …	Côte : recherche des endroits erronés …
+Küsten-Fehler rot markieren und unter Prüfen → Probleme auflisten	Marquer les erreurs de côte en rouge et les lister sous Vérifier → Problèmes
+Küsten-Fehler zeigen	Afficher les erreurs de côte
+Küsten-Fehlerstellen (rot, Liste unter Prüfen → Probleme, Doppelklick = hinspringen).	endroits erronés de côte (rouge, liste sous Vérifier → Problèmes, double clic = y aller).
+Land anheben (Schritt im Reiter Land)	Élever le terrain (pas dans l'onglet Terrain)
+Land-Tile + Höhe übernehmen	Prendre la tuile de terrain + hauteur
+Land-Tile malen (Reiter Land) · Rechtsklick = ID + Höhe aufnehmen	Peindre une tuile de terrain (onglet Terrain) · clic droit = prendre id + hauteur
+Links = Farbe 1, rechts = Farbe 2 · [ ] = Größe · rund / eckig und 'Höhe behalten' oben	Gauche = couleur 1, droite = couleur 2 · [ ] = taille · rond / carré et « Garder la hauteur » en haut
+MUL / UOP laden …	Charger MUL / UOP …
+Malt Farbe 2	Peint la couleur 2
+Malt Farbe 2 · [ ] = Größe	Peint la couleur 2 · [ ] = taille
+Markierten Bereich glätten (J)	Lisser la zone marquée (J)
+Markierung entfernen (Esc)	Enlever la marque (Échap)
+Mit Land-Tile füllen (F)	Remplir avec la tuile de terrain (F)
+Multi aus dem Reiter Multis als Statics setzen	Placer un multi de l'onglet Multis comme statics
+Muster-Pinsel	Pinceau à motif
+Nur Fehlerstellen	Seulement les erreurs
+Nur Fehlerstellen glätten	Lisser seulement les erreurs
+Nächste Farbe der Gruppe höher (rechte Maus: tiefer)	Couleur suivante du groupe plus haute (bouton droit : plus basse)
+Nächste Farbe der Gruppe tiefer (rechte Maus: höher)	Couleur suivante du groupe plus basse (bouton droit : plus haute)
+Pinsel 'Küste glätten'	Pinceau « Lisser la côte »
+Pinsel 'Küste glätten' wählen	Choisir le pinceau « Lisser la côte »
+Pinsel, Radierer, Sprühen, Linie, Formen und Füllen behalten die Höhe des Bodens: die Farbe der Gruppe auf dieser Höhe – fehlt sie (z. B. Holzboden nur Z 0), merkt sich die Höhen-Ebene die Höhe	Pinceau, gomme, aérographe, ligne, formes et remplissage gardent la hauteur du sol : la couleur du groupe à cette hauteur – s'il n'y en a pas (p. ex. plancher seulement en Z 0), la couche de hauteur retient la hauteur
+Probleme markieren	Marquer les problèmes
+Raster, Höhen, Beschriftung, 2D, Wasser, Probleme, Static-IDs, Zoom	Grille, hauteurs, étiquettes, 2D, eau, problèmes, ids des statics, zoom
+Rechte Maus = umgekehrt	Bouton droit = dans l'autre sens
+Rechteck gefüllt	Rectangle plein
+Rechteck markieren: F K J W G M T L P S · Rechtsklick = alle Befehle	Marquer un rectangle : F K J W G M T L P S · clic droit = toutes les commandes
+Rechtsklick = Hilfe	Clic droit = aide
+Regeln lernen	Apprendre les règles
+Runder Pinsel: Küste wie das Original (Meeresgrund -15, Wasser-Statics, Strand)	Pinceau rond : côte comme l'original (fond marin -15, statics d'eau, plage)
+Runder Pinsel: Ufer ohne Sand-Zacken, Spitzen / Buchten weg, Statics gehen mit · Bereich + J · ganze Karte / nur Fehler oben	Pinceau rond : rivage sans dents de sable, pointes / encoches supprimées, les statics suivent · zone + J · toute la carte / seulement les erreurs en haut
+Rückgängig (Strg+Z)	Annuler (Ctrl+Z)
+Senken (Bild↓)	Abaisser (Page↓)
+Static auswählen	Sélectionner le static
+Static löschen	Supprimer le static
+Statics darin auswählen (S)	Sélectionner les statics à l'intérieur (S)
+Statics darin löschen (Entf)	Supprimer les statics à l'intérieur (Suppr)
+Statics zeigen	Afficher les statics
+Stempel mit Land-Tiles / Statics als Pinsel – Klick öffnet die Stempel-Auswahl	Tampon avec tuiles de terrain / statics comme pinceau – un clic ouvre le choix du tampon
+Ufer ohne Zacken, Statics gehen mit	Rivage sans dents, les statics suivent
+Ufer-Höhen folgen dem echten Abstand zur Küste: keine Sand-Zacken, die Tiefe bleibt und verschiebt sich mit der Küste. Pinsel 'Küste glätten' (rund), Bereich + J, oder:	Les hauteurs du rivage suivent la vraie distance à la côte : pas de dents de sable, la profondeur reste et suit la côte. Pinceau « Lisser la côte » (rond), zone + J, ou :
+Wasser (W)	Eau (W)
+Wasser-Statics entfernen (Umschalt+W)	Retirer les statics d'eau (Maj+W)
+Wasser-Statics malen · Strg = entfernen	Peindre des statics d'eau · Ctrl = retirer
+Wasser-Statics setzen (W)	Poser des statics d'eau (W)
+Werkzeug	Outil
+Werkzeug-Palette abdocken / andocken	Détacher / ancrer la palette d'outils
+Werkzeuge	Outils
+Werkzeuge in einem eigenen Fenster (abdocken)	Outils dans une fenêtre à part (détacher)
+Wieder links andocken	Ancrer de nouveau à gauche
+Wiederholen (Strg+Y)	Rétablir (Ctrl+Y)
+Zacken, Spitzen und 1-Tile-Buchten suchen und nur dort glätten	Chercher dents, pointes et encoches d'une tuile et ne lisser que là
+Zellen – türkis = Höhe gilt, grau = Farbe wurde übermalt (zählt nicht). Ab Zoom 12 mit Höhe.	cellules – cyan = la hauteur compte, gris = la couleur a été repeinte (ne compte pas). À partir du zoom 12 avec la hauteur.
+Ziehen = Muster malen · Stempel-Menü = Optionen	Glisser = peindre le motif · menu des tampons = options
+Zoom 1:1	Zoom 1:1
+Zoom, Raster, Höhen, Höhen-Ebene	Zoom, grille, hauteurs, couche de hauteur
+alter Eintrag	ancienne entrée
+auf der ganzen Karte	sur toute la carte
+im markierten Bereich	dans la zone marquée
+nimmt es zurück	l'annule
+Übergänge (T)	Transitions (T)
+Übergänge neu berechnen	Recalculer les transitions
+Übergänge neu berechnen (T)	Recalculer les transitions (T)
+→ Farb-Stempel (P)	→ tampon de couleur (P)
+→ Stempel	→ tampon
+→ Stempel (P)	→ tampon (P)
+→ in die Farbkarte (gleiche Stelle)	→ dans la carte de couleurs (même endroit)
+⛰ Höhe behalten	⛰ Garder la hauteur
+👁 Ansicht	👁 Affichage
+Ganzer Strich rückgängig.	Tout le trait annulé.
+Rahmen, Dicke = Pinselgröße	Contour, épaisseur = taille du pinceau
+Ziehen = Linie, Dicke = Pinselgröße	Glisser = ligne, épaisseur = taille du pinceau
+Links = Farbe 1, rechts = Farbe 2 aufnehmen · Rechtsklick-Menü	Prendre gauche = couleur 1, droite = couleur 2 · clic droit menu
+Links = Farbe 1 · Rechts = Farbe 2 · [ ] = Größe	Gauche = couleur 1 · droite = couleur 2 · [ ] = taille
+Ziehen · Dicke = Pinselgröße	Glisser · épaisseur = taille du pinceau
+Ziehen · links = Farbe 1, rechts = Farbe 2	Glisser · gauche = couleur 1, droite = couleur 2
+Links = Farbe 1 · Rechts = Farbe 2 · Umschalt+Rechts = Menü	Gauche = couleur 1 · droite = couleur 2 · Maj+droit = menu
+Rechtsklick = Menü · V = CGI-Vorschau	Clic droit = menu · V = aperçu CGI
+Ziehen = verschieben	Glisser = déplacer
+Klick = wählen · Strg = dazu · Pfeile / Bild↑↓ verschieben · Entf · Rechtsklick = Menü	Clic = choisir · Ctrl = ajouter · flèches / Page↑↓ déplacent · Suppr · clic droit = menu
+Auswahl → CGI-Vorschau (V)	Sélection → aperçu CGI (V)
+Abfall-Breite (Tiles)	Largeur de pente (tuiles)
+Weichheit (Durchgänge)	Douceur (passes)
+Küstenlinie begradigen (Durchgänge)	Redresser la ligne de côte (passes)
+Statics mitnehmen	Déplacer les statics avec
+Fehler suchen	Chercher les erreurs
+Fehler: Höhensprung ab	Erreur : chute de hauteur à partir de
+Fehler: Umkreis (Tiles)	Erreur : rayon (tuiles)
+Auf so vielen Tiles fällt der Meeresgrund von der Wasserlinie bis zur vollen Tiefe ('Meeresgrund z'). Größer = flacher, weicher. Standard 3.	Sur autant de tuiles, le fond marin descend de la ligne d'eau à sa pleine profondeur (« fond marin z »). Plus grand = plus plat, plus doux. Par défaut 3.
+So oft wird der Abstand zur Küste geglättet: 0 = genau den Zellen folgen, 1 = keine Zacken an schrägen Küsten (Standard), 2 = noch runder.	Combien de fois la distance à la côte est lissée : 0 = suivre exactement les cellules, 1 = pas de dents sur les côtes en diagonale (défaut), 2 = encore plus rond.
+Entfernt einzelne Land-Spitzen und 1-Tile-Buchten (Ecken und Kanten). 0 = Land / Wasser bleibt genau wie es ist, nur die Höhen werden weich.	Supprime les pointes de terre isolées et les encoches d'une tuile (coins et arêtes). 0 = terre / eau restent exactement, seules les hauteurs deviennent douces.
+Statics auf geändertem Land gehen mit dem Boden mit; Wasser-Statics bleiben auf der Wasserhöhe, neues Wasser bekommt Wasser-Statics, neues Land verliert sie.	Les statics sur le terrain modifié suivent le sol ; les statics d'eau restent à la hauteur de l'eau, la nouvelle eau reçoit des statics d'eau, la nouvelle terre les perd.
+Ein Strand-Tile, das zu einem Nachbarn im Wasser mindestens so tief abfällt, gilt als Zacke (klassisch: -3 → -15 = 12). Standard 7.	Une tuile de plage qui descend au moins d'autant vers un voisin dans l'eau compte comme dent (classique : -3 → -15 = 12). Par défaut 7.
+'Nur Fehlerstellen': so weit um jede gefundene Stelle wird geglättet. Standard 3.	« Seulement les erreurs » : on lisse aussi loin autour de chaque endroit trouvé. Par défaut 3.
+Küste weich (ohne Zacken)	Côte douce (sans dents)
+Die Höhen am Ufer folgen dem echten Abstand zur Küstenlinie statt den Zell-Stufen: schräge und unruhige Küsten bekommen keine Sand-Zacken mehr, der Meeresgrund fällt über 'Abfall-Breite' Tiles auf seine Tiefe. Wie 'Küste glätten' in der CGI-Ansicht.	Les hauteurs du rivage suivent la vraie distance à la ligne de côte au lieu des marches des cellules : les côtes diagonales et irrégulières n'ont plus de dents de sable, le fond marin descend sur « largeur de pente » tuiles jusqu'à sa profondeur. Comme « Lisser la côte » dans la vue CGI.
+Küste weich: Abfall-Breite	Côte douce : largeur de pente
+Tiles von der Wasserlinie bis zur vollen Tiefe des Meeresgrunds (Standard 3).	Tuiles de la ligne d'eau à la pleine profondeur du fond marin (défaut 3).
+Küste weich: Weichheit	Côte douce : douceur
+Glättungs-Durchgänge des Abstands (0–4, Standard 1).	Passes de lissage de la distance (0–4, défaut 1).
+ (der Stempel hat keine gebauten Land-Tiles – nur Statics)	 (le tampon n'a pas de tuiles de terrain construites – seulement des statics)
+0 = Pinselgröße oben.	0 = taille du pinceau en haut.
+Abflachen = alles auf die Höhe unter dem ersten Klick (oder 'Höhe ='). Terrassen = Höhen auf Stufen runden.	Aplanir = tout à la hauteur sous le premier clic (ou « Hauteur = »). Terrasses = arrondir les hauteurs en marches.
+Abflachen auf die Höhe 'Höhe =' aus dem Reiter Land statt auf die Höhe unter dem ersten Klick.	Aplanir à la hauteur « Hauteur = » de l'onglet Terrain au lieu de la hauteur sous le premier clic.
+Abflachen auf eine Höhe	Aplanir à une hauteur
+Abgebrochen.	Annulé.
+Alle Schritte der CGI-Karte; ein Klick auf einen Schritt geht dorthin zurück (oder wieder vor).	Toutes les étapes de la carte CGI ; un clic sur une étape y revient (en arrière ou en avant).
+Alle Teile auf die Bodenhöhe des Startpunkts (gerade Mauerkrone) statt der Höhe jedes Feldes.	Toutes les pièces à la hauteur du sol au départ (haut du mur droit) au lieu de la hauteur de chaque cellule.
+Alle zeigen	Tout afficher
+Als Streu-Set speichern (ein Objekt) …	Enregistrer comme jeu de dispersion (un objet) …
+Als Streu-Set speichern (einzeln) …	Enregistrer comme jeu de dispersion (séparés) …
+Alte Statics ersetzen	Remplacer les anciens statics
+Am Anfang und Ende jeder Strecke den Pfosten setzen (wenn das Set einen hat).	Poser le poteau au début et à la fin de chaque segment (si le jeu en a un).
+An = der Wasserspiegel liegt überall 'Tiefe' unter dem Boden (Gebirgsbach). Aus = ein Spiegel für den ganzen Strich (ruhiger Fluss, See).	Oui = le niveau de l'eau est partout « profondeur » sous le sol (torrent de montagne). Non = un seul niveau pour tout le trait (rivière calme, lac).
+An = der Weg folgt dem Boden, geglättet. Aus = gleichmäßige Steigung vom ersten zum letzten Punkt.	Oui = la route suit le sol, lissée. Non = pente régulière du premier au dernier point.
+An = nur die Höhen ändern. Aus = die Land-Tiles aus dem Reiter Land setzen.	Oui = ne changer que les hauteurs. Non = poser les tuiles de terrain de l'onglet Terrain.
+Ansicht-Filter	Filtre d'affichage
+Art	Type
+Auf Boden (D)	Au sol (D)
+Auf den Boden setzen (D)	Poser sur le sol (D)
+Aufheben (Esc)	Retirer (Échap)
+Ausgeblendete Statics werden nicht gezeichnet und lassen sich nicht anklicken – gut zum Arbeiten unter Bäumen oder in Häusern. 'Max Z' oben blendet Höhen aus.	Les statics masqués ne sont pas dessinés et ne peuvent pas être cliqués – pratique pour travailler sous les arbres ou dans les maisons. « Max Z » en haut masque les hauteurs.
+Auswahl auf den Boden gesetzt	Sélection posée sur le sol
+Auswahl gedreht (90°) – die Bilder der Statics drehen nicht mit	Sélection tournée (90°) – les images des statics ne tournent pas
+Auswahl gespiegelt	Sélection en miroir
+Auswahl leer.	Sélection vide.
+Bankett (Tiles)	Accotement (tuiles)
+Bearbeiten	Édition
+Bereich drehen 90° (R)	Tourner la zone de 90° (R)
+Bereich gedreht (90°)	Zone tournée (90°)
+Bereich gespiegelt (links ↔ rechts)	Zone en miroir (gauche ↔ droite)
+Bereich gespiegelt (oben ↔ unten)	Zone en miroir (haut ↔ bas)
+Bereich spiegeln links ↔ rechts (X)	Miroir de la zone gauche ↔ droite (X)
+Bereich spiegeln oben ↕ unten (Y)	Miroir de la zone haut ↕ bas (Y)
+Boden unter der Maus übernehmen	Prendre le sol sous la souris
+Breite (Tiles)	Largeur (tuiles)
+Bäume / Pflanzen	Arbres / plantes
+Böden	Sols
+Chance pro Feld und Pinsel-Tupfer, dass etwas gesetzt wird (1–100). Wald dicht: 15, lichter Wald: 5, Steppe: 2.	Chance par cellule et touche qu'un objet soit posé (1–100). Forêt dense : 15, forêt claire : 5, steppe : 2.
+Dichte (%)	Densité (%)
+Die Sets aus den Dragon-Skripten lassen sich hier nicht löschen (Reiter Regeln → Items).	Les jeux des scripts Dragon ne peuvent pas être supprimés ici (onglet Règles → Objets).
+Drehen (R)	Tourner (R)
+Drehen 90° (R)	Tourner de 90° (R)
+Dächer	Toits
+Eigenes Set löschen	Supprimer son propre jeu
+Ein Set = die Wandstücke für beide Richtungen und ein Pfosten: im Reiter Items das Stück wählen und '← …' klicken (mehrere IDs = zufällig gemischt).	Un jeu = les pièces de mur pour les deux directions et un poteau : choisir la pièce dans l'onglet Objets et cliquer « ← … » (plusieurs ids = mélangés au hasard).
+Ersetzen	Remplacer
+Ersetzen durch:	Remplacer par :
+Ersetzen … (E)	Remplacer … (E)
+Ersetzt	Remplacé
+Erst Statics auswählen (Werkzeug Auswahl, Rahmen ziehen).	D'abord sélectionner des statics (outil Sélection, tracer un cadre).
+Felder – alle Werkzeuge und Bereich-Befehle wirken nur noch darin (Umschalt = dazu, Strg = weg, Esc = aufheben).	cellules – tous les outils et commandes de zone n'agissent plus qu'à l'intérieur (Maj = ajouter, Ctrl = retirer, Échap = effacer).
+Felder, auf denen schon ein Static steht, auslassen.	Ignorer les cellules qui ont déjà un static.
+Feste Höhe ('Höhe =')	Hauteur fixe (« Hauteur = »)
+Fluss	Rivière
+Fluss-Pinsel wählen	Choisir le pinceau rivière
+Fluss: Ziehen gräbt ein Bett – Wasser-Tiles auf 'Tiefe' unter dem Startpunkt, weiches Ufer, danach Übergänge (Reiter Pinsel → Fluss) · Pinsel oben = Breite	Rivière : glisser creuse un lit – tuiles d'eau à « profondeur » sous le départ, berges douces, transitions ensuite (onglet Pinceaux → Rivière) · pinceau en haut = largeur
+Färben (H)	Teinte (H)
+Gelände	Terrain
+Gleiche Höhe	Même hauteur
+Gleiche Tile-Familie (Farbe der Farbtabelle)	Même famille de tuiles (couleur de la table des couleurs)
+Gleiches Land-Tile	Même tuile de terrain
+Glättung (Tiles)	Lissage (tuiles)
+Größe der Wellen (Tiles)	Taille des vagues (tuiles)
+Hinspringen	Y aller
+Hue-Pinsel	Pinceau de teinte
+Hue-Pinsel: Ziehen färbt alle Statics im Pinsel mit der Hue (Reiter Items) · Strg = Hue 0 (Original)	Pinceau de teinte : glisser colore tous les statics dans le pinceau avec la teinte (onglet Objets) · Ctrl = teinte 0 (originale)
+Härte (%)	Dureté (%)
+Härte (%) für Höhe +/−, Glätten, Plateau, Unebenheit:	Dureté (%) pour hauteur +/−, lisser, plateau, irrégularité :
+Härte 100 = harter Rand wie bisher, kleiner = zur Mitte stärker, am Rand weich.	Dureté 100 = bord dur comme avant, plus petit = plus fort au centre, doux au bord.
+Höchste Steigung	Pente maximale
+Höchstens Felder	Au plus de cellules
+Höhe +/−, Glätten, Plateau, Unebenheit: 100 = harter Rand, kleiner = weicher Rand (zur Mitte stärker).	Hauteur +/−, lisser, plateau, irrégularité : 100 = bord dur, plus petit = bord doux (plus fort au centre).
+Höhe folgt dem Gelände	La hauteur suit le terrain
+Höhe je Stockwerk	Hauteur par étage
+Höhen-Toleranz	Tolérance de hauteur
+Im Karten-Editor zeigen	Afficher dans l'éditeur de carte
+Im markierten Bereich / Lasso	Dans la zone marquée / lasso
+Kein anderes Static desselben Sets näher als so viele Tiles (0 = egal).	Aucun autre static du même jeu plus près que ce nombre de tuiles (0 = peu importe).
+Klick auf einen Schritt = bis dorthin zurück (grau = wiederholen). Oben der neueste.	Clic sur une étape = y revenir (gris = rétablir). Le plus récent en haut.
+Land-Tiles des Wassers (Standard: Wasser 00a8–00ab).	Tuiles de terrain de l'eau (par défaut : eau 00a8–00ab).
+Lasso	Lasso
+Lasso / Zauberstab aufgehoben.	Lasso / baguette magique effacés.
+Lasso / Zauberstab aufheben	Effacer lasso / baguette magique
+Lasso / Zauberstab aufheben (Esc)	Effacer lasso / baguette magique (Échap)
+Lasso: Punkte um eine Fläche klicken · Doppelklick / Rechtsklick / Enter = schließen · Umschalt = dazu, Strg = weg · danach wirken alle Werkzeuge nur darin, Bereich-Tasten F K J W G R X Y E D · Esc = aufheben	Lasso : cliquer des points autour d'une surface · double clic / clic droit / Entrée = fermer · Maj = ajouter, Ctrl = retirer · ensuite tous les outils n'agissent qu'à l'intérieur, touches de zone F K J W G R X Y E D · Échap = effacer
+Lasso: mindestens 3 Punkte.	Lasso : au moins 3 points.
+Leer = auf jedem Boden. Sonst nur auf diesen Land-Tiles, z. B. Gras '0003 0004 0005 0006'. Knopf 'Boden unter der Maus übernehmen' im Reiter Pinsel.	Vide = sur tout sol. Sinon seulement sur ces tuiles de terrain, p. ex. herbe « 0003 0004 0005 0006 ». Bouton « Prendre le sol sous la souris » dans l'onglet Pinceaux.
+Leer = die Hue aus dem Set. Sonst wird eine davon zufällig gewählt (z. B. Herbstfarben).	Vide = la teinte du jeu. Sinon l'une d'elles au hasard (p. ex. couleurs d'automne).
+Leer = die Land-Tiles aus dem Reiter Land (oder die Vorlage dort, z. B. Pflaster).	Vide = les tuiles de terrain de l'onglet Terrain (ou le modèle là-bas, p. ex. pavés).
+Lesezeichen	Signets
+Lesezeichen gesetzt	Signet posé
+Löschen (Entf)	Supprimer (Suppr)
+Mauer	Mur
+Mein Objekt	Mon objet
+Meine Pflanzen	Mes plantes
+Messen	Mesurer
+Messen: ziehen zeigt Abstand, Schritte, Höhenunterschied und Steigung · Esc = weg	Mesurer : glisser affiche distance, pas, différence de hauteur et pente · Échap = retirer
+Mindestabstand (Tiles)	Distance minimale (tuiles)
+Nach dem Strich die Dragon-Übergänge (Wasser → Sand / Gras) um den Fluss berechnen.	Après le trait, calculer les transitions Dragon (eau → sable / herbe) autour de la rivière.
+Nachbarn höchstens so viel Z anders (alle Arten).	Les voisins diffèrent au plus de tant de Z (tous types).
+Name des Lesezeichens:	Nom du signet :
+Name des Streu-Sets:	Nom du jeu de dispersion :
+Name des Wand-Sets (z. B. Steinmauer, Holzzaun):	Nom du jeu de mur (p. ex. mur de pierre, clôture en bois) :
+Neue Hue (dez.):	Nouvelle teinte (déc.) :
+Neues Set …	Nouveau jeu …
+Neues Wand-Set	Nouveau jeu de mur
+Nicht auf Hänge setzen, die zum Nachbarn mehr als so viel Z abfallen (0 = egal).	Ne pas poser sur des pentes qui descendent de plus de tant de Z vers un voisin (0 = peu importe).
+Nicht auf Statics	Pas sur des statics
+Nicht auf Wasser	Pas sur l'eau
+Nichts zu suchen angegeben.	Rien à chercher.
+Nur auf Land-Tiles	Seulement sur des tuiles de terrain
+Nur auf Land-Tiles (hex)	Seulement sur des tuiles de terrain (hex)
+Nur mit Hue (dez.):	Seulement avec la teinte (déc.) :
+Objekte	objets
+Pfosten / Ecke (hex), leer = keiner.	Poteau / coin (hex), vide = aucun.
+Pfosten an Enden	Poteaux aux extrémités
+Plateau	Plateau
+Plateau / Terrassen	Plateau / terrasses
+Plateau-Pinsel wählen	Choisir le pinceau plateau
+Plateau: Ziehen flacht auf die Höhe unter dem ersten Klick ab (oder 'Höhe ='), Art Terrassen = Stufen · Härte für weiche Ränder (Reiter Pinsel)	Plateau : glisser aplanit à la hauteur sous le premier clic (ou « Hauteur = »), type terrasses = marches · dureté pour des bords doux (onglet Pinceaux)
+Punkte	points
+Punkte klicken · Doppelklick / Rechtsklick / Enter = bauen · Rücktaste = Punkt weg · Esc = abbrechen. Leere Weg-Tiles = Land-Tiles aus dem Reiter Land.	Cliquer des points · double clic / clic droit / Entrée = construire · Retour arrière = retirer un point · Échap = annuler. Tuiles de route vides = tuiles de l'onglet Terrain.
+Punkte – weiter klicken · Doppelklick, Rechtsklick oder Enter = fertig · Rücktaste = letzten Punkt weg · Esc = abbrechen	points – continuer à cliquer · double clic, clic droit ou Entrée = terminer · Retour arrière = retirer le dernier point · Échap = annuler
+Rampe	Rampe
+Rampe wählen	Choisir la rampe
+Rampe: von unten nach oben ziehen (Strg = bis 'Höhe =').	Rampe : glisser du bas vers le haut (Ctrl = jusqu'à « Hauteur = »).
+Rampe: von unten nach oben ziehen – gleichmäßige Steigung von der Höhe am Start zur Höhe am Ende · Strg = bis 'Höhe =' · Breite = Pinsel oben	Rampe : glisser du bas vers le haut – pente régulière de la hauteur au départ à la hauteur à l'arrivée · Ctrl = jusqu'à « Hauteur = » · largeur = pinceau en haut
+Ränder neben der Rampe weich angleichen.	Adoucir les bords à côté de la rampe.
+Schritte	marches
+Set aus Auswahl	Jeu depuis la sélection
+Set aus Auswahl: ein Objekt	Jeu depuis la sélection : un objet
+Set löschen	Supprimer le jeu
+So viele Lagen übereinander (Mauer 1, Burgmauer 2–3).	Autant de couches superposées (mur 1, rempart 2–3).
+So viele Tiles neben dem Wasser steigt das Ufer weich an.	La berge monte doucement sur autant de tuiles à côté de l'eau.
+So viele Tiles neben dem Weg werden an die Weghöhe angeglichen (weicher Rand).	Autant de tuiles à côté de la route sont ajustées à sa hauteur (bord doux).
+Solange Lasso oder Zauberstab aktiv sind, wirken ALLE Werkzeuge nur darin. Bereich-Tasten: F K J W G M T · R drehen · X / Y spiegeln · E ersetzen · D auf den Boden.	Tant que le lasso ou la baguette magique sont actifs, TOUS les outils n'agissent qu'à l'intérieur. Touches de zone : F K J W G M T · R tourner · X / Y miroir · E remplacer · D au sol.
+Sonstige	Autre
+Spiegel folgt dem Gelände	Le niveau suit le terrain
+Spiegeln (X)	Miroir (X)
+Spiegeln links ↔ rechts (X)	Miroir gauche ↔ droite (X)
+Spiegeln oben ↕ unten	Miroir haut ↕ bas
+Static(s) mit dem Rahmen ausgewählt – ziehen verschiebt, Pfeile / Bild↑↓ auch.	static(s) sélectionné(s) avec le cadre – glisser les déplace, les flèches / Page↑↓ aussi.
+Statics auf der Strecke vorher entfernen (sonst wird nur dazugesetzt).	Retirer d'abord les statics sur le parcours (sinon seulement ajouter).
+Statics für eine Wand, die von Norden nach Süden läuft (hex, mehrere = zufällig).	Statics pour un mur allant du nord au sud (hex, plusieurs = au hasard).
+Statics für eine Wand, die von Westen nach Osten läuft (hex, mehrere = zufällig).	Statics pour un mur allant d'ouest en est (hex, plusieurs = au hasard).
+Statics im Bereich auf den Boden (D)	Statics de la zone au sol (D)
+Statics im Bereich auf den Boden gesetzt	Statics de la zone posés sur le sol
+Stockwerke	Étages
+Streu-Pinsel	Pinceau de dispersion
+Streu-Pinsel wählen	Choisir le pinceau de dispersion
+Streu-Pinsel: Ziehen verteilt das Set (Reiter Pinsel) – Dichte, Abstand, Boden-Filter · Strg+Ziehen entfernt Statics des Sets · Pinsel oben · ein Zug = ein Rückgängig-Schritt	Pinceau de dispersion : glisser répand le jeu (onglet Pinceaux) – densité, distance, filtre de sol · Ctrl+glisser retire les statics du jeu · pinceau en haut · un trait = une étape d'annulation
+Streu-Pinsel: erst ein Set wählen (Reiter Pinsel).	Pinceau de dispersion : choisir d'abord un jeu (onglet Pinceaux).
+Streu-Pinsel (Bäume, Büsche, Steine …)	Pinceau de dispersion (arbres, buissons, rochers …)
+Streu-Set	Jeu de dispersion
+Streu-Set gespeichert	Jeu de dispersion enregistré
+Streuen	Disperser
+Stufen-Höhe	Hauteur de marche
+Stärke (± Z)	Force (± Z)
+Suchen & Ersetzen	Chercher et remplacer
+Suchen & Ersetzen … (E)	Chercher et remplacer … (E)
+Suchen (IDs hex):	Chercher (ids hex) :
+Suchen (Tiles hex):	Chercher (tuiles hex) :
+Terrassen (Stufen)	Terrasses (marches)
+Terrassen: Höhe jeder Stufe.	Terrasses : hauteur de chaque marche.
+Tiefe	Profondeur
+Tiles behalten	Garder les tuiles
+Ufer-Breite	Largeur de berge
+Ufer-Steigung	Pente de berge
+Unebenheit-Pinsel wählen	Choisir le pinceau d'irrégularité
+Unebenheit: Ziehen macht das Gelände leicht wellig (± Stärke, Größe der Wellen) – jedes Feld einmal pro Zug	Irrégularité : glisser rend le sol légèrement ondulé (± force, taille des vagues) – chaque cellule une fois par trait
+Varianten	Variantes
+Varianten-Pinsel	Pinceau de variantes
+Varianten: Ziehen mischt die Tiles derselben Farbe der Farbtabelle neu – gegen Kachel-Muster	Variantes : glisser remélange les tuiles de même couleur de la table des couleurs – contre les motifs répétés
+Varianten, Übergänge, Härte	Variantes, transitions, dureté
+Verlauf	Historique
+Verlauf – CGI-Ansicht	Historique – vue CGI
+Verlauf …	Historique …
+Verlauf-Fenster öffnen	Ouvrir la fenêtre d'historique
+Verlauf-Fenster: alle Schritte, Klick geht dorthin zurück	Fenêtre d'historique : toutes les étapes, un clic y revient
+Wand	Mur
+Wand / Zaun	Mur / clôture
+Wand / Zaun: von einem Ende zum anderen ziehen – West-Ost oder Nord-Süd, Pfosten an den Enden, Stockwerke (Reiter Pinsel → Wand)	Mur / clôture : glisser d'une extrémité à l'autre – ouest-est ou nord-sud, poteaux aux extrémités, étages (onglet Pinceaux → Mur)
+Wand-Set	Jeu de mur
+Wand-Set angelegt – jetzt im Item-Katalog das Wandstück wählen und '← West-Ost', '← Nord-Süd', '← Pfosten' klicken.	Jeu de mur créé – choisir maintenant la pièce de mur dans le catalogue et cliquer « ← Ouest-Est », « ← Nord-Sud », « ← Poteau ».
+Wand-Werkzeug wählen	Choisir l'outil mur
+Wand: erst ein Wand-Set mit IDs anlegen (Reiter Pinsel → Wand).	Mur : créer d'abord un jeu de mur avec des ids (onglet Pinceaux → Mur).
+Wasser-Tiles (hex)	Tuiles d'eau (hex)
+Wasser-Tiles und Felder mit Wasser-Statics auslassen.	Ignorer les tuiles d'eau et les cellules avec des statics d'eau.
+Wasserspiegel so viel unter dem Boden am Startpunkt des Strichs.	Niveau de l'eau autant sous le sol au début du trait.
+Weg	Route
+Weg / Straße	Route
+Weg / Straße (Kurve)	Route (courbe)
+Weg gebaut	Route construite
+Weg-Tiles (hex)	Tuiles de route (hex)
+Weg-Werkzeug wählen	Choisir l'outil route
+Weg: Punkte klicken, daraus wird eine weiche Kurve mit Breite und geglätteter Höhe · Doppelklick / Rechtsklick / Enter = bauen · Rücktaste = Punkt weg · Esc = abbrechen	Route : cliquer des points, ils deviennent une courbe douce avec largeur et hauteur lissée · double clic / clic droit / Entrée = construire · Retour arrière = retirer un point · Échap = annuler
+Weg: mindestens 2 Punkte.	Route : au moins 2 points.
+Wie lang die Strecke ist, über die die Höhe gemittelt wird (keine Buckel).	Longueur du tronçon sur lequel la hauteur est moyennée (pas de bosses).
+Wände / Türen / Fenster	Murs / portes / fenêtres
+Z +	Z +
+Z pro Tile am Ufer.	Z par tuile sur la berge.
+Z-Abstand der Lagen (UO-Wände: 20).	Distance Z des couches (murs UO : 20).
+Zauberstab	Baguette magique
+Zauberstab (hier klicken)	Baguette magique (cliquer ici)
+Zauberstab: Klick wählt zusammenhängendes gleiches Land (Tile / Familie / Höhe, Reiter Pinsel) · Umschalt = dazu, Strg = weg · danach wirken alle Werkzeuge nur darin · Esc = aufheben	Baguette magique : un clic sélectionne le terrain égal relié (tuile / famille / hauteur, onglet Pinceaux) · Maj = ajouter, Ctrl = retirer · ensuite tous les outils n'agissent qu'à l'intérieur · Échap = effacer
+Ziehen = streuen · Strg+Ziehen = Statics des Sets entfernen · Sets: alle Item-Dateien der Dragon-Skripte (forest, jungle, swamp …) und eigene aus der Auswahl.	Glisser = disperser · Ctrl+glisser = retirer les statics du jeu · jeux : tous les fichiers d'objets des scripts Dragon (forêt, jungle, marais …) et les vôtres depuis la sélection.
+Zufalls-Zahl	Nombre aléatoire
+Zufällige Hues (hex)	Teintes aléatoires (hex)
+Zur Bodenhöhe addieren.	Ajouté à la hauteur du sol.
+Ähnliche Höhe	Hauteur semblable
+Änderung(en) – Strg+Z nimmt es zurück.	modification(s) – Ctrl+Z l'annule.
+Übergänge danach	Transitions ensuite
+Übergänge-Pinsel	Pinceau de transitions
+Übergänge: Ziehen berechnet die Dragon-Übergänge (Gras → Sand …) nur unter dem Pinsel neu	Transitions : glisser calcule les transitions Dragon (herbe → sable …) seulement sous le pinceau
+… jedes Static einzeln	… chaque static séparément
+← Nord-Süd	← Nord-Sud
+← Pfosten	← Poteau
+← West-Ost	← Ouest-Est
+★ Hier merken	★ Retenir ici
+★ Hier merken …	★ Retenir ici …
+jetzt	maintenant
+nichts geändert.	rien n'a changé.
+PINSEL	PINCEAUX
+Lasso, Zauberstab, Messen	Lasso, baguette magique, mesurer
+Ansicht-Filter (Statics)	Filtre d'affichage (statics)
+Ausgewählte Statics um ihre Mitte drehen (Positionen)	Tourner les statics sélectionnés autour de leur centre (positions)
+Ausgewählte Statics spiegeln	Miroir des statics sélectionnés
+Ausgewählte Statics auf die Bodenhöhe setzen	Poser les statics sélectionnés à la hauteur du sol
+Statics im Bereich auf die Bodenhöhe setzen	Poser les statics de la zone à la hauteur du sol
+Statics / Land im Bereich suchen und ersetzen	Chercher et remplacer statics / terrain dans la zone
+Bereich 90° im Uhrzeigersinn drehen (Land + Statics)	Tourner la zone de 90° dans le sens horaire (terrain + statics)
+Bereich links ↔ rechts spiegeln	Miroir de la zone gauche ↔ droite
+Bereich oben ↕ unten spiegeln	Miroir de la zone haut ↕ bas
+Ausgewählte Statics als eigenes Streu-Set (ein Objekt)	Statics sélectionnés comme jeu de dispersion (un objet)
+Wand-Set anlegen, dann Stücke aus dem Item-Katalog zuordnen	Créer un jeu de mur, puis attribuer des pièces du catalogue
+Gewähltes Item (Reiter Items) als Wandstück West-Ost	Objet choisi (onglet Objets) comme pièce de mur ouest-est
+Gewähltes Item als Wandstück Nord-Süd	Objet choisi comme pièce de mur nord-sud
+Gewähltes Item als Pfosten / Ecke	Objet choisi comme poteau / coin
+Bäume, Büsche, Steine aus einem Set streuen (Reiter Pinsel) · Strg = entfernen	Disperser arbres, buissons, rochers d'un jeu (onglet Pinceaux) · Ctrl = retirer
+Alle Statics unter dem Pinsel färben · Strg = Hue 0	Colorer tous les statics sous le pinceau · Ctrl = teinte 0
+Von Ende zu Ende ziehen: Wandstücke + Pfosten (Wand-Set im Reiter Pinsel)	Glisser d'une extrémité à l'autre : pièces de mur + poteaux (jeu de mur dans l'onglet Pinceaux)
+Flussbett mit Wasser-Tiles und weichem Ufer ziehen	Tracer un lit de rivière avec tuiles d'eau et berges douces
+Punkte klicken = weiche Kurve, Doppelklick / Enter = bauen	Cliquer des points = courbe douce, double clic / Entrée = construire
+Von unten nach oben ziehen = gleichmäßige Steigung	Glisser du bas vers le haut = pente régulière
+Abflachen auf eine Höhe oder Stufen	Aplanir à une hauteur ou en marches
+Leichte Wellen ins Gelände	Légères ondulations du sol
+Tiles derselben Farbe neu mischen (gegen Kachel-Muster)	Remélanger les tuiles de même couleur (contre les motifs répétés)
+Dragon-Übergänge nur unter dem Pinsel neu berechnen	Calculer les transitions Dragon seulement sous le pinceau
+Punkte um eine Fläche klicken – danach wirken alle Werkzeuge nur darin · Esc = aufheben	Cliquer des points autour d'une surface – ensuite tous les outils n'agissent qu'à l'intérieur · Échap = effacer
+Klick wählt gleiches zusammenhängendes Land · Umschalt = dazu, Strg = weg	Un clic sélectionne le terrain égal relié · Maj = ajouter, Ctrl = retirer
+Ziehen: Abstand, Höhenunterschied, Steigung	Glisser : distance, différence de hauteur, pente
+0 = jedes Mal ein anderer Lauf.	0 = un tracé différent à chaque fois.
+Alte Statics entfernen	Retirer les anciens statics
+An = 'Boden-Z' benutzen. Aus = tiefste Bodenhöhe im Bereich (Höhle im Berg) bzw. Boden − Tiefe (unter der Karte).	Oui = utiliser « Z du sol ». Non = hauteur de sol la plus basse de la zone (grotte dans la montagne) ou sol − profondeur (sous la carte).
+An = der Lauf wird mit dem gewählten Muster-Stempel gemalt (Land + Statics), aus = mit Farbe 1 und Pinselgröße	Oui = le tracé est peint avec le tampon à motif choisi (terrain + statics), non = avec la couleur 1 et la taille du pinceau
+Art 'Unter der Karte': so tief unter dem Boden liegt der Dungeon-Boden.	Type « Sous la carte » : le sol du donjon est autant sous le sol.
+Art Gebaut / Unter der Karte: Statics des Bodens (mehrere = zufällig).	Type construit / sous la carte : statics du sol (plusieurs = au hasard).
+Art Gebaut / Unter der Karte: Wand-Set aus dem Reiter Pinsel → Wand.	Type construit / sous la carte : jeu de mur de l'onglet Pinceaux → Mur.
+Art Höhle: Land-Tiles der Wände. Leer = Berg-Tiles.	Type grotte : tuiles de terrain des murs. Vide = tuiles de montagne.
+Art Höhle: Land-Tiles des Bodens. Leer = die Höhlen-Tiles aus dem Reiter Höhle / Weg.	Type grotte : tuiles de terrain du sol. Vide = tuiles de grotte de l'onglet Grotte / chemin.
+Art Höhle: so hoch über dem Boden werden die Fels-Wände (mindestens).	Type grotte : les murs de roche montent au moins autant au-dessus du sol.
+Bau-Ebene (Z unter dem Boden):	Niveau de construction (Z sous le sol) :
+Bau-Ebene: Boden	Niveau de construction : sol
+Boden oben (hex)	Sol au-dessus (hex)
+Boden-Land (hex)	Terrain du sol (hex)
+Boden-Statics (hex)	Statics du sol (hex)
+Boden-Z	Z du sol
+Boden-Z fest	Z du sol fixe
+Bodenbretter einer Brücke Nord-Süd (hex).	Planches d'un pont nord – sud (hex).
+Bodenbretter einer Brücke West-Ost (hex, mehrere = zufällig).	Planches d'un pont ouest – est (hex, plusieurs = au hasard).
+Bogen (Z)	Arche (Z)
+Breite wächst	La largeur augmente
+Bretter Nord-Süd	planches nord – sud
+Bretter West-Ost	planches ouest – est
+Brücke	Pont
+Brücke (Statics über Wasser)	Pont (statics au-dessus de l'eau)
+Brücke: erst ein Brücken-Set mit Bodenbrettern anlegen (Reiter Pinsel → Brücke).	Pont : créer d'abord un jeu de pont avec des planches (onglet Pinceaux → Pont).
+Brücke: von Ufer zu Ufer ziehen (West-Ost oder Nord-Süd) – Bretter, Geländer, Pfosten, Bogen; Höhe = höheres Ende + Z + (Reiter Pinsel → Brücke)	Pont : glisser d'une rive à l'autre (ouest – est ou nord – sud) – planches, garde-corps, poteaux, arche ; hauteur = extrémité la plus haute + Z + (onglet Pinceaux → Pont)
+Brücke: von Ufer zu Ufer ziehen (West-Ost oder Nord-Süd).	Pont : glisser d'une rive à l'autre (ouest – est ou nord – sud).
+Brücken-Einstellungen …	Paramètres du pont …
+Brücken-Werkzeug wählen	Choisir l'outil pont
+Bögen je 20 Tiles	Courbes par 20 tuiles
+Dreieck	Triangle
+Dungeon	Donjon
+Dungeon im Karten-Editor (Farben)	Donjon dans l'éditeur de carte (couleurs)
+Dungeon-Einstellungen …	Paramètres du donjon …
+Dungeon-Generator	Générateur de donjon
+Dungeon-Werkzeug (CGI) wählen	Choisir l'outil donjon (CGI)
+Dungeon: Rechteck aufziehen – Räume + Gänge werden erzeugt: Höhle (Land), Gebaut (Statics) oder Unter der Karte · gleiche Zufalls-Zahl = gleicher Dungeon (Reiter Pinsel → Dungeon)	Donjon : tracer un rectangle – salles + couloirs sont générés : grotte (terrain), construit (statics) ou sous la carte · même nombre aléatoire = même donjon (onglet Pinceaux → Donjon)
+Dungeon: für 'Gebaut' / 'Unter der Karte' ein Wand-Set wählen (Reiter Pinsel → Dungeon), sonst gibt es keine Wände.	Donjon : pour « construit » / « sous la carte », choisir un jeu de mur (onglet Pinceaux → Donjon), sinon il n'y a pas de murs.
+Dungeon: kein Raum passt – größer aufziehen oder kleinere Räume einstellen.	Donjon : aucune salle ne rentre – tracer plus grand ou choisir des salles plus petites.
+Dungeon: mindestens 10×10 Felder aufziehen.	Donjon : tracer au moins 10×10 cellules.
+Einstellungen des Laufs (Schlängeln, Bögen, Breite wächst)	Paramètres du tracé (méandres, courbes, la largeur augmente)
+Erst ein Set anlegen ('Neu …').	Créer d'abord un jeu (« Nouveau … »).
+Erst im Stempel-Menü einen Stempel als Muster-Pinsel wählen (Freihand), dann wieder 'Natürlicher Lauf'.	Choisir d'abord un tampon comme pinceau à motif (main levée) dans le menu des tampons, puis de nouveau « Tracé naturel ».
+Felder Boden (Farbe 1), Wände Farbe 2	cellules de sol (couleur 1), murs couleur 2
+Fels ganz füllen	Remplir toute la roche
+Fluss-Lauf	Cours de rivière
+Fluss-Lauf (CGI) wählen	Choisir le cours de rivière (CGI)
+Fluss-Lauf: von der Quelle zur Mündung ziehen – natürlich geschlängelt, breiter zum Ende, mit den Fluss-Einstellungen (Reiter Pinsel)	Cours de rivière : glisser de la source à l'embouchure – serpente naturellement, plus large vers la fin, avec les paramètres de rivière (onglet Pinceaux)
+Gang-Breite	Largeur des couloirs
+Gebaut (Statics: Boden + Wandstücke)	Construit (statics : sol + pièces de mur)
+Gefüllt	Plein
+Geländer	Garde-corps
+Geländer Nord-Süd	garde-corps nord – sud
+Geländer West-Ost	garde-corps ouest – est
+Geländer an den Seiten einer Brücke Nord-Süd (hex), leer = keins.	Garde-corps sur les côtés d'un pont nord – sud (hex), vide = aucun.
+Geländer an den Seiten einer Brücke West-Ost (hex), leer = keins.	Garde-corps sur les côtés d'un pont ouest – est (hex), vide = aucun.
+Gleiche Zahl = gleicher Dungeon. 0 = jedes Mal neu.	Même nombre = même donjon. 0 = nouveau à chaque fois.
+Halbkreis	Demi-cercle
+Halbkreis / Dreieck gefüllt – aus = nur der Rand (Dicke = Pinselgröße)	Demi-cercle / triangle plein – non = seulement le contour (épaisseur = taille du pinceau)
+Höhle (Land: Boden-Tiles, Wände = Fels)	Grotte (terrain : tuiles de sol, murs = roche)
+Höhlig (%)	Rugosité (%)
+In diese Richtung geht man die Treppe hinunter. Die Treppe liegt an der gegenüberliegenden Innenkante.	Dans cette direction on descend l'escalier. L'escalier se trouve au bord intérieur opposé.
+Karten-Editor: der ganze Rest des Rechtecks wird Farbe 2 (sonst nur ein Ring Wand um Räume und Gänge).	Éditeur de carte : tout le reste du rectangle devient couleur 2 (sinon seulement un anneau de mur autour des salles et couloirs).
+Kein Werkzeug, ein Schalter: Statics unter dem Boden werden gezeigt, Static setzen / Wände auf der Bau-Ebene (Boden − 20)	Pas un outil, un interrupteur : les statics sous le sol sont affichés, poser static / murs sur le niveau de construction (sol − 20)
+Keller	Cave
+Keller / unter der Karte bauen	Cave / construire sous la carte
+Keller gebaut – Ansicht → 'Unter der Karte' zeigt ihn von oben, Statics setzen dann auf Boden	Cave construite – Affichage → « Sous la carte » la montre d'en haut, poser des statics utilise alors le sol
+Keller-Einstellungen …	Paramètres de la cave …
+Keller-Werkzeug wählen	Choisir l'outil cave
+Keller: Rechteck aufziehen – Land wird unsichtbar (NoDraw 0002) auf Boden − Tiefe, Kellerboden + Wände am Rand + Treppe hinunter (Richtung), Boden oben (Reiter Pinsel → Keller) · Ansicht 'Unter der Karte' zum Weiterbauen	Cave : tracer un rectangle – le terrain devient invisible (NoDraw 0002) à sol − profondeur, sol de cave + murs au bord + escalier vers le bas (direction), sol au-dessus (onglet Pinceaux → Cave) · vue « Sous la carte » pour continuer à construire
+Keller: mindestens 3×3 Felder aufziehen (Rand = Wände, innen Boden und Treppe).	Cave : tracer au moins 3×3 cellules (bord = murs, intérieur sol et escalier).
+Kellerboden (hex)	Sol de cave (hex)
+Lauf	Tracé
+Lauf im Karten-Editor (Farbe / Stempel)	Tracé dans l'éditeur de carte (couleur / tampon)
+Name des Brücken-Sets:	Nom du jeu de pont :
+Name des Treppen-Sets:	Nom du jeu d'escalier :
+Natürlicher Lauf	Tracé naturel
+Natürlicher Lauf (Fluss / Weg)	Tracé naturel (rivière / route)
+Neigungs-Linie	Ligne en pente
+Neu …	Nouveau …
+Neues Treppen-Set …	Nouveau jeu d'escalier …
+Nord	Nord
+Ost	Est
+Pfosten	poteau
+Pfosten an den Enden des Geländers (hex), leer = keine.	Poteaux aux extrémités du garde-corps (hex), vide = aucun.
+Raum größte Seite	Plus grand côté de salle
+Raum kleinste Seite	Plus petit côté de salle
+Rechteck aufziehen · Farbe 1 = Boden, Farbe 2 = Wand	Tracer un rectangle · couleur 1 = sol, couleur 2 = mur
+Ränder der Räume unregelmäßig wie eine Höhle (0 = gerade Wände).	Bords des salles irréguliers comme une grotte (0 = murs droits).
+Räume	Salles
+Schleifen (%)	Boucles (%)
+Schlängeln (%)	Méandres (%)
+Schlängeln …	Méandres …
+Schmal am Anfang (Quelle), breiter zum Ende (Mündung).	Étroit au début (source), plus large vers la fin (embouchure).
+So tief unter dem Boden liegt der Kellerboden (UO: 20 = ein Stockwerk).	Le sol de la cave est autant sous le sol (UO : 20 = un étage).
+So viel höher liegt die Mitte (0 = flach).	Le milieu est autant plus haut (0 = plat).
+Statics des Bodens darüber auf Bodenhöhe (Hausboden), außer über der Treppe. Leer = keiner (z. B. wenn ein Haus darauf kommt).	Statics du sol au-dessus à la hauteur du sol (plancher de maison), sauf au-dessus de l'escalier. Vide = aucun (p. ex. si une maison vient dessus).
+Statics des Kellerbodens (mehrere = zufällig), leer = keiner.	Statics du sol de la cave (plusieurs = au hasard), vide = aucun.
+Statics im Dungeon-Bereich vorher entfernen.	Retirer d'abord les statics dans la zone du donjon.
+Statics unter dem Boden werden darüber gezeigt · Static setzen / Wand bauen auf dieser Ebene	Les statics sous le sol sont affichés par-dessus · poser static / construire un mur à ce niveau
+Stufe, wenn man nach Norden hinuntergeht (hex).	Marche en descendant vers le nord (hex).
+Stufe, wenn man nach Osten hinuntergeht (hex).	Marche en descendant vers l'est (hex).
+Stufe, wenn man nach Süden hinuntergeht (hex).	Marche en descendant vers le sud (hex).
+Stufe, wenn man nach Westen hinuntergeht (hex).	Marche en descendant vers l'ouest (hex).
+Süd	Sud
+Tiefe (Z)	Profondeur (Z)
+Tiefe unter der Karte	Profondeur sous la carte
+Treppe hinunter nach	Escalier vers le bas direction
+Treppen-Breite	Largeur de l'escalier
+UNTER DER KARTE	SOUS LA CARTE
+Unter der Karte (NoDraw-Land, Statics darunter)	Sous la carte (terrain NoDraw, statics en dessous)
+Unter der Karte bauen (Ansicht + Bau-Ebene)	Construire sous la carte (vue + niveau de construction)
+Unter der Karte bauen (Bau-Ebene)	Construire sous la carte (niveau de construction)
+Unter der Karte bauen (an / aus)	Construire sous la carte (oui / non)
+Unter der Karte bauen: Statics unter dem Boden werden gezeigt, Static setzen und Wände auf Boden	Construire sous la carte : les statics sous le sol sont affichés, poser static et murs sur le sol
+Unter der Karte bauen: Statics unter dem Boden zeigen, Bau-Ebene Boden − 20	Construire sous la carte : afficher les statics sous le sol, niveau de construction sol − 20
+Von Ufer zu Ufer ziehen. Die Stücke im Reiter Items wählen und '← …' klicken. Höhe = höheres Ende + Z +, die Mitte um 'Bogen' höher.	Glisser d'une rive à l'autre. Choisir les pièces dans l'onglet Objets et cliquer « ← … ». Hauteur = extrémité la plus haute + Z +, le milieu plus haut de « arche ».
+Von der Mitte der Grundseite zur Spitze ziehen	Glisser du milieu de la base vers la pointe
+Von der Mitte der Grundseite zur Spitze ziehen · gefüllt / Rand oben	Glisser du milieu de la base vers la pointe · plein / contour en haut
+Von der Mitte der geraden Seite zur Rundung ziehen	Glisser du milieu du côté droit vers le côté arrondi
+Von der Mitte der geraden Seite zur Rundung ziehen · gefüllt / Rand oben	Glisser du milieu du côté droit vers le côté arrondi · plein / contour en haut
+Von der Quelle zur Mündung ziehen · Breite = Pinsel	Glisser de la source à l'embouchure · largeur = pinceau
+Von der Quelle zur Mündung ziehen. CGI: Wasser mit den Fluss-Einstellungen. Karten-Editor: mit Farbe 1 und Pinselgröße – oder mit dem Muster-Stempel (Statics), Schalter oben.	Glisser de la source à l'embouchure. CGI : eau avec les paramètres de rivière. Éditeur de carte : avec la couleur 1 et la taille du pinceau – ou avec le tampon à motif (statics), interrupteur en haut.
+Wand-Höhe (Höhle)	Hauteur des murs (grotte)
+Wand-Land (hex)	Terrain des murs (hex)
+Wand-Set (Reiter Pinsel → Wand) für die Kellerwände am Rand, leer = keine.	Jeu de mur (onglet Pinceaux → Mur) pour les murs de la cave au bord, vide = aucun.
+West	Ouest
+Wie weit der Lauf seitlich ausschwingt (0 = gerade, 25 = Fluss, 10 = Weg).	À quel point le tracé oscille sur le côté (0 = droit, 25 = rivière, 10 = route).
+Wieder über der Karte.	De nouveau au-dessus de la carte.
+Wände	Murs
+Wände (Wand-Set)	Murs (jeu de mur)
+Z je Treppenstufe (UO-Treppen: 5).	Z par marche (escaliers UO : 5).
+Ziehen: Höhe läuft vom Start zum Ende (Farbe 1, sonst Höhen-Ebene)	Glisser : la hauteur va du départ à l'arrivée (couleur 1, sinon couche de hauteur)
+Zusätzliche Verbindungen zwischen nahen Räumen (0 = nur ein Weg zu jedem Raum).	Liaisons supplémentaires entre salles proches (0 = un seul chemin vers chaque salle).
+hinunter nach Norden	descendre vers le nord
+hinunter nach Osten	descendre vers l'est
+hinunter nach Süden	descendre vers le sud
+hinunter nach Westen	descendre vers l'ouest
+mit Muster-Stempel (Statics)	avec tampon à motif (statics)
+Über der höheren Seite der beiden Enden.	Au-dessus de la plus haute des deux extrémités.
+← Brett N-S	← Planche N-S
+← Brett W-O	← Planche O-E
+← Geländer N-S	← Garde-corps N-S
+← Geländer W-O	← Garde-corps O-E
+← ab Nord	← descendre N
+← ab Ost	← descendre E
+← ab Süd	← descendre S
+← ab West	← descendre O
+⬇ Unter der Karte	⬇ Sous la carte
+Linie, deren Höhe von der Höhe am Start zur Höhe am Ende läuft (Farbe 1 in der passenden Höhe, sonst Höhen-Ebene) – Rampen, Straßen am Hang	Ligne dont la hauteur va de la hauteur au départ à la hauteur à l'arrivée (couleur 1 à la hauteur correspondante, sinon couche de hauteur) – rampes, routes en pente
+Von A nach B ziehen: geschlängelter Fluss / Weg mit Pinselgröße – oder mit dem Muster-Stempel (Statics)	Glisser de A à B : rivière / route sinueuse avec la taille du pinceau – ou avec le tampon à motif (statics)
+Rechteck aufziehen: Räume + Gänge, Farbe 1 = Boden, Farbe 2 = Wand	Tracer un rectangle : salles + couloirs, couleur 1 = sol, couleur 2 = mur
+Von Ufer zu Ufer ziehen: Bretter, Geländer, Pfosten, Bogen (Brücken-Set im Reiter Pinsel)	Glisser d'une rive à l'autre : planches, garde-corps, poteaux, arche (jeu de pont dans l'onglet Pinceaux)
+Rechteck: Keller unter der Karte (NoDraw-Land, Boden, Wände, Treppe)	Rectangle : cave sous la carte (terrain NoDraw, sol, murs, escalier)
+Rechteck: Räume + Gänge – Höhle, gebaut oder unter der Karte	Rectangle : salles + couloirs – grotte, construit ou sous la carte
+Von der Quelle zur Mündung ziehen: natürlich geschlängelter Fluss	Glisser de la source à l'embouchure : rivière qui serpente naturellement
+Bergwall	Mur de montagne
+Bergwall (Fels-Labyrinth)	Mur de montagne (labyrinthe de roche)
+Bergwall-Werkzeug wählen	Choisir l'outil mur de montagne
+Bergwall (Land: Boden-Tiles, Wände = Fels) – nur Werkzeug Bergwall	Mur de montagne (terrain : tuiles de sol, murs = roche) – seulement l'outil mur de montagne
+Gebaut (Boden-Textur + Wand-Statics)	Construit (texture de sol + statics de mur)
+Gelernter Stil	Style appris
+Gelernter Stil:	Style appris :
+Leere mit Void füllen	Remplir le vide
+Das ganze Rechteck außerhalb der Gänge wird Void-Land (schwarz) wie in den Original-Dungeons.	Tout le rectangle hors des couloirs devient terrain vide (noir) comme dans les donjons originaux.
+Name eines Dungeon-Stils, der aus einer echten Karte gelernt wurde (Reiter Pinsel → Dungeon → 'Stil aus Bereich lernen'). Leer = Wand-Set + Boden-Statics unten.	Nom d'un style de donjon appris d'une vraie carte (onglet Pinceaux → Donjon → « Apprendre le style de la zone »). Vide = jeu de mur + statics de sol ci-dessous.
+Ränder der Räume unregelmäßig wie eine Höhle (0 = gerade Wände wie in gebauten Dungeons; der Bergwall nimmt mindestens 30).	Bords des salles irréguliers comme une grotte (0 = murs droits comme les donjons construits ; le mur de montagne utilise au moins 30).
+Stil aus markiertem Bereich lernen …	Apprendre le style de la zone marquée …
+Nur analysieren (Log)	Seulement analyser (journal)
+Stil löschen	Supprimer le style
+(kein – Wand-Set benutzen)	(aucun – utiliser le jeu de mur)
+Dungeon analysieren (Log) …	Analyser le donjon (journal) …
+Dungeon-Stil aus dem Bereich lernen …	Apprendre le style de donjon de la zone …
+Dungeon-Stil gelernt	Style de donjon appris
+Wand-Lagen	situations de mur
+Deko	décor
+Log	Journal
+auch in der Zwischenablage	aussi dans le presse-papiers
+Name des Dungeon-Stils (z. B. Deceit, Doom, Schlamm-Höhle):	Nom du style de donjon (p. ex. Deceit, Doom, grotte de boue) :
+Mein Dungeon	Mon donjon
+Erst in der CGI-Ansicht einen Dungeon mit 'Bereich' markieren (mit etwas schwarzem Rand drumherum).	Marquer d'abord un donjon avec « Zone » dans la vue CGI (avec un peu de bord noir autour).
+Rechteck: Labyrinth aus hohen Fels-Wänden (Land) mit Räumen und Gängen	Rectangle : labyrinthe de hauts murs de roche (terrain) avec salles et couloirs
+Rechteck: Räume + Gänge aus Boden-Textur und Wand-Statics – im gelernten Stil eines echten Dungeons oder mit Wand-Set	Rectangle : salles + couloirs en texture de sol et statics de mur – dans le style appris d'un vrai donjon ou avec un jeu de mur
+Dungeon: Art 'Bergwall' gehört zum Werkzeug Bergwall – hier wird 'Gebaut' benutzt.	Donjon : le type « mur de montagne » appartient à l'outil mur de montagne – « construit » est utilisé ici.
+Dungeon: Rechteck aufziehen – Räume + Gänge aus Boden-Textur und Wand-Statics, am besten mit einem gelernten Stil (Bereich einer echten Dungeon-Karte → 'Stil aus Bereich lernen') · gleiche Zufalls-Zahl = gleicher Dungeon	Donjon : tracer un rectangle – salles + couloirs en texture de sol et statics de mur, idéalement avec un style appris (zone d'une vraie carte de donjon → « Apprendre le style de la zone ») · même nombre aléatoire = même donjon
+Bergwall: Rechteck aufziehen – ein Labyrinth aus hohen Fels-Wänden (Land), Räume und Gänge dazwischen	Mur de montagne : tracer un rectangle – un labyrinthe de hauts murs de roche (terrain), salles et couloirs entre eux
+Stil	style
+Void-Land (hex)	Terrain vide (hex)
+Schwarzes Land außerhalb der Gänge (z. B. 0244). Leer = das Land außerhalb bleibt.	Terrain noir hors des couloirs (p. ex. 0244). Vide = le terrain extérieur reste.
+Boden-Statics	Statics de sol
+Statics auf dem Boden als 'id@dz' (mehrere = zufällig), leer = keine (Boden ist Land).	Statics sur le sol en « id@dz » (plusieurs = au hasard), vide = aucun (le sol est du terrain).
+Deko je Bodenfeld (%)	Décor par cellule de sol (%)
+So oft liegt auf einem Bodenfeld Deko (Spinnweben, Knochen …) wie im Original.	Aussi souvent une cellule de sol a du décor (toiles, os …) comme dans l'original.
+Gelernt aus	Appris de
+Land-Tiles des Bodens (Dungeon-Textur), mehrere = zufällig.	Tuiles de terrain du sol (texture de donjon), plusieurs = au hasard.
+Grundriss	Plan
+Räume + Gänge (verstreut)	Salles + couloirs (dispersés)
+Gitter: Räume dicht an dicht mit Türen (wie Deceit)	Grille : salles côte à côte avec portes (comme Deceit)
+Räume + Gänge = Räume verstreut, mit Gängen verbunden. Gitter = der Bereich wird in Räume geteilt (gemeinsame Wände, Türen) wie in Deceit.	Salles + couloirs = salles dispersées reliées par des couloirs. Grille = la zone est divisée en salles (murs communs, portes) comme dans Deceit.
+Wand-Dicke (Gitter)	Épaisseur des murs (grille)
+1 = eine Wand-Zeile auf Boden-Land zwischen den Räumen (wie das Original), 2 = zwei Zeilen Leere (jeder Raum hat eigene Wände).	1 = une ligne de mur sur le terrain du sol entre les salles (comme l'original), 2 = deux lignes de vide (chaque salle a ses propres murs).
+Tür-Breite	Largeur des portes
+Grundriss Räume + Gänge: so viele Räume.	Plan salles + couloirs : autant de salles.
+Dungeon-Werkstatt	Atelier de donjon
+Keller (Werkstatt)	Cave (atelier)
+Dungeon-Werkstatt für diesen Platz …	Atelier de donjon pour cet endroit …
+Keller-Werkstatt für diesen Platz …	Atelier de cave pour cet endroit …
+Dungeon-Werkstatt: erst mit 'Bereich' den Platz markieren (zum Markieren großer Plätze weit herauszoomen), dann noch einmal klicken.	Atelier de donjon : marquer d'abord l'endroit avec « Zone » (dézoomer loin pour les grands endroits), puis cliquer de nouveau.
+Erst mit 'Bereich' einen Platz markieren, dann klicken: eigenes Fenster – klassischer Dungeon, Keller, Berg-Dungeon, Bergwall; Vorschau oben / unten, 2D-Plan, Skript, Rückgängig, Verschieben, Höhe, Löschen	Marquer d'abord un endroit avec « Zone », puis cliquer : fenêtre à part – donjon classique, cave, donjon de montagne, mur de montagne ; aperçu en haut / en bas, plan 2D, script, annuler, déplacer, hauteur, supprimer
+Erst mit 'Bereich' einen Platz markieren, dann klicken: die Werkstatt im Keller-Modus (Statics unter der Karte, Loch auf Kartenhöhe)	Marquer d'abord un endroit avec « Zone », puis cliquer : l'atelier en mode cave (statics sous la carte, trou à la hauteur de la carte)
+Ansicht: oben Karte · unten Etage	Vue : carte en haut · niveau en bas
+OBEN – die Karte, wie sie ist	EN HAUT – la carte telle qu'elle est
+UNTEN – die gewählte Etage (Statics unter dem Boden sichtbar, darüber ausgeblendet)	EN BAS – le niveau choisi (statics sous le sol visibles, au-dessus masqués)
+Loch (NoDraw)	Trou (NoDraw)
+in einer der beiden Ansichten benutzen	à utiliser dans l'une des deux vues
+2D-Plan (nachzeichnen)	Plan 2D (dessiner à la main)
+Leerer Plan	Plan vide
+Neu generieren	Générer de nouveau
+Aus Plan bauen	Construire depuis le plan
+Plan geändert – 'Aus Plan bauen' baut ihn im Stil.	Plan modifié – « Construire depuis le plan » le construit dans le style.
+Skript / Stil	Script / style
+Stil anzeigen	Afficher le style
+Skript übernehmen	Appliquer le script
+Als neuen Stil speichern	Enregistrer comme nouveau style
+Name des neuen Stils:	Nom du nouveau style :
+Skript übernommen	Script appliqué
+'Aus Plan bauen' zeigt es	« Construire depuis le plan » le montre
+Das Skript ist kein gültiges JSON:	Le script n'est pas du JSON valide :
+1 Art	1 Type
+Klassischer Dungeon	Donjon classique
+Berg-Dungeon	Donjon de montagne
+2 Platz und Etage	2 Endroit et niveau
+z genau:	z exact :
+Platz neu aus CGI	Endroit de nouveau depuis le CGI
+3 Fläche außen (Leere)	3 Surface extérieure (vide)
+Schwarz	Noir
+Wählen …	Choisir …
+NoDraw = nichts (unsichtbar), Schwarz = 0244, 'Wählen' = z. B. Schwarz mit Sternen aus dem Land-Katalog.	NoDraw = rien (invisible), noir = 0244, « Choisir » = p. ex. noir étoilé du catalogue de terrain.
+4 Stil (klassischer Dungeon)	4 Style (donjon classique)
+Bereich scannen + Stil lernen	Scanner la zone + apprendre le style
+Gescannten Bereich 1:1 hierher kopieren	Copier la zone scannée 1:1 ici
+5 Grundriss	5 Plan
+Keller:	Cave :
+6 Bauen	6 Construire
+▶ Generieren	▶ Générer
+🎲 Neue Zufalls-Zahl	🎲 Nouveau nombre aléatoire
+↶ Rückgängig	↶ Annuler
+↷ Wiederholen	↷ Rétablir
+Alles zurück	Tout revenir
+7 Verschieben und Höhe	7 Déplacer et hauteur
++ Etage	+ niveau
+− Etage	− niveau
+N / S / W / O = so wie die Karte im Client (N = nach oben rechts). Verschiebt den ganzen Bau mit Land und Statics.	N / S / O / E = comme la carte dans le client (N = en haut à droite). Déplace toute la construction avec terrain et statics.
+8 Schnell löschen	8 Suppression rapide
+Land / Textur	Terrain / texture
+Beides	Les deux
+Gilt für den Platz – oder für einen kleineren Bereich, der oben mit 'Bereich' markiert ist. Land wird zur Leere oben, auf seiner Höhe.	S'applique à l'endroit – ou à une zone plus petite marquée en haut avec « Zone ». Le terrain devient le vide choisi en haut, à sa propre hauteur.
+9 Fertig	9 Terminé
+✔ In die Karte übernehmen	✔ Appliquer à la carte
+Schließen	Fermer
+Platz	Endroit
+Kartenhöhe	hauteur de la carte
+Alles geschieht erst hier; 'In die Karte übernehmen' schreibt es zurück.	Tout se passe d'abord ici ; « Appliquer à la carte » l'écrit en retour.
+Ebene der Karte	Niveau de la carte
+Etage	Niveau
+unter der Karte	sous la carte
+Änderungen	modifications
+Leeren	Vider
+Geleert	Vidé
+Verschieben	Déplacer
+Verschoben	Déplacé
+Wiederholt.	Rétabli.
+Rückgängig.	Annulé.
+Nichts mehr.	Plus rien.
+In der CGI-Ansicht des Studios einen Dungeon mit 'Bereich' markieren (mit etwas Rand), dann hier scannen.	Marquer un donjon avec « Zone » dans la vue CGI du studio (avec un peu de bord), puis scanner ici.
+1:1 kopiert	Copié 1:1
+mit Verschieben / Höhe anpassen	ajuster avec déplacer / hauteur
+Name des Dungeon-Stils (z. B. Deceit, Doom):	Nom du style de donjon (p. ex. Deceit, Doom) :
+Stil gelernt	Style appris
+In die Karte übernommen	Appliqué à la carte
+Änderungen – in der CGI-Ansicht mit Strg+Z zurück.	modifications – Ctrl+Z dans la vue CGI les annule.
+Die Werkstatt hat Änderungen, die noch nicht in der Karte sind. Trotzdem schließen?	L'atelier a des modifications qui ne sont pas encore dans la carte. Fermer quand même ?
+ohne Wand-Set keine Wände (Reiter Pinsel → Wand)	sans jeu de mur, pas de murs (onglet Pinceaux → Mur)
+Noch kein Plan – 'Generieren' oder 'Leerer Plan'.	Pas encore de plan – « Générer » ou « Plan vide ».
+Links = Boden · Rechts = Fels / Leere · Umschalt+Links = Innenwand · Strg+Links = Gang · Norden ist oben links (wie die Karte)	Gauche = sol · droite = roche / vide · Maj+gauche = mur intérieur · Ctrl+gauche = couloir · le nord est en haut à gauche (comme la carte)
+Der Stil als Skript (JSON): Void- und Boden-Land, Boden-Statics, Deko, und für jede Lage (Boden / Leere, Nachbar-Maske N1 O2 S4 W8, Ecken 16–128, Innenwände 256 / 512 / 768) die Wand-Stapel 'id@höhe'. Anpassen, übernehmen, neu bauen.	Le style comme script (JSON) : terrain vide et sol, statics de sol, décor, et pour chaque situation (sol / vide, masque des voisins N1 E2 S4 O8, coins 16–128, murs intérieurs 256 / 512 / 768) les piles de mur « id@hauteur ». Ajuster, appliquer, reconstruire.
+Land / Loch	Terrain / trou
+Was mit dem Land passiert. Das Loch liegt immer auf der Höhe der Karte (keine Löcher in die Tiefe) – meist nur über der Treppe (ca. 3 Felder).	Ce qui arrive au terrain. Le trou est toujours à la hauteur de la carte (pas de trous dans la profondeur) – en général seulement au-dessus de l'escalier (environ 3 cellules).
+Nur über der Treppe ein Loch (NoDraw auf Kartenhöhe)	Seulement un trou au-dessus de l'escalier (NoDraw à la hauteur de la carte)
+Ganze Fläche NoDraw auf Kartenhöhe	Toute la surface NoDraw à la hauteur de la carte
+Land bleibt (Löcher selbst setzen)	Le terrain reste (poser les trous soi-même)
+Ganze Fläche NoDraw auf Kellerhöhe (alt)	Toute la surface NoDraw à la hauteur de la cave (ancien)
+Suche: Name (z. B. wall, stair, bridge) oder Hex-ID (z. B. 0241)	Recherche : nom (p. ex. wall, stair, bridge) ou id hex (p. ex. 0241)
++ Kategorie	+ Catégorie
+In Kategorie …	Dans la catégorie …
+Neue Kategorie …	Nouvelle catégorie …
+Aus dieser Kategorie entfernen	Retirer de cette catégorie
+Alle gezeigten in Kategorie …	Tous ceux affichés dans la catégorie …
+Alle gezeigten Teile in die Kategorie (neu oder vorhanden):	Toutes les pièces affichées dans la catégorie (nouvelle ou existante) :
+Kategorie löschen	Supprimer la catégorie
+Kategorie löschen?	Supprimer la catégorie ?
+Katalog	Catalogue
+ID kopieren	Copier l'id
+Meine Teile	Mes pièces
+Name der neuen Kategorie (z. B. Dungeon Wände, Brücke Holz):	Nom de la nouvelle catégorie (p. ex. murs de donjon, pont en bois) :
+Brücken-Designer	Concepteur de ponts
+Keine Bretter in der TileData gefunden – Teile unten im Katalog suchen und mit den Knöpfen links zuordnen.	Aucune planche trouvée dans la tiledata – chercher des pièces dans le catalogue en bas et les attribuer avec les boutons à gauche.
+Teile aus der TileData gefunden	Pièces trouvées dans la tiledata
+Bretter	Planches
+Pfeiler	Pilier
+Falsche Teile? Links 'Teil wählen' und im Katalog doppelklicken.	Mauvaises pièces ? Choisir une pièce à gauche et double-cliquer dans le catalogue.
+Brücken-Testfeld	Terrain d'essai du pont
+Tiles lang	tuiles de long
+breit	de large
+West-Ost	ouest – est
+Nord-Süd	nord – sud
+im Muster von Hand setzen / löschen, dann 'Muster übernehmen'	poser / supprimer à la main dans le modèle, puis « Reprendre le modèle »
+Erst 'Muster' zeigen (nicht die lange Vorschau), dort bauen, dann übernehmen.	Afficher d'abord « Modèle » (pas l'aperçu long), y construire, puis le reprendre.
+Muster übernommen	Modèle repris
+In der CGI-Ansicht eine Brücke der Karte mit 'Bereich' markieren (genau Länge × Breite), dann hier übernehmen.	Marquer un pont de la carte avec « Zone » dans la vue CGI (exactement longueur × largeur), puis le reprendre ici.
+Im markierten Bereich sind keine Statics.	Il n'y a pas de statics dans la zone marquée.
+Brücke aus der Karte übernommen	Pont repris de la carte
+Brett-Höhe	hauteur du tablier
+Anfang / Ende im Plan einstellen – die Mitte wird wiederholt.	Régler début / fin dans le plan – le milieu est répété.
+Multi als Brücken-Plan geladen	Multi chargé comme plan de pont
+Nord-Süd-Version aus West-Ost erzeugt (gleicher Name, Bild in die andere Richtung). Mit 'N-S' ansehen und von Hand verbessern.	Version nord – sud créée depuis ouest – est (même nom, image dans l'autre sens). La regarder avec « N-S » et l'améliorer à la main.
+West-Ost-Version aus Nord-Süd erzeugt.	Version ouest – est créée depuis nord – sud.
+Kategorie (Ordner), z. B. Holz, Stein, Dungeon:	Catégorie (dossier), p. ex. bois, pierre, donjon :
+Name des Brücken-Plans:	Nom du plan de pont :
+Gespeichert	Enregistré
+Plan ist jetzt im Brücken-Werkzeug der CGI-Ansicht	Le plan est maintenant dans l'outil pont de la vue CGI
+dort von Ufer zu Ufer ziehen.	y glisser d'une rive à l'autre.
+Teil wählen für	Choisir la pièce pour
+im Katalog doppelklicken	double-cliquer dans le catalogue
+in der Vorschau zu sehen	visible dans l'aperçu
+'Aus Teilen erzeugen' baut neu	« Générer depuis les pièces » reconstruit
+im Testfeld	dans le terrain d'essai
+Gitter	Grille
+KATALOG – Klick = zum Setzen im Testfeld · Doppelklick = dem gewählten Teil links zuordnen · Rechtsklick = Kategorien	CATALOGUE – clic = poser dans le terrain d'essai · double clic = attribuer à la pièce choisie à gauche · clic droit = catégories
+Multi als Brücken-Plan laden?	Charger le multi comme plan de pont ?
+Plan löschen?	Supprimer le plan ?
+Länge:	Longueur :
+Im Katalog eine Multi doppelklicken – sie wird zum Brücken-Plan.	Double-cliquer un multi dans le catalogue – il devient le plan de pont.
+Muster = die Brücke einmal, flach: hier mit Katalog + Static setzen / Löschen / Radierer bauen, dann 'Muster übernehmen'. Anfang und Ende stehen im Plan, die Mitte wird bei langen Brücken wiederholt.	Modèle = le pont une fois, à plat : construire ici avec le catalogue + poser static / supprimer / gomme, puis « Reprendre le modèle ». Début et fin sont dans le plan, le milieu se répète sur les longs ponts.
+Fremde Karte	Autre carte
+Bereich wählen und in die Werkstatt kopieren	choisir une zone et la copier dans l'atelier
+Karte öffnen …	Ouvrir une carte …
+Springen	Aller
+Bereich in die Werkstatt	Zone dans l'atelier
+Bereich als Vorlage speichern …	Enregistrer la zone comme modèle …
+'Karte öffnen' wählt map#.mul oder map#LegacyMUL.uop (statics#.mul daneben). Dann zum Dungeon springen und mit 'Bereich' markieren.	« Ouvrir une carte » choisit map#.mul ou map#LegacyMUL.uop (statics#.mul à côté). Puis aller au donjon et le marquer avec « Zone ».
+Geladen	Chargé
+Zum Dungeon springen (X / Y), mit 'Bereich' markieren, dann '✔ Bereich in die Werkstatt'.	Aller au donjon (X / Y), le marquer avec « Zone », puis « ✔ Zone dans l'atelier ».
+Fremde Karte öffnen	Ouvrir une autre carte
+Die Größe der Karte ist unbekannt.	La taille de la carte est inconnue.
+Lade	Chargement
+Laden fehlgeschlagen:	Échec du chargement :
+Erst die Karte öffnen und einen Bereich markieren.	Ouvrir d'abord la carte et marquer une zone.
+Der Bereich ist zu groß (höchstens 512×512).	La zone est trop grande (512×512 au plus).
+Kategorie (Ordner):	Catégorie (dossier) :
+In die Werkstatt kopiert	Copié dans l'atelier
+mit Verschieben / Höhe anpassen, Rückgängig nimmt es zurück	ajuster avec déplacer / hauteur, annuler le reprend
+größer als der Platz – abgeschnitten, einen größeren Platz markieren	plus grand que l'endroit – coupé, marquer un endroit plus grand
+Aus fremder Karte	Depuis une autre carte
+Kategorie (Ordner), z. B. Dungeon, Keller, Räume:	Catégorie (dossier), p. ex. donjon, cave, salles :
+Name der Vorlage:	Nom du modèle :
+Vorlage gespeichert	Modèle enregistré
+Erst eine Vorlage in der Liste wählen.	Choisir d'abord un modèle dans la liste.
+Vorlage	Modèle
+Vorlage nicht lesbar	Modèle illisible
+Pinselgröße für Radierer, Land, Höhe, Loch (1 = ein Tile)	Taille du pinceau pour gomme, terrain, hauteur, trou (1 = une tuile)
+Treppe …	Escalier …
+Treppe	Escalier
+Statics / Land / Multis mit Suche und Kategorien unten ein- / ausblenden	Afficher / masquer statics / terrain / multis avec recherche et catégories en bas
+KATALOG – Klick = Teil wählen (Static setzen / Land setzen / Multi setzen) · Rechtsklick = eigene Kategorien	CATALOGUE – clic = choisir la pièce (poser static / poser terrain / poser multi) · clic droit = vos catégories
+Fremde Karte: z. B. die Original-map0 öffnen, einen Dungeon markieren und hierher kopieren – dann ändern und als Vorlage (nach Kategorie) speichern oder in die Karte übernehmen.	Autre carte : p. ex. ouvrir la map0 originale, marquer un donjon et le copier ici – puis le modifier et l'enregistrer comme modèle (par catégorie) ou l'appliquer à la carte.
+oben auf der Karte oder unten auf der Etage klicken	cliquer en haut sur la carte ou en bas sur le niveau
+Treppe nach unten Richtung	Escalier vers le bas direction
+Plan	Plan
+Set	Jeu
+Teile aus der TileData	Pièces de la tiledata
+Brücke: keine Teile gefunden – im Brücken-Designer Teile wählen (Bretter, Geländer) oder die TileData laden.	Pont : aucune pièce trouvée – choisir des pièces dans le concepteur de ponts (planches, garde-corps) ou charger la tiledata.
+Treppe: erst ein Treppen-Set mit Stufen für alle Richtungen wählen (Reiter Pinsel → Treppe / Brücken-Designer → Treppe aus TileData).	Escalier : choisir d'abord un jeu d'escalier avec des marches pour toutes les directions (onglet Pinceaux → Escalier / concepteur de ponts → escalier de la tiledata).
+Stufen	marches
+Tiles breit	tuiles de large
+Radierer: Ziehen löscht alle Statics im Pinsel (Größe oben / [ ]) · Strg = Land zur Leere · Einstellungen im Reiter Pinsel	Gomme : glisser supprime tous les statics dans le pinceau (taille en haut / [ ]) · Ctrl = terrain en vide · paramètres dans l'onglet Pinceaux
+Treppe: Klick setzt Stufen nach unten in die gewählte Richtung (Treppen-Set) · R = Richtung drehen	Escalier : un clic pose des marches vers le bas dans la direction choisie (jeu d'escalier) · R = tourner la direction
+Plan:	Plan :
+Set (ohne Plan):	Jeu (sans plan) :
+Von Ufer zu Ufer ziehen – beim Ziehen sieht man die echten Teile. Ohne Plan und ohne Set sucht das Studio Bretter, Geländer, Pfosten und Pfeiler selbst in der TileData. Eigene Brücken baut man im Brücken-Designer. Höhe = höheres Ende + Z +, die Mitte um 'Bogen' höher.	Glisser d'une rive à l'autre – en glissant on voit les vraies pièces. Sans plan ni jeu, le studio trouve lui-même planches, garde-corps, poteaux et piliers dans la tiledata. Vos propres ponts se font dans le concepteur de ponts. Hauteur = extrémité la plus haute + Z +, le milieu plus haut de « Arche ».
+(kein Plan – Brücken-Set / Teile aus der TileData)	(pas de plan – jeu de pont / pièces de la tiledata)
+Keine Treppen-Gruppe in der TileData gefunden – Stufen im Katalog suchen (Suche: stair) und mit '← ab …' zuordnen.	Aucun groupe d'escalier trouvé dans la tiledata – chercher des marches dans le catalogue (recherche : stair) et les attribuer avec « ← descendre … ».
+Treppen-Set aus der TileData	Jeu d'escalier de la tiledata
+Richtung prüfen: Werkzeug Treppe zeigt die Stufen als Vorschau, R dreht.	Vérifier la direction : l'outil Escalier montre les marches en aperçu, R tourne.
+Fluss: Breite / Schlängeln …	Rivière : largeur / méandres …
+Wasser …	Eau …
+Brücken-Designer …	Concepteur de ponts …
+Richtung / Stufen …	Direction / marches …
+Radierer …	Gomme …
+Brücken-Designer öffnen …	Ouvrir le concepteur de ponts …
+Treppe setzen	Poser un escalier
+Treppe aus TileData	Escalier de la tiledata
+Treppe: Richtung / Stufen …	Escalier : direction / marches …
+Fremde Karte öffnen …	Ouvrir une autre carte …
+Vorlage laden	Charger un modèle
+Platz als Vorlage speichern …	Enregistrer l'endroit comme modèle …
+4b Vorlagen und fremde Karten	4b Modèles et autres cartes
+Generieren	Générer
+2D-Plan	Plan 2D
+3D bauen	Construire en 3D
+1 Plan (gespeichert nach Kategorie)	1 Plan (enregistré par catégorie)
+2 Teile (aus der TileData, mit Bild)	2 Pièces (de la tiledata, avec image)
+3 Testfeld	3 Terrain d'essai
+4 Von Hand / aus Karte / Multi	4 À la main / depuis la carte / multi
+5 Fertig	5 Terminé
+Speichern …	Enregistrer …
+▶ Aus Teilen erzeugen	▶ Générer depuis les pièces
+Teile neu suchen	Chercher les pièces de nouveau
+Vorschau lang	Aperçu long
+W-O / N-S	O-E / N-S
+Muster übernehmen	Reprendre le modèle
+Andere Richtung ableiten	Dériver l'autre direction
+Brücke aus der Karte	Pont depuis la carte
+Multi laden …	Charger un multi …
+✔ Im Studio benutzen	✔ Utiliser dans le studio
+Geländer W-O	Garde-corps O-E
+Geländer N-S	Garde-corps N-S
+Lampe	Lanterne
+Treppe Nord	Escalier nord
+Treppe Ost	Escalier est
+Treppe Süd	Escalier sud
+Treppe West	Escalier ouest
+Bretter / Boden	Planches / tablier
+Pfeiler / Stütze	Pilier / support
+Pinsel: alle Statics darunter löschen (Größe wie jeder Pinsel) · Strg = Land zur Leere	Pinceau : supprimer tous les statics en dessous (taille comme tout pinceau) · Ctrl = terrain en vide
+Klick: Stufen nach unten in die Richtung (R dreht), bis zum Boden gefüllt (Treppen-Set)	Clic : marches vers le bas dans la direction (R tourne), remplies jusqu'au sol (jeu d'escalier)
+Eigenes Fenster: Brücken aus Statics entwerfen (Teile aus der TileData mit Bild, Testfeld, Muster von Hand, aus Karte / Multi), nach Kategorie speichern	Fenêtre à part : concevoir des ponts en statics (pièces de la tiledata avec images, terrain d'essai, modèle à la main, depuis carte / multi), enregistrer par catégorie
+Von der Quelle zur Mündung ziehen: natürlich geschlängelter Fluss mit Wasser, Breite am Anfang / Ende einstellbar	Glisser de la source à l'embouchure : rivière naturellement sinueuse avec de l'eau, largeur au début / à la fin réglable
+◧ Werkzeuge	◧ Outils
+Werkzeug-Palette links ein- / ausblenden (F7)	Palette d'outils à gauche oui / non (F7)
+◨ Seite	◨ Côté
+Seitenleiste rechts ein- / ausblenden (F8)	Panneau latéral à droite oui / non (F8)
+⧉ Seite lösen	⧉ Détacher le côté
+Die Seitenleiste (Items, Multis, Land, Pinsel …) in ein eigenes Fenster – frei verschieben, mit Rückgängig / Wiederholen. Schließen = wieder andocken.	Le panneau latéral (objets, multis, terrain, pinceaux …) dans une fenêtre à part – à déplacer librement, avec annuler / rétablir. Fermer le réancre.
+✖ Auswahl löschen	✖ Effacer le choix
+Seitenleiste	Panneau latéral
+Wieder andocken	Ancrer de nouveau
+Vorschau des Musters (hell = höher, dunkel = tiefer)	Aperçu du motif (clair = plus haut, foncé = plus bas)
+Erst mit 'Auswahl' Statics wählen (Strg = mehrere), dann 'Auswahl merken'.	Sélectionner d'abord des statics avec « Sélection » (Ctrl = plusieurs), puis « Retenir la sélection ».
+Radierer löscht nur noch	La gomme ne supprime plus que
+Alle Einstellungen dieses Werkzeugs	Tous les paramètres de cet outil
+Farbe der Hue	Couleur de la teinte
+Original	originale
+Favoriten	Favoris
+Gemerkte Hues	Teintes retenues
+Noch keine – eine Hue wählen und '☆ merken'	Aucune encore – choisir une teinte et « ☆ retenir »
+Keine Multi gewählt – im Katalog unten eine wählen oder die ID eingeben.	Aucun multi choisi – en choisir un dans le catalogue en bas ou entrer l'id.
+Multi-Auswahl gelöscht.	Choix du multi effacé.
+Weg-Vorlage	Modèle de route
+Gespeicherte Wege: Einstellungen + Stempel	Routes enregistrées : paramètres + tampon
+Punkte klicken, Doppelklick = bauen	cliquer des points, double clic = construire
+Jetzige Einstellungen als Vorlage speichern …	Enregistrer les paramètres actuels comme modèle …
+Vorlagen bearbeiten …	Modifier les modèles …
+Weg-Vorlagen	Modèles de route
+Neuer Weg	Nouvelle route
+Ein Weg = die Weg-Einstellungen (Breite, Tiles, Höhe) und auf Wunsch ein Stempel, der entlang der Kurve gemalt wird.	Une route = les paramètres de route (largeur, tuiles, hauteur) et au choix un tampon peint le long de la courbe.
+aus Tiles	depuis des tuiles
+Womit der Weg gebaut wird: Weg-Tiles oder ein Stempel (Land + Statics, z. B. aus der Karte gelernt)	Avec quoi la route est construite : tuiles de route ou un tampon (terrain + statics, p. ex. appris de la carte)
+Weg-Tiles (Einstellung 'Weg-Tiles' / Reiter Land)	Tuiles de route (paramètre « tuiles de route » / onglet Terrain)
+ohne Kategorie	sans catégorie
+Weg mit Stempel	Route avec tampon
+Breite = Weg-Breite	largeur = largeur de la route
+Neuen Stempel aus der Karte: Bereich markieren → '→ Stempel (P)'	Nouveau tampon depuis la carte : marquer une zone → « → Tampon (P) »
+Muster:	Motif :
+(Familie der Farbtabelle)	(famille de la table des couleurs)
+Erst mit 'Bereich' ein Stück Boden markieren, das als Muster dienen soll.	Marquer d'abord avec « Zone » un morceau de sol qui servira de motif.
+verschiedene Tiles	tuiles différentes
+mit dem Varianten-Pinsel malen	peindre avec le pinceau de variantes
+Varianten-Muster	Motifs de variantes
+Neues Muster	Nouveau motif
+Ein Muster = Land-Tiles, die der Pinsel zufällig setzt (ein Tile mehrfach = öfter). 'Nur auf' begrenzt es auf bestimmte Tiles, Chance < 100 = einzelne Tupfer.	Un motif = des tuiles de terrain que le pinceau pose au hasard (une tuile plusieurs fois = plus souvent). « Seulement sur » le limite à certaines tuiles, chance < 100 = touches isolées.
+Set:	Jeu :
+Wand-Sets	Jeux de mur
+Neue Wand	Nouveau mur
+Im Reiter Items ein Stück wählen und hier '+ …' klicken. Mehrere IDs = zufällig gemischt.	Choisir une pièce dans l'onglet Objets et cliquer ici « + … ». Plusieurs ids = mélangés au hasard.
+Was der Lauf malt: Fluss, Berg-Kamm, Weg, eigene Farben oder Stempel	Ce que peint le tracé : rivière, crête de montagne, route, vos couleurs ou tampon
+Lauf-Arten …	Types de tracé …
+Lauf-Arten anlegen und ändern: Farben (Kern, Rand, Außen), Breiten, Schlängeln	Ajouter et modifier les types de tracé : couleurs (cœur, bord, extérieur), largeurs, méandres
+Art:	Type :
+Farbe 1	couleur 1
+mit dem Muster-Stempel	avec le tampon à motif
+Kern	cœur
+Rand	bord
+Außen	extérieur
+Lauf-Arten (natürlicher Lauf)	Types de tracé (tracé naturel)
+Neue Art	Nouveau type
+Farben sind Nummern der Farbtabelle: links die Farbe wählen (Farbe 1) und hier 'Farbe 1 → …' klicken. Kern = Mitte, Rand = beidseitig daneben, Außen = noch weiter außen.	Les couleurs sont des numéros de la table des couleurs : choisir la couleur à gauche (couleur 1) et cliquer ici « Couleur 1 → … ». Cœur = milieu, bord = des deux côtés, extérieur = encore plus loin.
+nur Favoriten	seulement les favoris
+Hue wählen	Choisir la teinte
+Hue 0 (Original)	Teinte 0 (originale)
+merken / vergessen	retenir / oublier
+Fertig	Terminé
+Wand: mindestens 2 Punkte.	Mur : au moins 2 points.
+Weg mit Stempel: Stempel nicht gefunden oder weniger als 2 Punkte.	Route avec tampon : tampon introuvable ou moins de 2 points.
+Dicke	épaisseur
+Dicke (Tiles)	Épaisseur (tuiles)
+Punkt zu Punkt	Point à point
+Wasser-Statics dazu	Ajouter des statics d'eau
+Grund tiefer (Z)	Lit plus profond (Z)
+Grund-Tiles (hex)	Tuiles du lit (hex)
+Richtung (nach unten)	Direction (vers le bas)
+Statics löschen	Supprimer les statics
+Land löschen	Supprimer le terrain
+Leere (hex)	Vide (hex)
+Nur sichtbare	Seulement visibles
+Nur diese IDs (hex)	Seulement ces ids (hex)
+Feinheit (Lagen)	Détail (couches)
+Richtung (Grad)	Direction (degrés)
+Höchstes Land (Z)	Terrain le plus haut (Z)
+Meeresgrund (Z)	Fond marin (Z)
+Wasser-Breite (Tiles)	Largeur de l'eau (tuiles)
+Wasserspiegel (Z)	Niveau de l'eau (Z)
+Grund setzen	Poser le fond
+Treppen an den Enden	Escaliers aux extrémités
+Pfeiler alle … Tiles	Pilier toutes les … tuiles
+Kern-Farbe	Couleur du cœur
+Rand-Farbe	Couleur du bord
+Rand-Breite (Tiles)	Largeur du bord (tuiles)
+Außen-Farbe	Couleur extérieure
+Außen-Breite (Tiles)	Largeur extérieure (tuiles)
+Breite am Anfang (Tiles)	Largeur au début (tuiles)
+Breite am Ende (Tiles)	Largeur à la fin (tuiles)
+Auswahl merken	Retenir la sélection
+alle	tous
+→ Radierer (mit Pinselgröße)	→ Gomme (avec taille de pinceau)
+✖ Multi-Auswahl löschen	✖ Effacer le choix du multi
+🎨 Wählen …	🎨 Choisir …
+☆ merken	☆ retenir
+★ vergessen	★ oublier
+Neu aus Bereich	Nouveau depuis la zone
+Muster bearbeiten …	Modifier les motifs …
+Sets bearbeiten …	Modifier les jeux …
++ Land-Tile aus Reiter Land	+ tuile de terrain de l'onglet Terrain
++ Item → West-Ost	+ objet → ouest – est
++ Item → Nord-Süd	+ objet → nord – sud
+Item → Pfosten	objet → poteau
+Aus Auswahl (X / Y / Pfosten raten)	Depuis la sélection (deviner X / Y / poteau)
+Farbe 1 → Kern	Couleur 1 → cœur
+Farbe 1 → Rand	Couleur 1 → bord
+Farbe 1 → Außen	Couleur 1 → extérieur
+Rand / Außen weg	Pas de bord / extérieur
+Farben neu suchen	Rechercher les couleurs
+Neu	Nouveau
+Kopie	Copie
+Name des Wegs:	Nom de la route :
+Name des Musters:	Nom du motif :
++ Set mischen	+ Mélanger un jeu
+Ein weiteres Streu-Set dazumischen (oder wieder herausnehmen)	Ajouter un autre jeu de dispersion (ou le retirer)
+Werkzeug-Optionen	Options de l'outil
+Hinweis	Remarque
+Dieses Werkzeug hat keine weiteren Einstellungen – die Knöpfe oben sind alles.	Cet outil n'a pas d'autres paramètres – les boutons en haut sont tout.
+Skript (JSON)	Script (JSON)
+Erst eine von Hand gebaute Treppe auswählen (Rahmen ziehen oder Strg+Klick, alle Stücke), dann lernen.	Sélectionner d'abord un escalier construit à la main (tracer un cadre ou Ctrl+clic, toutes les pièces), puis apprendre.
+Treppen-Set gelernt	Jeu d'escalier appris
+Werkzeug Treppe zeigt es als Vorschau	l'outil Escalier le montre en aperçu
+Treppe aus Auswahl lernen	Apprendre l'escalier depuis la sélection
+Laden …	Charger …
+mit Bild	avec images
+Doppelklick = übernehmen	double clic = reprendre
+Länge	Longueur
+Breite gilt für Pläne aus Teilen – ein Plan von Hand / aus der Karte behält seine Breite.	La largeur s'applique aux plans depuis les pièces – un plan à la main / depuis la carte garde sa largeur.
+Bogen	Arche
+Bogen aus Stufen (Treppe hinauf, oben flach, hinunter)	Arche en marches (escalier montant, plat en haut, descendant)
+Für den Bogen aus Stufen braucht der Plan Treppen-Stufen (Knöpfe 'Treppe …' links) – West / Ost für West-Ost-Brücken, Nord / Süd für Nord-Süd.	L'arche en marches a besoin de marches d'escalier dans le plan (boutons « Escalier … » à gauche) – ouest / est pour les ponts ouest – est, nord / sud pour nord – sud.
+🖼 Pläne mit Bild …	🖼 Plans avec images …
+Etagen	étages
+ohne Treppen (erst ein Treppen-Set wählen / lernen)	sans escalier (choisir / apprendre d'abord un jeu d'escalier)
+Treppen	escaliers
+🖼 Vorlagen mit Bild …	🖼 Modèles avec images …
+Treppe hinauf Richtung	Escalier montant direction
+Treppe: erst ein Treppen-Set wählen – oder eine Treppe von Hand bauen, auswählen und 'Treppe aus Auswahl lernen'.	Escalier : choisir d'abord un jeu d'escalier – ou construire un escalier à la main, le sélectionner et « Apprendre l'escalier depuis la sélection ».
+Treppe: Klick = Fuß der Treppe – Läufe zu 4 Stufen (je 5 Z = 20 Z), dazwischen ein Absatz, Wende gerade / rechts / links / zurück, bis unten gefüllt · R = Richtung drehen · Vorschau am Mauszeiger	Escalier : clic = pied de l'escalier – volées de 4 marches (5 Z chacune = 20 Z), un palier entre elles, tourner tout droit / à droite / à gauche / en arrière, rempli jusqu'en bas · R = tourner la direction · aperçu à la souris
+Gerade weiter	Tout droit
+Rechts herum (L, mehrere Etagen = Wendel)	À droite (L, plusieurs étages = colimaçon)
+Links herum (L, mehrere Etagen = Wendel)	À gauche (L, plusieurs étages = colimaçon)
+Zurück (U, neben dem Lauf)	En arrière (U, à côté de la volée)
+Richtung (hinauf)	Direction (montée)
+Stufen je Lauf	Marches par volée
+Original: 4 Stufen × 5 Z = 20 Z = eine Etage.	Original : 4 marches × 5 Z = 20 Z = un étage.
+Stufen-Höhe (Z)	Hauteur de marche (Z)
+Wende nach jedem Lauf	Tourner après chaque volée
+Absatz oben	Palier en haut
+Nach unten bauen	Construire vers le bas
+Bis zum Boden füllen	Remplir jusqu'en bas
+Weitere Sets mischen	Mélanger d'autres jeux
+Rand ausdünnen (%)	Éclaircir au bord (%)
+Weiche Wellen	Vagues douces
+Hügel (nur nach oben)	Collines (seulement vers le haut)
+Mulden (nur nach unten)	Creux (seulement vers le bas)
+Grate / Kämme	Crêtes
+Rillen (Furchen in eine Richtung)	Sillons (dans une direction)
+Stufen (Terrassen-Wellen)	Marches (vagues en terrasses)
+Grob (jedes Tile zufällig)	Grossier (chaque tuile au hasard)
+Bogen aus Stufen	Arche en marches
+Etagen-Höhe (Z)	Hauteur d'étage (Z)
+Fluss (Wasser, Ufer)	Rivière (eau, berges)
+Berg-Kamm (Fels, Hang)	Crête de montagne (roche, pente)
+Eigene Farben	Vos couleurs
+Muster-Stempel (Land + Statics)	Tampon à motif (terrain + statics)
+Einrichtung je Wandfeld (%)	Mobilier par cellule de mur (%)
+Werkstatt-Vorlagen	Modèles d'atelier
+Brücken-Pläne	Plans de pont
+Item → Ecke	objet → coin
+Werkzeug-Optionen in ein eigenes Fenster (z. B. auf einen anderen Monitor)	Options de l'outil dans une fenêtre à part (p. ex. sur un autre écran)
+Werkzeug-Optionen wieder in die Leiste	Options de l'outil de nouveau dans la barre
