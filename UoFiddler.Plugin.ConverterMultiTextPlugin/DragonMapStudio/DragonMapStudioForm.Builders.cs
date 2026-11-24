@@ -697,6 +697,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 Help = "Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster, Festungsmauer, Etage mit Decke …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern; im Werkzeug Muster klicken oder ziehen (wiederholt)",
                 Click = OpenMotifDesigner
             }, "build");
+            add(new ToolPaletteEntry
+            {
+                Key = "directions", Name = "Richtungen festlegen", Accent = ColBuild,
+                Help = "Eigenes Fenster: je Teil die Grafik für Nord / Ost / Süd / West in Felder legen (Items, Land-Tiles, Texturen) – gilt vor der automatischen Erkennung beim Treppenbau, Drehen und bei Mustern",
+                Click = () => DirectionGroupsForm.ShowShared(this)
+            }, "build");
             add(CgiTool("motif", "Muster", string.Empty, "Klick = Muster einmal (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe gerade / Boden / steigend, Etagen", IsoTool.Motif, ColBuild), "build");
             add(CgiTool("stairs", "Treppe", string.Empty, "Klick: Stufen nach unten in die Richtung (R dreht), bis zum Boden gefüllt (Treppen-Set)", IsoTool.Stairs, ColBuild), "build");
 

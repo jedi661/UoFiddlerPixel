@@ -1993,3 +1993,145 @@ Ja = als Richtung	Yes = take as direction
 Nein = trotzdem als	No = still as
 (z. B. Zelte, Reihe von Kopien nebeneinander)	(e.g. tents, a row of copies side by side)
 Richtung = in diese Richtung läuft das Muster beim Ziehen. Ost / West: die Mauer läuft West → Ost (auf dem Bild „\“), Nord / Süd: Nord → Süd („/“).	Direction = the pattern runs this way when dragging. East / west: the wall runs west → east (on screen “\”), north / south: north → south (“/”).
+
+# Werkstatt 37 – Muster: Anfang/Ende/Ecken, Punkt zu Punkt, Radius, Begradigen, Richtungen festlegen
+Übernommen als	Taken as
+die anderen Richtungen dreht das Studio selbst	the studio turns the other directions itself
+Im Radius 20 gestreut	Scattered in radius 20
+Stücke	pieces
+Punkt zu Punkt (Viereck mit Ecken)	Point to point (square with corners)
+Name der Variante (z. B. Eiche, Busch, Mauer ohne Fenster):	Name of the variant (e.g. oak, bush, wall without window):
+Variante	Variant
+Gewicht (wie oft im Vergleich, z. B. 1, 2, 5):	Weight (how often in comparison, e.g. 1, 2, 5):
+Zufalls-Variante hinzugefügt	Random variant added
+Zeichen-Art 'Im Radius streuen' oder 'Mitte zufällig' benutzt sie.	Drawing mode 'Scatter in radius' or 'Random middle' uses it.
+Erst in der CGI-Ansicht mit 'Bereich' etwas markieren (z. B. ein Stück Burgmauer), dann hier 'Aus der Karte holen'.	First mark something with 'Area' in the CGI view (e.g. a piece of castle wall), then 'Fetch from the map' here.
+Der Bereich ist zu groß für das Testfeld	The area is too large for the test field
+Statics aus der Karte geholt – Teil und Richtung wählen, markieren, übernehmen.	statics fetched from the map – choose part and direction, mark, take.
+Muster exportieren	Export patterns
+Muster exportiert	patterns exported
+Fehler beim Import	Import error
+Muster importiert.	patterns imported.
+Ordner 'DragonData\Muster' im Projekt wählen (UoFiddler.Plugin.ConverterMultiTextPlugin\DragonMapStudio\DragonData\Muster) – die Muster werden dann mit ausgeliefert.	Choose the folder 'DragonData\Muster' in the project (UoFiddler.Plugin.ConverterMultiTextPlugin\DragonMapStudio\DragonData\Muster) – the patterns are then shipped with it.
+Alle Muster ins Projekt schreiben? (Nein = nur dieses Muster)	Write all patterns into the project? (No = only this pattern)
+Muster ins Projekt geschrieben	patterns written into the project
+Kategorie-Ordner / Name.json	category folder / name.json
+Projekt	project
+Zufalls-Varianten	Random variants
+Zufalls-Variante	Random variant
+Dieses Muster kommt aus dem Projekt (DragonData\Muster) – dort löschen.	This pattern comes from the project (DragonData\Muster) – delete it there.
+2 Teil und Richtung, die ich baue	2 Part and direction I build
+Mitte = wiederholt sich. Anfang / Ende = einmal an den Enden der Reihe (z. B. Türme). Ecke = an jedem Knick bei 'Punkt zu Punkt' (ein Feld, das Knick-Feld).	Middle = repeats. Start / end = once at the ends of the row (e.g. towers). Corner = at every bend with 'Point to point' (one field, the bend field).
+Zufalls-Varianten (Bäume, Pflanzen, Mauer-Abwechslung)	Random variants (trees, plants, varied walls)
++ Markiertes als Variante	+ Marked as variant
+Gewicht …	Weight …
+Ansehen	View
+Entfernen	Remove
+Karte, Austausch, Richtungen	Map, exchange, directions
+⇩ Aus der Karte holen	⇩ Fetch from the map
+Richtungen festlegen …	Set directions …
+Exportieren …	Export …
+Importieren …	Import …
+Ins Projekt …	Into the project …
+▶ Probe zeichnen (wie Zeichen-Art)	▶ Test drawing (as drawing mode)
+Richtungen …	Directions …
+im Radius	in radius
+Boden begradigen geht nur in der CGI-Ansicht	levelling the ground only works in the CGI view
+Erst mit 'Bereich' etwas markieren.	First mark something with 'Area'.
+Erst einen Bereich markieren oder Statics auswählen (z. B. ein Haus).	First mark an area or select statics (e.g. a house).
+Boden begradigen	Level the ground
+Boden begradigen …	Level the ground …
+Felder	fields
+Mittel	Average
+unterster Static	lowest static
+Neue Boden-Höhe (Z):	New ground height (Z):
+Static	Static
+Höchster	Highest
+Rand (Tiles):	Margin (tiles):
+Statics mitnehmen: das Haus steht danach auf der neuen Höhe (so viel höher / tiefer wie der unterste Static)	Take the statics along: the house then stands on the new height (as much higher / lower as the lowest static)
+Begradigen	Level
+Boden begradigen: nichts zu ändern (schon auf dieser Höhe).	Level the ground: nothing to change (already at this height).
+Boden begradigt	Ground levelled
+Land-Tiles auf z	land tiles to z
+Land-Tiles begradigt	land tiles levelled
+mitgenommen	taken along
+Land unter dem Bereich (z. B. unter einem Haus) auf eine Höhe setzen – Statics wahlweise mitnehmen, höher / tiefer per Z	Set the land under the area (e.g. under a house) to one height – optionally take the statics along, higher / lower by Z
+Land unter den gewählten Statics auf eine Höhe setzen (Statics wahlweise mitnehmen)	Set the land under the selected statics to one height (optionally take the statics along)
+→ Muster	→ Pattern
+Die Statics des Bereichs in den Muster-Baukasten holen (als Muster übernehmen)	Fetch the statics of the area into the pattern kit (take as pattern)
+Linie: Klick = einmal, ziehen = Reihe	Line: click = once, drag = row
+Punkt zu Punkt: klicken, klicken … Doppelklick / Enter = fertig (mit Ecken)	Point to point: click, click … double click / Enter = done (with corners)
+Im Radius streuen (Zufalls-Varianten, z. B. Bäume)	Scatter in a radius (random variants, e.g. trees)
+Auf die Höhe am Start	To the height at the start
+Auf eine feste Höhe (Z)	To a fixed height (Z)
+Zeichen-Art	Drawing mode
+Linie (Klick / ziehen), Punkt zu Punkt mit Ecken (Doppelklick oder Enter = fertig, Esc = abbrechen, Rücktaste = letzten Punkt weg), oder im Radius streuen.	Line (click / drag), point to point with corners (double click or Enter = done, Esc = cancel, Backspace = remove last point), or scatter in a radius.
+Anfang / Ende benutzen	Use start / end
+Hat das Muster ein Anfangs- und Endstück (z. B. Türme), kommen sie an die Enden der Reihe, dazwischen wiederholt sich die Mitte.	If the pattern has a start and end piece (e.g. towers), they go to the ends of the row, the middle repeats in between.
+Ecken benutzen	Use corners
+Punkt zu Punkt: an jedem Knick das Eckstück des Musters (falls gebaut).	Point to point: the corner piece of the pattern at every bend (if built).
+Letztes Stück anpassen	Fit the last piece
+An = die Reihe endet genau am Ende des Zugs (das letzte Mittelstück wird gekürzt). Aus = nur ganze Stücke (die Reihe kann etwas länger werden).	On = the row ends exactly at the end of the drag (the last middle piece is cut). Off = only whole pieces (the row can get a bit longer).
+Mitte zufällig aus Varianten	Random middle from variants
+Statt immer derselben Mitte zufällig eine der Zufalls-Varianten des Musters (nach Gewicht).	Instead of always the same middle, one of the random variants of the pattern (by weight).
+Mindest-Abstand (Tiles)	Minimum distance (tiles)
+Im Radius streuen: so weit stehen zwei Stücke mindestens auseinander.	Scatter in a radius: two pieces stand at least this far apart.
+Im Radius streuen: wie viele der möglichen Plätze besetzt werden.	Scatter in a radius: how many of the possible places are used.
+Zufällige Richtung	Random direction
+Im Radius streuen: jedes Stück in einer zufälligen erlaubten Richtung.	Scatter in a radius: every piece in a random allowed direction.
+Das Land unter dem Muster (und ein Rand) wird auf eine Höhe gesetzt – dann stecken die Grafiken nicht halb im Boden. Nur CGI-Ansicht.	The land under the pattern (and a margin) is set to one height – then the graphics are not half in the ground. CGI view only.
+Boden-Höhe (Z)	Ground height (Z)
+Nur 'auf eine feste Höhe': auf dieses Z wird der Boden gesetzt (das Muster steht darauf).	Only 'to a fixed height': the ground is set to this Z (the pattern stands on it).
+Boden-Rand (Tiles)	Ground margin (tiles)
+So viele Tiles um das Muster herum werden mit begradigt (1 = die Kanten der Tiles unter dem Muster liegen flach).	This many tiles around the pattern are levelled too (1 = the edges of the tiles under the pattern lie flat).
+Gewicht der Mitte	Weight of the middle
+Zufalls-Varianten / Radius: wie oft die Mitte selbst gewählt wird (0 = nur die Varianten).	Random variants / radius: how often the middle itself is chosen (0 = only the variants).
+Richtungen festlegen	Set directions
+Eigenes Fenster: je Teil die Grafik für Nord / Ost / Süd / West in Felder legen (Items, Land-Tiles, Texturen) – gilt vor der automatischen Erkennung beim Treppenbau, Drehen und bei Mustern	Own window: put the graphic for north / east / south / west of each part into fields (items, land tiles, textures) – takes priority over the automatic recognition for stairs, turning and patterns
+Richtungen festlegen: je Teil die Grafik für Nord / Ost / Süd / West (Items, Land) – gilt vor der automatischen Erkennung	Set directions: the graphic for north / east / south / west of each part (items, land) – takes priority over the automatic recognition
+Je Stufe die Grafik für hinauf nach Nord / Ost / Süd / West selbst festlegen (gilt vor der Erkennung aus dem Bild)	Set the step graphic for going up north / east / south / west yourself (takes priority over the recognition from the image)
+Gruppe wählen oder 'Neu'. Feld anklicken (Nord, Ost, Süd, West), dann im Katalog die Grafik anklicken – das nächste Feld wird gewählt. Speichern nicht vergessen.	Choose a group or 'New'. Click a field (north, east, south, west), then click the graphic in the catalog – the next field is chosen. Don't forget to save.
+Änderungen an den Richtungen speichern?	Save the changes to the directions?
+Vorschlagen geht nur für Items.	Suggesting only works for items.
+Erst ein Feld mit einer Grafik füllen.	First fill a field with a graphic.
+Felder vorgeschlagen – bitte ansehen und falsche von Hand ändern.	fields suggested – please check and fix wrong ones by hand.
+Nichts gefunden – bitte von Hand legen.	Nothing found – please place by hand.
+Treppen, Drehen und Muster benutzen die Tabelle jetzt.	Stairs, turning and patterns use the table now.
+Diese Gruppe kommt aus dem Projekt (DragonData\Richtungen) – dort löschen, oder hier ändern (wird dann eigene).	This group comes from the project (DragonData\Richtungen) – delete it there, or change it here (it becomes your own).
+💾 Speichern	💾 Save
+Richtungen exportieren (z. B. ins Projekt: DragonData\Richtungen)	Export directions (e.g. into the project: DragonData\Richtungen)
+Exportiert	Exported
+Gruppen importiert – speichern nicht vergessen.	groups imported – don't forget to save.
+GRUPPEN (Name: Nord Ost Süd West)	GROUPS (name: north east south west)
+Treppe (Richtung = hinauf nach)	Stairs (direction = going up towards)
+Land als Textur zeigen	Show land as texture
+Notiz:	Note:
+leeren	clear
+Aus einem Feld vorschlagen	Suggest from one field
+Feld anklicken (gelb = aktiv), dann im Katalog unten die Grafik anklicken. Die Nummer kann auch direkt eingetippt werden (hex).	Click a field (yellow = active), then click the graphic in the catalog below. The number can also be typed directly (hex).
+KATALOG – Items / Land oben umschalten · Klick = ins gelbe Feld	CATALOG – switch items / land at the top · click = into the yellow field
+Diese Gruppe ist für	This group is for
+im Katalog oben die passende Art wählen.	choose the matching kind at the top of the catalog.
+Mitte	Middle
+Anfang	Start
+Ende	End
+Ecke	Corner
+Ecke NO	Corner NE
+Ecke SO	Corner SE
+Ecke SW	Corner SW
+Ecke NW	Corner NW
+Anfang Nord	Start north
+Anfang Ost	Start east
+Anfang Süd	Start south
+Anfang West	Start west
+Ende Nord	End north
+Ende Ost	End east
+Ende Süd	End south
+Ende West	End west
+Mitte Nord	Middle north
+Mitte Ost	Middle east
+Mitte Süd	Middle south
+Mitte West	Middle west
+Muster Punkt zu Punkt: klicken, klicken … · Doppelklick / Rechtsklick / Enter = fertig · Rücktaste = letzter Punkt weg · Esc = abbrechen · an Knicken das Eckstück	Pattern point to point: click, click … · double click / right click / Enter = done · Backspace = remove last point · Esc = cancel · corner piece at the bends
+Muster streuen: von der Mitte nach außen ziehen = Radius · Zufalls-Varianten nach Gewicht, Mindest-Abstand, Dichte oben in der Leiste	Scatter pattern: drag from the centre outwards = radius · random variants by weight, minimum distance, density in the bar at the top
+Radius	Radius

@@ -256,6 +256,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                         case "motifdesigner":
                             OpenMotifDesigner();
                             break;
+                        case "directions":
+                            DirectionGroupsForm.ShowShared(this);
+                            break;
                         case "course":
                             tabMain.SelectedTab = tabEditor;
                             SelectTool(MapTool.Course);
@@ -605,6 +608,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                             isoView.Invalidate();
                             MessageBox.Show(this, rep, L.T("Treppe") + ": " + cur.Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
                         });
+                        Cmd("Richtungen festlegen …", "Je Stufe die Grafik für hinauf nach Nord / Ost / Süd / West selbst festlegen (gilt vor der Erkennung aus dem Bild)", () => DirectionGroupsForm.ShowShared(this));
                         Cmd("Treppe aus Auswahl lernen", "Eine von Hand gebaute Treppe (alle Stücke) auswählen: Stufen je Richtung, Füll-Block und Absatz werden erkannt", LearnStairsFromSelection);
                         all.Add((b.Staircase, L.T("Treppe")));
                         break;

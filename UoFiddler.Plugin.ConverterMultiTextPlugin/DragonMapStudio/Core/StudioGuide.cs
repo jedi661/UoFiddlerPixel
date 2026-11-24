@@ -909,7 +909,28 @@ Etagen / Etagen-Höhe | 2–3 Etagen in einem Zug übereinander
 Abstand | Lücke zwischen den Wiederholungen (Zelte, Pfosten)
 Ersetzen | alte Statics auf den Feldern vorher entfernen
 
-Im Karten-Editor landen die Statics in der Statics-Ebene (Höhe über dem Boden), Strg+Z nimmt sie zurück. „📋 Log + Bild“ im Baukasten speichert jedes Teil mit ID, Lage und Höhe.",
+Im Karten-Editor landen die Statics in der Statics-Ebene (Höhe über dem Boden), Strg+Z nimmt sie zurück. „📋 Log + Bild“ im Baukasten speichert jedes Teil mit ID, Lage und Höhe.
+
+## Anfang, Mitte, Ende und Ecken
+Im Baukasten oben „Teil“ wählen: **Mitte** (wiederholt sich), **Anfang** und **Ende** (einmal an den Enden, z. B. Türme), **Ecke** (Ecke NO / SO / SW / NW, das Feld am Knick). Jedes Teil markieren und übernehmen – die anderen Richtungen dreht das Studio.
+
+## Zeichen-Arten
+Linie | Klick = einmal, ziehen = Reihe (Anfang – Mitte … – Ende)
+Punkt zu Punkt | klicken, klicken … Doppelklick / Rechtsklick / Enter = fertig, Rücktaste = letzter Punkt weg, Esc = abbrechen; an jedem Knick das Eckstück
+Im Radius streuen | von der Mitte nach außen ziehen; zufällig aus Mitte + Zufalls-Varianten (Gewicht), Mindest-Abstand, Dichte, zufällige Richtung
+Letztes Stück anpassen | die Reihe endet genau am Ende des Zugs (das letzte Mittelstück wird gekürzt)
+
+## Zufalls-Varianten
+Bäume (Stamm + Krone), Büsche, Mauerstücke mit / ohne Fenster: jeweils bauen, markieren, „+ Markiertes als Variante“ und ein Gewicht angeben. „Im Radius streuen“ und „Mitte zufällig aus Varianten“ benutzen sie.
+
+## Boden begradigen
+Beim Zeichnen (CGI): „Boden begradigen“ auf die Höhe am Start oder eine feste Höhe, mit Rand. Nachträglich: Bereich markieren (oder Statics wählen, z. B. ein Haus) → „Boden begradigen …“: neue Höhe (Static / Mittel / Höchster oder eigene Zahl), Rand, „Statics mitnehmen“ – so kommt ein Haus samt Boden auch höher oder tiefer.
+
+## Austausch und Projekt
+„Exportieren …“ (ein Muster als .json, alle als .zip), „Importieren …“, „Ins Projekt …“ schreibt nach DragonData\Muster\<Kategorie>\<Name>.json – diese Muster werden mit ausgeliefert und erscheinen mit „(Projekt)“. „⇩ Aus der Karte holen“ (oder in der CGI-Ansicht „→ Muster“) holt den markierten Bereich in den Baukasten.
+
+## Richtungen festlegen
+Eigenes Fenster (Palette Bauen, Treppen-Designer, Baukasten): je Gruppe vier Felder Nord / Ost / Süd / West, aus dem Katalog befüllt (Items oder Land-Tiles, Land auch als Textur). „Treppe“ angehakt = die Richtung heißt „geht hinauf nach“. Die Tabelle gilt vor der automatischen Erkennung: Treppenbau, Drehen (R / 90°) von Statics und Land, Drehen der Muster. Export ins Projekt: DragonData\Richtungen.",
                 En = @"# Pattern kit
 The same bench as the stair designer – for everything that repeats: battlements, tents, a wall with windows, fortress walls of different heights, a floor with ceiling …
 
@@ -934,7 +955,28 @@ Floors / floor height | 2–3 floors on top of each other in one go
 Gap | space between the repeats (tents, posts)
 Replace | remove old statics on the fields first
 
-In the map editor the statics go into the statics layer (height above the ground), Ctrl+Z takes them back. “📋 Log + picture” in the kit saves every part with id, position and height."
+In the map editor the statics go into the statics layer (height above the ground), Ctrl+Z takes them back. “📋 Log + picture” in the kit saves every part with id, position and height.
+
+## Start, middle, end and corners
+Choose “Part” in the kit: **middle** (repeats), **start** and **end** (once at the ends, e.g. towers), **corner** (corner NE / SE / SW / NW, the field at the bend). Mark and take every part – the studio turns the other directions.
+
+## Drawing modes
+Line | click = once, drag = row (start – middle … – end)
+Point to point | click, click … double click / right click / Enter = done, Backspace = remove last point, Esc = cancel; the corner piece at every bend
+Scatter in a radius | drag from the centre outwards; random from middle + random variants (weight), minimum distance, density, random direction
+Fit the last piece | the row ends exactly at the end of the drag (the last middle piece is cut)
+
+## Random variants
+Trees (trunk + crown), bushes, wall pieces with / without window: build each, mark, “+ Marked as variant” and give a weight. “Scatter in a radius” and “Random middle from variants” use them.
+
+## Level the ground
+While drawing (CGI): “Level the ground” to the height at the start or a fixed height, with a margin. Afterwards: mark an area (or select statics, e.g. a house) → “Level the ground …”: new height (static / average / highest or a number), margin, “take the statics along” – this also moves a house with its ground higher or lower.
+
+## Exchange and project
+“Export …” (one pattern as .json, all as .zip), “Import …”, “Into the project …” writes to DragonData\Muster\<category>\<name>.json – these patterns are shipped and shown with “(project)”. “⇩ Fetch from the map” (or “→ Pattern” in the CGI view) fetches the marked area into the kit.
+
+## Set directions
+Own window (palette Building, stair designer, kit): per group four fields north / east / south / west, filled from the catalog (items or land tiles, land also as texture). “Stairs” ticked = the direction means “goes up towards”. The table takes priority over the automatic recognition: building stairs, turning (R / 90°) of statics and land, turning patterns. Export into the project: DragonData\Richtungen."
             },
             new GuideTopic
             {

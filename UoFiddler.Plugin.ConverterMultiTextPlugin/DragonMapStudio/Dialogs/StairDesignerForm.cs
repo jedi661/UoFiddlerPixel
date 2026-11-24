@@ -518,6 +518,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             var tl = Line();
             tl.Controls.Add(B("Als Modell übernehmen", TakeModel, 148));
             tl.Controls.Add(B("Treppe aus der Karte", TakeFromMap, 148));
+            tl.Controls.Add(B("Richtungen festlegen …", () => DirectionGroupsForm.ShowShared(this), 148));
             tl.Controls.Add(B("💾 Markierte Treppe speichern …", TakeAndSave, 300));
             left.Controls.Add(tl);
             left.Controls.Add(new Label

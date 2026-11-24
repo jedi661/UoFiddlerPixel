@@ -41,6 +41,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         {
             isoView.FindMotif = FindMotif;
             mapCanvas.MotifRequested += MapCanvas_MotifRequested;
+            mapCanvas.MotifPathRequested += MapCanvas_MotifPathRequested;
+            mapCanvas.MotifPointMode = () => BrushCfg.MotifDraw.Mode == MotifMode.Points;
+            mapCanvas.MotifPathPreview = pts => CurrentMotif?.Path(pts, BrushCfg.MotifDraw, null, out _).Select(p => new Point(p.x, p.y)).Distinct().ToList();
             mapCanvas.MotifPreview = (a, b) =>
             {
                 Motif m = CurrentMotif;
@@ -129,7 +132,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             ToolStripDropDownButton dd = null;
             dd = MotifChooser(() => dd.Text = MotifLabel());
             AddQuick(dd);
-            Quick(BrushCfg.MotifDraw, "Drag", "Repeat", "Direction", "Height", "Rise", "Floors", "FloorHeight", "Gap", "ZOffset", "Replace");
+            Quick(BrushCfg.MotifDraw, "Mode", "Drag", "Repeat", "Direction", "Height", "Floors", "FitLast", "Flatten", "ZOffset", "Replace");
+            Cmd("Richtungen …", "Richtungen festlegen: je Teil die Grafik für Nord / Ost / Süd / West (Items, Land) – gilt vor der automatischen Erkennung", () => DirectionGroupsForm.ShowShared(this));
             Cmd("Muster-Baukasten …", "Eigenes Fenster: Muster bauen (Zinnen, Zelte, Mauer mit Fenster …), je Richtung Nord / Ost / Süd / West, nach Kategorie speichern, Log + Bild", OpenMotifDesigner);
         }
 
@@ -143,6 +147,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             var host = new MotifDesignerHost
             {
                 Map = _cgiMap,
+                CurrentMap = () => _cgiMap,
                 Brushes = BrushCfg,
                 Configure = ConfigureLikeMain,
                 CurrentArea = () => isoView.Area,
@@ -181,18 +186,41 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         /// <summary>Map editor, tool "Muster": the motif goes into the statics layer (height above the land, one undo step).</summary>
         private void MapCanvas_MotifRequested(Point a, Point b)
         {
-            if (_map == null)
+            Motif m = CurrentMotif;
+            if (_map == null || !MotifReady(m))
             {
                 return;
             }
+            List<(int x, int y, int z, ushort id, ushort hue)> parts = m.Layout(a, b, BrushCfg.MotifDraw, null, out Compass dir, out int repeats);
+            string what = BrushCfg.MotifDraw.Mode == MotifMode.Radius ? L.T("im Radius") + $": {repeats} " + L.T("Stücke") : $"{L.T(Motif.DirName(dir))}: {repeats}×";
+            MotifIntoLayer(m, parts, what);
+        }
+
+        private void MapCanvas_MotifPathRequested(List<Point> points)
+        {
             Motif m = CurrentMotif;
+            if (_map == null || !MotifReady(m))
+            {
+                return;
+            }
+            List<(int x, int y, int z, ushort id, ushort hue)> parts = m.Path(points, BrushCfg.MotifDraw, null, out int n);
+            MotifIntoLayer(m, parts, L.T("Punkt zu Punkt") + $": {n} " + L.T("Stücke"));
+        }
+
+        private bool MotifReady(Motif m)
+        {
             if (m == null)
             {
                 SetStatus(L.T("Erst ein Muster wählen (Leiste oben: Muster ▸ Kategorie ▸ Name ▸ Richtung) – oder im Muster-Baukasten eins bauen."));
-                return;
+                return false;
             }
+            return true;
+        }
+
+        /// <summary>Map editor: motif pieces into the statics layer (height above the land, one undo step).</summary>
+        private void MotifIntoLayer(Motif m, List<(int x, int y, int z, ushort id, ushort hue)> parts, string what)
+        {
             MotifDrawSettings o = BrushCfg.MotifDraw;
-            List<(int x, int y, int z, ushort id, ushort hue)> parts = m.Layout(a, b, o, null, out Compass dir, out int repeats);
             var added = parts.Where(p => _map.InBounds(p.x, p.y)).Select(p => new LayerStatic { X = p.x, Y = p.y, Dz = p.z, Id = p.id, Hue = p.hue })
                              .GroupBy(s => (s.X, s.Y, s.Dz, s.Id)).Select(g => g.First()).ToList();
             if (added.Count == 0)
@@ -217,9 +245,114 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 Apply(removed, added);
                 _history.AddExtra(() => Apply(added, removed), () => Apply(removed, added));
             });
+            o.Seed = new Random().Next(1, int.MaxValue);
             mapCanvas.Invalidate();
-            SetStatus(L.T("Muster") + $" {m} – {L.T(Motif.DirName(dir))}: {repeats}× , {added.Count} Statics " + L.T("in der Statics-Ebene") +
-                      (removed.Count > 0 ? $", {removed.Count} " + L.T("ersetzt") : string.Empty) + " · Strg+Z " + L.T("nimmt es zurück") + ".");
+            SetStatus(L.T("Muster") + $" {m} – {what}, {added.Count} Statics " + L.T("in der Statics-Ebene") +
+                      (removed.Count > 0 ? $", {removed.Count} " + L.T("ersetzt") : string.Empty) +
+                      (o.Flatten != MotifFlatten.Off ? " · " + L.T("Boden begradigen geht nur in der CGI-Ansicht") : string.Empty) + " · Strg+Z " + L.T("nimmt es zurück") + ".");
+        }
+
+        /// <summary>CGI area → motif kit: opens the kit and fetches the statics of the area.</summary>
+        private void AreaToMotif()
+        {
+            if (isoView.Area.IsEmpty)
+            {
+                SetStatus(L.T("Erst mit 'Bereich' etwas markieren."));
+                return;
+            }
+            OpenMotifDesigner();
+            _motifDesigner?.FetchFromMap();
+        }
+
+        /// <summary>
+        /// "Boden begradigen": the land under the marked area / the selected statics (+ a margin) to one height. With
+        /// "Statics mitnehmen" the statics move by the same amount, so a house stands on the new ground (higher / lower by Z).
+        /// </summary>
+        private void LevelGroundDialog()
+        {
+            MapData map = _cgiMap;
+            if (map == null)
+            {
+                return;
+            }
+            List<StaticItem> sel = isoView.Selection.ToList();
+            var cells = new List<Point>();
+            if (sel.Count > 0)
+            {
+                cells.AddRange(sel.Select(s => new Point(s.X, s.Y)).Distinct());
+            }
+            else if (!isoView.Area.IsEmpty)
+            {
+                Rectangle r = isoView.Area;
+                r.Intersect(new Rectangle(0, 0, map.Width, map.Height));
+                HashSet<int> mask = isoView.Mask;
+                for (int y = r.Top; y < r.Bottom; y++)
+                {
+                    for (int x = r.Left; x < r.Right; x++)
+                    {
+                        if (mask == null || mask.Contains(y * map.Width + x))
+                        {
+                            cells.Add(new Point(x, y));
+                        }
+                    }
+                }
+            }
+            if (cells.Count == 0)
+            {
+                SetStatus(L.T("Erst einen Bereich markieren oder Statics auswählen (z. B. ein Haus)."));
+                return;
+            }
+            List<StaticItem> standing = sel.Count > 0 ? sel : cells.SelectMany(c => map.StaticsAt(c.X, c.Y)).ToList();
+            int lowStatic = standing.Count > 0 ? standing.Min(s => s.Z) : int.MinValue;
+            int landMin = cells.Min(c => map.LandZ(c.X, c.Y)), landMax = cells.Max(c => map.LandZ(c.X, c.Y));
+            int landAvg = (int)Math.Round(cells.Average(c => map.LandZ(c.X, c.Y)));
+
+            using var f = new Form
+            {
+                Text = L.T("Boden begradigen"), FormBorderStyle = FormBorderStyle.FixedDialog, MaximizeBox = false, MinimizeBox = false,
+                StartPosition = FormStartPosition.CenterParent, ClientSize = new Size(430, 250), Font = new Font("Segoe UI", 9f)
+            };
+            var info = new Label
+            {
+                Left = 12, Top = 10, Width = 406, Height = 46,
+                Text = $"{cells.Count} " + L.T("Felder") + $", {standing.Count} Statics · " + L.T("Boden") + $" z {landMin}…{landMax} (" + L.T("Mittel") + $" {landAvg})" +
+                       (standing.Count > 0 ? " · " + L.T("unterster Static") + $" z {lowStatic}" : string.Empty)
+            };
+            var zLabel = new Label { Left = 12, Top = 62, Width = 120, Text = L.T("Neue Boden-Höhe (Z):") };
+            var z = new NumericUpDown { Left = 140, Top = 60, Width = 70, Minimum = -128, Maximum = 127, Value = standing.Count > 0 ? lowStatic : landAvg };
+            var q1 = new Button { Left = 220, Top = 58, Width = 64, Text = L.T("Static"), Enabled = standing.Count > 0 };
+            q1.Click += (s, e) => z.Value = Math.Clamp(lowStatic, -128, 127);
+            var q2 = new Button { Left = 288, Top = 58, Width = 64, Text = L.T("Mittel") };
+            q2.Click += (s, e) => z.Value = landAvg;
+            var q3 = new Button { Left = 356, Top = 58, Width = 64, Text = L.T("Höchster") };
+            q3.Click += (s, e) => z.Value = landMax;
+            var mLabel = new Label { Left = 12, Top = 96, Width = 120, Text = L.T("Rand (Tiles):") };
+            var margin = new NumericUpDown { Left = 140, Top = 94, Width = 70, Minimum = 0, Maximum = 8, Value = 1 };
+            var move = new CheckBox
+            {
+                Left = 12, Top = 126, Width = 406, Height = 40, Checked = true,
+                Text = L.T("Statics mitnehmen: das Haus steht danach auf der neuen Höhe (so viel höher / tiefer wie der unterste Static)")
+            };
+            var ok = new Button { Text = L.T("Begradigen"), Left = 236, Top = 206, Width = 90, DialogResult = DialogResult.OK };
+            var cancel = new Button { Text = L.T("Abbrechen"), Left = 330, Top = 206, Width = 90, DialogResult = DialogResult.Cancel };
+            f.Controls.AddRange(new Control[] { info, zLabel, z, q1, q2, q3, mLabel, margin, move, ok, cancel });
+            f.AcceptButton = ok;
+            f.CancelButton = cancel;
+            if (f.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            (List<StaticChange> statics, List<LandChange> land) = Motif.Level(map, cells, (int)z.Value, (int)margin.Value, move.Checked, sel.Count > 0 ? sel : null);
+            if (statics.Count == 0 && land.Count == 0)
+            {
+                SetStatus(L.T("Boden begradigen: nichts zu ändern (schon auf dieser Höhe)."));
+                return;
+            }
+            map.Apply(statics, land);
+            map.NameLastStep(L.T("Boden begradigen"));
+            isoView.Refresh(true);
+            SetStatus(L.T("Boden begradigt") + $": {land.Count} " + L.T("Land-Tiles auf z") + $" {z.Value}" +
+                      (statics.Count > 0 ? $", {statics.Count} Statics " + L.T("mitgenommen") : string.Empty) + " · Strg+Z " + L.T("nimmt es zurück") + ".");
         }
     }
 }

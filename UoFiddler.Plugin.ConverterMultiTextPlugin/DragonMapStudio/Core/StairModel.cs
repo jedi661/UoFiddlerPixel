@@ -172,10 +172,33 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         // ------------------------------------------------------------------ turning
 
         private static readonly Dictionary<(ushort, int), ushort> _turned = new Dictionary<(ushort, int), ushort>();
+
+        static StairModel()
+        {
+            DirectionGroups.Changed += ClearCaches;
+        }
+
+        /// <summary>Forgets the recognised slopes / turned pieces (after the direction table changed).</summary>
+        public static void ClearCaches()
+        {
+            lock (_turned)
+            {
+                _turned.Clear();
+            }
+            lock (_up)
+            {
+                _up.Clear();
+            }
+        }
         private static readonly Dictionary<ushort, Compass?> _up = new Dictionary<ushort, Compass?>();
 
         public static Compass? UpOf(ushort id)
         {
+            Compass? fromTable = DirectionGroups.StairUp(id);
+            if (fromTable != null)
+            {
+                return fromTable;
+            }
             lock (_up)
             {
                 if (_up.TryGetValue(id, out Compass? c))
@@ -210,6 +233,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             if (q == 0)
             {
                 return id;
+            }
+            int fromTable = DirectionGroups.Turned(id, q);
+            if (fromTable >= 0)
+            {
+                return (ushort)fromTable;
             }
             lock (_turned)
             {

@@ -113,6 +113,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 ("Treppe", "Treppe lernen (bauen → lernen → vergleichen)", c => StairLearn((Ctx)c, b)),
                 ("Treppe", "Treppen-Modell: aufnehmen, in alle Richtungen drehen, mehrmals", c => StairModels((Ctx)c, b)),
                 ("Muster", "Muster-Baukasten: Zinnen-Mauer, 4 Richtungen, ziehen, 2 Etagen", c => Motifs((Ctx)c, b)),
+                ("Muster", "Burgmauer Punkt zu Punkt: Türme, Ecken, genaue Länge, Radius, Begradigen", c => MotifPath((Ctx)c, b)),
                 ("Drehen", "Drehen 90°: gerichtete Teile tauschen", c => RotateSwap((Ctx)c, b)),
                 ("Wand", "Wand Punkt zu Punkt, Dicke, Ecken", c => WallPath((Ctx)c, b)),
                 ("Fluss", "Fluss-Lauf: Breite, Mitte bleibt Wasser, Grund wie Küste", c => River((Ctx)c, b)),
@@ -546,6 +547,79 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             c.Line($"2 Etagen: {fl.Count} Statics, oben z {top}");
             c.Check(top >= 2 * h, "2 Etagen stehen übereinander");
             c.Picture("Muster mit 2 Etagen", two, new Rectangle(2, 4, 24, 20));
+        }
+
+        private static void MotifPath(Ctx c, CgiBrushSettings b)
+        {
+            WallSet w = b.WallSets.FirstOrDefault(x => x.Name == b.WallSet);
+            ushort wall = w != null ? HexList.Parse(w.AlongX).FirstOrDefault() : (ushort)0;
+            ushort post = w != null ? HexList.Parse(w.Post).FirstOrDefault() : (ushort)0;
+            if (wall == 0)
+            {
+                wall = 0x0026;
+            }
+            if (post == 0)
+            {
+                post = wall;
+            }
+            int h = Math.Max(5, UoArtCache.StackHeight(wall));
+            var m = new Motif { Name = "Test-Burgmauer", Category = "Test" };
+            m.SetVariant(Compass.East, Enumerable.Range(0, 3).Select(i => new PieceStatic { X = i, Id = wall }).ToList());
+            // tower: 2 tiles, three high
+            m.SetPiece(MotifPart.Start, Compass.East, Enumerable.Range(0, 2).SelectMany(i => Enumerable.Range(0, 3).Select(k => new PieceStatic { X = i, Z = k * h, Id = post })).ToList());
+            m.SetPiece(MotifPart.End, Compass.East, m.Piece(MotifPart.Start, Compass.East).Select(p => new PieceStatic { X = p.X, Z = p.Z, Id = p.Id }).ToList());
+            m.SetPiece(MotifPart.Corner, Compass.North, Enumerable.Range(0, 2).Select(k => new PieceStatic { Z = k * h, Id = post }).ToList());
+            m.AutoVariants();
+            var o = new MotifDrawSettings();
+            MapData map = Map(64, 64, 3, 0);
+            var pts = new[] { new Point(8, 10), new Point(50, 10), new Point(50, 44), new Point(12, 44) };
+            List<StaticChange> ch = m.BuildPath(map, pts, o, 0, out int n, out _);
+            map.Apply(ch);
+            var at = new HashSet<(int, int)>(ch.Select(x => (x.After.X, x.After.Y)));
+            bool cornersOk = new[] { new Point(50, 10), new Point(50, 44) }.All(p => ch.Any(x => x.After.X == p.X && x.After.Y == p.Y && x.After.Z == h)); // the corner is two high, the wall one
+            bool closedTop = Enumerable.Range(8, 43).All(x => at.Contains((x, 10)));
+            bool closedRight = Enumerable.Range(10, 35).All(y => at.Contains((50, y)));
+            c.Line($"Punkt zu Punkt: {n} Stücke, {ch.Count} Statics, Ecken an (50,10) und (50,44): {cornersOk}, oben lückenlos: {closedTop}, rechts lückenlos: {closedRight}");
+            c.Check(cornersOk, "an beiden Knicken steht das Eckstück");
+            c.Check(closedTop && closedRight, "die Strecken sind lückenlos bis zur Ecke");
+            c.Check(ch.Count(x => x.After.Id == post && x.After.X <= 9 && x.After.Y == 10) >= 3, "am Anfang steht der Turm");
+            c.Picture("Burgmauer Punkt zu Punkt: Turm, Ecken, Turm", map, new Rectangle(4, 4, 52, 46));
+
+            MapData fit = Map(40, 16, 3, 0);
+            o.FitLast = true;
+            List<StaticChange> f = m.Build(fit, new Point(4, 8), new Point(30, 8), o, 0, out _, out _);
+            fit.Apply(f);
+            int maxX = f.Max(x => x.After.X);
+            c.Line($"Letztes Stück anpassen: Zug 4…30, Mauer endet bei x {maxX}");
+            c.Check(maxX == 30, "die Reihe endet genau am Ende des Zugs");
+            c.Picture("Letztes Stück angepasst (Turm – Mauer – Turm genau bis zum Ende)", fit, new Rectangle(0, 2, 36, 12));
+            o.FitLast = false;
+
+            m.Alternatives.Add(new MotifAlt { Name = "Pfosten", Weight = 2, Built = Compass.East, Parts = new List<PieceStatic> { new PieceStatic { Id = post } } });
+            o.Mode = MotifMode.Radius;
+            o.Spacing = 3;
+            MapData rad = Map(48, 48, 3, 0);
+            List<StaticChange> r = m.Build(rad, new Point(24, 24), new Point(36, 24), o, 0, out _, out int placed);
+            rad.Apply(r);
+            double far = r.Max(x => Math.Sqrt((x.After.X - 24) * (x.After.X - 24) + (x.After.Y - 24) * (x.After.Y - 24)));
+            c.Line($"Radius 12: {placed} Stücke, weitestes {far:0.0} Tiles von der Mitte");
+            c.Check(placed > 3 && far <= 15, "im Radius gestreut");
+            c.Picture("Im Radius gestreut (Mitte + Zufalls-Variante)", rad, new Rectangle(8, 8, 32, 32));
+            o.Mode = MotifMode.Line;
+
+            MapData hill = Map(32, 16, 3, 0);
+            for (int i = 0; i < hill.Z.Length; i++)
+            {
+                hill.Z[i] = (sbyte)(i % 32 / 3);
+            }
+            o.Flatten = MotifFlatten.StartHeight;
+            List<StaticChange> fl = m.Build(hill, new Point(4, 8), new Point(24, 8), o, 0, out _, out _, out List<LandChange> land);
+            hill.Apply(fl, land);
+            int startZ = hill.LandZ(4, 8);
+            bool flat = Enumerable.Range(4, 21).All(x => hill.LandZ(x, 8) == startZ);
+            c.Line($"Boden begradigen: {land.Count} Land-Tiles auf z {startZ}, alle Statics unten auf z {fl.Min(x => x.After.Z)}");
+            c.Check(flat, "der Boden unter der Mauer ist flach");
+            c.Picture("Mauer am Hang mit 'Boden begradigen'", hill, new Rectangle(0, 2, 30, 12));
         }
 
         private static void RotateSwap(Ctx c, CgiBrushSettings b)

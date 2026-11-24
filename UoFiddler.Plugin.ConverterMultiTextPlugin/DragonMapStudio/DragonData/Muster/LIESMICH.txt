@@ -1,0 +1,13 @@
+Muster, die mit dem Projekt ausgeliefert werden (Muster-Baukasten)
+==================================================================
+
+Aufbau:  Muster\<Kategorie>\<Name>.json   (z. B. Muster\Burg\Zinnen.json)
+
+So kommt ein Muster hierher:
+  Muster-Baukasten -> "Ins Projekt ..." -> diesen Ordner wählen
+  (UoFiddler.Plugin.ConverterMultiTextPlugin\DragonMapStudio\DragonData\Muster).
+  Oder eine mit "Exportieren ..." gespeicherte .json von Hand in einen Kategorie-Ordner legen.
+
+Beim Bauen wird der Ordner mit ins Plugin kopiert (plugins\DragonMapStudio\DragonData\Muster).
+Im Studio erscheinen die Muster mit "(Projekt)". Ändert und speichert man eines, entsteht eine
+eigene Kopie im Einstellungs-Ordner (Muster\...) - die eigene gewinnt bei gleichem Namen.
