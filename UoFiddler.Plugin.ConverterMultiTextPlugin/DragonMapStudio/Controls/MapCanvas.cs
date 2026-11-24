@@ -275,6 +275,32 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Tool "Muster": click (a == b) or drag from a to b – the form puts the motif into the statics layer.</summary>
         public event Action<Point, Point> MotifRequested;
 
+        /// <summary>Tool "Muster", point to point: the clicked points are finished (double click, right click, Enter).</summary>
+        public event Action<List<Point>> MotifPathRequested;
+
+        /// <summary>Tool "Muster" collects points (point to point with corners) instead of dragging.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<bool> MotifPointMode { get; set; }
+
+        /// <summary>Preview of point to point: the cells of the path through the points.</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<List<Point>, IReadOnlyCollection<Point>> MotifPathPreview { get; set; }
+
+        private readonly List<Point> _motifPoints = new List<Point>();
+
+        private bool MotifPoints => _tool == MapTool.Motif && (MotifPointMode?.Invoke() ?? false);
+
+        private void FinishMotifPoints()
+        {
+            var pts = _motifPoints.ToList();
+            _motifPoints.Clear();
+            Invalidate();
+            if (pts.Count > 0)
+            {
+                MotifPathRequested?.Invoke(pts);
+            }
+        }
+
         /// <summary>Preview of the tool "Muster": the cells the motif would cover for a click / drag from a to b.</summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Func<Point, Point, IReadOnlyCollection<Point>> MotifPreview { get; set; }
@@ -850,6 +876,36 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 return;
             }
 
+            // point to point of the tool "Muster": the path so far + the mouse
+            if (MotifPoints && _motifPoints.Count > 0)
+            {
+                var pts = _motifPoints.ToList();
+                if (_map.InBounds(_cursor.X, _cursor.Y))
+                {
+                    pts.Add(_cursor);
+                }
+                IReadOnlyCollection<Point> cells = MotifPathPreview?.Invoke(pts);
+                if (cells != null)
+                {
+                    using var fill = new SolidBrush(Color.FromArgb(140, 251, 191, 36));
+                    foreach (Point c in cells)
+                    {
+                        PointF c0 = MapToScreen(c.X, c.Y), c1 = MapToScreen(c.X + 1, c.Y + 1);
+                        g.FillRectangle(fill, c0.X, c0.Y, Math.Max(1, c1.X - c0.X), Math.Max(1, c1.Y - c0.Y));
+                    }
+                }
+                using var line = new Pen(Color.Orange, 2);
+                PointF[] sp = Motif.SnapPath(pts).Select(q => MapToScreen(q.X + 0.5, q.Y + 0.5)).ToArray();
+                if (sp.Length > 1)
+                {
+                    g.DrawLines(line, sp);
+                }
+                foreach (PointF q in sp)
+                {
+                    g.FillEllipse(Brushes.Orange, q.X - 3, q.Y - 3, 6, 6);
+                }
+            }
+
             // shape preview
             if (_drawing && IsShapeTool(_tool))
             {
@@ -1016,6 +1072,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
             Point p = ScreenToMap(e.Location);
             ushort color = (ushort)(e.Button == MouseButtons.Left ? PrimaryIndex : SecondaryIndex);
+
+            if (MotifPoints && (ModifierKeys & Keys.Shift) == 0)
+            {
+                if (e.Button == MouseButtons.Right || e.Clicks >= 2)
+                {
+                    FinishMotifPoints();
+                }
+                else if (_map.InBounds(p.X, p.Y))
+                {
+                    _motifPoints.Add(p);
+                    Invalidate();
+                }
+                return;
+            }
 
             if (e.Button == MouseButtons.Right && !(_pasteMode && _pasteBuffer != null) &&
                 ((ModifierKeys & Keys.Shift) != 0 || _tool == MapTool.Select || _tool == MapTool.Pan || _tool == MapTool.Picker))
@@ -1187,6 +1257,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
+            if (_motifPoints.Count > 0 && MotifPoints)
+            {
+                switch (e.KeyCode)
+                {
+                    case Keys.Enter:
+                        FinishMotifPoints();
+                        e.Handled = true;
+                        return;
+                    case Keys.Back:
+                        _motifPoints.RemoveAt(_motifPoints.Count - 1);
+                        Invalidate();
+                        e.Handled = true;
+                        return;
+                    case Keys.Escape:
+                        _motifPoints.Clear();
+                        Invalidate();
+                        e.Handled = true;
+                        return;
+                }
+            }
             double step = 64 / _zoom;
             switch (e.KeyCode)
             {

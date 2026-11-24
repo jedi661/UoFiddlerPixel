@@ -762,7 +762,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// Turned by 90° (odd quarter turns) a directed piece (wall, fence, railing) must become the piece of the other direction:
         /// the item with the same name close by whose art runs the other way. Other pieces stay.
         /// </summary>
-        public static ushort TurnedId(ushort id, int quarterTurns) => ((quarterTurns % 2) + 2) % 2 == 1 ? BridgeKit.Turned(id) : id;
+        public static ushort TurnedId(ushort id, int quarterTurns)
+        {
+            int q = ((quarterTurns % 4) + 4) % 4;
+            if (q == 0)
+            {
+                return id;
+            }
+            int fromTable = DirectionGroups.Turned(id, q);
+            if (fromTable >= 0)
+            {
+                return (ushort)fromTable;
+            }
+            return q % 2 == 1 ? BridgeKit.Turned(id) : id;
+        }
 
         /// <summary>Position in a w × h box after the transformation (the box itself turns: w and h swap for odd turns).</summary>
         public static (int x, int y) Transform(int x, int y, int w, int h, int quarterTurns, bool mirrorX, bool mirrorY)
@@ -821,7 +834,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                         continue;
                     }
                     int i = ny * map.Width + nx;
-                    written[i] = new LandChange { Index = i, OldId = map.Tiles[i], OldZ = map.Z[i], NewId = tiles[y * w + x], NewZ = z[y * w + x] };
+                    ushort lid = tiles[y * w + x];
+                    int turnedLand = ((quarterTurns % 4) + 4) % 4 != 0 ? DirectionGroups.Turned(lid, quarterTurns, DirectionKind.Land) : -1;
+                    written[i] = new LandChange { Index = i, OldId = map.Tiles[i], OldZ = map.Z[i], NewId = turnedLand >= 0 ? (ushort)turnedLand : lid, NewZ = z[y * w + x] };
                 }
             }
             land.AddRange(written.Values.Where(c => c.OldId != c.NewId || c.OldZ != c.NewZ));

@@ -233,6 +233,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         }
                         break;
                     }
+                case "directions":
+                    {
+                        // compass: four arrows
+                        using var pen = new Pen(Color.FromArgb(180, 83, 9), 2f) { EndCap = System.Drawing.Drawing2D.LineCap.ArrowAnchor };
+                        g.DrawLine(pen, 12, 12, 20, 4);
+                        g.DrawLine(pen, 12, 12, 20, 20);
+                        g.DrawLine(pen, 12, 12, 4, 20);
+                        g.DrawLine(pen, 12, 12, 4, 4);
+                        break;
+                    }
                 case "motif":
                 case "motifdesigner":
                     {

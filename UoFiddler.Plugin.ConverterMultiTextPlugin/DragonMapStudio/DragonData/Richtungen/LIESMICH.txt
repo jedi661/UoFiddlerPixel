@@ -1,0 +1,8 @@
+Richtungs-Tabellen, die mit dem Projekt ausgeliefert werden ("Richtungen festlegen")
+=====================================================================================
+
+Jede *.json hier ist eine Liste von Gruppen (Name, Art Item/Land, Treppe ja/nein,
+Ids = [Nord, Ost, Süd, West]). Erzeugen: Fenster "Richtungen festlegen" -> "Exportieren ..."
+und die Datei in diesen Ordner legen.
+
+Eigene Gruppen (Einstellungs-Ordner, richtungen.json) gewinnen bei gleichem Namen.

@@ -23,6 +23,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
     public sealed class MotifDesignerHost
     {
         public MapData Map;
+        public Func<MapData> CurrentMap;
         public CgiBrushSettings Brushes;
         public Action<IsoMapView> Configure;
         public Func<Rectangle> CurrentArea;
@@ -47,6 +48,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private MapData _test;
         private Motif _motif = new Motif();
         private Compass _building = Compass.East;
+        private MotifPart _part = MotifPart.Middle;
+        private readonly Dictionary<MotifPart, RadioButton> _partButtons = new Dictionary<MotifPart, RadioButton>();
+        private readonly ListBox _alts = new ListBox { Width = 310, Height = 84, IntegralHeight = false };
+
+        /// <summary>Tag of a tree node: one piece slot of a motif.</summary>
+        private sealed class SlotTag
+        {
+            public Motif M;
+            public MotifPart P;
+            public Compass C;
+        }
         private PropertyGrid _grid;
         private ToolStripLabel _pieceHeight;
         private NumericUpDown _zStep;
@@ -111,10 +123,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 r.Checked = true;
             }
             NewField();
-            Put(_motif.Variant(c), new Point(Size0 / 2 - 4, Size0 / 2 - 4));
+            List<PieceStatic> v = _motif.Piece(_part, c);
+            Put(v, new Point(Size0 / 2 - 4, Size0 / 2 - 4));
             _test.ClearHistory();
             _view.Refresh(true);
-            Say(L.T("Richtung") + $" {L.T(Motif.DirName(c))}: {_motif.Variant(c).Count} " + L.T("Teile") + (_motif.Has(c) ? " – " + L.T("ändern, markieren, wieder übernehmen") : " – " + L.T("noch leer: bauen oder 'Fehlende Richtungen automatisch'")));
+            Say(L.T(Motif.SlotName(_part, c)) + $": {v.Count} " + L.T("Teile") + (v.Count > 0 ? " – " + L.T("ändern, markieren, wieder übernehmen") : " – " + L.T("noch leer: bauen oder 'Fehlende Richtungen automatisch'")));
         }
 
         private void ShowAll()
@@ -133,7 +146,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             Say(L.T("Alle vier Richtungen: oben Nord, rechts Ost, unten Süd, links West (so wie im Client: Nord = oben rechts).") + " " + L.T("Erlaubt") + ": " + string.Join(", ", Dirs.Where(_motif.Allowed).Select(c => L.T(Motif.DirName(c)))));
         }
 
-        private void TakeMarked()
+        /// <summary>The marked statics of the test field (area, selection, or everything).</summary>
+        private List<PieceStatic> CaptureMarked()
         {
             List<PieceStatic> parts;
             if (_view.Selection.Count > 0 && _view.Area.IsEmpty)
@@ -149,7 +163,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                     if (st.Count == 0)
                     {
                         Say(L.T("Das Testfeld ist leer."));
-                        return;
+                        return null;
                     }
                     r = Rectangle.FromLTRB(st.Min(s => s.X), st.Min(s => s.Y), st.Max(s => s.X) + 1, st.Max(s => s.Y) + 1);
                 }
@@ -158,10 +172,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             if (parts.Count == 0)
             {
                 Say(L.T("Im markierten Bereich sind keine Statics."));
+                return null;
+            }
+            return parts;
+        }
+
+        private void TakeMarked()
+        {
+            List<PieceStatic> parts = CaptureMarked();
+            if (parts == null)
+            {
                 return;
             }
             int axis = Motif.AxisOf(parts);
-            if (axis != 0 && axis != Motif.AxisOf(_building))
+            if (_part != MotifPart.Corner && axis != 0 && axis != Motif.AxisOf(_building))
             {
                 Compass fits = Staircase.RightOf(_building);
                 string runs = axis > 0 ? L.T("West → Ost") : L.T("Nord → Süd");
@@ -190,8 +214,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                     }
                 }
             }
-            _motif.SetVariant(_building, parts);
+            _motif.SetPiece(_part, _building, parts);
             FillTree(_motif.ToString());
+            if (_part != MotifPart.Middle)
+            {
+                Say(L.T("Übernommen als") + " " + L.T(Motif.SlotName(_part, _building)) + $": {parts.Count} " + L.T("Teile") + " – " + L.T("die anderen Richtungen dreht das Studio selbst"));
+                return;
+            }
             Say(L.T("Übernommen als Richtung") + $" {L.T(Motif.DirName(_building))}: {parts.Count} " + L.T("Teile") + $", " + L.T("Höhe") + $" {_motif.HeightOf(_building)}" +
                 (_motif.StairRise(_building) > 0 ? $", " + L.T("Treppen erkannt") + $" ({_motif.StairRise(_building)} Z)" : string.Empty) + " – " + L.T("fehlende Richtungen: 'automatisch' oder selbst bauen"));
         }
@@ -204,9 +233,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             Say(n + " " + L.T("Richtungen gedreht (Stufen nach ihrer Neigung, Wände nach ihrem Bild, Blöcke bleiben) – falsche Grafik? Richtung wählen, von Hand ändern, wieder übernehmen."));
         }
 
+        private bool HasAnything => Dirs.Any(_motif.Has) || (_motif.Alternatives?.Any(a => a.Parts.Count > 0) ?? false);
+
+        private void PutLayout(List<(int x, int y, int z, ushort id, ushort hue)> parts) =>
+            _test.Apply(parts.Where(p => _test.InBounds(p.x, p.y)).Select(p => MapData.Add(new StaticItem { Id = p.id, Hue = p.hue, X = p.x, Y = p.y, Z = p.z })).ToList());
+
+        /// <summary>Test drawing in the field – as the chosen "Zeichen-Art" (line: 4 drags, points: a square with corners, radius).</summary>
         private void TryDrag()
         {
-            if (!_motif.Has(Compass.East) && !_motif.Has(Compass.North) && !_motif.Has(Compass.South) && !_motif.Has(Compass.West))
+            if (!HasAnything)
             {
                 Say(L.T("Erst eine Richtung übernehmen."));
                 return;
@@ -214,15 +249,169 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             NewField();
             var ground = new Func<int, int, int>((x, y) => 0);
             int total = 0;
-            foreach ((Point a, Point b) in new[] { (new Point(6, 10), new Point(40, 10)), (new Point(56, 20), new Point(56, 58)), (new Point(54, 60), new Point(14, 60)), (new Point(4, 56), new Point(4, 22)) })
+            string what;
+            if (_draw.Mode == MotifMode.Radius)
             {
-                List<(int x, int y, int z, ushort id, ushort hue)> parts = _motif.Layout(a, b, _draw, ground, out _, out _);
-                _test.Apply(parts.Where(p => _test.InBounds(p.x, p.y)).Select(p => MapData.Add(new StaticItem { Id = p.id, Hue = p.hue, X = p.x, Y = p.y, Z = p.z })).ToList());
-                total += parts.Count;
+                List<(int x, int y, int z, ushort id, ushort hue)> parts = _motif.Layout(new Point(32, 32), new Point(52, 32), _draw, ground, out _, out int n);
+                PutLayout(parts);
+                total = parts.Count;
+                what = L.T("Im Radius 20 gestreut") + $": {n} " + L.T("Stücke");
             }
+            else if (_draw.Mode == MotifMode.Points)
+            {
+                List<(int x, int y, int z, ushort id, ushort hue)> parts = _motif.Path(new[] { new Point(8, 8), new Point(54, 8), new Point(54, 54), new Point(8, 54), new Point(8, 14) }, _draw, ground, out int n);
+                PutLayout(parts);
+                total = parts.Count;
+                what = L.T("Punkt zu Punkt (Viereck mit Ecken)") + $": {n} " + L.T("Stücke");
+            }
+            else
+            {
+                foreach ((Point a, Point b) in new[] { (new Point(6, 10), new Point(40, 10)), (new Point(56, 20), new Point(56, 58)), (new Point(54, 60), new Point(14, 60)), (new Point(4, 56), new Point(4, 22)) })
+                {
+                    List<(int x, int y, int z, ushort id, ushort hue)> parts = _motif.Layout(a, b, _draw, ground, out _, out _);
+                    PutLayout(parts);
+                    total += parts.Count;
+                }
+                what = L.T("Ziehen getestet: nach Ost (oben), Süd (rechts), West (unten), Nord (links)");
+            }
+            _draw.Seed = Environment.TickCount & 0x7fffffff;
             _test.ClearHistory();
             _view.Refresh(true);
-            Say(L.T("Ziehen getestet: nach Ost (oben), Süd (rechts), West (unten), Nord (links)") + $" – {total} Statics");
+            Say(what + $" – {total} Statics");
+        }
+
+        private void RefreshAlts()
+        {
+            _alts.BeginUpdate();
+            _alts.Items.Clear();
+            foreach (MotifAlt a in _motif.Alternatives ?? new List<MotifAlt>())
+            {
+                _alts.Items.Add(a);
+            }
+            _alts.EndUpdate();
+        }
+
+        private void AddAlt()
+        {
+            List<PieceStatic> parts = CaptureMarked();
+            if (parts == null)
+            {
+                return;
+            }
+            string name = Microsoft.VisualBasic.Interaction.InputBox(L.T("Name der Variante (z. B. Eiche, Busch, Mauer ohne Fenster):"), Text, L.T("Variante") + " " + (_motif.Alternatives.Count + 1));
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return;
+            }
+            string w = Microsoft.VisualBasic.Interaction.InputBox(L.T("Gewicht (wie oft im Vergleich, z. B. 1, 2, 5):"), Text, "1");
+            _motif.Alternatives.Add(new MotifAlt { Name = name.Trim(), Weight = int.TryParse(w, out int wi) ? Math.Max(0, wi) : 1, Built = _building, Parts = parts });
+            RefreshAlts();
+            FillTree(_motif.ToString());
+            Say(L.T("Zufalls-Variante hinzugefügt") + $": {name} ({parts.Count} " + L.T("Teile") + ") – " + L.T("Zeichen-Art 'Im Radius streuen' oder 'Mitte zufällig' benutzt sie."));
+        }
+
+        /// <summary>From the CGI view ("→ Muster"): fetch the marked area.</summary>
+        public void FetchFromMap()
+        {
+            Activate();
+            FromMap();
+        }
+
+        /// <summary>Copies the statics of the area marked in the CGI view into the test field (heights relative to the lowest land there).</summary>
+        private void FromMap()
+        {
+            MapData map = _host.CurrentMap?.Invoke() ?? _host.Map;
+            Rectangle r = _host.CurrentArea?.Invoke() ?? Rectangle.Empty;
+            if (map == null || r.IsEmpty)
+            {
+                Say(L.T("Erst in der CGI-Ansicht mit 'Bereich' etwas markieren (z. B. ein Stück Burgmauer), dann hier 'Aus der Karte holen'."));
+                return;
+            }
+            r.Intersect(new Rectangle(0, 0, map.Width, map.Height));
+            if (r.Width > Size0 - 4 || r.Height > Size0 - 4)
+            {
+                Say(L.T("Der Bereich ist zu groß für das Testfeld") + $" (max {Size0 - 4}×{Size0 - 4}).");
+                return;
+            }
+            int ground = int.MaxValue;
+            for (int y = r.Top; y < r.Bottom; y++)
+            {
+                for (int x = r.Left; x < r.Right; x++)
+                {
+                    ground = Math.Min(ground, map.LandZ(x, y));
+                }
+            }
+            List<PieceStatic> parts = Motif.Capture(map, r, ground);
+            if (parts.Count == 0)
+            {
+                Say(L.T("Im markierten Bereich sind keine Statics."));
+                return;
+            }
+            NewField();
+            Put(parts, new Point((Size0 - r.Width) / 2, (Size0 - r.Height) / 2));
+            _test.ClearHistory();
+            _view.Refresh(true);
+            Say(parts.Count + " " + L.T("Statics aus der Karte geholt – Teil und Richtung wählen, markieren, übernehmen."));
+        }
+
+        private void ExportMotifs()
+        {
+            using var d = new SaveFileDialog { Filter = "ZIP (alle Muster)|*.zip|JSON (dieses Muster)|*.json", FileName = "Muster.zip", Title = L.T("Muster exportieren") };
+            if (d.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            List<Motif> list = d.FileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? new List<Motif> { _motif } : Motif.LoadAll();
+            Motif.Export(list, d.FileName);
+            Say(list.Count + " " + L.T("Muster exportiert") + ": " + d.FileName);
+        }
+
+        private void ImportMotifs()
+        {
+            using var d = new OpenFileDialog { Filter = "Muster (*.zip;*.json)|*.zip;*.json", Multiselect = true };
+            if (d.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            int n = 0;
+            foreach (string f in d.FileNames)
+            {
+                try
+                {
+                    n += Motif.Import(f).Count;
+                }
+                catch (Exception ex)
+                {
+                    Say(L.T("Fehler beim Import") + ": " + ex.Message);
+                }
+            }
+            FillTree(_motif.ToString());
+            Say(n + " " + L.T("Muster importiert."));
+        }
+
+        private void ExportToProject()
+        {
+            using var d = new FolderBrowserDialog
+            {
+                Description = L.T("Ordner 'DragonData\\Muster' im Projekt wählen (UoFiddler.Plugin.ConverterMultiTextPlugin\\DragonMapStudio\\DragonData\\Muster) – die Muster werden dann mit ausgeliefert."),
+                UseDescriptionForTitle = true
+            };
+            if (Motif.ShippedFolder != null)
+            {
+                d.SelectedPath = Motif.ShippedFolder;
+            }
+            if (d.ShowDialog(this) != DialogResult.OK)
+            {
+                return;
+            }
+            var choice = MessageBox.Show(this, L.T("Alle Muster ins Projekt schreiben? (Nein = nur dieses Muster)"), Text, MessageBoxButtons.YesNoCancel);
+            if (choice == DialogResult.Cancel)
+            {
+                return;
+            }
+            List<Motif> list = choice == DialogResult.Yes ? Motif.LoadAll() : new List<Motif> { _motif };
+            int n = Motif.ExportToFolder(list, d.SelectedPath);
+            Say(n + " " + L.T("Muster ins Projekt geschrieben") + ": " + d.SelectedPath + " (" + L.T("Kategorie-Ordner / Name.json") + ")");
         }
 
         private void FillTree(string select)
@@ -230,7 +419,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             _tree.BeginUpdate();
             _tree.Nodes.Clear();
             var all = Motif.LoadAll();
-            if (!all.Any(m => m.ToString() == _motif.ToString()) && (_motif.North.Count + _motif.East.Count + _motif.South.Count + _motif.West.Count) > 0)
+            if (!all.Any(m => m.ToString() == _motif.ToString()) && HasAnything)
             {
                 all.Add(_motif);
             }
@@ -241,12 +430,34 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 foreach (Motif m in cat.OrderBy(m => m.Name))
                 {
                     Motif use = m.ToString() == _motif.ToString() ? _motif : m;
-                    TreeNode mn = cn.Nodes.Add(m.Name);
+                    TreeNode mn = cn.Nodes.Add(m.Name + (m.Shipped ? " (" + L.T("Projekt") + ")" : string.Empty));
                     mn.Tag = use;
                     foreach (Compass c in new[] { Compass.South, Compass.West, Compass.North, Compass.East })
                     {
                         TreeNode dn = mn.Nodes.Add((!use.Allowed(c) ? "✖ " : use.Has(c) ? "✔ " : "· ") + L.T(Motif.DirName(c)) + (use.Allowed(c) ? $" ({use.Variant(c).Count})" : " – " + L.T("nicht erlaubt")));
-                        dn.Tag = (use, c);
+                        dn.Tag = new SlotTag { M = use, P = MotifPart.Middle, C = c };
+                    }
+                    foreach (MotifPart part in new[] { MotifPart.Start, MotifPart.End, MotifPart.Corner })
+                    {
+                        if (!use.HasPart(part))
+                        {
+                            continue;
+                        }
+                        TreeNode pn = mn.Nodes.Add(L.T(Motif.PartName(part)));
+                        foreach (Compass c in Dirs)
+                        {
+                            List<PieceStatic> v = use.Piece(part, c);
+                            TreeNode dn = pn.Nodes.Add((v.Count > 0 ? "✔ " : "· ") + L.T(Motif.SlotName(part, c)) + $" ({v.Count})");
+                            dn.Tag = new SlotTag { M = use, P = part, C = c };
+                        }
+                    }
+                    if (use.Alternatives?.Count > 0)
+                    {
+                        TreeNode an = mn.Nodes.Add(L.T("Zufalls-Varianten") + $" ({use.Alternatives.Count})");
+                        foreach (MotifAlt a in use.Alternatives)
+                        {
+                            an.Nodes.Add(a.ToString()).Tag = a;
+                        }
                     }
                     if (use.ToString() == select)
                     {
@@ -264,7 +475,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
 
         private void SaveMotif()
         {
-            if (!Dirs.Any(_motif.Has))
+            if (!HasAnything)
             {
                 Say(L.T("Erst eine Richtung übernehmen."));
                 return;
@@ -289,6 +500,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             _grid.SelectedObject = _motif;
             FillTree(_motif.ToString());
             Say(L.T("Gespeichert") + ": " + path + " – " + string.Join(", ", Dirs.Select(c => L.T(Motif.DirName(c)) + (_motif.Has(c) ? " ✔" : " –"))));
+        }
+
+        /// <summary>Which piece is built (middle, start, end, corner) – the direction buttons show the corners for "Ecke".</summary>
+        private void SetPart(MotifPart p)
+        {
+            _part = p;
+            _allowSync = true;
+            if (_partButtons.TryGetValue(p, out RadioButton pr))
+            {
+                pr.Checked = true;
+            }
+            foreach (KeyValuePair<Compass, RadioButton> kv in _dirButtons)
+            {
+                kv.Value.Text = L.T(p == MotifPart.Corner ? Motif.CornerName(kv.Key) : Motif.DirName(kv.Key));
+            }
+            _allowSync = false;
         }
 
         /// <summary>Check boxes of the allowed directions = the motif.</summary>
@@ -454,15 +681,26 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 {
                     _motif = m;
                     SyncAllow();
+                    RefreshAlts();
                     _grid.SelectedObject = _motif;
                     ShowAll();
                 }
-                else if (e.Node?.Tag is ValueTuple<Motif, Compass> mc)
+                else if (e.Node?.Tag is SlotTag st)
                 {
-                    _motif = mc.Item1;
+                    _motif = st.M;
                     SyncAllow();
+                    RefreshAlts();
                     _grid.SelectedObject = _motif;
-                    ShowVariant(mc.Item2);
+                    SetPart(st.P);
+                    ShowVariant(st.C);
+                }
+                else if (e.Node?.Tag is MotifAlt alt)
+                {
+                    NewField();
+                    Put(alt.Parts, new Point(Size0 / 2 - 4, Size0 / 2 - 4));
+                    _test.ClearHistory();
+                    _view.Refresh(true);
+                    Say(L.T("Zufalls-Variante") + $" {alt}");
                 }
             };
             left.Controls.Add(_tree);
@@ -471,6 +709,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             {
                 _motif = new Motif();
                 SyncAllow();
+                RefreshAlts();
                 _grid.SelectedObject = _motif;
                 NewField();
                 FillTree(null);
@@ -481,8 +720,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             {
                 if (MessageBox.Show(this, L.T("Muster löschen?") + $" {_motif}", Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
-                    _motif.Delete();
+                    if (!_motif.Delete() && _motif.Shipped)
+                    {
+                        Say(L.T("Dieses Muster kommt aus dem Projekt (DragonData\\Muster) – dort löschen."));
+                        return;
+                    }
                     _motif = new Motif();
+                    RefreshAlts();
                     _grid.SelectedObject = _motif;
                     FillTree(null);
                 }
@@ -492,7 +736,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             _grid = new PropertyGrid { Width = 310, Height = 110, ToolbarVisible = false, HelpVisible = false, PropertySort = PropertySort.NoSort, SelectedObject = _motif };
             left.Controls.Add(_grid);
 
-            left.Controls.Add(Head("2 Richtung, die ich baue", Color.FromArgb(180, 83, 9)));
+            left.Controls.Add(Head("2 Teil und Richtung, die ich baue", Color.FromArgb(180, 83, 9)));
+            var pl = Line();
+            foreach (MotifPart part in new[] { MotifPart.Middle, MotifPart.Start, MotifPart.End, MotifPart.Corner })
+            {
+                var r = new RadioButton { Text = L.T(Motif.PartName(part)), AutoSize = true, Checked = part == _part, Margin = new Padding(6, 4, 6, 0) };
+                MotifPart pp = part;
+                r.CheckedChanged += (s, e) =>
+                {
+                    if (r.Checked && _part != pp && !_allowSync)
+                    {
+                        SetPart(pp);
+                        ShowVariant(_building);
+                    }
+                };
+                _partButtons[part] = r;
+                pl.Controls.Add(r);
+            }
+            left.Controls.Add(pl);
+            left.Controls.Add(new Label
+            {
+                AutoSize = false, Width = 310, Height = 46, ForeColor = Color.FromArgb(71, 85, 105),
+                Text = L.T("Mitte = wiederholt sich. Anfang / Ende = einmal an den Enden der Reihe (z. B. Türme). Ecke = an jedem Knick bei 'Punkt zu Punkt' (ein Feld, das Knick-Feld).")
+            });
             var dl = Line();
             foreach (Compass c in Dirs)
             {
@@ -561,16 +827,63 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             tl.Controls.Add(B("Testfeld leeren", NewField, 148));
             left.Controls.Add(tl);
 
+            left.Controls.Add(Head("Zufalls-Varianten (Bäume, Pflanzen, Mauer-Abwechslung)", Color.FromArgb(21, 128, 61)));
+            left.Controls.Add(_alts);
+            var vl = Line();
+            vl.Controls.Add(B("+ Markiertes als Variante", AddAlt, 170));
+            vl.Controls.Add(B("Gewicht …", () =>
+            {
+                if (_alts.SelectedItem is MotifAlt a)
+                {
+                    string w = Microsoft.VisualBasic.Interaction.InputBox(L.T("Gewicht (wie oft im Vergleich, z. B. 1, 2, 5):"), Text, a.Weight.ToString());
+                    if (int.TryParse(w, out int wi))
+                    {
+                        a.Weight = Math.Max(0, wi);
+                        RefreshAlts();
+                        FillTree(_motif.ToString());
+                    }
+                }
+            }, 80));
+            vl.Controls.Add(B("Ansehen", () =>
+            {
+                if (_alts.SelectedItem is MotifAlt a)
+                {
+                    NewField();
+                    Put(a.Parts, new Point(Size0 / 2 - 4, Size0 / 2 - 4));
+                    _test.ClearHistory();
+                    _view.Refresh(true);
+                }
+            }, 70));
+            vl.Controls.Add(B("Entfernen", () =>
+            {
+                if (_alts.SelectedItem is MotifAlt a)
+                {
+                    _motif.Alternatives.Remove(a);
+                    RefreshAlts();
+                    FillTree(_motif.ToString());
+                }
+            }, 80));
+            left.Controls.Add(vl);
+
+            left.Controls.Add(Head("Karte, Austausch, Richtungen", Color.FromArgb(87, 83, 78)));
+            var xl = Line();
+            xl.Controls.Add(B("⇩ Aus der Karte holen", FromMap, 150));
+            xl.Controls.Add(B("Richtungen festlegen …", () => DirectionGroupsForm.ShowShared(this), 150));
+            xl.Controls.Add(B("Exportieren …", ExportMotifs, 100));
+            xl.Controls.Add(B("Importieren …", ImportMotifs, 100));
+            xl.Controls.Add(B("Ins Projekt …", ExportToProject, 100));
+            left.Controls.Add(xl);
+
             left.Controls.Add(Head("3 Ziehen testen", Color.FromArgb(37, 99, 235)));
             left.Controls.Add(new PropertyGrid { Width = 310, Height = 250, ToolbarVisible = false, HelpVisible = true, PropertySort = PropertySort.Categorized, SelectedObject = _draw });
-            left.Controls.Add(B("▶ Probe ziehen (alle 4 Richtungen)", TryDrag, 300));
+            left.Controls.Add(B("▶ Probe zeichnen (wie Zeichen-Art)", TryDrag, 300));
 
             left.Controls.Add(Head("4 Log und Studio", Color.FromArgb(22, 128, 61)));
             var ul = Line();
             ul.Controls.Add(B("📋 Log + Bild", () => DesignLog.Export(this, _view, _test, _view.Area, "Muster", _motif.Describe()), 148));
             ul.Controls.Add(B("✔ Im Studio benutzen", () =>
             {
-                if (!Dirs.Any(_motif.Has))
+                if (!HasAnything)
                 {
                     Say(L.T("Erst eine Richtung übernehmen."));
                     return;

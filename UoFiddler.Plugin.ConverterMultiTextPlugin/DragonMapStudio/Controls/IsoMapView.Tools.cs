@@ -360,7 +360,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 return IsClickTool(Tool);
             }
-            if (Tool == IsoTool.Wall && BrushSettings.Wall.PointMode)
+            if ((Tool == IsoTool.Wall && BrushSettings.Wall.PointMode) || (Tool == IsoTool.Motif && BrushSettings.MotifDraw.Mode == MotifMode.Points))
             {
                 if (e.Clicks >= 2)
                 {
@@ -431,7 +431,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Right click with a point tool: finish. True = handled.</summary>
         private bool ToolRightClick()
         {
-            if ((Tool == IsoTool.Road || Tool == IsoTool.Lasso || Tool == IsoTool.Wall) && _points.Count > 0)
+            if ((Tool == IsoTool.Road || Tool == IsoTool.Lasso || Tool == IsoTool.Wall || Tool == IsoTool.Motif) && _points.Count > 0)
             {
                 FinishPoints();
                 return true;
@@ -570,7 +570,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 Invalidate();
                 return true;
             }
-            if ((Tool == IsoTool.Road || Tool == IsoTool.Lasso || Tool == IsoTool.Wall) && _points.Count > 0)
+            if ((Tool == IsoTool.Road || Tool == IsoTool.Lasso || Tool == IsoTool.Wall || Tool == IsoTool.Motif) && _points.Count > 0)
             {
                 switch (e.KeyCode)
                 {
@@ -650,6 +650,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     return;
                 }
                 SetMask(CgiBrushes.Polygon(_map, poly), ModifierKeys, L.T("Lasso"));
+                return;
+            }
+            if (Tool == IsoTool.Motif)
+            {
+                var mp = _points.ToList();
+                _points.Clear();
+                PlaceMotifPath(mp);
                 return;
             }
             if (Tool == IsoTool.Wall)
@@ -889,32 +896,89 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Func<string, Motif> FindMotif { get; set; }
 
+        private Motif CurrentMotif => string.IsNullOrEmpty(BrushSettings.Motif) ? null : FindMotif?.Invoke(BrushSettings.Motif);
+
         /// <summary>Pieces of the motif for a click / drag (preview and building).</summary>
-        public List<StaticChange> MotifPieces(Point a, Point b, out string info)
+        public List<StaticChange> MotifPieces(Point a, Point b, out string info) => MotifPieces(a, b, out info, out _);
+
+        private List<StaticChange> MotifPieces(Point a, Point b, out string info, out List<LandChange> land)
         {
             info = string.Empty;
-            Motif m = string.IsNullOrEmpty(BrushSettings.Motif) ? null : FindMotif?.Invoke(BrushSettings.Motif);
+            land = new List<LandChange>();
+            Motif m = CurrentMotif;
             if (m == null)
             {
                 return new List<StaticChange>();
             }
+            MotifDrawSettings o = BrushSettings.MotifDraw;
             int under = UnderView ? BrushSettings.UnderOffset : 0;
-            List<StaticChange> ch = m.Build(_map, a, b, BrushSettings.MotifDraw, ZOffset + under, out Compass dir, out int n);
-            info = $"'{m}' {L.T(Core.Motif.DirName(dir))} × {n}" + (BrushSettings.MotifDraw.Floors > 1 ? $", {BrushSettings.MotifDraw.Floors} " + L.T("Etagen") : string.Empty);
+            List<StaticChange> ch = m.Build(_map, a, b, o, ZOffset + under, out Compass dir, out int n, out land);
+            info = o.Mode == MotifMode.Radius
+                ? $"'{m}' " + L.T("im Radius") + $": {n} " + L.T("Stücke")
+                : $"'{m}' {L.T(Core.Motif.DirName(dir))} × {n}" + (o.Floors > 1 ? $", {o.Floors} " + L.T("Etagen") : string.Empty);
+            if (land.Count > 0)
+            {
+                info += $", {land.Count} " + L.T("Land-Tiles begradigt");
+            }
             return ch;
         }
 
-        private void PlaceMotif(Point a, Point b)
+        /// <summary>Point to point: the stretches with corners (preview: the points so far + the mouse).</summary>
+        private List<StaticChange> MotifPathPieces(List<Point> pts, out string info, out List<LandChange> land)
         {
-            List<StaticChange> ch = MotifPieces(a, b, out string info);
+            info = string.Empty;
+            land = new List<LandChange>();
+            Motif m = CurrentMotif;
+            if (m == null || pts.Count == 0)
+            {
+                return new List<StaticChange>();
+            }
+            int under = UnderView ? BrushSettings.UnderOffset : 0;
+            List<StaticChange> ch = m.BuildPath(_map, pts, BrushSettings.MotifDraw, ZOffset + under, out int n, out land);
+            info = $"'{m}' " + L.T("Punkt zu Punkt") + $": {Core.Motif.SnapPath(pts).Count} " + L.T("Punkte") + $", {n} " + L.T("Stücke") +
+                   (land.Count > 0 ? $", {land.Count} " + L.T("Land-Tiles begradigt") : string.Empty);
+            return ch;
+        }
+
+        private void ApplyMotif(List<StaticChange> ch, List<LandChange> land, string info)
+        {
             if (ch.Count == 0)
             {
                 Message?.Invoke(this, L.T("Muster: erst ein Muster wählen (Leiste oben / Muster-Baukasten)."));
                 return;
             }
             int before = _map.UndoCount;
-            _map.Apply(ch);
+            _map.Apply(ch, land);
+            BrushSettings.MotifDraw.Seed = _rnd.Next(1, int.MaxValue);
+            if (land.Count > 0)
+            {
+                Refresh(true);
+            }
             Finished(_map.UndoCount > before ? ch.Count : 0, L.T("Muster") + " " + info);
+        }
+
+        private void PlaceMotif(Point a, Point b)
+        {
+            List<StaticChange> ch = MotifPieces(a, b, out string info, out List<LandChange> land);
+            ApplyMotif(ch, land, info);
+        }
+
+        private void PlaceMotifPath(List<Point> pts)
+        {
+            List<StaticChange> ch = MotifPathPieces(pts, out string info, out List<LandChange> land);
+            ApplyMotif(ch, land, info);
+        }
+
+        /// <summary>Preview pieces of the motif tool (click / drag / the points so far).</summary>
+        private List<StaticChange> MotifGhost()
+        {
+            if (BrushSettings.MotifDraw.Mode == MotifMode.Points)
+            {
+                var pts = _points.ToList();
+                pts.Add(_hover);
+                return MotifPathPieces(pts, out _, out _);
+            }
+            return MotifPieces(_dragStart ?? _hover, _dragStart.HasValue ? _dragEnd : _hover, out _);
         }
 
         /// <summary>Stair model by "Kategorie / Name" (stair designer).</summary>
@@ -1420,7 +1484,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         {
             IsoTool.Scatter => L.T("Streu-Pinsel: Ziehen verteilt das Set (Reiter Pinsel) – Dichte, Abstand, Boden-Filter · Strg+Ziehen entfernt Statics des Sets · Pinsel oben · ein Zug = ein Rückgängig-Schritt"),
             IsoTool.Eraser => L.T("Radierer: Ziehen löscht alle Statics im Pinsel (Größe oben / [ ]) · Strg = Land zur Leere · Einstellungen im Reiter Pinsel"),
-            IsoTool.Motif => L.T("Muster: Klick = einmal in der Richtung (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe, Etagen, Abstand oben in der Leiste"),
+            IsoTool.Motif => BrushSettings.MotifDraw.Mode switch
+            {
+                MotifMode.Points => L.T("Muster Punkt zu Punkt: klicken, klicken … · Doppelklick / Rechtsklick / Enter = fertig · Rücktaste = letzter Punkt weg · Esc = abbrechen · an Knicken das Eckstück"),
+                MotifMode.Radius => L.T("Muster streuen: von der Mitte nach außen ziehen = Radius · Zufalls-Varianten nach Gewicht, Mindest-Abstand, Dichte oben in der Leiste"),
+                _ => L.T("Muster: Klick = einmal in der Richtung (R dreht) · Ziehen = wiederholt in Zieh-Richtung mit der Version dieser Richtung · Höhe, Etagen, Abstand oben in der Leiste")
+            },
             IsoTool.Stairs => L.T("Treppe: Klick = Modell / Treppe einmal (R dreht) · Ziehen = je Feld eine Stufe mit Blöcken darunter, in Zieh-Richtung hinauf ('Nach unten bauen' = hinunter) · Vorschau am Mauszeiger"),
             IsoTool.HueBrush => L.T("Hue-Pinsel: Ziehen färbt alle Statics im Pinsel mit der Hue (Reiter Items) · Strg = Hue 0 (Original)"),
             IsoTool.River => L.T("Fluss: Ziehen gräbt ein Bett – Wasser-Tiles auf 'Tiefe' unter dem Startpunkt, weiches Ufer, danach Übergänge (Reiter Pinsel → Fluss) · Pinsel oben = Breite"),

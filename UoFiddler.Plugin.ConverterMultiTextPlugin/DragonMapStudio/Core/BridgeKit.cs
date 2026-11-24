@@ -543,6 +543,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public static Compass? StairUp(int id, out string info)
         {
             info = string.Empty;
+            Compass? fromTable = DirectionGroups.StairUp(id);
+            if (fromTable != null)
+            {
+                info = "Richtungs-Tabelle";
+                return fromTable;
+            }
             Bitmap art = UoArtCache.Static(id, 0);
             if (art == null || art.Width < 40)
             {

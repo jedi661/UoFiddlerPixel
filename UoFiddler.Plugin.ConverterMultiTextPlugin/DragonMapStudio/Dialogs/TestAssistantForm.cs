@@ -128,6 +128,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             S("Muster", "Muster-Baukasten: Zinnen bauen, vier Richtungen, ziehen",
                 "Muster-Baukasten öffnen (▶). Richtung 'Ost' wählen, im Katalog eine Mauer und Zinnen wählen und ein Stück (2–3 Tiles) bauen, mit 'Bereich' markieren, 'Markiertes als diese Richtung übernehmen', 'Fehlende Richtungen automatisch', 'Alle 4 ansehen', '▶ Probe ziehen', '📋 Log + Bild', speichern (Kategorie Burg). 'Im Studio benutzen' und auf der Karte in alle vier Richtungen ziehen; einmal mit Etagen 2. 📷 Aufnehmen.",
                 "Das Muster wiederholt sich lückenlos in Zieh-Richtung, jede Richtung zeigt die passenden Teile, alle Stücke auf gleicher Höhe; mit 2 Etagen steht es doppelt übereinander. Im Karten-Editor (Werkzeug 'Muster (Statics)') landen die Statics in der Statics-Ebene.", () => _host.Open?.Invoke("motifdesigner"));
+            S("Muster", "Burgmauer: Turm – Mauer – Turm, Punkt zu Punkt mit Ecken",
+                "Muster-Baukasten: Teil 'Mitte' eine Mauer (3 Tiles) übernehmen, Teil 'Anfang' und 'Ende' einen Turm, Teil 'Ecke' (Ecke NO) einen Eckturm. Speichern, 'Im Studio benutzen'. Oben Zeichen-Art 'Punkt zu Punkt', vier Punkte im U klicken, Doppelklick. Einmal mit 'Letztes Stück anpassen'. 📷 Aufnehmen.",
+                "Am Anfang und Ende ein Turm, an jedem Knick das Eckstück, dazwischen die Mauer ohne Lücke; mit 'anpassen' endet die Mauer genau am letzten Punkt.", () => _host.Open?.Invoke("motifdesigner"));
+            S("Muster", "Bäume im Radius streuen",
+                "Im Baukasten zwei, drei Bäume (Stamm + Krone) bauen und je mit '+ Markiertes als Variante' aufnehmen (Gewicht 1–3). Zeichen-Art 'Im Radius streuen', auf der Karte von der Mitte nach außen ziehen. 📷 Aufnehmen.",
+                "Die Bäume stehen zufällig im Kreis, nicht zu dicht (Mindest-Abstand), jeder auf dem Boden.", () => _host.Open?.Invoke("motifdesigner"));
+            S("Boden", "Boden begradigen unter einem Haus",
+                "Ein Haus am Hang mit 'Bereich' markieren (oder seine Statics auswählen), oben 'Boden begradigen …', Höhe 'Static', Rand 1, Statics mitnehmen. Danach noch einmal mit Z +5. 📷 Aufnehmen.",
+                "Der Boden unter dem Haus ist flach, nichts steckt mehr halb im Boden; mit +5 steht das Haus samt Boden 5 höher. Strg+Z nimmt es zurück.", Tool(IsoTool.Area));
+            S("Richtungen", "Richtungen festlegen: Treppe und Mauer",
+                "'Richtungen festlegen' öffnen (▶). Neu, Name 'Steintreppe', 'Treppe' anhaken, die vier Stufen in Nord / Ost / Süd / West legen (oder ein Feld + 'Vorschlagen'). Speichern. Dann im Treppen-Designer 'Gedreht ansehen' und eine Treppe ziehen. 📷 Aufnehmen.",
+                "Die Treppe benutzt genau die gelegten Stufen in jeder Richtung; Drehen (R) eines Bereichs tauscht die Teile nach der Tabelle.", () => _host.Open?.Invoke("directions"));
             S("Drehen", "Drehen 90° tauscht Wände",
                 "Mit Wand / Zaun eine Wand West-Ost ziehen, mit 'Bereich' markieren und R (drehen) drücken. 📷 Aufnehmen.",
                 "Die Wand liegt jetzt Nord-Süd und benutzt die Nord-Süd-Teile (nicht mehr quer stehende Teile).", Tool(IsoTool.Wall));

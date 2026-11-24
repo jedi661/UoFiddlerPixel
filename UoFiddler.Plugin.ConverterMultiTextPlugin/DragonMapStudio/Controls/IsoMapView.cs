@@ -1393,7 +1393,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             else if (Tool == IsoTool.Motif)
             {
-                foreach (StaticChange c in MotifPieces(_dragStart ?? _hover, _dragStart.HasValue ? _dragEnd : _hover, out _).Where(c => c.After != null)
+                foreach (StaticChange c in MotifGhost().Where(c => c.After != null)
                              .OrderBy(c => c.After.X + c.After.Y).ThenBy(c => c.After.Z).Take(4000))
                 {
                     parts.Add((c.After.Id, c.After.X, c.After.Y, c.After.Z));

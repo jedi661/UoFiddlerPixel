@@ -508,6 +508,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             Cmd(_cgiAreaItems, "Berg (M)", "Berg formen (Reiter Berg)", () => isoView.MountainArea());
             Cmd(_cgiAreaItems, "Übergänge (T)", "Übergänge neu berechnen", () => isoView.TransitionArea());
             Cmd(_cgiAreaItems, "→ Stempel (P)", "Bereich als Farb-Stempel", CgiAreaToColorStamp);
+            Cmd(_cgiAreaItems, "Boden begradigen …", "Land unter dem Bereich (z. B. unter einem Haus) auf eine Höhe setzen – Statics wahlweise mitnehmen, höher / tiefer per Z", LevelGroundDialog);
+            Cmd(_cgiAreaItems, "→ Muster", "Die Statics des Bereichs in den Muster-Baukasten holen (als Muster übernehmen)", AreaToMotif);
+            Cmd(_cgiSelectItems, "Boden begradigen …", "Land unter den gewählten Statics auf eine Höhe setzen (Statics wahlweise mitnehmen)", LevelGroundDialog);
             Cmd(_cgiSelectItems, "Kopieren", "Strg+C", () => isoView.CopySelection());
             Cmd(_cgiSelectItems, "Löschen", "Entf", () => isoView.DeleteSelection());
             Cmd(_cgiCoastItems, "Ganze Karte glätten", "Alle Küsten der Karte ohne Zacken (ein Rückgängig-Schritt)", () => SmoothCoastWholeMap(false));

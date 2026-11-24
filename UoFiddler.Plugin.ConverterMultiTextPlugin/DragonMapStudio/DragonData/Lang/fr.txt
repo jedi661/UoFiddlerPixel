@@ -1985,3 +1985,145 @@ Ja = als Richtung	Oui = reprendre comme direction
 Nein = trotzdem als	Non = quand même comme
 (z. B. Zelte, Reihe von Kopien nebeneinander)	(p. ex. tentes, rangée de copies côte à côte)
 Richtung = in diese Richtung läuft das Muster beim Ziehen. Ost / West: die Mauer läuft West → Ost (auf dem Bild „\“), Nord / Süd: Nord → Süd („/“).	Direction = le motif avance dans ce sens quand on tire. Est / ouest : le mur va d'ouest en est (à l'écran « \ »), nord / sud : du nord au sud (« / »).
+
+# Werkstatt 37 – Muster: Anfang/Ende/Ecken, Punkt zu Punkt, Radius, Begradigen, Richtungen festlegen
+Übernommen als	Repris comme
+die anderen Richtungen dreht das Studio selbst	le studio tourne lui-même les autres directions
+Im Radius 20 gestreut	Dispersé dans un rayon de 20
+Stücke	pièces
+Punkt zu Punkt (Viereck mit Ecken)	Point à point (carré avec coins)
+Name der Variante (z. B. Eiche, Busch, Mauer ohne Fenster):	Nom de la variante (p. ex. chêne, buisson, mur sans fenêtre) :
+Variante	Variante
+Gewicht (wie oft im Vergleich, z. B. 1, 2, 5):	Poids (fréquence relative, p. ex. 1, 2, 5) :
+Zufalls-Variante hinzugefügt	Variante aléatoire ajoutée
+Zeichen-Art 'Im Radius streuen' oder 'Mitte zufällig' benutzt sie.	Le mode 'Disperser dans un rayon' ou 'Milieu aléatoire' l'utilise.
+Erst in der CGI-Ansicht mit 'Bereich' etwas markieren (z. B. ein Stück Burgmauer), dann hier 'Aus der Karte holen'.	Marquer d'abord quelque chose avec 'Zone' dans la vue CGI (p. ex. un bout de rempart), puis 'Prendre de la carte' ici.
+Der Bereich ist zu groß für das Testfeld	La zone est trop grande pour le terrain d'essai
+Statics aus der Karte geholt – Teil und Richtung wählen, markieren, übernehmen.	statics pris de la carte – choisir pièce et direction, marquer, reprendre.
+Muster exportieren	Exporter les motifs
+Muster exportiert	motifs exportés
+Fehler beim Import	Erreur d'importation
+Muster importiert.	motifs importés.
+Ordner 'DragonData\Muster' im Projekt wählen (UoFiddler.Plugin.ConverterMultiTextPlugin\DragonMapStudio\DragonData\Muster) – die Muster werden dann mit ausgeliefert.	Choisir le dossier 'DragonData\Muster' du projet (UoFiddler.Plugin.ConverterMultiTextPlugin\DragonMapStudio\DragonData\Muster) – les motifs seront alors livrés avec.
+Alle Muster ins Projekt schreiben? (Nein = nur dieses Muster)	Écrire tous les motifs dans le projet ? (Non = seulement ce motif)
+Muster ins Projekt geschrieben	motifs écrits dans le projet
+Kategorie-Ordner / Name.json	dossier de catégorie / nom.json
+Projekt	projet
+Zufalls-Varianten	Variantes aléatoires
+Zufalls-Variante	Variante aléatoire
+Dieses Muster kommt aus dem Projekt (DragonData\Muster) – dort löschen.	Ce motif vient du projet (DragonData\Muster) – le supprimer là-bas.
+2 Teil und Richtung, die ich baue	2 Pièce et direction que je construis
+Mitte = wiederholt sich. Anfang / Ende = einmal an den Enden der Reihe (z. B. Türme). Ecke = an jedem Knick bei 'Punkt zu Punkt' (ein Feld, das Knick-Feld).	Milieu = se répète. Début / fin = une fois aux extrémités (p. ex. tours). Coin = à chaque angle en 'Point à point' (une case, celle de l'angle).
+Zufalls-Varianten (Bäume, Pflanzen, Mauer-Abwechslung)	Variantes aléatoires (arbres, plantes, murs variés)
++ Markiertes als Variante	+ Sélection comme variante
+Gewicht …	Poids …
+Ansehen	Voir
+Entfernen	Retirer
+Karte, Austausch, Richtungen	Carte, échange, directions
+⇩ Aus der Karte holen	⇩ Prendre de la carte
+Richtungen festlegen …	Définir les directions …
+Exportieren …	Exporter …
+Importieren …	Importer …
+Ins Projekt …	Dans le projet …
+▶ Probe zeichnen (wie Zeichen-Art)	▶ Dessin d'essai (selon le mode)
+Richtungen …	Directions …
+im Radius	dans le rayon
+Boden begradigen geht nur in der CGI-Ansicht	l'aplanissement du sol ne marche que dans la vue CGI
+Erst mit 'Bereich' etwas markieren.	Marquer d'abord quelque chose avec 'Zone'.
+Erst einen Bereich markieren oder Statics auswählen (z. B. ein Haus).	Marquer d'abord une zone ou sélectionner des statics (p. ex. une maison).
+Boden begradigen	Aplanir le sol
+Boden begradigen …	Aplanir le sol …
+Felder	cases
+Mittel	Moyenne
+unterster Static	static le plus bas
+Neue Boden-Höhe (Z):	Nouvelle hauteur du sol (Z) :
+Static	Static
+Höchster	Plus haut
+Rand (Tiles):	Bord (tuiles) :
+Statics mitnehmen: das Haus steht danach auf der neuen Höhe (so viel höher / tiefer wie der unterste Static)	Emporter les statics : la maison se trouve ensuite à la nouvelle hauteur (autant plus haut / bas que le static le plus bas)
+Begradigen	Aplanir
+Boden begradigen: nichts zu ändern (schon auf dieser Höhe).	Aplanir le sol : rien à changer (déjà à cette hauteur).
+Boden begradigt	Sol aplani
+Land-Tiles auf z	tuiles de terrain à z
+Land-Tiles begradigt	tuiles de terrain aplanies
+mitgenommen	emportés
+Land unter dem Bereich (z. B. unter einem Haus) auf eine Höhe setzen – Statics wahlweise mitnehmen, höher / tiefer per Z	Mettre le terrain sous la zone (p. ex. sous une maison) à une hauteur – emporter les statics au choix, plus haut / bas par Z
+Land unter den gewählten Statics auf eine Höhe setzen (Statics wahlweise mitnehmen)	Mettre le terrain sous les statics choisis à une hauteur (emporter les statics au choix)
+→ Muster	→ Motif
+Die Statics des Bereichs in den Muster-Baukasten holen (als Muster übernehmen)	Prendre les statics de la zone dans l'atelier de motifs (reprendre comme motif)
+Linie: Klick = einmal, ziehen = Reihe	Ligne : clic = une fois, tirer = rangée
+Punkt zu Punkt: klicken, klicken … Doppelklick / Enter = fertig (mit Ecken)	Point à point : clic, clic … double-clic / Entrée = terminé (avec coins)
+Im Radius streuen (Zufalls-Varianten, z. B. Bäume)	Disperser dans un rayon (variantes aléatoires, p. ex. arbres)
+Auf die Höhe am Start	À la hauteur du départ
+Auf eine feste Höhe (Z)	À une hauteur fixe (Z)
+Zeichen-Art	Mode de dessin
+Linie (Klick / ziehen), Punkt zu Punkt mit Ecken (Doppelklick oder Enter = fertig, Esc = abbrechen, Rücktaste = letzten Punkt weg), oder im Radius streuen.	Ligne (clic / tirer), point à point avec coins (double-clic ou Entrée = terminé, Échap = annuler, Retour = dernier point retiré), ou disperser dans un rayon.
+Anfang / Ende benutzen	Utiliser début / fin
+Hat das Muster ein Anfangs- und Endstück (z. B. Türme), kommen sie an die Enden der Reihe, dazwischen wiederholt sich die Mitte.	Si le motif a une pièce de début et de fin (p. ex. tours), elles vont aux extrémités, le milieu se répète entre les deux.
+Ecken benutzen	Utiliser les coins
+Punkt zu Punkt: an jedem Knick das Eckstück des Musters (falls gebaut).	Point à point : la pièce de coin du motif à chaque angle (si construite).
+Letztes Stück anpassen	Ajuster la dernière pièce
+An = die Reihe endet genau am Ende des Zugs (das letzte Mittelstück wird gekürzt). Aus = nur ganze Stücke (die Reihe kann etwas länger werden).	Oui = la rangée finit exactement à la fin du tracé (la dernière pièce du milieu est coupée). Non = seulement des pièces entières (la rangée peut être un peu plus longue).
+Mitte zufällig aus Varianten	Milieu aléatoire parmi les variantes
+Statt immer derselben Mitte zufällig eine der Zufalls-Varianten des Musters (nach Gewicht).	Au lieu du même milieu, une des variantes aléatoires du motif (selon le poids).
+Mindest-Abstand (Tiles)	Distance minimale (tuiles)
+Im Radius streuen: so weit stehen zwei Stücke mindestens auseinander.	Disperser : deux pièces sont au moins à cette distance.
+Im Radius streuen: wie viele der möglichen Plätze besetzt werden.	Disperser : combien des places possibles sont occupées.
+Zufällige Richtung	Direction aléatoire
+Im Radius streuen: jedes Stück in einer zufälligen erlaubten Richtung.	Disperser : chaque pièce dans une direction autorisée aléatoire.
+Das Land unter dem Muster (und ein Rand) wird auf eine Höhe gesetzt – dann stecken die Grafiken nicht halb im Boden. Nur CGI-Ansicht.	Le terrain sous le motif (et un bord) est mis à une hauteur – les graphismes ne sont plus à moitié dans le sol. Vue CGI seulement.
+Boden-Höhe (Z)	Hauteur du sol (Z)
+Nur 'auf eine feste Höhe': auf dieses Z wird der Boden gesetzt (das Muster steht darauf).	Seulement 'à une hauteur fixe' : le sol est mis à ce Z (le motif repose dessus).
+Boden-Rand (Tiles)	Bord du sol (tuiles)
+So viele Tiles um das Muster herum werden mit begradigt (1 = die Kanten der Tiles unter dem Muster liegen flach).	Autant de tuiles autour du motif sont aplanies aussi (1 = les bords des tuiles sous le motif sont plats).
+Gewicht der Mitte	Poids du milieu
+Zufalls-Varianten / Radius: wie oft die Mitte selbst gewählt wird (0 = nur die Varianten).	Variantes / rayon : fréquence du milieu lui-même (0 = seulement les variantes).
+Richtungen festlegen	Définir les directions
+Eigenes Fenster: je Teil die Grafik für Nord / Ost / Süd / West in Felder legen (Items, Land-Tiles, Texturen) – gilt vor der automatischen Erkennung beim Treppenbau, Drehen und bei Mustern	Fenêtre séparée : placer le graphisme nord / est / sud / ouest de chaque pièce dans des cases (items, tuiles, textures) – prioritaire sur la reconnaissance automatique (escaliers, rotation, motifs)
+Richtungen festlegen: je Teil die Grafik für Nord / Ost / Süd / West (Items, Land) – gilt vor der automatischen Erkennung	Définir les directions : le graphisme nord / est / sud / ouest de chaque pièce (items, terrain) – prioritaire sur la reconnaissance automatique
+Je Stufe die Grafik für hinauf nach Nord / Ost / Süd / West selbst festlegen (gilt vor der Erkennung aus dem Bild)	Définir soi-même la marche pour monter nord / est / sud / ouest (prioritaire sur la reconnaissance d'image)
+Gruppe wählen oder 'Neu'. Feld anklicken (Nord, Ost, Süd, West), dann im Katalog die Grafik anklicken – das nächste Feld wird gewählt. Speichern nicht vergessen.	Choisir un groupe ou 'Nouveau'. Cliquer une case (nord, est, sud, ouest), puis le graphisme dans le catalogue – la case suivante est choisie. Ne pas oublier d'enregistrer.
+Änderungen an den Richtungen speichern?	Enregistrer les modifications des directions ?
+Vorschlagen geht nur für Items.	La suggestion ne marche que pour les items.
+Erst ein Feld mit einer Grafik füllen.	Remplir d'abord une case avec un graphisme.
+Felder vorgeschlagen – bitte ansehen und falsche von Hand ändern.	cases suggérées – vérifier et corriger à la main.
+Nichts gefunden – bitte von Hand legen.	Rien trouvé – placer à la main.
+Treppen, Drehen und Muster benutzen die Tabelle jetzt.	Escaliers, rotation et motifs utilisent maintenant la table.
+Diese Gruppe kommt aus dem Projekt (DragonData\Richtungen) – dort löschen, oder hier ändern (wird dann eigene).	Ce groupe vient du projet (DragonData\Richtungen) – le supprimer là-bas, ou le modifier ici (il devient le vôtre).
+💾 Speichern	💾 Enregistrer
+Richtungen exportieren (z. B. ins Projekt: DragonData\Richtungen)	Exporter les directions (p. ex. dans le projet : DragonData\Richtungen)
+Exportiert	Exporté
+Gruppen importiert – speichern nicht vergessen.	groupes importés – ne pas oublier d'enregistrer.
+GRUPPEN (Name: Nord Ost Süd West)	GROUPES (nom : nord est sud ouest)
+Treppe (Richtung = hinauf nach)	Escalier (direction = monte vers)
+Land als Textur zeigen	Afficher le terrain en texture
+Notiz:	Note :
+leeren	vider
+Aus einem Feld vorschlagen	Suggérer à partir d'une case
+Feld anklicken (gelb = aktiv), dann im Katalog unten die Grafik anklicken. Die Nummer kann auch direkt eingetippt werden (hex).	Cliquer une case (jaune = active), puis le graphisme dans le catalogue. Le numéro peut aussi être tapé (hex).
+KATALOG – Items / Land oben umschalten · Klick = ins gelbe Feld	CATALOGUE – basculer items / terrain en haut · clic = dans la case jaune
+Diese Gruppe ist für	Ce groupe est pour
+im Katalog oben die passende Art wählen.	choisir le type correspondant en haut du catalogue.
+Mitte	Milieu
+Anfang	Début
+Ende	Fin
+Ecke	Coin
+Ecke NO	Coin NE
+Ecke SO	Coin SE
+Ecke SW	Coin SO
+Ecke NW	Coin NO
+Anfang Nord	Début nord
+Anfang Ost	Début est
+Anfang Süd	Début sud
+Anfang West	Début ouest
+Ende Nord	Fin nord
+Ende Ost	Fin est
+Ende Süd	Fin sud
+Ende West	Fin ouest
+Mitte Nord	Milieu nord
+Mitte Ost	Milieu est
+Mitte Süd	Milieu sud
+Mitte West	Milieu ouest
+Muster Punkt zu Punkt: klicken, klicken … · Doppelklick / Rechtsklick / Enter = fertig · Rücktaste = letzter Punkt weg · Esc = abbrechen · an Knicken das Eckstück	Motif point à point : clic, clic … · double-clic / clic droit / Entrée = terminé · Retour = dernier point retiré · Échap = annuler · pièce de coin aux angles
+Muster streuen: von der Mitte nach außen ziehen = Radius · Zufalls-Varianten nach Gewicht, Mindest-Abstand, Dichte oben in der Leiste	Disperser le motif : tirer du centre vers l'extérieur = rayon · variantes selon le poids, distance minimale, densité dans la barre en haut
+Radius	Rayon
