@@ -884,6 +884,40 @@ Workshop → layout → “Floors”: this many levels below each other (20 Z ea
             },
             new GuideTopic
             {
+                Key = "areastamp", Group = "Bauen|Building", TitleDe = "Ganze Gebiete als Stempel (Stadt aus alter Karte)", TitleEn = "Whole areas as stamps (town of an old map)",
+                De = @"# Ganze Gebiete als Stempel
+Eine ganze Stadt (Boden-Tiles, Höhen, alle Statics) aus einer alten oder anderen UO-Karte nehmen und in neue Karten stempeln.
+
+## Quelle öffnen
+Palette Bauen → **Gebiet aus fremder Karte**: „Karte öffnen …“ (map#.mul oder map#LegacyMUL.uop, statics daneben), mit X / Y „Springen“. Oder direkt in der CGI-Ansicht mit der geöffneten Karte.
+
+## Große Bereiche markieren (Werkzeug Bereich)
+Ziehen | Rechteck aufziehen; am Rand des Fensters scrollt die Ansicht mit
+Umschalt + ziehen | den markierten Bereich erweitern (das neue Rechteck kommt dazu) – scrollen, wieder Umschalt + ziehen …
+Strg + Klick, Strg + Klick | Ecke 1, dann beliebig weit scrollen / springen, Ecke 2 – auch größer als der Bildschirm; Esc = Ecke 1 verwerfen
+Koordinaten … | Ecke 1 / Ecke 2 oder Start + Größe als Zahlen, „= Mauszeiger“ übernimmt die letzte Position
+
+## Als Stempel speichern
+**→ Vorlage (CGI-Stempel)**: Boden-Tiles mit Höhen + alle Statics (bis 1024×1024). Im Studio Werkzeug **Vorlage** wählen und klicken – der Boden folgt der Höhe unter der Maus (+ Z). **An Original-Position setzen** stellt sie an dieselben X / Y, **… mit Original-Höhe** auch mit den Original-Höhen (1:1-Kopie).
+**→ Farb-Stempel (Karten-Editor)**: der Bereich wird mit der Farbtabelle in Farben umgerechnet, die Statics kommen mit (Statics-Ebene). Im Karten-Editor unter Stempel wählen und setzen.",
+                En = @"# Whole areas as stamps
+Take a whole town (land tiles, heights, all statics) from an old or other UO map and stamp it into new maps.
+
+## Open the source
+Palette Building → **Area from a foreign map**: “Open map …” (map#.mul or map#LegacyMUL.uop, statics beside it), “Jump” with X / Y. Or directly in the CGI view with the open map.
+
+## Marking large areas (tool Area)
+Drag | drag a rectangle; at the border of the window the view scrolls along
+Shift + drag | extend the marked area (the new rectangle is added) – scroll, Shift + drag again …
+Ctrl + click, Ctrl + click | corner 1, then scroll / jump as far as you like, corner 2 – also larger than the screen; Esc = drop corner 1
+Coordinates … | corner 1 / corner 2 or start + size as numbers, “= mouse” takes the last position
+
+## Saving as a stamp
+**→ Template (CGI stamp)**: land tiles with heights + all statics (up to 1024×1024). In the studio choose the tool **Template** and click – the land follows the height under the mouse (+ Z). **Place at original position** puts it on the same X / Y, **… with original height** also with the original heights (1:1 copy).
+**→ Colour stamp (map editor)**: the area is converted into colours with the colour table, the statics come along (statics layer). Choose it under Stamps in the map editor and place it."
+            },
+            new GuideTopic
+            {
                 Key = "motif", Group = "Bauen|Building", TitleDe = "Muster-Baukasten (Zinnen, Zelte, Mauern …)", TitleEn = "Pattern kit (battlements, tents, walls …)",
                 De = @"# Muster-Baukasten
 Gleicher Baukasten wie der Treppen-Designer – für alles, was sich wiederholt: Burg-Zinnen, Zelte, eine Mauer mit Fenstern, Festungsmauern mit verschiedenen Höhen, eine Etage mit Decke …

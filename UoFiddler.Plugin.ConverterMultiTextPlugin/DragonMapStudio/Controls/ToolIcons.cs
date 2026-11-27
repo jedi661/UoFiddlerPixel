@@ -233,6 +233,24 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         }
                         break;
                     }
+                case "foreignmap":
+                case "areacoords":
+                    {
+                        // a map sheet with a marked rectangle
+                        using var paper = new SolidBrush(Color.FromArgb(220, 252, 231));
+                        using var edge = new Pen(Color.FromArgb(22, 101, 52), 1.2f);
+                        g.FillRectangle(paper, 3, 4, 18, 16);
+                        g.DrawRectangle(edge, 3, 4, 18, 16);
+                        using var mark = new Pen(Color.FromArgb(219, 39, 119), 2f) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
+                        g.DrawRectangle(mark, 7, 8, 9, 8);
+                        if (key == "areacoords")
+                        {
+                            using var dot = new SolidBrush(Color.FromArgb(219, 39, 119));
+                            g.FillEllipse(dot, 5, 6, 4, 4);
+                            g.FillEllipse(dot, 14, 14, 4, 4);
+                        }
+                        break;
+                    }
                 case "directions":
                     {
                         // compass: four arrows

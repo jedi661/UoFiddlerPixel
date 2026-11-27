@@ -2135,3 +2135,46 @@ Mitte West	Middle west
 Muster Punkt zu Punkt: klicken, klicken … · Doppelklick / Rechtsklick / Enter = fertig · Rücktaste = letzter Punkt weg · Esc = abbrechen · an Knicken das Eckstück	Pattern point to point: click, click … · double click / right click / Enter = done · Backspace = remove last point · Esc = cancel · corner piece at the bends
 Muster streuen: von der Mitte nach außen ziehen = Radius · Zufalls-Varianten nach Gewicht, Mindest-Abstand, Dichte oben in der Leiste	Scatter pattern: drag from the centre outwards = radius · random variants by weight, minimum distance, density in the bar at the top
 Radius	Radius
+
+# Werkstatt 38 – Gebiete als Stempel, große Bereiche markieren
+Kein Bereich markiert.	No area marked.
+von	from
+bis	to
+Ecke 1	Corner 1
+gesetzt – jetzt zur anderen Ecke scrollen oder springen (auch weit weg) und mit Strg + Klick Ecke 2 setzen · Esc = abbrechen	set – now scroll or jump to the other corner (also far away) and set corner 2 with Ctrl + click · Esc = cancel
+Umschalt + ziehen erweitert ihn	Shift + drag extends it
+Umschalt + ziehen erweitert · Strg + Klick, Strg + Klick = zwei Ecken (auch weit auseinander)	Shift + drag extends · Ctrl + click, Ctrl + click = two corners (also far apart)
+Ecke 1 verworfen.	Corner 1 dropped.
+Bereich per Koordinaten	Area by coordinates
+Bereich per Koordinaten …	Area by coordinates …
+Ecke 1 = oben links (kleinste X / Y), Ecke 2 = unten rechts (einschließlich). Größe und Ecke 2 hängen zusammen.	Corner 1 = top left (smallest X / Y), corner 2 = bottom right (inclusive). Size and corner 2 are linked.
+Ecke 1  X	Corner 1  X
+Ecke 2  X	Corner 2  X
+= Mauszeiger	= mouse
+sehr groß: Stempel / Vorlage werden langsam und groß (über 1024×1024 geht es nicht)	very large: stamp / template get slow and big (over 1024×1024 is not possible)
+Markieren	Mark
+Ecke 1 / Ecke 2 oder Start + Größe als Zahlen – auch größer als der Bildschirm	Corner 1 / corner 2 or start + size as numbers – also larger than the screen
+→ Vorlage (CGI-Stempel) …	→ Template (CGI stamp) …
+Boden-Tiles mit Höhen und alle Statics des Bereichs als Vorlage speichern – in der CGI-Ansicht mit dem Werkzeug 'Vorlage' auf jede Karte stempeln	Save the land tiles with heights and all statics of the area as a template – stamp it onto any map with the tool 'Template' in the CGI view
+→ Farb-Stempel (Karten-Editor) …	→ Colour stamp (map editor) …
+Den Bereich in Farben umrechnen (wie 'Bereich → Stempel') und mit seinen Statics als Farb-Stempel speichern – im Karten-Editor stempeln	Convert the area into colours (like 'Area → stamp') and save it with its statics as a colour stamp – stamp it in the map editor
+Gebiet als Stempel nehmen	Take an area as a stamp
+'Karte öffnen' (alte Karte, map#.mul / .uop), zur Stadt springen, markieren: ziehen · Umschalt + ziehen = erweitern · Strg + Klick, Strg + Klick = zwei Ecken (dazwischen scrollen) · 'Bereich per Koordinaten'. Dann '→ Vorlage' oder '→ Farb-Stempel'.	'Open map' (old map, map#.mul / .uop), jump to the town, mark: drag · Shift + drag = extend · Ctrl + click, Ctrl + click = two corners (scroll in between) · 'Area by coordinates'. Then '→ Template' or '→ Colour stamp'.
+Der Bereich ist zu groß	The area is too large
+höchstens	at most
+Name und Kategorie im Studio angeben.	give name and category in the studio.
+Aus	From
+An Original-Position setzen	Place at original position
+Die Vorlage genau dort setzen, wo sie auf der Quell-Karte lag (gleiche X / Y) – Höhe wie unter der Maus: Boden dort + Z	Place the template exactly where it was on the source map (same X / Y) – height: ground there + Z
+… mit Original-Höhe	… with original height
+Wie 'An Original-Position', dazu mit den Original-Höhen der Quell-Karte (1:1-Kopie einer Stadt in eine gleich große Karte)	Like 'Place at original position', with the original heights of the source map too (1:1 copy of a town into a map of the same size)
+Diese Vorlage kennt ihre Original-Position nicht (älter oder aus einer Datei) – mit der Maus setzen.	This template does not know its original position (older or from a file) – place it with the mouse.
+Erst eine Karte in der CGI-Ansicht laden oder bauen.	Load or build a map in the CGI view first.
+Städte	Towns
+Vorlage gespeichert – CGI-Ansicht: Werkzeug 'Vorlage' wählen und auf die Karte klicken, oder 'An Original-Position setzen'.	Template saved – CGI view: choose the tool 'Template' and click on the map, or 'Place at original position'.
+Erst eine Farbtabelle (Regeln) laden – sie rechnet Boden-Tiles in Farben um.	Load a colour table (rules) first – it converts land tiles into colours.
+Koordinaten …	Coordinates …
+Bereich per Koordinaten: Ecke 1 / Ecke 2 oder Start + Größe – auch größer als der Bildschirm. Sonst: Umschalt + ziehen = erweitern, Strg + Klick, Strg + Klick = zwei Ecken (dazwischen scrollen), ziehen an den Rand = mitscrollen	Area by coordinates: corner 1 / corner 2 or start + size – also larger than the screen. Otherwise: Shift + drag = extend, Ctrl + click, Ctrl + click = two corners (scroll in between), drag to the border = scroll along
+Gebiet aus fremder Karte	Area from a foreign map
+Eigenes Fenster: alte / andere UO-Karte öffnen, eine ganze Stadt markieren (ziehen, Umschalt = erweitern, Strg + Klick = zwei Ecken mit Scrollen, Koordinaten) und als Vorlage (CGI: Boden + Höhen + Statics) oder Farb-Stempel (Karten-Editor) speichern	Own window: open an old / other UO map, mark a whole town (drag, Shift = extend, Ctrl + click = two corners with scrolling, coordinates) and save it as a template (CGI: land + heights + statics) or colour stamp (map editor)
+Bereich in der CGI-Ansicht mit Zahlen markieren (Ecke 1 / Ecke 2 oder Start + Größe) – für Gebiete größer als der Bildschirm	Mark an area in the CGI view with numbers (corner 1 / corner 2 or start + size) – for areas larger than the screen

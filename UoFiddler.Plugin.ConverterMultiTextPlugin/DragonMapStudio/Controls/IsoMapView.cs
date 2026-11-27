@@ -1292,6 +1292,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 using var pen = new Pen(Color.Cyan, 2) { DashStyle = DashStyle.Dash };
                 g.DrawPolygon(pen, AreaPoly(_area));
             }
+            DrawAreaCorner(g);
             DrawToolOverlay(g);
             if (_areaPaste && _areaClip != null && _map.InBounds(_hover.X, _hover.Y))
             {
@@ -1587,6 +1588,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             if (Tool == IsoTool.Area)
             {
+                if (AreaMouseDown(tile))
+                {
+                    return;
+                }
                 ClearMask();
                 _areaStart = tile;
                 _areaDragging = true;
@@ -1684,6 +1689,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 return;
             }
             Point t = TileAt(e.Location);
+            if (_map.InBounds(t.X, t.Y))
+            {
+                _lastTile = t;
+            }
+            if (_areaDragging)
+            {
+                AreaEdgeScroll(e.Location);
+            }
             ToolMouseMove(e, t);
             if (t != _hover)
             {
@@ -1695,8 +1708,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 }
                 if (_areaDragging)
                 {
-                    _area = Rectangle.FromLTRB(Math.Min(_areaStart.X, t.X), Math.Min(_areaStart.Y, t.Y), Math.Max(_areaStart.X, t.X) + 1, Math.Max(_areaStart.Y, t.Y) + 1);
-                    _area.Intersect(new Rectangle(0, 0, _map.Width, _map.Height));
+                    _area = DragArea(t);
                 }
                 Invalidate();
             }
@@ -1755,8 +1767,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             if (_areaDragging)
             {
                 _areaDragging = false;
+                _areaExtend = false;
+                _edgeTimer?.Stop();
                 SelectionChanged?.Invoke(this, EventArgs.Empty);
-                Message?.Invoke(this, $"Bereich {_area.Width}×{_area.Height} ab ({_area.X}, {_area.Y}) markiert.");
+                Message?.Invoke(this, AreaText() + " – " + L.T("Umschalt + ziehen erweitert · Strg + Klick, Strg + Klick = zwei Ecken (auch weit auseinander)"));
             }
         }
 
@@ -1841,6 +1855,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         break;
                     case Keys.Escape:
                         _area = Rectangle.Empty;
+                        _areaCorner = null;
                         _areaPaste = false;
                         Invalidate();
                         break;
@@ -2517,7 +2532,22 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         // ------------------------------------------------------------------ templates
 
         /// <summary>Places the template with its anchor on (x, y): statics on the ground height + Z offset, land optional.</summary>
-        public void PlaceTemplate(int x, int y)
+        public void PlaceTemplate(int x, int y) => PlaceTemplate(x, y, null);
+
+        /// <summary>The template on the place it was taken from (same coordinates, optionally the original height).</summary>
+        public void PlaceTemplateAtOrigin(bool originalHeight)
+        {
+            MapTemplate t = _template;
+            if (t?.OriginX == null || t.OriginY == null)
+            {
+                Message?.Invoke(this, L.T("Diese Vorlage kennt ihre Original-Position nicht (älter oder aus einer Datei) – mit der Maus setzen."));
+                return;
+            }
+            CenterOn(t.OriginX.Value, t.OriginY.Value);
+            PlaceTemplate(t.OriginX.Value, t.OriginY.Value, originalHeight ? t.OriginZ : null);
+        }
+
+        private void PlaceTemplate(int x, int y, int? fixedZ)
         {
             MapTemplate t = _template;
             if (t == null || !_map.InBounds(x, y))
@@ -2525,7 +2555,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 Message?.Invoke(this, "Keine Vorlage gewählt (Reiter Vorlagen).");
                 return;
             }
-            int groundZ = _map.LandZ(x, y);
+            int groundZ = fixedZ ?? _map.LandZ(x, y);
             int baseZ = groundZ + ZOffset;
             var statics = new List<StaticChange>();
             var land = new List<LandChange>();
@@ -2593,7 +2623,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             int ax = _area.X + _area.Width / 2, ay = _area.Y + _area.Height / 2;
             int baseZ = _map.LandZ(ax, ay);
-            var t = new MapTemplate();
+            var t = new MapTemplate { OriginX = ax, OriginY = ay, OriginZ = baseZ };
             if (land)
             {
                 t.LandX = _area.X - ax;
@@ -2983,7 +3013,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         tool = L.T("Wasser: Ziehen malt Wasser-Statics (Reiter Küste / Wasser) · Strg+Ziehen entfernt sie · durchsichtig, wenn die TileData 'Translucent' hat");
                         break;
                     case IsoTool.Area:
-                        tool = L.T("Bereich: Ziehen = markieren · P = als Farb-Stempel speichern · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · J = Küste glätten (ohne Zacken) · M = Berg formen (Reiter Berg) · L = Bereich auswerten (Log + Zwischenablage) · T = Übergänge neu berechnen · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
+                        tool = L.T("Bereich: Ziehen = markieren (am Rand scrollt es mit) · Umschalt+Ziehen = erweitern · Strg+Klick, Strg+Klick = zwei Ecken (dazwischen scrollen) · P = als Farb-Stempel speichern · F = füllen · K = Küste · W = Wasser (Umschalt+W weg) · G = glätten · J = Küste glätten (ohne Zacken) · M = Berg formen (Reiter Berg) · L = Bereich auswerten (Log + Zwischenablage) · T = Übergänge neu berechnen · S = Statics darin auswählen · Bild↑/↓ = heben / senken · " +
                                "Strg+C / Strg+V = Land + Statics kopieren / einfügen · Entf = Statics löschen · als Vorlage speichern: Reiter Vorlagen · Rechtsklick = Menü mit allen Befehlen · Esc = Markierung weg");
                         break;
                     case IsoTool.Cave:

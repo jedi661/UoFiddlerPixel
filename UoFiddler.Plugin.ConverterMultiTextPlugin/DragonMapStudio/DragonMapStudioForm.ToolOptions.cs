@@ -125,6 +125,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
             isoView.FindStairModel = FindStairModel;
             InitMotifs();
+            InitAreaStamps();
 
             isoView.FindScatterSet = name => AllScatterSets().FirstOrDefault(s => s.Name == name || s.Name == "Dragon: " + name);
 
@@ -258,6 +259,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                             break;
                         case "directions":
                             DirectionGroupsForm.ShowShared(this);
+                            break;
+                        case "foreignmap":
+                            OpenForeignStamps();
                             break;
                         case "course":
                             tabMain.SelectedTab = tabEditor;

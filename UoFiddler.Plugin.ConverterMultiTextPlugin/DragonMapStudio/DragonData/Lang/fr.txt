@@ -2127,3 +2127,46 @@ Mitte West	Milieu ouest
 Muster Punkt zu Punkt: klicken, klicken … · Doppelklick / Rechtsklick / Enter = fertig · Rücktaste = letzter Punkt weg · Esc = abbrechen · an Knicken das Eckstück	Motif point à point : clic, clic … · double-clic / clic droit / Entrée = terminé · Retour = dernier point retiré · Échap = annuler · pièce de coin aux angles
 Muster streuen: von der Mitte nach außen ziehen = Radius · Zufalls-Varianten nach Gewicht, Mindest-Abstand, Dichte oben in der Leiste	Disperser le motif : tirer du centre vers l'extérieur = rayon · variantes selon le poids, distance minimale, densité dans la barre en haut
 Radius	Rayon
+
+# Werkstatt 38 – Gebiete als Stempel, große Bereiche markieren
+Kein Bereich markiert.	Aucune zone marquée.
+von	de
+bis	à
+Ecke 1	Coin 1
+gesetzt – jetzt zur anderen Ecke scrollen oder springen (auch weit weg) und mit Strg + Klick Ecke 2 setzen · Esc = abbrechen	posé – faire défiler ou sauter jusqu'à l'autre coin (même loin) et poser le coin 2 avec Ctrl + clic · Échap = annuler
+Umschalt + ziehen erweitert ihn	Maj + tirer l'agrandit
+Umschalt + ziehen erweitert · Strg + Klick, Strg + Klick = zwei Ecken (auch weit auseinander)	Maj + tirer agrandit · Ctrl + clic, Ctrl + clic = deux coins (même éloignés)
+Ecke 1 verworfen.	Coin 1 abandonné.
+Bereich per Koordinaten	Zone par coordonnées
+Bereich per Koordinaten …	Zone par coordonnées …
+Ecke 1 = oben links (kleinste X / Y), Ecke 2 = unten rechts (einschließlich). Größe und Ecke 2 hängen zusammen.	Coin 1 = en haut à gauche (plus petits X / Y), coin 2 = en bas à droite (inclus). Taille et coin 2 sont liés.
+Ecke 1  X	Coin 1  X
+Ecke 2  X	Coin 2  X
+= Mauszeiger	= souris
+sehr groß: Stempel / Vorlage werden langsam und groß (über 1024×1024 geht es nicht)	très grand : tampon / modèle deviennent lents et gros (au-delà de 1024×1024 impossible)
+Markieren	Marquer
+Ecke 1 / Ecke 2 oder Start + Größe als Zahlen – auch größer als der Bildschirm	Coin 1 / coin 2 ou début + taille en chiffres – même plus grand que l'écran
+→ Vorlage (CGI-Stempel) …	→ Modèle (tampon CGI) …
+Boden-Tiles mit Höhen und alle Statics des Bereichs als Vorlage speichern – in der CGI-Ansicht mit dem Werkzeug 'Vorlage' auf jede Karte stempeln	Enregistrer les tuiles avec hauteurs et tous les statics de la zone comme modèle – le tamponner sur toute carte avec l'outil 'Modèle' dans la vue CGI
+→ Farb-Stempel (Karten-Editor) …	→ Tampon de couleurs (éditeur de carte) …
+Den Bereich in Farben umrechnen (wie 'Bereich → Stempel') und mit seinen Statics als Farb-Stempel speichern – im Karten-Editor stempeln	Convertir la zone en couleurs (comme 'Zone → tampon') et l'enregistrer avec ses statics comme tampon de couleurs – tamponner dans l'éditeur de carte
+Gebiet als Stempel nehmen	Prendre une zone comme tampon
+'Karte öffnen' (alte Karte, map#.mul / .uop), zur Stadt springen, markieren: ziehen · Umschalt + ziehen = erweitern · Strg + Klick, Strg + Klick = zwei Ecken (dazwischen scrollen) · 'Bereich per Koordinaten'. Dann '→ Vorlage' oder '→ Farb-Stempel'.	'Ouvrir la carte' (ancienne carte, map#.mul / .uop), sauter à la ville, marquer : tirer · Maj + tirer = agrandir · Ctrl + clic, Ctrl + clic = deux coins (défiler entre) · 'Zone par coordonnées'. Puis '→ Modèle' ou '→ Tampon de couleurs'.
+Der Bereich ist zu groß	La zone est trop grande
+höchstens	au plus
+Name und Kategorie im Studio angeben.	indiquer nom et catégorie dans le studio.
+Aus	De
+An Original-Position setzen	Poser à la position d'origine
+Die Vorlage genau dort setzen, wo sie auf der Quell-Karte lag (gleiche X / Y) – Höhe wie unter der Maus: Boden dort + Z	Poser le modèle exactement où il était sur la carte source (mêmes X / Y) – hauteur : sol à cet endroit + Z
+… mit Original-Höhe	… avec la hauteur d'origine
+Wie 'An Original-Position', dazu mit den Original-Höhen der Quell-Karte (1:1-Kopie einer Stadt in eine gleich große Karte)	Comme 'Poser à la position d'origine', avec en plus les hauteurs d'origine (copie 1:1 d'une ville dans une carte de même taille)
+Diese Vorlage kennt ihre Original-Position nicht (älter oder aus einer Datei) – mit der Maus setzen.	Ce modèle ne connaît pas sa position d'origine (ancien ou depuis un fichier) – le poser à la souris.
+Erst eine Karte in der CGI-Ansicht laden oder bauen.	Charger ou construire d'abord une carte dans la vue CGI.
+Städte	Villes
+Vorlage gespeichert – CGI-Ansicht: Werkzeug 'Vorlage' wählen und auf die Karte klicken, oder 'An Original-Position setzen'.	Modèle enregistré – vue CGI : choisir l'outil 'Modèle' et cliquer sur la carte, ou 'Poser à la position d'origine'.
+Erst eine Farbtabelle (Regeln) laden – sie rechnet Boden-Tiles in Farben um.	Charger d'abord une table de couleurs (règles) – elle convertit les tuiles en couleurs.
+Koordinaten …	Coordonnées …
+Bereich per Koordinaten: Ecke 1 / Ecke 2 oder Start + Größe – auch größer als der Bildschirm. Sonst: Umschalt + ziehen = erweitern, Strg + Klick, Strg + Klick = zwei Ecken (dazwischen scrollen), ziehen an den Rand = mitscrollen	Zone par coordonnées : coin 1 / coin 2 ou début + taille – même plus grand que l'écran. Sinon : Maj + tirer = agrandir, Ctrl + clic, Ctrl + clic = deux coins (défiler entre), tirer au bord = défilement
+Gebiet aus fremder Karte	Zone d'une autre carte
+Eigenes Fenster: alte / andere UO-Karte öffnen, eine ganze Stadt markieren (ziehen, Umschalt = erweitern, Strg + Klick = zwei Ecken mit Scrollen, Koordinaten) und als Vorlage (CGI: Boden + Höhen + Statics) oder Farb-Stempel (Karten-Editor) speichern	Fenêtre séparée : ouvrir une ancienne / autre carte UO, marquer une ville entière (tirer, Maj = agrandir, Ctrl + clic = deux coins avec défilement, coordonnées) et l'enregistrer comme modèle (CGI : sol + hauteurs + statics) ou tampon de couleurs (éditeur de carte)
+Bereich in der CGI-Ansicht mit Zahlen markieren (Ecke 1 / Ecke 2 oder Start + Größe) – für Gebiete größer als der Bildschirm	Marquer une zone dans la vue CGI avec des chiffres (coin 1 / coin 2 ou début + taille) – pour des zones plus grandes que l'écran

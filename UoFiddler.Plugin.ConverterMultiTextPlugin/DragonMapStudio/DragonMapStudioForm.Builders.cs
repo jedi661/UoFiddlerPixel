@@ -699,6 +699,18 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }, "build");
             add(new ToolPaletteEntry
             {
+                Key = "foreignmap", Name = "Gebiet aus fremder Karte", Accent = ColBuild,
+                Help = "Eigenes Fenster: alte / andere UO-Karte öffnen, eine ganze Stadt markieren (ziehen, Umschalt = erweitern, Strg + Klick = zwei Ecken mit Scrollen, Koordinaten) und als Vorlage (CGI: Boden + Höhen + Statics) oder Farb-Stempel (Karten-Editor) speichern",
+                Click = OpenForeignStamps
+            }, "build");
+            add(new ToolPaletteEntry
+            {
+                Key = "areacoords", Name = "Bereich per Koordinaten", Accent = ColBuild,
+                Help = "Bereich in der CGI-Ansicht mit Zahlen markieren (Ecke 1 / Ecke 2 oder Start + Größe) – für Gebiete größer als der Bildschirm",
+                Click = AskCgiArea
+            }, "build");
+            add(new ToolPaletteEntry
+            {
                 Key = "directions", Name = "Richtungen festlegen", Accent = ColBuild,
                 Help = "Eigenes Fenster: je Teil die Grafik für Nord / Ost / Süd / West in Felder legen (Items, Land-Tiles, Texturen) – gilt vor der automatischen Erkennung beim Treppenbau, Drehen und bei Mustern",
                 Click = () => DirectionGroupsForm.ShowShared(this)

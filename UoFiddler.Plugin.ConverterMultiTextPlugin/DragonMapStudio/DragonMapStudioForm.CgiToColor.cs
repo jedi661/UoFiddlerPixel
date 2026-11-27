@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – CGI view -> colours: marked area as colour stamp,
  *  * whole map as colour map (+ statics layer) for the map editor
@@ -78,9 +78,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 SetStatus(L.T("Erst mit dem Werkzeug 'Bereich' (Leiste Land) ein Stück der Karte markieren – z. B. ein Haus mit Boden, eine Kreuzung, einen Eingang."));
                 return;
             }
-            Rectangle area = isoView.Area;
+            AreaToColorStamp(_cgiMap, isoView.Area);
+        }
+
+        /// <summary>Any map (the CGI map or a foreign / old map): the area (land, heights, statics) as colour stamp for the map editor.</summary>
+        private void AreaToColorStamp(MapData sourceMap, Rectangle area)
+        {
+            if (_rules == null)
+            {
+                SetStatus(L.T("Erst eine Farbtabelle (Regeln) laden – sie rechnet Boden-Tiles in Farben um."));
+                return;
+            }
             LandTransitionEngine engine = TransitionEngine();
-            CgiConversion conv = CgiToColor.Analyze(_cgiMap, area, _rules, engine, true, CompilerTileGroups());
+            UseWaitCursor = true;
+            CgiConversion conv;
+            try
+            {
+                conv = CgiToColor.Analyze(sourceMap, area, _rules, engine, true, CompilerTileGroups());
+            }
+            finally
+            {
+                UseWaitCursor = false;
+            }
             string summary = string.Join(Environment.NewLine, conv.Log.Skip(1));
             IEnumerable<string> cats = _stamps.Select(s => s.Category).Where(c => !string.IsNullOrWhiteSpace(c)).Concat(ColorStampTools.Categories.Skip(1));
             using var dlg = new CgiStampDialog("Bereich → Farb-Stempel", summary, cats, true, $"Stempel {area.X}_{area.Y}");
@@ -93,8 +112,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 return;
             }
-            CgiToColor.Finish(conv, _cgiMap, _rules, engine);
-            ColorStamp stamp = CgiToColor.ToStamp(conv, _rules, _settings.Generator.WaterGroup, dlg.StampName, dlg.Category, dlg.Statics, log, _cgiMap);
+            CgiToColor.Finish(conv, sourceMap, _rules, engine);
+            ColorStamp stamp = CgiToColor.ToStamp(conv, _rules, _settings.Generator.WaterGroup, dlg.StampName, dlg.Category, dlg.Statics, log, sourceMap);
             stamp.DrawMode = dlg.DrawMode;
             stamp.Layers = dlg.Statics == StaticsMode.Layer ? StampLayers.Both : StampLayers.LandOnly;
             if (dlg.Statics == StaticsMode.ItemRule && conv.Statics.Count > 0)
@@ -104,7 +123,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             string file = ColorStampTools.Save(stamp, ColorStampFolder);
             LoadColorStamps(file);
-            string report = CgiToColor.Report(conv, _rules, _cgiMap.Source) + Environment.NewLine + string.Join(Environment.NewLine, log);
+            string report = CgiToColor.Report(conv, _rules, sourceMap.Source) + Environment.NewLine + string.Join(Environment.NewLine, log);
             string path = WriteLog($"cgi_stempel_{MakeSafeFileName(dlg.StampName)}.txt", report);
             Log($"Farb-Stempel '{dlg.StampName}' gespeichert: {file} ({stamp.Width}×{stamp.Height}, {stamp.Statics.Count} Statics) – Bericht: {path}");
             SetStatus($"Farb-Stempel '{dlg.StampName}' gespeichert – im Karten-Editor unter Stempel. Bericht: {path}");
