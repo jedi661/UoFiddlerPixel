@@ -76,6 +76,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         /// <summary>Land heights relative to the anchor height.</summary>
         public int[] LandZ { get; set; }
 
+        /// <summary>Where the anchor was on the source map (null = unknown) – "an Original-Position setzen".</summary>
+        public int? OriginX { get; set; }
+
+        public int? OriginY { get; set; }
+
+        /// <summary>Land height at the anchor on the source map – "mit Original-Höhe setzen".</summary>
+        public int? OriginZ { get; set; }
+
         [JsonIgnore]
         public string File { get; set; } = string.Empty;
 

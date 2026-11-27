@@ -1315,3 +1315,18 @@ Gleicher Baukasten wie der Treppen-Designer – für alles, was sich wiederholt:
 * **Exportieren / Importieren / Ins Projekt:** ein Muster als .json, alle als .zip; „Ins Projekt …“ schreibt nach `DragonData\Muster\<Kategorie>\<Name>.json` – diese Muster werden mit ausgeliefert und stehen im Baum mit „(Projekt)“. Speichert man eines, entsteht eine eigene Kopie (die gewinnt).
 * **Richtungen festlegen** (Palette Bauen, Treppen-Designer, Baukasten, Werkzeug Treppe / Muster): je Gruppe vier Felder Nord / Ost / Süd / West mit Bild, gefüllt durch Klick im Katalog (Items oder Land-Tiles, Land auch als Textur) oder Nummer eintippen. „Treppe“ = Richtung heißt „geht hinauf nach“. „Aus einem Feld vorschlagen“ füllt die übrigen automatisch vor. Die Tabelle gilt **vor** der automatischen Erkennung: Treppenbau, Drehen (R / 90°) von Statics **und Land-Tiles**, Drehen der Muster. Export ins Projekt: `DragonData\Richtungen\*.json`.
 * **Test-Assistent:** neuer Selbsttest „Burgmauer Punkt zu Punkt“ (Türme, Ecken, lückenlos, genaue Länge, Radius, Begradigen – mit Bildern) und Prüflisten-Schritte für Burgmauer, Bäume im Radius, Boden begradigen, Richtungen festlegen.
+
+## Ganze Gebiete als Stempel – Stadt aus einer alten Karte (seit „Werkstatt 38“)
+* **Quelle:** Palette Bauen → **„Gebiet aus fremder Karte“** (eigenes Fenster): „Karte öffnen …“ (alte map#.mul / map#LegacyMUL.uop, statics daneben), mit X / Y springen. Oder direkt in der CGI-Ansicht mit der geöffneten Karte.
+* **Große Bereiche markieren** (Werkzeug Bereich, in der CGI-Ansicht und im Fenster „Fremde Karte“):
+
+| Bedienung | Wirkung |
+|---|---|
+| Ziehen | Rechteck aufziehen – am Fensterrand scrollt die Ansicht mit |
+| Umschalt + ziehen | den Bereich erweitern (das neue Rechteck kommt dazu) – scrollen, wieder Umschalt + ziehen … |
+| Strg + Klick, Strg + Klick | Ecke 1 (magenta), dann beliebig weit scrollen / springen, Ecke 2 – Esc verwirft Ecke 1 |
+| „Koordinaten …“ / „Bereich per Koordinaten …“ | Ecke 1 / Ecke 2 oder Start + Größe als Zahlen, „= Mauszeiger“ nimmt die letzte Position |
+
+* **„→ Vorlage (CGI-Stempel) …“:** Boden-Tiles mit Höhen + alle Statics (bis 1024×1024), Name / Kategorie wie bei „Bereich als Vorlage speichern“ (Vorschlag „Städte“). In der CGI-Ansicht Werkzeug **„Vorlage“** wählen und auf die neue Karte klicken – der Boden folgt der Höhe unter der Maus (+ Z). Neu beim Werkzeug Vorlage: **„An Original-Position setzen“** (gleiche X / Y wie auf der Quell-Karte) und **„… mit Original-Höhe“** (1:1-Kopie). Getestet: 512×512 mit 60 000 Statics = 9 MB, speichern / laden je unter ¼ Sekunde.
+* **„→ Farb-Stempel (Karten-Editor) …“:** der Bereich wird mit der Farbtabelle in Farben umgerechnet (wie „Bereich → Stempel“ in der CGI-Ansicht), die Statics kommen mit (Statics-Ebene). Im Karten-Editor unter Stempel wählen und setzen.
+* In der Dungeon-Werkstatt bleibt die fremde Karte wie bisher („Bereich in die Werkstatt“, bis 512×512).

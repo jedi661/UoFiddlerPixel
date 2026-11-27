@@ -552,6 +552,13 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Keys of the point tools and the new edits. True = handled.</summary>
         private bool ToolKeyDown(KeyEventArgs e)
         {
+            if (_areaCorner != null && e.KeyCode == Keys.Escape)
+            {
+                _areaCorner = null;
+                Invalidate();
+                Message?.Invoke(this, L.T("Ecke 1 verworfen."));
+                return true;
+            }
             if (Tool == IsoTool.Motif && e.KeyCode == Keys.R && !e.Control)
             {
                 Motif rm = string.IsNullOrEmpty(BrushSettings.Motif) ? null : FindMotif?.Invoke(BrushSettings.Motif);

@@ -137,6 +137,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             S("Boden", "Boden begradigen unter einem Haus",
                 "Ein Haus am Hang mit 'Bereich' markieren (oder seine Statics auswählen), oben 'Boden begradigen …', Höhe 'Static', Rand 1, Statics mitnehmen. Danach noch einmal mit Z +5. 📷 Aufnehmen.",
                 "Der Boden unter dem Haus ist flach, nichts steckt mehr halb im Boden; mit +5 steht das Haus samt Boden 5 höher. Strg+Z nimmt es zurück.", Tool(IsoTool.Area));
+            S("Gebiet", "Ganze Stadt aus einer alten Karte als Stempel",
+                "'Gebiet aus fremder Karte' öffnen (▶), 'Karte öffnen' (alte map#.mul), zur Stadt springen. Markieren: ziehen, dann Umschalt + ziehen zum Erweitern; oder Strg + Klick (Ecke 1), weit scrollen, Strg + Klick (Ecke 2); oder 'Bereich per Koordinaten'. '→ Vorlage (CGI-Stempel)' speichern, im Studio Werkzeug 'Vorlage' wählen und setzen (oder 'An Original-Position setzen'). Dasselbe mit '→ Farb-Stempel' und im Karten-Editor stempeln. 📷 Aufnehmen.",
+                "Die Stadt steht mit Boden, Höhen und allen Statics auf der neuen Karte; der Farb-Stempel bringt Farben + Statics in den Karten-Editor. Strg+Z nimmt es zurück.", () => _host.Open?.Invoke("foreignmap"));
             S("Richtungen", "Richtungen festlegen: Treppe und Mauer",
                 "'Richtungen festlegen' öffnen (▶). Neu, Name 'Steintreppe', 'Treppe' anhaken, die vier Stufen in Nord / Ost / Süd / West legen (oder ein Feld + 'Vorschlagen'). Speichern. Dann im Treppen-Designer 'Gedreht ansehen' und eine Treppe ziehen. 📷 Aufnehmen.",
                 "Die Treppe benutzt genau die gelegten Stufen in jeder Richtung; Drehen (R) eines Bereichs tauscht die Teile nach der Tabelle.", () => _host.Open?.Invoke("directions"));

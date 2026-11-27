@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – another map (e.g. the original map0 / Felucca) in its own CGI window
  *  *
@@ -28,9 +28,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private readonly NumericUpDown _y = new NumericUpDown { Maximum = 8000, Width = 65 };
         private MapData _map;
 
-        public ForeignMapForm(Action<IsoMapView> configure)
+        private readonly bool _workshop;
+
+        /// <summary>
+        /// <paramref name="workshop"/> = opened from the dungeon workshop (copy into the workshop); otherwise as the source of
+        /// area stamps: template for the CGI view (land + heights + statics) and colour stamp for the map editor.
+        /// </summary>
+        public ForeignMapForm(Action<IsoMapView> configure, bool workshop = true)
         {
-            Text = L.T("Fremde Karte") + " – " + L.T("Bereich wählen und in die Werkstatt kopieren");
+            _workshop = workshop;
+            Text = L.T("Fremde Karte") + " – " + L.T(workshop ? "Bereich wählen und in die Werkstatt kopieren" : "Gebiet als Stempel nehmen");
             Size = new Size(1200, 820);
             StartPosition = FormStartPosition.CenterParent;
             Font = new Font("Segoe UI", 9f);
@@ -65,19 +72,35 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                 _view.ShowStatics = statics.Checked;
                 _view.Refresh(true);
             };
-            var take = new ToolStripButton("✔ " + L.T("Bereich in die Werkstatt")) { Font = new Font("Segoe UI", 9f, FontStyle.Bold) };
+            var take = new ToolStripButton("✔ " + L.T("Bereich in die Werkstatt")) { Font = new Font("Segoe UI", 9f, FontStyle.Bold), Visible = workshop };
             take.Click += (s, e) => Take(false);
-            var save = new ToolStripButton(L.T("Bereich als Vorlage speichern …"));
+            var save = new ToolStripButton(L.T("Bereich als Vorlage speichern …")) { Visible = workshop };
             save.Click += (s, e) => Take(true);
+            var coords = new ToolStripButton(L.T("Bereich per Koordinaten …")) { ToolTipText = L.T("Ecke 1 / Ecke 2 oder Start + Größe als Zahlen – auch größer als der Bildschirm") };
+            coords.Click += (s, e) => _view.AskArea(this);
+            var tpl = new ToolStripButton("✔ " + L.T("→ Vorlage (CGI-Stempel) …"))
+            {
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold), Visible = !workshop,
+                ToolTipText = L.T("Boden-Tiles mit Höhen und alle Statics des Bereichs als Vorlage speichern – in der CGI-Ansicht mit dem Werkzeug 'Vorlage' auf jede Karte stempeln")
+            };
+            tpl.Click += (s, e) => TakeTemplate();
+            var stamp = new ToolStripButton("✔ " + L.T("→ Farb-Stempel (Karten-Editor) …"))
+            {
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold), Visible = !workshop,
+                ToolTipText = L.T("Den Bereich in Farben umrechnen (wie 'Bereich → Stempel') und mit seinen Statics als Farb-Stempel speichern – im Karten-Editor stempeln")
+            };
+            stamp.Click += (s, e) => TakeColorStamp();
             bar.Items.AddRange(new ToolStripItem[]
             {
                 open, new ToolStripSeparator(), new ToolStripLabel("X"), new ToolStripControlHost(_x), new ToolStripLabel("Y"), new ToolStripControlHost(_y), jump,
-                new ToolStripSeparator(), area, sel, zin, zout, grid, statics, new ToolStripSeparator(), take, save
+                new ToolStripSeparator(), area, coords, sel, zin, zout, grid, statics, new ToolStripSeparator(), take, save, tpl, stamp
             });
             Controls.Add(_view);
             Controls.Add(bar);
             Controls.Add(_status);
-            Say(L.T("'Karte öffnen' wählt map#.mul oder map#LegacyMUL.uop (statics#.mul daneben). Dann zum Dungeon springen und mit 'Bereich' markieren."));
+            Say(workshop
+                ? L.T("'Karte öffnen' wählt map#.mul oder map#LegacyMUL.uop (statics#.mul daneben). Dann zum Dungeon springen und mit 'Bereich' markieren.")
+                : L.T("'Karte öffnen' (alte Karte, map#.mul / .uop), zur Stadt springen, markieren: ziehen · Umschalt + ziehen = erweitern · Strg + Klick, Strg + Klick = zwei Ecken (dazwischen scrollen) · 'Bereich per Koordinaten'. Dann '→ Vorlage' oder '→ Farb-Stempel'."));
             if (_cache != null)
             {
                 Show(_cache);
@@ -86,6 +109,62 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
 
         /// <summary>The marked area was taken (copy into the workshop).</summary>
         public event EventHandler<WorkshopPiece> Taken;
+
+        /// <summary>The marked area as a template (land + heights + statics) – the studio asks the name and saves it.</summary>
+        public event EventHandler<MapTemplate> TemplateTaken;
+
+        /// <summary>The marked area should become a colour stamp (the studio converts it with its colour table).</summary>
+        public event Action<MapData, Rectangle> ColorStampRequested;
+
+        /// <summary>The largest area for templates / colour stamps.</summary>
+        public const int MaxStampSide = 1024;
+
+        private bool CheckArea(int max)
+        {
+            if (_map == null || _view.Area.IsEmpty)
+            {
+                Say(L.T("Erst die Karte öffnen und einen Bereich markieren."));
+                return false;
+            }
+            Rectangle r = _view.Area;
+            if (r.Width > max || r.Height > max)
+            {
+                Say(L.T("Der Bereich ist zu groß") + $" ({r.Width}×{r.Height}, " + L.T("höchstens") + $" {max}×{max}).");
+                return false;
+            }
+            return true;
+        }
+
+        private void TakeTemplate()
+        {
+            if (!CheckArea(MaxStampSide))
+            {
+                return;
+            }
+            Rectangle r = _view.Area;
+            UseWaitCursor = true;
+            try
+            {
+                MapTemplate t = _view.CaptureArea(true, true);
+                t.Name = $"{Path.GetFileNameWithoutExtension(_map.Source)} {r.X},{r.Y}";
+                t.Description = L.T("Aus") + $" {Path.GetFileName(_map.Source)} ({r.X}, {r.Y}) {r.Width}×{r.Height}";
+                Say(L.T("Vorlage") + $": {r.Width}×{r.Height} " + L.T("Land-Tiles") + $", {t.Statics.Count:N0} Statics – " + L.T("Name und Kategorie im Studio angeben."));
+                TemplateTaken?.Invoke(this, t);
+            }
+            finally
+            {
+                UseWaitCursor = false;
+            }
+        }
+
+        private void TakeColorStamp()
+        {
+            if (!CheckArea(MaxStampSide))
+            {
+                return;
+            }
+            ColorStampRequested?.Invoke(_map, _view.Area);
+        }
 
         private void Say(string text) => _status.Text = "  " + text;
 
