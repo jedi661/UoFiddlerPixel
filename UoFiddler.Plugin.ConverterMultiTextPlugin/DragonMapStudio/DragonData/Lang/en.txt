@@ -2416,3 +2416,54 @@ NoDraw: unsichtbar, man kann hindurch gehen (Höhlen-Durchgang)	NoDraw: invisibl
 Höhlen-Boden geht nur mit Land-Tiles (oben 'Land / Texturen').	Cave floor only works with land tiles (at the top 'Land / textures').
 Benutzt	Used
 Zum Höhlen-Boden gemischt	Mixed into the cave floor
+
+# Werkstatt 42 – Höhlen-Fenster, Ein-Klick-Eingang
+Höhlen-Werkzeug	Cave tool
+Höhle (Boden malen)	Cave (paint floor)
+Malen: am Bergfuß anfangen, in den Berg ziehen. Mausrad bei gedrückter Taste = Boden ±5 (Umschalt ±1) – alles, was in diesem Zug gemalt ist, geht mit. Strg+Mausrad = Zoom.	Painting: start at the foot of the mountain, drag into it. Mouse wheel while the button is held = floor ±5 (Shift ±1) – everything painted in this drag follows. Ctrl+wheel = zoom.
+Boden = Höhe des ersten Klicks	Floor = height of the first click
+feste Höhe:	fixed height:
+Rand → Wand, Höhe	Edge → wall, height
+nur das gewählte Tile (fest)	only the chosen tile (fixed)
+zufällig aus dem ganzen Set	random from the whole set
++ Textur aus der Liste …	+ Texture from the list …
+– Tile entfernen	– Remove tile
+Eingang (ein Klick)	Entrance (one click)
+Klick vor den Berg = ganzer Eingang. Mausrad = nächster Eingang (Vorschau an der Maus), Umschalt+Mausrad = Höhe, Strg+Mausrad = Zoom, R = Richtung des Standard-Eingangs.	Click in front of the mountain = whole entrance. Wheel = next entrance (preview at the mouse), Shift+wheel = height, Ctrl+wheel = zoom, R = direction of the standard entrance.
+💾 Markierten Bereich als Eingang speichern …	💾 Save marked area as entrance …
+Standard-Einstellungen …	Standard settings …
+Richtung:	Direction:
+automatisch	automatic
+Süden	south
+Osten	east
+Richtung automatisch	direction automatic
+Klick = ganzer Eingang	Click = whole entrance
+Malen (Mund von Hand, wie bisher)	Paint (mouth by hand, as before)
+Eingang: ein Klick setzt den gewählten Eingang.	Entrance: one click places the chosen entrance.
+Eingang: Malen – am Bergfuß klicken und 2–3 Tiles in den Hang ziehen.	Entrance: painting – click at the foot of the mountain and drag 2–3 tiles into the slope.
+Fenster mit den Werkzeugen Höhle / Eingang öffnen	Open the window with the tools cave / entrance
+Höhle malt	Cave paints
+fest	fixed
+zufällig	random
+Zum Set hinzugefügt	Added to the set
+Name des Boden-Sets (z. B. Kristallhöhle, Lavaboden):	Name of the floor set (e.g. crystal cave, lava floor):
+Mein Höhlenboden	My cave floor
+Neues Set – mit '+ Textur aus der Liste' eigene Texturen dazu, '– Tile entfernen' weg.	New set – add own textures with '+ Texture from the list', remove with '– Remove tile'.
+Standard (Stempel)	Standard (stamp)
+Standard-Eingang	Standard entrance
+Erst mit 'Bereich' einen fertigen Eingang markieren (Mund, Rahmen, Weg davor) – dann hier speichern.	First mark a finished entrance with 'Area' (mouth, frame, path in front) – then save it here.
+Name des Eingangs (z. B. Bergwerk Süd, Grotte Ost):	Name of the entrance (e.g. mine south, grotto east):
+Eingang gespeichert	Entrance saved
+Werkzeug Eingang, Mausrad wählt ihn, Klick setzt ihn.	tool Entrance, the wheel chooses it, a click places it.
+Den Standard-Eingang kann man nicht löschen.	The standard entrance cannot be deleted.
+Eingang löschen?	Delete the entrance?
+Dieser Eingang kommt aus dem Projekt (DragonData\Hoehleneingaenge) – dort löschen.	This entrance comes from the project (DragonData\Hoehleneingaenge) – delete it there.
+Mausrad ±5, Umschalt ±1, Taste loslassen = fertig	wheel ±5, Shift ±1, release the button = done
+Mausrad = nächster, Umschalt+Mausrad = Höhe, Strg+Mausrad = Zoom, R = Richtung	wheel = next, Shift+wheel = height, Ctrl+wheel = zoom, R = direction
+Eingang gesetzt	Entrance placed
+bei	at
+nimmt ihn zurück	takes it back
+Mausrad = nächster	wheel = next
+🪟 Höhlen-Fenster	🪟 Cave window
+Fenster mit den Boden-Texturen (Bilder, fest / zufällig, eigene dazu) und den Eingängen (Standard, gespeicherte, Vorschau)	Window with the floor textures (pictures, fixed / random, add own ones) and the entrances (standard, saved, preview)
+An = ein Klick setzt den gewählten Eingang (Mausrad = anderer, Umschalt+Mausrad = Höhe). Aus = Mund von Hand malen.	On = one click places the chosen entrance (wheel = another, Shift+wheel = height). Off = paint the mouth by hand.

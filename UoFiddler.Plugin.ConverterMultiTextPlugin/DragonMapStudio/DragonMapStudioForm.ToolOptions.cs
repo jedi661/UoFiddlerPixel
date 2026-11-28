@@ -445,6 +445,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             ClearQuickItems();
             _quickChanged = null;
             CgiBrushSettings b = BrushCfg;
+            if (t != IsoTool.Cave && t != IsoTool.CaveEntrance)
+            {
+                _caveAutoFor = null;
+            }
             var all = new List<(object o, string title)>();
             switch (t)
             {

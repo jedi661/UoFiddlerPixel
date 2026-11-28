@@ -1366,3 +1366,13 @@ Eigene Leiste über der CGI-Ansicht (lila, zieht auch ins Bereichs-Fenster mit):
 | Durchgang (NoDraw 0002) | Land 0002 malen: unsichtbar und begehbar – das Loch in der Karte zur Höhle darunter |
 
 **Ablauf Höhlensystem:** Eingang auf der Karte machen (Höhlen-Stempel oder NoDraw-Durchgang) → „⬇ Keller-Ebene“ an, „= Boden − 20“ → „▦ Texturen“ aus → in „🔎 Objekte & Texturen“ Boden-, Wand-, Fels- und Stalagmiten-Statics suchen → auf der Ebene bauen. Mit ▼ 20 eine weitere Etage tiefer.
+
+## Höhlen-Fenster, Ein-Klick-Eingang (seit „Werkstatt 42“)
+Beim Werkzeug **Höhle** oder **Eingang** öffnet sich das **Höhlen-Fenster** (abschaltbar; Lage wird gemerkt; Knopf „🪟 Höhlen-Fenster“ in der Leiste).
+
+* **Seite „Höhle (Boden malen)“:** Boden-Sets mit Bildern (Original 0245–0249, dunkel 0244, Erde, Unsichtbar 0002, eigene). **„nur das gewählte Tile (fest)“** oder **„zufällig aus dem ganzen Set“** – kein Zufall mehr, wenn man ihn nicht will. Eigene Texturen: „+ Textur aus der Liste …“ (Objekte & Texturen, Land) – kommen ins gewählte Set; „Neu …“ legt ein eigenes Set an, „– Tile entfernen“. Boden-Höhe: erster Klick oder feste Höhe, Rand → Wand mit Wand-Höhe.
+  **Mausrad bei gedrückter Maustaste = Boden ±5 (Umschalt ±1)** – alles, was in diesem Zug gemalt wurde, geht sofort mit (und die Wände werden nachgezogen). Ohne gedrückte Taste zoomt das Mausrad wie immer.
+* **Seite „Eingang (ein Klick)“:** **ein Klick vor den Berg = ganzer Eingang.** Liste mit Bildern: „Standard (Stempel)“ (wie der Höhlen-Stempel, Richtung automatisch / Süden / Osten) und alle **gespeicherten Eingänge**. An der Maus die **Vorschau** (Umriss auf den neuen Höhen, Mund gefüllt).
+  * **Mausrad** = nächster Eingang, **Umschalt + Mausrad** = Höhe des ganzen Eingangs (Mund, Rahmen, Bogen ±5), **Strg + Mausrad** = Zoom, **R** = Richtung des Standard-Eingangs.
+  * **„💾 Markierten Bereich als Eingang speichern …“**: einen fertigen Eingang (z. B. mit dem Höhlen-Stempel gemacht und nachgebessert) mit „Bereich“ markieren und speichern – Land mit Höhen + Statics, angelegt am tiefsten Feld vorn (dort wird später geklickt). Ordner `Hoehleneingaenge` (Projekt: `DragonData\Hoehleneingaenge`).
+  * **„Malen (Mund von Hand, wie bisher)“** = die alte Art bleibt als dritte Möglichkeit.

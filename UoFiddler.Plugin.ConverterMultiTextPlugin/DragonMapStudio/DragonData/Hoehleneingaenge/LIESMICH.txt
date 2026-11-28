@@ -1,0 +1,7 @@
+Höhleneingänge, die mit dem Projekt ausgeliefert werden (Werkzeug "Eingang")
+==========================================================================
+
+Hier liegende *.dmsv.json-Dateien erscheinen im Höhlen-Fenster unter "Eingang (ein Klick)".
+Erzeugen: im Studio einen fertigen Eingang mit "Bereich" markieren, im Höhlen-Fenster
+"Markierten Bereich als Eingang speichern" – die Datei liegt dann im Einstellungs-Ordner
+unter Hoehleneingaenge\ und kann hierher kopiert werden.

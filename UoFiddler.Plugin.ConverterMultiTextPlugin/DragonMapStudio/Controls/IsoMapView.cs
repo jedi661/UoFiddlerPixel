@@ -1309,6 +1309,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             DrawAreaCorner(g);
             DrawLayerPlane(g);
+            DrawEntranceGhost(g);
             DrawCoordLines(g);
             DrawToolOverlay(g);
             if (_areaPaste && _areaClip != null && _map.InBounds(_hover.X, _hover.Y))
@@ -1520,6 +1521,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         protected override void OnMouseWheel(MouseEventArgs e)
         {
             base.OnMouseWheel(e);
+            if (_map != null && CaveWheel(e))
+            {
+                return;
+            }
             ZoomStep(e.Delta > 0 ? 1 : -1);
         }
 
@@ -2254,6 +2259,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                                 ushort[] floor = CaveFloorIds != null && CaveFloorIds.Length > 0 ? CaveFloorIds : new[] { PlaceLandId };
                                 ushort nid = Array.IndexOf(floor, id) >= 0 ? id : floor[_rnd.Next(floor.Length)];
                                 _map.SetLand(x, y, nid, _strokeZ);
+                                _strokeCells.Add(y * _map.Width + x);
                                 break;
                             }
                         case IsoTool.CaveEntrance:

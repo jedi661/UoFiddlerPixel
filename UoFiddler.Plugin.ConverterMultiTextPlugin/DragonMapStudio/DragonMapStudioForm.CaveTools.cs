@@ -84,6 +84,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.TileInfo = _settings.ViewTileInfo;
             isoView.CoordLines = _settings.ViewCoordLines;
             InitCellarBar();
+            isoView.CaveEntrancePresets = () => CaveEntrancePresets.All;
         }
 
         private ToolStripButton _cellarTextures;
@@ -106,6 +107,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             },
             UseCaveFloor = (id, add) =>
             {
+                if (_caveForm != null && !_caveForm.IsDisposed)
+                {
+                    _caveForm.AddTile(id);
+                    return;
+                }
                 IEnumerable<ushort> ids = add ? isoView.CaveFloorIds.Append((ushort)id).Distinct() : new[] { (ushort)id };
                 txtCgiCaveFloor.Text = string.Join(" ", ids.Select(i => i.ToString("x4")));
                 SetStatus(L.T("Höhlen-Boden") + ": " + txtCgiCaveFloor.Text);
@@ -241,9 +247,64 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         }
 
         /// <summary>Quick options of the tools "Höhle" and "Eingang" (in UpdateQuickOptions).</summary>
+        private CaveToolForm _caveForm;
+        private IsoTool? _caveAutoFor;
+
+        /// <summary>The window of the cave tools (texture with pictures, saved entrances) – opens with Höhle / Eingang.</summary>
+        private void OpenCaveWindow(IsoTool t)
+        {
+            if (_caveForm != null && !_caveForm.IsDisposed)
+            {
+                _caveForm.ShowTool(t);
+                if (!_caveForm.Visible)
+                {
+                    _caveForm.Show(this);
+                }
+                return;
+            }
+            var host = new CaveToolHost
+            {
+                View = isoView,
+                Settings = _settings,
+                SaveSoon = SaveLayoutSoon,
+                SetFloorIds = ids => txtCgiCaveFloor.Text = ids,
+                WallHeight = numCgiCaveWall,
+                RaiseWalls = chkCgiCaveWalls,
+                UseFixedHeight = chkCgiCaveTarget,
+                FixedHeight = numCgiTarget,
+                OpenObjects = () => ObjectBrowserForm.ShowShared(this, ObjectHost(), true, "Höhle"),
+                SelectTool = tool =>
+                {
+                    if (isoView.Tool != tool)
+                    {
+                        SelectCgiTool(tool);
+                    }
+                },
+                ShowSettings = ShowSettingsWindow,
+                Status = SetStatus,
+                Guide = ShowCaveGuide
+            };
+            _caveForm = new CaveToolForm(host) { Owner = this };
+            _caveForm.FormClosed += (s, e) => _caveForm = null;
+            _caveForm.ShowTool(t);
+            _caveForm.Show(this);
+        }
+
         private void CaveQuickItems(IsoTool t)
         {
             AddQuick(new ToolStripSeparator());
+            Cmd("🪟 Höhlen-Fenster", "Fenster mit den Boden-Texturen (Bilder, fest / zufällig, eigene dazu) und den Eingängen (Standard, gespeicherte, Vorschau)", () => OpenCaveWindow(t));
+            if (_settings.CaveWindowAuto && _caveAutoFor != t)
+            {
+                _caveAutoFor = t;
+                BeginInvoke(new Action(() => OpenCaveWindow(t)));
+            }
+            if (t == IsoTool.CaveEntrance)
+            {
+                var click = new ToolStripButton(L.T("Klick = ganzer Eingang")) { CheckOnClick = true, Checked = isoView.CaveEntranceClick, ToolTipText = L.T("An = ein Klick setzt den gewählten Eingang (Mausrad = anderer, Umschalt+Mausrad = Höhe). Aus = Mund von Hand malen.") };
+                click.CheckedChanged += (s, e) => isoView.CaveEntranceClick = click.Checked;
+                AddQuick(click);
+            }
             if (t == IsoTool.Cave)
             {
                 var floor = new ToolStripButton(L.T("Boden") + ": " + string.Join(" ", isoView.CaveFloorIds.Take(3).Select(i => i.ToString("x4"))) + (isoView.CaveFloorIds.Length > 3 ? " …" : string.Empty))

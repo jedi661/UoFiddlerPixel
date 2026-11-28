@@ -129,6 +129,17 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public bool ViewHeightScale { get; set; }
 
+        /// <summary>Floor tile sets of the tool "Höhle" (own textures can be added).</summary>
+        [Browsable(false)]
+        public List<CaveTileSet> CaveTileSets { get; set; } = CaveTileSet.Defaults();
+
+        /// <summary>Cave tool window: "x,y,w,h", and whether it opens with the tools Höhle / Eingang.</summary>
+        [Browsable(false)]
+        public string CaveWindow { get; set; } = string.Empty;
+
+        [Browsable(false)]
+        public bool CaveWindowAuto { get; set; } = true;
+
         /// <summary>Height of the cellar level (absolute Z).</summary>
         [Browsable(false)]
         public int ViewLayerZ { get; set; } = -40;
