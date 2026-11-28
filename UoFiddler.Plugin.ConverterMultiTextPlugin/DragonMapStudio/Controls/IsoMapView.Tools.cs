@@ -778,16 +778,25 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 Message?.Invoke(this, L.T("Wand: erst ein Wand-Set mit IDs anlegen (Reiter Pinsel → Wand)."));
                 return;
             }
-            WallSettings ws = WallFor();
+            WallSettings ws = WallFor(pts[0]);
             List<StaticChange> changes = CgiBrushes.WallPath(_map, pts, WallSet, ws, _rnd);
             int before = _map.UndoCount;
             _map.Apply(changes);
             Finished(_map.UndoCount > before ? changes.Count : 0, L.T("Wand") + $" '{WallSet.Name}' ({pts.Count} " + L.T("Punkte") + $", " + L.T("Dicke") + $" {ws.Thickness})");
         }
 
-        private WallSettings WallFor()
+        private WallSettings WallFor(Point start)
         {
             WallSettings ws = BrushSettings.Wall;
+            if (_layerMode && _map.InBounds(start.X, start.Y))
+            {
+                // cellar level: all pieces on the level (straight), measured from the ground at the start
+                return new WallSettings
+                {
+                    Levels = ws.Levels, LevelHeight = ws.LevelHeight, ZOffset = ws.ZOffset + _layerZ - _map.LandZ(start.X, start.Y),
+                    PostsAtEnds = ws.PostsAtEnds, ReplaceExisting = ws.ReplaceExisting, Level = true, Thickness = ws.Thickness
+                };
+            }
             if (UnderView)
             {
                 // building under the map: the wall stands on the building level
@@ -807,7 +816,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 Message?.Invoke(this, L.T("Wand: erst ein Wand-Set mit IDs anlegen (Reiter Pinsel → Wand)."));
                 return;
             }
-            WallSettings ws = WallFor();
+            WallSettings ws = WallFor(a);
             // drag: straight along X or Y, with the thickness
             Point end = Math.Abs(b.X - a.X) >= Math.Abs(b.Y - a.Y) ? new Point(b.X, a.Y) : new Point(a.X, b.Y);
             List<StaticChange> changes = CgiBrushes.WallPath(_map, new List<Point> { a, end }, WallSet, ws, _rnd);
@@ -919,7 +928,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             MotifDrawSettings o = BrushSettings.MotifDraw;
             int under = UnderView ? BrushSettings.UnderOffset : 0;
-            List<StaticChange> ch = m.Build(_map, a, b, o, ZOffset + under, out Compass dir, out int n, out land);
+            List<StaticChange> ch = _layerMode
+                ? m.Build(_map, a, b, o, ZOffset, _layerZ, out Compass dir, out int n, out land)
+                : m.Build(_map, a, b, o, ZOffset + under, null, out dir, out n, out land);
             info = o.Mode == MotifMode.Radius
                 ? $"'{m}' " + L.T("im Radius") + $": {n} " + L.T("Stücke")
                 : $"'{m}' {L.T(Core.Motif.DirName(dir))} × {n}" + (o.Floors > 1 ? $", {o.Floors} " + L.T("Etagen") : string.Empty);
@@ -941,7 +952,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 return new List<StaticChange>();
             }
             int under = UnderView ? BrushSettings.UnderOffset : 0;
-            List<StaticChange> ch = m.BuildPath(_map, pts, BrushSettings.MotifDraw, ZOffset + under, out int n, out land);
+            List<StaticChange> ch = _layerMode
+                ? m.BuildPath(_map, pts, BrushSettings.MotifDraw, ZOffset, out int n, out land, _layerZ)
+                : m.BuildPath(_map, pts, BrushSettings.MotifDraw, ZOffset + under, out n, out land);
             info = $"'{m}' " + L.T("Punkt zu Punkt") + $": {Core.Motif.SnapPath(pts).Count} " + L.T("Punkte") + $", {n} " + L.T("Stücke") +
                    (land.Count > 0 ? $", {land.Count} " + L.T("Land-Tiles begradigt") : string.Empty);
             return ch;

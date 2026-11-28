@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – cave building helpers: quick options with a short guide for the tools "Höhle" and "Eingang",
  *  *  a picker for cave floors (land) and cave items (statics: stalagmites, rocks …), and the view switches
@@ -13,6 +13,7 @@ using System.Linq;
 using System.Windows.Forms;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls;
 using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core;
+using UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs;
 
 namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 {
@@ -82,15 +83,140 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.HeightScale = _settings.ViewHeightScale;
             isoView.TileInfo = _settings.ViewTileInfo;
             isoView.CoordLines = _settings.ViewCoordLines;
+            InitCellarBar();
+        }
+
+        private ToolStripButton _cellarTextures;
+        private ToolStripButton _cellarItems;
+
+        private ObjectBrowserHost ObjectHost() => new ObjectBrowserHost
+        {
+            Status = SetStatus,
+            UseItem = id =>
+            {
+                isoView.PlaceId = (ushort)id;
+                SelectCgiTool(IsoTool.Place);
+                SetStatus(L.T("Static setzen") + $": 0x{id:X4} {UoArtCache.ItemName(id)}" + (isoView.LayerMode ? " – " + L.T("auf der Keller-Ebene") + $" z {isoView.LayerZ}" : string.Empty));
+            },
+            UseLand = id =>
+            {
+                txtCgiLandId.Text = id.ToString("x4");
+                SelectCgiTool(IsoTool.LandSet);
+                SetStatus(L.T("Land-Pinsel") + $": 0x{id:X4} {UoArtCache.LandName(id)}");
+            },
+            UseCaveFloor = (id, add) =>
+            {
+                IEnumerable<ushort> ids = add ? isoView.CaveFloorIds.Append((ushort)id).Distinct() : new[] { (ushort)id };
+                txtCgiCaveFloor.Text = string.Join(" ", ids.Select(i => i.ToString("x4")));
+                SetStatus(L.T("Höhlen-Boden") + ": " + txtCgiCaveFloor.Text);
+            }
+        };
+
+        /// <summary>
+        /// Own bar for building below the map (above the view, also in the region window): cellar level on / off with
+        /// its height, textures and surface items on / off, grid of the level, object list, walkable NoDraw passage.
+        /// </summary>
+        private void InitCellarBar()
+        {
+            var bar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, BackColor = Color.FromArgb(237, 233, 254) };
+            var layer = new ToolStripButton("⬇ " + L.T("Keller-Ebene")) { CheckOnClick = true, Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ToolTipText = L.T("Flache Bau-Ebene unter der Karte ein / aus: die Maus trifft die Felder DIESER Ebene, Static setzen, Wand, Treppe, Multi und Muster bauen auf ihr, alles unter dem Boden wird gezeigt") };
+            var z = new NumericUpDown { Minimum = -128, Maximum = 127, Value = Math.Clamp(_settings.ViewLayerZ, -128, 127), Width = 55, Increment = 5 };
+            var zHost = new ToolStripControlHost(z) { ToolTipText = L.T("Höhe der Keller-Ebene (absolutes Z)") };
+            var fromGround = new ToolStripButton(L.T("= Boden − 20")) { ToolTipText = L.T("Ebene 20 unter den Boden an der letzten Mausposition legen (eine Etage tiefer)") };
+            var down = new ToolStripButton("▼ 20") { ToolTipText = L.T("Eine Etage (20) tiefer") };
+            var up = new ToolStripButton("▲ 20") { ToolTipText = L.T("Eine Etage (20) höher") };
+            var grid = new ToolStripButton(L.T("Gitter der Ebene")) { CheckOnClick = true, Checked = true };
+            _cellarTextures = new ToolStripButton("▦ " + L.T("Texturen")) { CheckOnClick = true, Checked = !isoView.LandHidden, ToolTipText = L.T("Boden-Texturen der Karte ein / aus (aus = nur Umriss – die Höhle darunter ist zu sehen)") };
+            _cellarItems = new ToolStripButton("🏠 " + L.T("Oberflächen-Items")) { CheckOnClick = true, Checked = !isoView.SurfaceStaticsHidden, ToolTipText = L.T("Statics auf / über dem Boden (Häuser, Bäume über der Höhle) ein / aus") };
+            var objects = new ToolStripButton("🔎 " + L.T("Objekte & Texturen …")) { ToolTipText = L.T("Liste aller Items und Land-Tiles mit Suche nach Name und ID, Schnellfilter Höhle / Felsen / Stalagmiten / NoDraw") };
+            var caveItems = new ToolStripButton("🪨 " + L.T("Höhlen-Items")) { ToolTipText = L.T("Objekt-Liste gleich mit dem Filter Höhle") };
+            var passage = new ToolStripButton(L.T("Durchgang (NoDraw 0002)")) { ToolTipText = L.T("Land-Pinsel mit 0002: unsichtbar und begehbar – Loch / Durchgang in der Karte zur Höhle darunter") };
+            var guide = new ToolStripButton("❓");
+            guide.ToolTipText = L.T("Anleitung Höhle / Eingang / Keller");
+
+            void ShowLayerItems()
+            {
+                zHost.Visible = fromGround.Visible = down.Visible = up.Visible = grid.Visible = layer.Checked;
+            }
+            layer.Click += (s, e) =>
+            {
+                isoView.LayerZ = (int)z.Value;
+                isoView.LayerMode = layer.Checked;
+                ShowLayerItems();
+                if (layer.Checked && isoView.Tool != IsoTool.Place && isoView.Tool != IsoTool.Wall && isoView.Tool != IsoTool.Stairs && isoView.Tool != IsoTool.Motif &&
+                    isoView.Tool != IsoTool.Multi && isoView.Tool != IsoTool.Select && isoView.Tool != IsoTool.Eraser && isoView.Tool != IsoTool.Delete)
+                {
+                    SelectCgiTool(IsoTool.Place);
+                }
+                SetStatus(layer.Checked
+                    ? L.T("Keller-Ebene an") + $" (z {z.Value}): " + L.T("die Maus trifft die Felder der Ebene – Static setzen, Wand, Treppe, Muster, Multi bauen dort. '▦ Texturen' aus = die Karte darüber nur als Umriss.")
+                    : L.T("Keller-Ebene aus – wieder auf der Karte."));
+            };
+            z.ValueChanged += (s, e) =>
+            {
+                isoView.LayerZ = (int)z.Value;
+                _settings.ViewLayerZ = (int)z.Value;
+                SaveLayoutSoon();
+            };
+            fromGround.Click += (s, e) =>
+            {
+                Point t = isoView.LastTile;
+                if (_cgiMap != null && _cgiMap.InBounds(t.X, t.Y))
+                {
+                    z.Value = Math.Clamp(_cgiMap.LandZ(t.X, t.Y) - 20, -128, 127);
+                }
+            };
+            down.Click += (s, e) => z.Value = Math.Max(z.Minimum, z.Value - 20);
+            up.Click += (s, e) => z.Value = Math.Min(z.Maximum, z.Value + 20);
+            grid.Click += (s, e) =>
+            {
+                isoView.LayerGrid = grid.Checked;
+                isoView.Invalidate();
+            };
+            _cellarTextures.Click += (s, e) =>
+            {
+                isoView.LandHidden = !_cellarTextures.Checked;
+                SyncSurfaceItems();
+            };
+            _cellarItems.Click += (s, e) =>
+            {
+                isoView.SurfaceStaticsHidden = !_cellarItems.Checked;
+                SyncSurfaceItems();
+            };
+            objects.Click += (s, e) => ObjectBrowserForm.ShowShared(this, ObjectHost());
+            caveItems.Click += (s, e) => ObjectBrowserForm.ShowShared(this, ObjectHost(), false, "Höhle");
+            passage.Click += (s, e) =>
+            {
+                txtCgiLandId.Text = "0002";
+                SelectCgiTool(IsoTool.LandSet);
+                SetStatus(L.T("Durchgang: Land 0002 (NoDraw) malen – unsichtbar und begehbar. Darunter auf der Keller-Ebene die Höhle bauen; für einen sichtbaren Eingang lieber den Höhlen-Stempel."));
+            };
+            guide.Click += (s, e) => ShowCaveGuide();
+            bar.Items.AddRange(new ToolStripItem[] { layer, zHost, fromGround, down, up, grid, new ToolStripSeparator(), _cellarTextures, _cellarItems, new ToolStripSeparator(), objects, caveItems, passage, guide });
+            ShowLayerItems();
+            tabCgi.Controls.Add(bar);
+            tabCgi.Controls.SetChildIndex(bar, tabCgi.Controls.GetChildIndex(toolStripCgiLand));
+        }
+
+        /// <summary>The buttons / menu show the state of the view.</summary>
+        private void SyncSurfaceItems()
+        {
+            if (_cellarTextures != null)
+            {
+                _cellarTextures.Checked = !isoView.LandHidden;
+                _cellarItems.Checked = !isoView.SurfaceStaticsHidden;
+            }
+            if (_viewSurface != null)
+            {
+                _viewSurface.Checked = isoView.SurfaceHidden;
+            }
         }
 
         private void SetSurfaceHidden(bool on)
         {
             isoView.SurfaceHidden = on;
-            if (_viewSurface != null && _viewSurface.Checked != on)
-            {
-                _viewSurface.Checked = on;
-            }
+            SyncSurfaceItems();
             SetStatus(on
                 ? L.T("Oberfläche aus: das Land ist nur als Umriss zu sehen, Statics auf dem Boden sind ausgeblendet – darunter bauen (mit '⬇ Unter der Karte'). Die Karte selbst bleibt unverändert.")
                 : L.T("Oberfläche wieder an."));

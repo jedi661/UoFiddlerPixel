@@ -2362,3 +2362,49 @@ Nein = ignorieren und weiter	Non = ignorer et continuer
 Abbrechen = zurück	Annuler = retour
 Die CGI-Ansicht wird abgeglichen – danach bitte noch einmal speichern.	La vue CGI est en cours de synchronisation – enregistrez de nouveau ensuite.
 Aus dem Karten-Editor	Depuis l'éditeur de carte
+
+# Werkstatt 41 – Keller-Ebene, Objekte & Texturen
+Keller-Ebene	Niveau de cave
+Flache Bau-Ebene unter der Karte ein / aus: die Maus trifft die Felder DIESER Ebene, Static setzen, Wand, Treppe, Multi und Muster bauen auf ihr, alles unter dem Boden wird gezeigt	Niveau de construction plat sous la carte oui / non : la souris vise les cases de CE niveau, poser static, mur, escalier, multi et motif y construisent, tout ce qui est sous le sol est affiché
+Höhe der Keller-Ebene (absolutes Z)	Hauteur du niveau de cave (Z absolu)
+= Boden − 20	= sol − 20
+Ebene 20 unter den Boden an der letzten Mausposition legen (eine Etage tiefer)	Placer le niveau 20 sous le sol à la dernière position de la souris (un étage plus bas)
+Eine Etage (20) tiefer	Un étage (20) plus bas
+Eine Etage (20) höher	Un étage (20) plus haut
+Gitter der Ebene	Grille du niveau
+Texturen	Textures
+Boden-Texturen der Karte ein / aus (aus = nur Umriss – die Höhle darunter ist zu sehen)	Textures du sol oui / non (non = seulement le contour – la grotte dessous est visible)
+Oberflächen-Items	Objets de surface
+Statics auf / über dem Boden (Häuser, Bäume über der Höhle) ein / aus	Statics sur / au-dessus du sol (maisons, arbres au-dessus de la grotte) oui / non
+Objekte & Texturen …	Objets & textures …
+Objekte & Texturen	Objets & textures
+Liste aller Items und Land-Tiles mit Suche nach Name und ID, Schnellfilter Höhle / Felsen / Stalagmiten / NoDraw	Liste de tous les objets et tuiles avec recherche par nom et ID, filtres grotte / rochers / stalagmites / NoDraw
+Objekt-Liste gleich mit dem Filter Höhle	Liste d'objets directement avec le filtre grotte
+Durchgang (NoDraw 0002)	Passage (NoDraw 0002)
+Land-Pinsel mit 0002: unsichtbar und begehbar – Loch / Durchgang in der Karte zur Höhle darunter	Pinceau de terrain avec 0002 : invisible et praticable – trou / passage dans la carte vers la grotte dessous
+Anleitung Höhle / Eingang / Keller	Guide grotte / entrée / cave
+Keller-Ebene an	Niveau de cave activé
+die Maus trifft die Felder der Ebene – Static setzen, Wand, Treppe, Muster, Multi bauen dort. '▦ Texturen' aus = die Karte darüber nur als Umriss.	la souris vise les cases du niveau – poser static, mur, escalier, motif, multi y construisent. '▦ Textures' non = la carte au-dessus en contour.
+Keller-Ebene aus – wieder auf der Karte.	Niveau de cave désactivé – de retour sur la carte.
+Durchgang: Land 0002 (NoDraw) malen – unsichtbar und begehbar. Darunter auf der Keller-Ebene die Höhle bauen; für einen sichtbaren Eingang lieber den Höhlen-Stempel.	Passage : peindre le terrain 0002 (NoDraw) – invisible et praticable. Construire la grotte dessous sur le niveau de cave ; pour une entrée visible, plutôt le tampon de grotte.
+auf der Keller-Ebene	sur le niveau de cave
+Land-Pinsel	Pinceau de terrain
+Items (Statics)	Objets (statics)
+Land / Texturen	Terrain / textures
+als Textur	en texture
+Land als Textur (texmaps) zeigen statt als Land-Bild	Afficher le terrain en texture (texmaps) au lieu de l'image
+Name (z. B. stalag, rock, cave, wall) oder ID (08e3, 0x8e3) oder Bereich (08e0-08ff)	Nom (p. ex. stalag, rock, cave, wall) ou ID (08e3, 0x8e3) ou plage (08e0-08ff)
+Schnell:	Rapide :
+Alle	Tous
+Felsen	Rochers
+Stalagmiten	Stalagmites
+NoDraw / begehbar	NoDraw / praticable
+Art / Flags	Type / drapeaux
+✔ Benutzen	✔ Utiliser
+Als Höhlen-Boden	Comme sol de grotte
+Höhlen-Boden dazu mischen	Mélanger au sol de grotte
+Doppelklick / Enter = benutzen	double-clic / Entrée = utiliser
+NoDraw: unsichtbar, man kann hindurch gehen (Höhlen-Durchgang)	NoDraw : invisible, on peut passer à travers (passage de grotte)
+Höhlen-Boden geht nur mit Land-Tiles (oben 'Land / Texturen').	Le sol de grotte ne marche qu'avec des tuiles (en haut 'Terrain / textures').
+Benutzt	Utilisé
+Zum Höhlen-Boden gemischt	Mélangé au sol de grotte

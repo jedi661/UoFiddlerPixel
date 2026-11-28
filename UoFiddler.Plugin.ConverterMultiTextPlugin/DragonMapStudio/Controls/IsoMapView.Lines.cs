@@ -113,15 +113,41 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool SurfaceHidden
         {
-            get => _surfaceHidden;
+            get => _landHidden && _surfaceStaticsHidden;
             set
             {
-                _surfaceHidden = value;
+                _landHidden = value;
+                _surfaceStaticsHidden = value;
                 Refresh(true);
             }
         }
 
-        private bool _surfaceHidden;
+        /// <summary>"Texturen aus": the land only as outline (the cellar / cave below can be seen).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool LandHidden
+        {
+            get => _landHidden;
+            set
+            {
+                _landHidden = value;
+                Refresh(true);
+            }
+        }
+
+        /// <summary>"Oberflächen-Items aus": statics on / above the ground are not drawn (houses, trees over the cave).</summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool SurfaceStaticsHidden
+        {
+            get => _surfaceStaticsHidden;
+            set
+            {
+                _surfaceStaticsHidden = value;
+                Refresh(true);
+            }
+        }
+
+        private bool _landHidden;
+        private bool _surfaceStaticsHidden;
 
         /// <summary>
         /// Height scale: a ruler at the right border, its Z lined up with the tile under the mouse – ground (green), build

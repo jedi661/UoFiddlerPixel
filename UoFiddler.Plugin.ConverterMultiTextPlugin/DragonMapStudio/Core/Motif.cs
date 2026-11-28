@@ -933,7 +933,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Build(map, a, b, o, zOffset, out dir, out repeats, out _);
 
         /// <summary>The changes for the CGI map – with the levelled land (<see cref="MotifDrawSettings.Flatten"/>).</summary>
-        public List<StaticChange> Build(MapData map, Point a, Point b, MotifDrawSettings o, int zOffset, out Compass dir, out int repeats, out List<LandChange> land)
+        public List<StaticChange> Build(MapData map, Point a, Point b, MotifDrawSettings o, int zOffset, out Compass dir, out int repeats, out List<LandChange> land) =>
+            Build(map, a, b, o, zOffset, null, out dir, out repeats, out land);
+
+        /// <summary><paramref name="fixedGround"/>: build on this height instead of the land (cellar level; no levelling).</summary>
+        public List<StaticChange> Build(MapData map, Point a, Point b, MotifDrawSettings o, int zOffset, int? fixedGround, out Compass dir, out int repeats, out List<LandChange> land)
         {
             Compass d = Compass.East;
             int n = 0;
@@ -941,29 +945,29 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 List<(int x, int y, int z, ushort id, ushort hue)> r = Layout(a, b, o, g, out d, out n);
                 return r;
-            }, (map.LandZ(a.X, a.Y)), out land);
+            }, (map.LandZ(a.X, a.Y)), out land, fixedGround);
             dir = d;
             repeats = n;
             return ch;
         }
 
         /// <summary>Point to point into the CGI map.</summary>
-        public List<StaticChange> BuildPath(MapData map, IList<Point> points, MotifDrawSettings o, int zOffset, out int pieces, out List<LandChange> land)
+        public List<StaticChange> BuildPath(MapData map, IList<Point> points, MotifDrawSettings o, int zOffset, out int pieces, out List<LandChange> land, int? fixedGround = null)
         {
             int n = 0;
             Point p0 = points.Count > 0 ? points[0] : Point.Empty;
-            List<StaticChange> ch = BuildWith(map, o, zOffset, g => Path(points, o, g, out n), map.LandZ(p0.X, p0.Y), out land);
+            List<StaticChange> ch = BuildWith(map, o, zOffset, g => Path(points, o, g, out n), map.LandZ(p0.X, p0.Y), out land, fixedGround);
             pieces = n;
             return ch;
         }
 
         private List<StaticChange> BuildWith(MapData map, MotifDrawSettings o, int zOffset, Func<Func<int, int, int>, List<(int x, int y, int z, ushort id, ushort hue)>> layout,
-            int startLand, out List<LandChange> land)
+            int startLand, out List<LandChange> land, int? fixedGround = null)
         {
             land = new List<LandChange>();
-            Func<int, int, int> ground = (x, y) => map.LandZ(x, y) + zOffset;
+            Func<int, int, int> ground = fixedGround != null ? (x, y) => fixedGround.Value + zOffset : (x, y) => map.LandZ(x, y) + zOffset;
             List<(int x, int y, int z, ushort id, ushort hue)> parts = layout(ground);
-            if (o.Flatten != MotifFlatten.Off && parts.Count > 0)
+            if (o.Flatten != MotifFlatten.Off && parts.Count > 0 && fixedGround == null)
             {
                 int target = o.Flatten == MotifFlatten.FixedZ ? o.FlattenZ : startLand;
                 land = FlattenLand(map, parts.Select(p => new Point(p.x, p.y)), target, o.FlattenMargin);

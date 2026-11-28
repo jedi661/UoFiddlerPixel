@@ -1351,3 +1351,18 @@ Gleicher Baukasten wie der Treppen-Designer – für alles, was sich wiederholt:
 * **👁 Ansicht** (CGI-Leiste rechts): **Oberfläche aus** (Land nur als Umriss, Statics auf dem Boden ausgeblendet – Keller, Kanalisation, Höhlen darunter sehen und bauen; die Karte bleibt unverändert), **Höhen-Skala** rechts (an der Maus: Boden grün, Bau-Ebene orange, Keller-Ebene lila, jedes Static als blauer Balken), **Tile-Info**, **Koordinaten-Linien**. Im Bereichs-Fenster zeigt die Ebenen-Ansicht unter der Karte automatisch ohne Oberfläche.
 * **Layout wird gemerkt** und gleich gespeichert (nicht erst beim Beenden): Paletten (gelöst / angedockt / aus), Seitenleiste (gelöst, Breite, aus), Werkzeug-Optionen-Fenster, Bereichs-Fenster (Größe, Teiler, gelöste Ansichten kommen gelöst an derselben Stelle wieder).
 * **Abgleich Karten-Editor ↔ CGI** (Knopf „⟳ Abgleich“ in beiden Leisten): beide Seiten merken sich den geänderten Bereich (⟳ am Tab). Beim Tab-Wechsel wird automatisch abgeglichen (Farbkarte → CGI: Bereich neu bauen; CGI → Farbkarte: Bereich in Farben + Statics-Ebene). Einstellbar: automatisch / erst fragen / nur hinweisen. An derselben Stelle auf beiden Seiten geändert → Frage, wer gewinnt. Beim Speichern und Schließen mit offenen Änderungen: Warnung (ignorierbar). „Offene Änderungen vergessen“. Gilt, wenn die CGI-Karte aus der Farbkarte gebaut wurde.
+
+## Keller-Ebene und Objekte & Texturen (seit „Werkstatt 41“)
+Eigene Leiste über der CGI-Ansicht (lila, zieht auch ins Bereichs-Fenster mit):
+
+| Knopf | Wirkung |
+|---|---|
+| ⬇ Keller-Ebene | flache Bau-Ebene auf festem Z unter der Karte ein / aus. Die **Maus trifft die Felder dieser Ebene** (nicht die Oberfläche) – Static setzen, Wand (gerade auf der Ebene), Treppe, Multi, Vorlage und Muster bauen dort. Gitter der Ebene + Feld unter der Maus in Türkis mit „Keller-Ebene z …“. Alles unter dem Boden wird obenauf gezeichnet. „Auf Statics stapeln“ stapelt auf die Höhlen-Statics der Ebene. |
+| Z, „= Boden − 20“, ▼ 20, ▲ 20 | Höhe der Ebene (absolut, wird gemerkt), eine Etage tiefer / höher |
+| ▦ Texturen | Boden-Texturen der Karte ein / aus – aus = nur Umriss, die Höhle darunter ist zu sehen |
+| 🏠 Oberflächen-Items | Häuser, Bäume über der Höhle ein / aus (getrennt von den Texturen) |
+| 🔎 Objekte & Texturen … | Liste **aller** Items und Land-Tiles (Spalten ID, Name, Höhe, Art / Flags) mit **Suche nach Name oder ID** (`stalag`, `08e3`, `0x8e3`, Bereich `08e0-08ff`), Schnellfilter Höhle, Felsen, Stalagmiten, Wände, Boden, **NoDraw / begehbar**, großes Bild (Land auch als Textur). Doppelklick / Enter = benutzen (Item → Static setzen, Land → Land-Pinsel), „Als Höhlen-Boden“ / „dazu mischen“ |
+| 🪨 Höhlen-Items | dieselbe Liste gleich mit dem Filter Höhle |
+| Durchgang (NoDraw 0002) | Land 0002 malen: unsichtbar und begehbar – das Loch in der Karte zur Höhle darunter |
+
+**Ablauf Höhlensystem:** Eingang auf der Karte machen (Höhlen-Stempel oder NoDraw-Durchgang) → „⬇ Keller-Ebene“ an, „= Boden − 20“ → „▦ Texturen“ aus → in „🔎 Objekte & Texturen“ Boden-, Wand-, Fels- und Stalagmiten-Statics suchen → auf der Ebene bauen. Mit ▼ 20 eine weitere Etage tiefer.
