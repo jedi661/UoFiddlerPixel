@@ -677,6 +677,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             double v0 = (s.Y - SceneH / 2.0 + Half) / Half + (_camX + _camY);
             double v = v0;
             int tx = 0, ty = 0;
+            if (_layerMode)
+            {
+                // the mouse hits the flat cellar level, not the surface
+                v = v0 + _layerZ * ZStep / (double)Half;
+                return new Point((int)Math.Floor((u + v) / 2), (int)Math.Floor((v - u) / 2));
+            }
             for (int pass = 0; pass < 3; pass++)
             {
                 tx = (int)Math.Floor((u + v) / 2);
@@ -832,7 +838,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     bool landVisible = maxY >= 0 && minY <= sh && top.X + Half >= 0 && top.X - Half <= sw;
                     ushort landId = _map.LandId(x, y);
                     int zMin = Math.Min(Math.Min(zt, zr), Math.Min(zb, zl));
-                    if (landVisible && SurfaceHidden)
+                    if (landVisible && _landHidden)
                     {
                         // "Oberfläche aus": only the outline of the land – what lies below the map can be seen and built
                         drawables.Add((x + y, zMin * 4 - 2, order++, () =>
@@ -852,7 +858,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     }
                     foreach (StaticItem st in _map.StaticsAt(x, y))
                     {
-                        if (st.Z > MaxZ || Hidden(st.Id) || (SurfaceHidden && st.Z >= zMin - 1))
+                        if (st.Z > MaxZ || Hidden(st.Id) || (_surfaceStaticsHidden && st.Z >= zMin - 1))
                         {
                             continue;
                         }
@@ -873,7 +879,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         bool noDraw = CaveEntranceBuilder.IsNoDrawStatic(st.Id, UoArtCache.ItemName(st.Id));
                         PointF floor = new PointF(top.X, top.Y + Half - st.Z * ZStep);
                         // "unter der Karte": statics below the land are drawn after everything (else the land hides them)
-                        List<(int depth, int prio, int order, Action draw)> target = UnderView && st.Z < zMin && !CaveEntranceBuilder.IsNoDraw(landId) ? below : drawables;
+                        List<(int depth, int prio, int order, Action draw)> target = ShowBelow && st.Z < zMin && !CaveEntranceBuilder.IsNoDraw(landId) ? below : drawables;
                         target.Add((x + y, (st.Z + threshold) * 4 + threshold, order++, () =>
                         {
                             if (noDraw)
@@ -1302,6 +1308,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 g.DrawPolygon(pen, AreaPoly(_area));
             }
             DrawAreaCorner(g);
+            DrawLayerPlane(g);
             DrawCoordLines(g);
             DrawToolOverlay(g);
             if (_areaPaste && _areaClip != null && _map.InBounds(_hover.X, _hover.Y))
@@ -1382,7 +1389,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             else if (Tool == IsoTool.Multi && _multiParts.Count > 0)
             {
-                int baseZ = _map.LandZ(_hover.X, _hover.Y) + ZOffset;
+                int baseZ = GroundAt(_hover.X, _hover.Y) + ZOffset;
                 foreach (MultiPart m in _multiParts.Where(m => m.Visible || MultiInvisibleParts).OrderBy(m => m.Dx + m.Dy).ThenBy(m => m.Dz))
                 {
                     parts.Add((m.Id, _hover.X + m.Dx, _hover.Y + m.Dy, baseZ + m.Dz));
@@ -1390,7 +1397,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             }
             else if (Tool == IsoTool.Template && _template != null)
             {
-                int baseZ = _map.LandZ(_hover.X, _hover.Y) + ZOffset;
+                int baseZ = GroundAt(_hover.X, _hover.Y) + ZOffset;
                 if (TemplateStatics)
                 {
                     foreach (TemplateStatic t in _templateGhost)
@@ -1467,6 +1474,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
 
         private int PlaceZ(int x, int y)
         {
+            if (_layerMode)
+            {
+                return LayerPlaceZ(x, y);
+            }
             int baseZ = StackOnStatics ? _map.TopZ(x, y, id => UoArtCache.StackHeight(id)) : _map.LandZ(x, y);
             return Math.Clamp(baseZ + ZOffset + (UnderView && !StackOnStatics ? BrushSettings.UnderOffset : 0), -128, 127);
         }
@@ -2140,7 +2151,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 Message?.Invoke(this, $"Multi {_multiId} hat keine Teile (Client-Dateien geladen?).");
                 return;
             }
-            int baseZ = _map.LandZ(x, y) + ZOffset;
+            int baseZ = GroundAt(x, y) + ZOffset;
             var changes = new List<StaticChange>();
             _selection.Clear();
             foreach (MultiPart m in _multiParts.Where(m => m.Visible || MultiInvisibleParts))
@@ -2565,7 +2576,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 Message?.Invoke(this, "Keine Vorlage gewählt (Reiter Vorlagen).");
                 return;
             }
-            int groundZ = fixedZ ?? _map.LandZ(x, y);
+            int groundZ = fixedZ ?? GroundAt(x, y);
             int baseZ = groundZ + ZOffset;
             var statics = new List<StaticChange>();
             var land = new List<LandChange>();

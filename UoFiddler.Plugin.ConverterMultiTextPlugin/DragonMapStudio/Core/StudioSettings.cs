@@ -129,6 +129,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         [Browsable(false)]
         public bool ViewHeightScale { get; set; }
 
+        /// <summary>Height of the cellar level (absolute Z).</summary>
+        [Browsable(false)]
+        public int ViewLayerZ { get; set; } = -40;
+
         /// <summary>Map editor ↔ CGI view when the tab changes: 0 = automatically, 1 = ask, 2 = off (only warn).</summary>
         [Browsable(false)]
         public int SyncMode { get; set; }

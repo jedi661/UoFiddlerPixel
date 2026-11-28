@@ -2370,3 +2370,49 @@ Nein = ignorieren und weiter	No = ignore and go on
 Abbrechen = zurück	Cancel = back
 Die CGI-Ansicht wird abgeglichen – danach bitte noch einmal speichern.	The CGI view is being synced – please save again afterwards.
 Aus dem Karten-Editor	From the map editor
+
+# Werkstatt 41 – Keller-Ebene, Objekte & Texturen
+Keller-Ebene	Cellar level
+Flache Bau-Ebene unter der Karte ein / aus: die Maus trifft die Felder DIESER Ebene, Static setzen, Wand, Treppe, Multi und Muster bauen auf ihr, alles unter dem Boden wird gezeigt	Flat building level under the map on / off: the mouse hits the fields of THIS level, place static, wall, stairs, multi and pattern build on it, everything below the ground is shown
+Höhe der Keller-Ebene (absolutes Z)	Height of the cellar level (absolute Z)
+= Boden − 20	= ground − 20
+Ebene 20 unter den Boden an der letzten Mausposition legen (eine Etage tiefer)	Put the level 20 below the ground at the last mouse position (one floor lower)
+Eine Etage (20) tiefer	One floor (20) lower
+Eine Etage (20) höher	One floor (20) higher
+Gitter der Ebene	Grid of the level
+Texturen	Textures
+Boden-Texturen der Karte ein / aus (aus = nur Umriss – die Höhle darunter ist zu sehen)	Ground textures of the map on / off (off = only outline – the cave below can be seen)
+Oberflächen-Items	Surface items
+Statics auf / über dem Boden (Häuser, Bäume über der Höhle) ein / aus	Statics on / above the ground (houses, trees above the cave) on / off
+Objekte & Texturen …	Objects & textures …
+Objekte & Texturen	Objects & textures
+Liste aller Items und Land-Tiles mit Suche nach Name und ID, Schnellfilter Höhle / Felsen / Stalagmiten / NoDraw	List of all items and land tiles with search by name and ID, quick filters cave / rocks / stalagmites / NoDraw
+Objekt-Liste gleich mit dem Filter Höhle	Object list directly with the filter cave
+Durchgang (NoDraw 0002)	Passage (NoDraw 0002)
+Land-Pinsel mit 0002: unsichtbar und begehbar – Loch / Durchgang in der Karte zur Höhle darunter	Land brush with 0002: invisible and walkable – hole / passage in the map to the cave below
+Anleitung Höhle / Eingang / Keller	Guide cave / entrance / cellar
+Keller-Ebene an	Cellar level on
+die Maus trifft die Felder der Ebene – Static setzen, Wand, Treppe, Muster, Multi bauen dort. '▦ Texturen' aus = die Karte darüber nur als Umriss.	the mouse hits the fields of the level – place static, wall, stairs, pattern, multi build there. '▦ Textures' off = the map above only as outline.
+Keller-Ebene aus – wieder auf der Karte.	Cellar level off – back on the map.
+Durchgang: Land 0002 (NoDraw) malen – unsichtbar und begehbar. Darunter auf der Keller-Ebene die Höhle bauen; für einen sichtbaren Eingang lieber den Höhlen-Stempel.	Passage: paint land 0002 (NoDraw) – invisible and walkable. Build the cave below on the cellar level; for a visible entrance rather use the cave stamp.
+auf der Keller-Ebene	on the cellar level
+Land-Pinsel	Land brush
+Items (Statics)	Items (statics)
+Land / Texturen	Land / textures
+als Textur	as texture
+Land als Textur (texmaps) zeigen statt als Land-Bild	Show land as texture (texmaps) instead of the land image
+Name (z. B. stalag, rock, cave, wall) oder ID (08e3, 0x8e3) oder Bereich (08e0-08ff)	Name (e.g. stalag, rock, cave, wall) or ID (08e3, 0x8e3) or range (08e0-08ff)
+Schnell:	Quick:
+Alle	All
+Felsen	Rocks
+Stalagmiten	Stalagmites
+NoDraw / begehbar	NoDraw / walkable
+Art / Flags	Kind / flags
+✔ Benutzen	✔ Use
+Als Höhlen-Boden	As cave floor
+Höhlen-Boden dazu mischen	Mix into the cave floor
+Doppelklick / Enter = benutzen	double click / Enter = use
+NoDraw: unsichtbar, man kann hindurch gehen (Höhlen-Durchgang)	NoDraw: invisible, you can walk through (cave passage)
+Höhlen-Boden geht nur mit Land-Tiles (oben 'Land / Texturen').	Cave floor only works with land tiles (at the top 'Land / textures').
+Benutzt	Used
+Zum Höhlen-Boden gemischt	Mixed into the cave floor

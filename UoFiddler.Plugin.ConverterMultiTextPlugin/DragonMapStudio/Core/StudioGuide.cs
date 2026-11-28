@@ -893,7 +893,16 @@ Auf den Boden direkt am Bergfuß klicken und 2–3 Tiles in den Hang ziehen (min
 ## Höhlen-Boden und -Items
 Leiste beim Werkzeug Höhle: „Boden …“ oder Ansicht → „Höhlen-Boden und -Items …“: Land-Tiles (Klick = dieser Boden, Strg+Klick = dazu mischen) und Items wie Stalagmiten, Felsen (Klick = mit Static setzen platzieren).
 ## Unter der Karte
-„⬇ Unter der Karte“ baut unter dem Boden; Ansicht → **Oberfläche aus** zeigt das Land nur als Umriss und blendet die Statics auf dem Boden aus – so sieht man Keller, Kanalisation, Höhlen. **Höhen-Skala** rechts: Boden (grün), Bau-Ebene (orange), Keller-Ebene (lila) und jedes Static des Feldes als blauer Balken. Tile-Info und Koordinaten-Linien ebenfalls unter Ansicht.",
+„⬇ Unter der Karte“ baut unter dem Boden; Ansicht → **Oberfläche aus** zeigt das Land nur als Umriss und blendet die Statics auf dem Boden aus – so sieht man Keller, Kanalisation, Höhlen. **Höhen-Skala** rechts: Boden (grün), Bau-Ebene (orange), Keller-Ebene (lila) und jedes Static des Feldes als blauer Balken. Tile-Info und Koordinaten-Linien ebenfalls unter Ansicht.
+
+## Keller-Ebene (eigene Leiste über der Ansicht)
+⬇ Keller-Ebene | flache Bau-Ebene auf festem Z unter der Karte: die Maus trifft die Felder dieser Ebene (nicht die Oberfläche), Static setzen, Wand, Treppe, Multi, Vorlage und Muster bauen auf ihr; Gitter und das Feld unter der Maus in Türkis
+Z / = Boden − 20 / ▼ 20 / ▲ 20 | Höhe der Ebene (absolut), eine Etage tiefer / höher
+▦ Texturen | Boden-Texturen der Karte ein / aus (aus = nur Umriss)
+🏠 Oberflächen-Items | Häuser, Bäume über der Höhle ein / aus
+🔎 Objekte & Texturen | Liste aller Items und Land-Tiles: Suche nach Name, ID (08e3) oder Bereich (08e0-08ff), Schnellfilter Höhle, Felsen, Stalagmiten, Wände, Boden, NoDraw; großes Bild; Doppelklick = benutzen
+Durchgang (NoDraw 0002) | Land 0002 malen: unsichtbar und begehbar – das Loch in der Karte zur Höhle darunter
+Ablauf: Eingang auf der Karte (Höhlen-Stempel oder NoDraw-Durchgang), dann Keller-Ebene an (z. B. Boden − 20), Texturen aus, mit Objekte & Texturen Boden-, Wand- und Höhlen-Statics wählen und die Höhle auf der Ebene bauen.",
                 En = @"# Caves and under the map
 ## Tool Cave
 Start at the foot of the mountain and drag into it. Every tile under the brush becomes cave floor (random from the floor tiles) at the height of the FIRST click (or “Floor at height =”). “Edge → wall”: mountain tiles at the brush edge are raised to floor + wall height – that is the rock wall. Brush size = passage width, one drag = one undo step.
@@ -902,7 +911,16 @@ Click the ground right at the foot of the mountain and drag 2–3 tiles into the
 ## Cave floors and items
 Bar of the tool Cave: “Floor …” or View → “Cave floors and items …”: land tiles (click = this floor, Ctrl+click = mix in) and items like stalagmites, rocks (click = place with Place static).
 ## Under the map
-“⬇ Under the map” builds below the ground; View → **Surface off** shows the land only as an outline and hides the statics on the ground – so cellars, sewers, caves can be seen. **Height scale** on the right: ground (green), build level (orange), cellar level (purple) and every static of the tile as a blue bar. Tile info and coordinate lines are under View too."
+“⬇ Under the map” builds below the ground; View → **Surface off** shows the land only as an outline and hides the statics on the ground – so cellars, sewers, caves can be seen. **Height scale** on the right: ground (green), build level (orange), cellar level (purple) and every static of the tile as a blue bar. Tile info and coordinate lines are under View too.
+
+## Cellar level (own bar above the view)
+⬇ Cellar level | flat building level at a fixed Z under the map: the mouse hits the fields of this level (not the surface), place static, wall, stairs, multi, template and pattern build on it; grid and the field under the mouse in turquoise
+Z / = ground − 20 / ▼ 20 / ▲ 20 | height of the level (absolute), one floor lower / higher
+▦ Textures | ground textures of the map on / off (off = only outline)
+🏠 Surface items | houses, trees above the cave on / off
+🔎 Objects & textures | list of all items and land tiles: search by name, ID (08e3) or range (08e0-08ff), quick filters cave, rocks, stalagmites, walls, floor, NoDraw; big picture; double click = use
+Passage (NoDraw 0002) | paint land 0002: invisible and walkable – the hole in the map to the cave below
+Workflow: entrance on the map (cave stamp or NoDraw passage), then cellar level on (e.g. ground − 20), textures off, choose floor, wall and cave statics with Objects & textures and build the cave on the level."
             },
             new GuideTopic
             {
