@@ -2408,3 +2408,54 @@ NoDraw: unsichtbar, man kann hindurch gehen (Höhlen-Durchgang)	NoDraw : invisib
 Höhlen-Boden geht nur mit Land-Tiles (oben 'Land / Texturen').	Le sol de grotte ne marche qu'avec des tuiles (en haut 'Terrain / textures').
 Benutzt	Utilisé
 Zum Höhlen-Boden gemischt	Mélangé au sol de grotte
+
+# Werkstatt 42 – Höhlen-Fenster, Ein-Klick-Eingang
+Höhlen-Werkzeug	Outil grotte
+Höhle (Boden malen)	Grotte (peindre le sol)
+Malen: am Bergfuß anfangen, in den Berg ziehen. Mausrad bei gedrückter Taste = Boden ±5 (Umschalt ±1) – alles, was in diesem Zug gemalt ist, geht mit. Strg+Mausrad = Zoom.	Peindre : commencer au pied de la montagne, tirer dedans. Molette bouton enfoncé = sol ±5 (Maj ±1) – tout ce qui est peint dans ce tracé suit. Ctrl+molette = zoom.
+Boden = Höhe des ersten Klicks	Sol = hauteur du premier clic
+feste Höhe:	hauteur fixe :
+Rand → Wand, Höhe	Bord → mur, hauteur
+nur das gewählte Tile (fest)	seulement la tuile choisie (fixe)
+zufällig aus dem ganzen Set	aléatoire dans tout le jeu
++ Textur aus der Liste …	+ Texture de la liste …
+– Tile entfernen	– Retirer la tuile
+Eingang (ein Klick)	Entrée (un clic)
+Klick vor den Berg = ganzer Eingang. Mausrad = nächster Eingang (Vorschau an der Maus), Umschalt+Mausrad = Höhe, Strg+Mausrad = Zoom, R = Richtung des Standard-Eingangs.	Clic devant la montagne = entrée complète. Molette = entrée suivante (aperçu à la souris), Maj+molette = hauteur, Ctrl+molette = zoom, R = direction de l'entrée standard.
+💾 Markierten Bereich als Eingang speichern …	💾 Enregistrer la zone marquée comme entrée …
+Standard-Einstellungen …	Réglages standard …
+Richtung:	Direction :
+automatisch	automatique
+Süden	sud
+Osten	est
+Richtung automatisch	direction automatique
+Klick = ganzer Eingang	Clic = entrée complète
+Malen (Mund von Hand, wie bisher)	Peindre (bouche à la main, comme avant)
+Eingang: ein Klick setzt den gewählten Eingang.	Entrée : un clic pose l'entrée choisie.
+Eingang: Malen – am Bergfuß klicken und 2–3 Tiles in den Hang ziehen.	Entrée : peinture – cliquer au pied de la montagne et tirer 2–3 tuiles dans la pente.
+Fenster mit den Werkzeugen Höhle / Eingang öffnen	Ouvrir la fenêtre avec les outils grotte / entrée
+Höhle malt	La grotte peint
+fest	fixe
+zufällig	aléatoire
+Zum Set hinzugefügt	Ajouté au jeu
+Name des Boden-Sets (z. B. Kristallhöhle, Lavaboden):	Nom du jeu de sol (p. ex. grotte de cristal, sol de lave) :
+Mein Höhlenboden	Mon sol de grotte
+Neues Set – mit '+ Textur aus der Liste' eigene Texturen dazu, '– Tile entfernen' weg.	Nouveau jeu – ajouter vos textures avec '+ Texture de la liste', retirer avec '– Retirer la tuile'.
+Standard (Stempel)	Standard (tampon)
+Standard-Eingang	Entrée standard
+Erst mit 'Bereich' einen fertigen Eingang markieren (Mund, Rahmen, Weg davor) – dann hier speichern.	Marquer d'abord une entrée finie avec 'Zone' (bouche, cadre, chemin devant) – puis l'enregistrer ici.
+Name des Eingangs (z. B. Bergwerk Süd, Grotte Ost):	Nom de l'entrée (p. ex. mine sud, grotte est) :
+Eingang gespeichert	Entrée enregistrée
+Werkzeug Eingang, Mausrad wählt ihn, Klick setzt ihn.	outil Entrée, la molette la choisit, un clic la pose.
+Den Standard-Eingang kann man nicht löschen.	L'entrée standard ne peut pas être supprimée.
+Eingang löschen?	Supprimer l'entrée ?
+Dieser Eingang kommt aus dem Projekt (DragonData\Hoehleneingaenge) – dort löschen.	Cette entrée vient du projet (DragonData\Hoehleneingaenge) – la supprimer là-bas.
+Mausrad ±5, Umschalt ±1, Taste loslassen = fertig	molette ±5, Maj ±1, relâcher = terminé
+Mausrad = nächster, Umschalt+Mausrad = Höhe, Strg+Mausrad = Zoom, R = Richtung	molette = suivante, Maj+molette = hauteur, Ctrl+molette = zoom, R = direction
+Eingang gesetzt	Entrée posée
+bei	à
+nimmt ihn zurück	l'annule
+Mausrad = nächster	molette = suivante
+🪟 Höhlen-Fenster	🪟 Fenêtre grotte
+Fenster mit den Boden-Texturen (Bilder, fest / zufällig, eigene dazu) und den Eingängen (Standard, gespeicherte, Vorschau)	Fenêtre avec les textures de sol (images, fixe / aléatoire, ajouter les vôtres) et les entrées (standard, enregistrées, aperçu)
+An = ein Klick setzt den gewählten Eingang (Mausrad = anderer, Umschalt+Mausrad = Höhe). Aus = Mund von Hand malen.	Oui = un clic pose l'entrée choisie (molette = autre, Maj+molette = hauteur). Non = peindre la bouche à la main.

@@ -360,6 +360,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
             {
                 return IsClickTool(Tool);
             }
+            if (Tool == IsoTool.CaveEntrance && CaveEntranceClick)
+            {
+                PlaceEntrance(tile);
+                return true;
+            }
             if ((Tool == IsoTool.Wall && BrushSettings.Wall.PointMode) || (Tool == IsoTool.Motif && BrushSettings.MotifDraw.Mode == MotifMode.Points))
             {
                 if (e.Clicks >= 2)
@@ -552,6 +557,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
         /// <summary>Keys of the point tools and the new edits. True = handled.</summary>
         private bool ToolKeyDown(KeyEventArgs e)
         {
+            if (CaveKey(e))
+            {
+                return true;
+            }
             if (_areaCorner != null && e.KeyCode == Keys.Escape)
             {
                 _areaCorner = null;

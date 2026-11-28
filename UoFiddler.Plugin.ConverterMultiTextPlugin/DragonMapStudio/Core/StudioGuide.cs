@@ -902,6 +902,9 @@ Z / = Boden − 20 / ▼ 20 / ▲ 20 | Höhe der Ebene (absolut), eine Etage tie
 🏠 Oberflächen-Items | Häuser, Bäume über der Höhle ein / aus
 🔎 Objekte & Texturen | Liste aller Items und Land-Tiles: Suche nach Name, ID (08e3) oder Bereich (08e0-08ff), Schnellfilter Höhle, Felsen, Stalagmiten, Wände, Boden, NoDraw; großes Bild; Doppelklick = benutzen
 Durchgang (NoDraw 0002) | Land 0002 malen: unsichtbar und begehbar – das Loch in der Karte zur Höhle darunter
+## Höhlen-Fenster (öffnet mit Höhle / Eingang)
+**Höhle:** Boden-Set wählen (Bilder), „nur das gewählte Tile (fest)“ oder „zufällig aus dem Set“, eigene Texturen mit „+ Textur aus der Liste“, eigene Sets „Neu …“. Boden = Höhe des ersten Klicks oder feste Höhe. **Mausrad bei gedrückter Maustaste: Boden ±5 (Umschalt ±1)** – alles, was im Zug gemalt ist, geht mit.
+**Eingang:** „Klick = ganzer Eingang“: ein Klick vor den Berg setzt den gewählten Eingang – „Standard (Stempel)“ oder einen gespeicherten. Mausrad = nächster Eingang mit Vorschau an der Maus, Umschalt+Mausrad = Höhe (Mund / Rahmen / Bogen), Strg+Mausrad = Zoom, R = Richtung des Standard-Eingangs. „💾 Markierten Bereich als Eingang speichern“ macht aus einem fertigen Eingang eine Vorlage. „Malen“ = der Mund von Hand wie bisher.
 Ablauf: Eingang auf der Karte (Höhlen-Stempel oder NoDraw-Durchgang), dann Keller-Ebene an (z. B. Boden − 20), Texturen aus, mit Objekte & Texturen Boden-, Wand- und Höhlen-Statics wählen und die Höhle auf der Ebene bauen.",
                 En = @"# Caves and under the map
 ## Tool Cave
@@ -920,6 +923,9 @@ Z / = ground − 20 / ▼ 20 / ▲ 20 | height of the level (absolute), one floo
 🏠 Surface items | houses, trees above the cave on / off
 🔎 Objects & textures | list of all items and land tiles: search by name, ID (08e3) or range (08e0-08ff), quick filters cave, rocks, stalagmites, walls, floor, NoDraw; big picture; double click = use
 Passage (NoDraw 0002) | paint land 0002: invisible and walkable – the hole in the map to the cave below
+## Cave window (opens with Cave / Entrance)
+**Cave:** choose a floor set (pictures), “only the chosen tile (fixed)” or “random from the set”, own textures with “+ Texture from the list”, own sets “New …”. Floor = height of the first click or a fixed height. **Mouse wheel while the button is held: floor ±5 (Shift ±1)** – everything painted in the drag follows.
+**Entrance:** “Click = whole entrance”: one click in front of the mountain places the chosen entrance – “Standard (stamp)” or a saved one. Wheel = next entrance with preview at the mouse, Shift+wheel = height (mouth / frame / arch), Ctrl+wheel = zoom, R = direction of the standard entrance. “💾 Save marked area as entrance” turns a finished entrance into a template. “Paint” = the mouth by hand as before.
 Workflow: entrance on the map (cave stamp or NoDraw passage), then cellar level on (e.g. ground − 20), textures off, choose floor, wall and cave statics with Objects & textures and build the cave on the level."
             },
             new GuideTopic
