@@ -126,6 +126,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             isoView.FindStairModel = FindStairModel;
             InitMotifs();
             InitAreaStamps();
+            InitViewExtras();
+            InitSync();
 
             isoView.FindScatterSet = name => AllScatterSets().FirstOrDefault(s => s.Name == name || s.Name == "Dragon: " + name);
 
@@ -199,6 +201,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 BeginInvoke(new Action(UndockSidePanel));
             }
+            InitLayoutMemory();
         }
 
         // ================================================================== test assistant
@@ -318,6 +321,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return;
             }
             splitCgi.Panel2Collapsed = !splitCgi.Panel2Collapsed;
+            _settings.CgiSideCollapsed = splitCgi.Panel2Collapsed;
+            SaveLayoutSoon();
         }
 
         private void ToggleCgiPalette()
@@ -325,6 +330,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             if (_cgiPalette != null)
             {
                 _cgiPalette.Visible = !_cgiPalette.Visible;
+                _settings.CgiPaletteHidden = !_cgiPalette.Visible;
+                SaveLayoutSoon();
             }
         }
 
@@ -333,6 +340,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             if (_editorPalette != null)
             {
                 _editorPalette.Visible = !_editorPalette.Visible;
+                _settings.EditorPaletteHidden = !_editorPalette.Visible;
+                SaveLayoutSoon();
             }
         }
 
@@ -361,8 +370,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 f.Bounds = saved;
             }
-            f.ResizeEnd += (s, e) => _settings.SideWindow = $"{f.Left},{f.Top},{f.Width},{f.Height}";
-            f.Move += (s, e) => _settings.SideWindow = $"{f.Left},{f.Top},{f.Width},{f.Height}";
+            f.ResizeEnd += (s, e) =>
+            {
+                _settings.SideWindow = $"{f.Left},{f.Top},{f.Width},{f.Height}";
+                SaveLayoutSoon();
+            };
+            f.Move += (s, e) =>
+            {
+                _settings.SideWindow = $"{f.Left},{f.Top},{f.Width},{f.Height}";
+                SaveLayoutSoon();
+            };
             bool ownerClosing = false;
             f.FormClosing += (s, e) => ownerClosing = e.CloseReason == CloseReason.FormOwnerClosing || e.CloseReason == CloseReason.ApplicationExitCall;
             var panel = new Panel { Dock = DockStyle.Fill };
@@ -406,12 +423,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 _sideWindow = null;
                 if (!ownerClosing)
                 {
-                    _settings.SideWindowOpen = false;
+                    _settings.SideWindowOpen = false; SaveLayoutSoon();
                 }
             };
             splitCgi.Panel2Collapsed = true;
             _sideWindow = f;
-            _settings.SideWindowOpen = true;
+            _settings.SideWindowOpen = true; SaveLayoutSoon();
             f.Show(this);
         }
 
@@ -620,6 +637,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                         all.Add((b.Staircase, L.T("Treppe")));
                         break;
                     }
+                case IsoTool.Cave:
+                case IsoTool.CaveEntrance:
+                    CaveQuickItems(t);
+                    break;
+                case IsoTool.Cellar:
+                    Cmd("Oberfläche aus / an", "Land nur als Umriss, Boden-Statics ausblenden – sehen, was unter der Karte liegt", () => SetSurfaceHidden(!isoView.SurfaceHidden));
+                    Cmd("Höhlen-Boden / Items …", "Boden-Tiles und Items für Höhlen, Keller, Kanalisation mit Bild", OpenCavePicker);
+                    break;
                 case IsoTool.Motif:
                     MotifQuickItems();
                     all.Add((b.MotifDraw, L.T("Muster")));
@@ -673,7 +698,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             f.Controls.Add(_optTabs);
             f.Controls.Add(_optStrip);
             f.Controls.Add(_optTitle);
-            void Remember() => _settings.ToolOptionsWindow = f.WindowState == FormWindowState.Normal ? $"{f.Left},{f.Top},{f.Width},{f.Height}" : _settings.ToolOptionsWindow;
+            void Remember()
+            {
+                _settings.ToolOptionsWindow = f.WindowState == FormWindowState.Normal ? $"{f.Left},{f.Top},{f.Width},{f.Height}" : _settings.ToolOptionsWindow;
+                SaveLayoutSoon();
+            }
             f.ResizeEnd += (s, e) => Remember();
             f.Move += (s, e) => Remember();
             bool ownerClosing = false;
@@ -682,7 +711,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 if (!ownerClosing)
                 {
-                    _settings.ToolOptionsOpen = false;
+                    _settings.ToolOptionsOpen = false; SaveLayoutSoon();
                 }
                 _optWindow = null;
                 _optStrip = null;
@@ -694,7 +723,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             // the items move from the bar into the window
             ClearQuickItems();
             _optWindow = f;
-            _settings.ToolOptionsOpen = true;
+            _settings.ToolOptionsOpen = true; SaveLayoutSoon();
             f.Show(this);
             Remember();
             UpdateQuickOptions(isoView.Tool);

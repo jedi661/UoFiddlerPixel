@@ -2281,3 +2281,92 @@ Das Land unter jedem Gebäude (+1 Rand) auf seine alte Bodenhöhe setzen – nic
 Freiflächen-Tile (hex, 0 = aus)	Free area tile (hex, 0 = off)
 Alle freien Tiles im Ziel-Bereich bekommen dieses Land-Tile (Straße, Pflaster). 0 = Land bleibt.	All free tiles in the target area get this land tile (street, paving). 0 = land stays.
 Für 'Zufällig'. 0 = jedes Mal anders.	For 'Random'. 0 = different every time.
+
+# Werkstatt 40 – Höhle, Oberfläche aus, Höhen-Skala, Abgleich, Layout
+HÖHLE (Werkzeug 'Höhle')\n1. Am Fuß des Berges anfangen – dort, wo der Gang beginnen soll – und in den Berg hineinziehen.\n2. Jeder Tile unter dem Pinsel wird Höhlen-Boden (die Boden-Tiles unten, zufällig gemischt) und bekommt die Höhe des ERSTEN Klicks (oder 'Boden auf Höhe =' mit der Zahl daneben).\n3. 'Rand zu Wänden' an: Berg-Tiles am Rand des Pinsels werden auf Boden + 'Wand-Höhe' angehoben – der Client zeichnet dort die Fels-Textur als Wand.\n4. Pinselgröße = Breite des Ganges. Ein Zug = ein Rückgängig-Schritt. Mehrere Züge = verzweigte Höhle.\nTipp: zuerst mit 'Eingang' oder dem 'Höhlen-Stempel' den Eingang machen, dann mit 'Höhle' dahinter weitergraben.\n\nEINGANG (Werkzeug 'Eingang')\n1. Auf den Boden direkt am Fuß des Berges klicken (die Höhe dieses Klicks ist der Boden vor dem Eingang) und 2–3 Tiles in den Hang ziehen (mindestens 2×2).\n2. Die überstrichenen Tiles werden der 'Mund': 01DB (schwarz) oder 0002 (unsichtbar), 'Mund-Höhe' über dem Boden, als steile Wand in den Hang.\n3. Der Rand zum Berg bekommt automatisch die Eingangs-Tiles 01D3–01DA (wie Dragon cave-enti2mountain.txt).\n4. Sichtbar ist ein Eingang im Client nur, wenn er nach Süden oder Osten zeigt (zur Kamera hin).\nDer 'Höhlen-Stempel' macht dasselbe mit einem Klick fertig (Bogen, Vorderkante, Weg davor) – deshalb ist er am einfachsten.\n\nUNTER DER KARTE\n'⬇ Unter der Karte' + 'Oberfläche aus' (Ansicht): das Land wird nur als Umriss gezeigt, Statics auf dem Boden ausgeblendet – so sieht man Keller, Kanalisation, Höhlen darunter und baut dort. Die Höhen-Skala rechts zeigt Boden, Bau-Ebene und Keller-Ebene.	CAVE (tool 'Cave')\n1. Start at the foot of the mountain – where the passage should begin – and drag into the mountain.\n2. Every tile under the brush becomes cave floor (the floor tiles below, mixed at random) and gets the height of the FIRST click (or 'Floor at height =' with the number beside it).\n3. 'Edge to walls' on: mountain tiles at the edge of the brush are raised to floor + 'wall height' – the client draws the rock texture there as a wall.\n4. Brush size = width of the passage. One drag = one undo step. Several drags = a branching cave.\nTip: make the entrance first with 'Entrance' or the 'cave stamp', then dig on behind it with 'Cave'.\n\nENTRANCE (tool 'Entrance')\n1. Click on the ground right at the foot of the mountain (the height of this click is the ground in front of the entrance) and drag 2–3 tiles into the slope (at least 2×2).\n2. The tiles you drag over become the 'mouth': 01DB (black) or 0002 (invisible), 'mouth height' above the ground, as a steep wall into the slope.\n3. The edge towards the mountain automatically gets the entrance tiles 01D3–01DA (like Dragon cave-enti2mountain.txt).\n4. An entrance is only visible in the client when it faces south or east (towards the camera).\nThe 'cave stamp' does the same finished with one click (arch, front edge, path in front) – that is why it is the easiest.\n\nUNDER THE MAP\n'⬇ Build under the map' + 'Surface off' (View): the land is only shown as an outline, statics on the ground are hidden – so you see cellars, sewers, caves below and build there. The height scale on the right shows ground, build level and cellar level.
+Hilfen der Ansicht: Oberfläche aus (unter der Karte), Höhen-Skala, Tile-Info, Linien	View helpers: surface off (under the map), height scale, tile info, lines
+Oberfläche aus (Land nur als Umriss, Boden-Statics weg)	Surface off (land only as outline, ground statics hidden)
+Höhen-Skala rechts	Height scale on the right
+Tile-Info am Mauszeiger	Tile info at the mouse
+Koordinaten-Linien	Coordinate lines
+Höhlen-Boden und -Items …	Cave floors and items …
+Höhlen-Boden und -Items	Cave floors and items
+Anleitung Höhle / Eingang …	Guide cave / entrance …
+Anleitung Höhle / Eingang	Guide cave / entrance
+Oberfläche aus: das Land ist nur als Umriss zu sehen, Statics auf dem Boden sind ausgeblendet – darunter bauen (mit '⬇ Unter der Karte'). Die Karte selbst bleibt unverändert.	Surface off: the land is only an outline, statics on the ground are hidden – build below (with '⬇ Under the map'). The map itself stays unchanged.
+Oberfläche wieder an.	Surface on again.
+Höhlen-Boden wählen (mit Bild) – Klick = dieser Boden, Strg+Klick = dazu mischen	Choose the cave floor (with picture) – click = this floor, Ctrl+click = mix in
+Wand-Höhe	Wall height
+So hoch über dem Höhlen-Boden wird der Rand (Berg) angehoben – das ist die Fels-Wand	The edge (mountain) is raised this high above the cave floor – that is the rock wall
+Rand → Wand	Edge → wall
+Berg-Tiles am Rand des Pinsels werden zur Wand angehoben	Mountain tiles at the edge of the brush are raised to a wall
+Boden auf Höhe =	Floor at height =
+Höhlen-Boden auf die Zahl daneben statt auf die Höhe des ersten Klicks	Cave floor at the number beside it instead of the height of the first click
+Höhe des Höhlen-Bodens (wenn 'Boden auf Höhe =' an ist)	Height of the cave floor (when 'Floor at height =' is on)
+Mund-Höhe	Mouth height
+So hoch über dem Boden vor dem Eingang liegt der Mund (die schwarze / unsichtbare Fläche im Hang)	The mouth (the black / invisible area in the slope) lies this high above the ground in front of the entrance
+unsichtbar (0002)	invisible (0002)
+Mund unsichtbar (0002) statt schwarz (01DB)	Mouth invisible (0002) instead of black (01DB)
+Vorderkante unsichtbar	Front edge invisible
+Die vorderste Reihe des Mundes unsichtbar (0002), wie im Original	The front row of the mouth invisible (0002), like the original
+Oberfläche aus / an	Surface off / on
+Land nur als Umriss, Boden-Statics ausblenden – sehen, was darunter liegt	Land only as outline, hide ground statics – see what lies below
+Land nur als Umriss, Boden-Statics ausblenden – sehen, was unter der Karte liegt	Land only as outline, hide ground statics – see what lies under the map
+❓ Anleitung	❓ Guide
+Anleitung	Guide
+Wie 'Höhle' und 'Eingang' genau funktionieren	How 'Cave' and 'Entrance' work exactly
+Höhlen-Boden / Items …	Cave floor / items …
+Boden-Tiles und Items für Höhlen, Keller, Kanalisation mit Bild	Floor tiles and items for caves, cellars, sewers with pictures
+Höhlen-Boden jetzt	Cave floor now
+Land: Klick = dieser Boden, Strg+Klick = dazu mischen · Items: Klick = mit 'Static setzen' platzieren	Land: click = this floor, Ctrl+click = mix in · Items: click = place with 'Place static'
+Höhlen-Boden (Land)	Cave floor (land)
+Höhlen-Items (Statics)	Cave items (statics)
+Höhlen-Boden	Cave floor
+Höhlen-Items	Cave items
+Boden zurücksetzen (0245–0249)	Reset floor (0245–0249)
+mit 'Höhle' in den Berg ziehen.	drag into the mountain with 'Cave'.
+Höhlen-Item	Cave item
+mit 'Static setzen' klicken (unter der Karte: '⬇ Unter der Karte' an).	click with 'Place static' (under the map: '⬇ Under the map' on).
+Bau	Build
+Abgleich	Sync
+Jetzt abgleichen	Sync now
+Beim Tab-Wechsel automatisch	Automatically when the tab changes
+Beim Tab-Wechsel erst fragen	Ask first when the tab changes
+Nur hinweisen (nichts von selbst)	Only hint (nothing by itself)
+Offene Änderungen vergessen (ignorieren)	Forget open changes (ignore)
+Abgleich: offene Änderungen werden ignoriert.	Sync: open changes are ignored.
+Karten-Editor und CGI-Ansicht sind gleich.	Map editor and CGI view are the same.
+Im Karten-Editor geändert	Changed in the map editor
+fehlt noch in der CGI-Ansicht	still missing in the CGI view
+In der CGI-Ansicht geändert	Changed in the CGI view
+fehlt noch im Karten-Editor	still missing in the map editor
+Abgleich geht nur, wenn Farbkarte und CGI-Karte gleich groß sind (und kein Bereichs-Fenster offen ist).	Sync only works when the colour map and the CGI map have the same size (and no area window is open).
+Im	In the
+geändert	changed
+fehlt noch in der	still missing in the
+'⟳ Abgleich → Jetzt abgleichen' übernimmt es.	'⟳ Sync → Sync now' takes it over.
+Karten-Editor UND CGI-Ansicht wurden an derselben Stelle geändert.	Map editor AND CGI view were changed at the same place.
+Ja	Yes
+die Änderungen dort in der	the changes there in the
+werden überschrieben	are overwritten
+Nein = ignorieren (später abgleichen)	No = ignore (sync later)
+Abbrechen = vergessen (beide Seiten bleiben, wie sie sind)	Cancel = forget (both sides stay as they are)
+hat Änderungen	has changes
+die in der	that in the
+noch fehlen.	are still missing.
+Der Bereich ist groß – das kann einen Moment dauern.	The area is large – this can take a moment.
+Ja = jetzt übernehmen	Yes = take it over now
+Nein = später (bleibt markiert ⟳)	No = later (stays marked ⟳)
+Abbrechen = ignorieren (vergessen)	Cancel = ignore (forget)
+Abgleich Karten-Editor ↔ CGI	Sync map editor ↔ CGI
+CGI-Ansicht abgeglichen	CGI view synced
+Karten-Editor abgeglichen	Map editor synced
+im Karten-Editor nimmt es zurück	in the map editor takes it back
+Karten-Editor-Änderungen fehlen noch in der CGI-Ansicht	Map editor changes are still missing in the CGI view
+CGI-Änderungen fehlen noch im Karten-Editor	CGI changes are still missing in the map editor
+Nicht abgeglichen	Not synced
+Ja = jetzt abgleichen	Yes = sync now
+Nein = ignorieren und weiter	No = ignore and go on
+Abbrechen = zurück	Cancel = back
+Die CGI-Ansicht wird abgeglichen – danach bitte noch einmal speichern.	The CGI view is being synced – please save again afterwards.
+Aus dem Karten-Editor	From the map editor

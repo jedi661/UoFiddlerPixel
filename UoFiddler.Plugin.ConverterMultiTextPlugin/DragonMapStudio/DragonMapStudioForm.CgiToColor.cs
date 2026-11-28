@@ -342,6 +342,15 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                     WriteConversionIntoEditor(keep, _cgiMap, StaticsMode.Layer, false);
                 }
             }
+            RebuildCgiArea(area, cx, cy, true);
+        }
+
+        /// <summary>
+        /// Builds the area of the colour map again (+ 8 tiles border for the transitions) and puts it into the CGI map –
+        /// without asking. <paramref name="show"/> = switch to the CGI tab and centre there (button), false = quiet (sync).
+        /// </summary>
+        private void RebuildCgiArea(Rectangle area, double cx, double cy, bool show, Action done = null)
+        {
             int x0 = Math.Max(0, (area.Left - 8) / 8 * 8), y0 = Math.Max(0, (area.Top - 8) / 8 * 8);
             int x1 = Math.Min(_map.Width, (area.Right + 8 + 7) / 8 * 8), y1 = Math.Min(_map.Height, (area.Bottom + 8 + 7) / 8 * 8);
             var r8 = Rectangle.FromLTRB(x0, y0, x1, y1);
@@ -380,15 +389,28 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                         }
                     }
                 }
-                target.Apply(statics, land);
+                _viewSyncing = true;
+                try
+                {
+                    target.Apply(statics, land);
+                    target.NameLastStep(L.T("Aus dem Karten-Editor"));
+                }
+                finally
+                {
+                    _viewSyncing = false;
+                }
                 _cgiFromEditor = true;
                 _cgiUserEdits = false;
                 isoView.Refresh(true);
                 UpdateCgiThumbnail();
-                tabMain.SelectedTab = tabCgi;
-                isoView.CenterOn(cx, cy);
-                isoView.Focus();
+                if (show)
+                {
+                    tabMain.SelectedTab = tabCgi;
+                    isoView.CenterOn(cx, cy);
+                    isoView.Focus();
+                }
                 SetStatus($"CGI-Ansicht aktualisiert: Bereich {area.Width}×{area.Height} ab ({area.X}, {area.Y}) neu gebaut ({land.Count:N0} Land-Tiles geändert).");
+                done?.Invoke();
             });
         }
 

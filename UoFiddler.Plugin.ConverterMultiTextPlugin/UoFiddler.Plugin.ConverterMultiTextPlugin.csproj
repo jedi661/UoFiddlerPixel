@@ -106,6 +106,15 @@
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.Tools.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.Sync.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.Layout.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.CaveTools.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.Region.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>

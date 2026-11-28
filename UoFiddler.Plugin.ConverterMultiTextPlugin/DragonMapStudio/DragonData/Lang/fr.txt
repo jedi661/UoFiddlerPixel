@@ -2273,3 +2273,92 @@ Das Land unter jedem Gebäude (+1 Rand) auf seine alte Bodenhöhe setzen – nic
 Freiflächen-Tile (hex, 0 = aus)	Tuile des espaces libres (hex, 0 = non)
 Alle freien Tiles im Ziel-Bereich bekommen dieses Land-Tile (Straße, Pflaster). 0 = Land bleibt.	Toutes les tuiles libres de la zone cible reçoivent cette tuile (rue, pavage). 0 = le terrain reste.
 Für 'Zufällig'. 0 = jedes Mal anders.	Pour 'Aléatoire'. 0 = différent à chaque fois.
+
+# Werkstatt 40 – Höhle, Oberfläche aus, Höhen-Skala, Abgleich, Layout
+HÖHLE (Werkzeug 'Höhle')\n1. Am Fuß des Berges anfangen – dort, wo der Gang beginnen soll – und in den Berg hineinziehen.\n2. Jeder Tile unter dem Pinsel wird Höhlen-Boden (die Boden-Tiles unten, zufällig gemischt) und bekommt die Höhe des ERSTEN Klicks (oder 'Boden auf Höhe =' mit der Zahl daneben).\n3. 'Rand zu Wänden' an: Berg-Tiles am Rand des Pinsels werden auf Boden + 'Wand-Höhe' angehoben – der Client zeichnet dort die Fels-Textur als Wand.\n4. Pinselgröße = Breite des Ganges. Ein Zug = ein Rückgängig-Schritt. Mehrere Züge = verzweigte Höhle.\nTipp: zuerst mit 'Eingang' oder dem 'Höhlen-Stempel' den Eingang machen, dann mit 'Höhle' dahinter weitergraben.\n\nEINGANG (Werkzeug 'Eingang')\n1. Auf den Boden direkt am Fuß des Berges klicken (die Höhe dieses Klicks ist der Boden vor dem Eingang) und 2–3 Tiles in den Hang ziehen (mindestens 2×2).\n2. Die überstrichenen Tiles werden der 'Mund': 01DB (schwarz) oder 0002 (unsichtbar), 'Mund-Höhe' über dem Boden, als steile Wand in den Hang.\n3. Der Rand zum Berg bekommt automatisch die Eingangs-Tiles 01D3–01DA (wie Dragon cave-enti2mountain.txt).\n4. Sichtbar ist ein Eingang im Client nur, wenn er nach Süden oder Osten zeigt (zur Kamera hin).\nDer 'Höhlen-Stempel' macht dasselbe mit einem Klick fertig (Bogen, Vorderkante, Weg davor) – deshalb ist er am einfachsten.\n\nUNTER DER KARTE\n'⬇ Unter der Karte' + 'Oberfläche aus' (Ansicht): das Land wird nur als Umriss gezeigt, Statics auf dem Boden ausgeblendet – so sieht man Keller, Kanalisation, Höhlen darunter und baut dort. Die Höhen-Skala rechts zeigt Boden, Bau-Ebene und Keller-Ebene.	GROTTE (outil 'Grotte')\n1. Commencer au pied de la montagne – là où le couloir doit commencer – et tirer dans la montagne.\n2. Chaque tuile sous le pinceau devient sol de grotte (les tuiles de sol ci-dessous, mélangées au hasard) et prend la hauteur du PREMIER clic (ou 'Sol à la hauteur =' avec le nombre à côté).\n3. 'Bord en murs' activé : les tuiles de montagne au bord du pinceau sont relevées à sol + 'hauteur du mur' – le client y dessine la texture de roche comme mur.\n4. Taille du pinceau = largeur du couloir. Un tracé = une étape d'annulation. Plusieurs tracés = grotte ramifiée.\nAstuce : faire d'abord l'entrée avec 'Entrée' ou le 'tampon de grotte', puis creuser derrière avec 'Grotte'.\n\nENTRÉE (outil 'Entrée')\n1. Cliquer sur le sol juste au pied de la montagne (la hauteur de ce clic est le sol devant l'entrée) et tirer 2–3 tuiles dans la pente (au moins 2×2).\n2. Les tuiles parcourues deviennent la 'bouche' : 01DB (noire) ou 0002 (invisible), 'hauteur de bouche' au-dessus du sol, en mur raide dans la pente.\n3. Le bord vers la montagne reçoit automatiquement les tuiles d'entrée 01D3–01DA (comme Dragon cave-enti2mountain.txt).\n4. Une entrée n'est visible dans le client que si elle donne au sud ou à l'est (vers la caméra).\nLe 'tampon de grotte' fait la même chose en un clic (arche, bord avant, chemin devant) – c'est pourquoi il est le plus simple.\n\nSOUS LA CARTE\n'⬇ Construire sous la carte' + 'Surface désactivée' (Affichage) : le terrain n'est montré qu'en contour, les statics au sol sont masqués – on voit caves, égouts, grottes dessous et on y construit. L'échelle des hauteurs à droite montre sol, niveau de construction et niveau de cave.
+Hilfen der Ansicht: Oberfläche aus (unter der Karte), Höhen-Skala, Tile-Info, Linien	Aides d'affichage : surface désactivée (sous la carte), échelle des hauteurs, info tuile, lignes
+Oberfläche aus (Land nur als Umriss, Boden-Statics weg)	Surface désactivée (terrain en contour, statics au sol masqués)
+Höhen-Skala rechts	Échelle des hauteurs à droite
+Tile-Info am Mauszeiger	Info tuile à la souris
+Koordinaten-Linien	Lignes de coordonnées
+Höhlen-Boden und -Items …	Sols et objets de grotte …
+Höhlen-Boden und -Items	Sols et objets de grotte
+Anleitung Höhle / Eingang …	Guide grotte / entrée …
+Anleitung Höhle / Eingang	Guide grotte / entrée
+Oberfläche aus: das Land ist nur als Umriss zu sehen, Statics auf dem Boden sind ausgeblendet – darunter bauen (mit '⬇ Unter der Karte'). Die Karte selbst bleibt unverändert.	Surface désactivée : le terrain n'est qu'un contour, les statics au sol sont masqués – construire dessous (avec '⬇ Sous la carte'). La carte elle-même reste inchangée.
+Oberfläche wieder an.	Surface de nouveau activée.
+Höhlen-Boden wählen (mit Bild) – Klick = dieser Boden, Strg+Klick = dazu mischen	Choisir le sol de grotte (avec image) – clic = ce sol, Ctrl+clic = mélanger
+Wand-Höhe	Hauteur du mur
+So hoch über dem Höhlen-Boden wird der Rand (Berg) angehoben – das ist die Fels-Wand	Le bord (montagne) est relevé de cette hauteur au-dessus du sol – c'est le mur de roche
+Rand → Wand	Bord → mur
+Berg-Tiles am Rand des Pinsels werden zur Wand angehoben	Les tuiles de montagne au bord du pinceau sont relevées en mur
+Boden auf Höhe =	Sol à la hauteur =
+Höhlen-Boden auf die Zahl daneben statt auf die Höhe des ersten Klicks	Sol de grotte au nombre à côté au lieu de la hauteur du premier clic
+Höhe des Höhlen-Bodens (wenn 'Boden auf Höhe =' an ist)	Hauteur du sol de grotte (si 'Sol à la hauteur =' est activé)
+Mund-Höhe	Hauteur de bouche
+So hoch über dem Boden vor dem Eingang liegt der Mund (die schwarze / unsichtbare Fläche im Hang)	La bouche (zone noire / invisible dans la pente) est à cette hauteur au-dessus du sol devant l'entrée
+unsichtbar (0002)	invisible (0002)
+Mund unsichtbar (0002) statt schwarz (01DB)	Bouche invisible (0002) au lieu de noire (01DB)
+Vorderkante unsichtbar	Bord avant invisible
+Die vorderste Reihe des Mundes unsichtbar (0002), wie im Original	La rangée avant de la bouche invisible (0002), comme l'original
+Oberfläche aus / an	Surface oui / non
+Land nur als Umriss, Boden-Statics ausblenden – sehen, was darunter liegt	Terrain en contour, masquer les statics au sol – voir ce qui est dessous
+Land nur als Umriss, Boden-Statics ausblenden – sehen, was unter der Karte liegt	Terrain en contour, masquer les statics au sol – voir ce qui est sous la carte
+❓ Anleitung	❓ Guide
+Anleitung	Guide
+Wie 'Höhle' und 'Eingang' genau funktionieren	Comment fonctionnent exactement 'Grotte' et 'Entrée'
+Höhlen-Boden / Items …	Sol / objets de grotte …
+Boden-Tiles und Items für Höhlen, Keller, Kanalisation mit Bild	Tuiles de sol et objets pour grottes, caves, égouts avec images
+Höhlen-Boden jetzt	Sol de grotte actuel
+Land: Klick = dieser Boden, Strg+Klick = dazu mischen · Items: Klick = mit 'Static setzen' platzieren	Terrain : clic = ce sol, Ctrl+clic = mélanger · Objets : clic = poser avec 'Poser static'
+Höhlen-Boden (Land)	Sol de grotte (terrain)
+Höhlen-Items (Statics)	Objets de grotte (statics)
+Höhlen-Boden	Sol de grotte
+Höhlen-Items	Objets de grotte
+Boden zurücksetzen (0245–0249)	Réinitialiser le sol (0245–0249)
+mit 'Höhle' in den Berg ziehen.	tirer dans la montagne avec 'Grotte'.
+Höhlen-Item	Objet de grotte
+mit 'Static setzen' klicken (unter der Karte: '⬇ Unter der Karte' an).	cliquer avec 'Poser static' (sous la carte : '⬇ Sous la carte' activé).
+Bau	Construction
+Abgleich	Synchronisation
+Jetzt abgleichen	Synchroniser maintenant
+Beim Tab-Wechsel automatisch	Automatiquement au changement d'onglet
+Beim Tab-Wechsel erst fragen	Demander au changement d'onglet
+Nur hinweisen (nichts von selbst)	Seulement signaler (rien automatiquement)
+Offene Änderungen vergessen (ignorieren)	Oublier les modifications en attente (ignorer)
+Abgleich: offene Änderungen werden ignoriert.	Synchronisation : modifications en attente ignorées.
+Karten-Editor und CGI-Ansicht sind gleich.	L'éditeur de carte et la vue CGI sont identiques.
+Im Karten-Editor geändert	Modifié dans l'éditeur de carte
+fehlt noch in der CGI-Ansicht	manque encore dans la vue CGI
+In der CGI-Ansicht geändert	Modifié dans la vue CGI
+fehlt noch im Karten-Editor	manque encore dans l'éditeur de carte
+Abgleich geht nur, wenn Farbkarte und CGI-Karte gleich groß sind (und kein Bereichs-Fenster offen ist).	La synchronisation ne marche que si la carte de couleurs et la carte CGI ont la même taille (et aucune fenêtre de zone n'est ouverte).
+Im	Dans
+geändert	modifié
+fehlt noch in der	manque encore dans
+'⟳ Abgleich → Jetzt abgleichen' übernimmt es.	'⟳ Synchronisation → Synchroniser maintenant' le reprend.
+Karten-Editor UND CGI-Ansicht wurden an derselben Stelle geändert.	L'éditeur de carte ET la vue CGI ont été modifiés au même endroit.
+Ja	Oui
+die Änderungen dort in der	les modifications là dans
+werden überschrieben	sont écrasées
+Nein = ignorieren (später abgleichen)	Non = ignorer (synchroniser plus tard)
+Abbrechen = vergessen (beide Seiten bleiben, wie sie sind)	Annuler = oublier (les deux côtés restent tels quels)
+hat Änderungen	a des modifications
+die in der	qui dans la
+noch fehlen.	manquent encore.
+Der Bereich ist groß – das kann einen Moment dauern.	La zone est grande – cela peut prendre un moment.
+Ja = jetzt übernehmen	Oui = reprendre maintenant
+Nein = später (bleibt markiert ⟳)	Non = plus tard (reste marqué ⟳)
+Abbrechen = ignorieren (vergessen)	Annuler = ignorer (oublier)
+Abgleich Karten-Editor ↔ CGI	Synchronisation éditeur ↔ CGI
+CGI-Ansicht abgeglichen	Vue CGI synchronisée
+Karten-Editor abgeglichen	Éditeur de carte synchronisé
+im Karten-Editor nimmt es zurück	dans l'éditeur de carte l'annule
+Karten-Editor-Änderungen fehlen noch in der CGI-Ansicht	Les modifications de l'éditeur manquent encore dans la vue CGI
+CGI-Änderungen fehlen noch im Karten-Editor	Les modifications CGI manquent encore dans l'éditeur
+Nicht abgeglichen	Non synchronisé
+Ja = jetzt abgleichen	Oui = synchroniser maintenant
+Nein = ignorieren und weiter	Non = ignorer et continuer
+Abbrechen = zurück	Annuler = retour
+Die CGI-Ansicht wird abgeglichen – danach bitte noch einmal speichern.	La vue CGI est en cours de synchronisation – enregistrez de nouveau ensuite.
+Aus dem Karten-Editor	Depuis l'éditeur de carte

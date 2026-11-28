@@ -1,4 +1,4 @@
-/***************************************************************************
+﻿/***************************************************************************
  *
  *  * Dragon Map Studio – "Bereich bearbeiten (eigenes Fenster)": the marked area of the CGI map is copied (with 8
  *  *  tiles border), the whole CGI work surface (view, palette, side panel, tool bars) moves into the region window
@@ -94,7 +94,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 TogglePalette = ToggleCgiPalette,
                 ToggleSide = ToggleSidePanel,
                 UndockSide = UndockSidePanel,
-                ToggleOptions = ToggleOptionWindow
+                ToggleOptions = ToggleOptionWindow,
+                Settings = _settings,
+                SaveSoon = SaveLayoutSoon
             };
             _region = new RegionEditorForm(host) { Owner = this };
             _region.Text = L.T("Bereich bearbeiten") + $" – ({a.X}, {a.Y}) {a.Width}×{a.Height} – Dragon Map Studio";
@@ -184,6 +186,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             Rectangle a = _regionArea;
             SetCgiMap(_regionMain, a.X + a.Width / 2.0, a.Y + a.Height / 2.0);
             isoView.SetAreaAndShow(a, false);
+            if (apply && changed && SyncPaired)
+            {
+                NoteCgiEdited(Rectangle.Inflate(a, 8, 8));
+            }
             _regionMain = null;
             form.CloseQuiet();
             SetStatus(apply
