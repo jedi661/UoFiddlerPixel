@@ -884,6 +884,46 @@ Workshop → layout → “Floors”: this many levels below each other (20 Z ea
             },
             new GuideTopic
             {
+                Key = "region", Group = "Bauen|Building", TitleDe = "Bereich im eigenen Fenster bearbeiten (Stadt ausbauen)", TitleEn = "Edit an area in its own window (build out a town)",
+                De = @"# Bereich im eigenen Fenster bearbeiten
+Ein Gebiet (z. B. eine Stadt) markieren und mit allen Werkzeugen in einem eigenen Fenster ausbauen – danach kommt es an dieselbe Stelle zurück.
+
+## Öffnen
+In der CGI-Ansicht mit **Bereich** markieren (Umschalt + ziehen = erweitern, Strg + Klick ×2 = zwei Ecken, „Koordinaten …“), dann **„▣ In eigenem Fenster bearbeiten“** (oder Palette Bauen → „Bereich bearbeiten (Fenster)“). Die ganze CGI-Arbeitsfläche (Ansicht, Palette, Seitenleiste, Leisten) wandert ins Fenster und arbeitet auf einer Kopie (mit 8 Tiles Rand).
+
+## Im Fenster
+✔ Fertig – zurückschreiben | nur das Geänderte an dieselbe Stelle der großen Karte (dort ein Rückgängig-Schritt)
+✖ Abbrechen | Kopie verwerfen
+Schnell ausbauen | Boden füllen, Land-Pinsel, Unebenheit, Plateau, Berg, Bergwall, Wald streuen, Fluss, Fluss-Lauf, Weg, Brücke, Wand, Muster, Vorlage, Static, Multi, Treppe, Keller, Höhle, Dungeon, Radierer
+⬇ Unter der Karte bauen | Hauptansicht unter den Boden (Keller, Kanalisation, Höhlen)
+Linien | Koordinaten-Linien alle 1 / 4 / 8 / 16 / 32 / 64 Tiles mit den Zahlen der großen Karte (gelb = alle 8 Linien)
+Tile-Info | am Mauszeiger X / Y, Boden-Höhe, Land-Tile, Statics mit Höhe
+◧ Werkzeuge / ◨ Seite / ⧉ Seite lösen / ⧉ Optionen | Palette, Seitenleiste und Werkzeug-Optionen ein-, aus- und abdocken (andere Monitore)
+
+## Daneben (nebeneinander, jedes mit „⧉ lösen“ als eigenes Fenster)
+**Andere Ebene**: zeigt immer die andere Ebene derselben Stelle – baut man oben, sieht man den Keller; baut man unten, sieht man das Haus darüber. „⇅ Ebenen tauschen“.
+**Gebäude**: „↻ Erkennen“ (Wände, Dächer, Böden, die sich berühren) mit Bild. Anklicken = hinspringen, Doppelklick = auswählen und mit Pfeilen verschieben (Strg+Pfeil = Kopie), „↻ 90°“, „→ Vorlage“, „Keller darunter“, „Begradigen …“, „✖ Löschen“. **„🏘 Stadt neu ordnen …“**: die gewählten (oder alle) Gebäude in Reihen mit Abstand neu setzen – Boden mitnehmen, begradigen, Freiflächen mit einem Straßen-Tile füllen.",
+                En = @"# Edit an area in its own window
+Mark an area (e.g. a town) and build it out with all tools in its own window – afterwards it goes back to the same place.
+
+## Opening
+Mark with **Area** in the CGI view (Shift + drag = extend, Ctrl + click ×2 = two corners, “Coordinates …”), then **“▣ Edit in own window”** (or palette Building → “Edit area (window)”). The whole CGI work surface (view, palette, side panel, bars) moves into the window and works on a copy (with an 8 tile border).
+
+## In the window
+✔ Done – write back | only what changed, to the same place of the big map (one undo step there)
+✖ Cancel | throw the copy away
+Quick build-out | fill ground, land brush, noise, plateau, mountain, mountain wall, scatter forest, river, river course, road, bridge, wall, pattern, template, static, multi, stairs, cellar, cave, dungeon, eraser
+⬇ Build under the map | main view below the ground (cellars, sewers, caves)
+Lines | coordinate lines every 1 / 4 / 8 / 16 / 32 / 64 tiles with the numbers of the big map (yellow = every 8th line)
+Tile info | at the mouse X / Y, ground height, land tile, statics with height
+◧ Tools / ◨ Side / ⧉ Detach side / ⧉ Options | palette, side panel and tool options on, off and detached (other monitors)
+
+## Beside it (side by side, each with “⧉ detach” as its own window)
+**Other level**: always shows the other level of the same place – building on top you see the cellar; building below you see the house above. “⇅ Swap levels”.
+**Buildings**: “↻ Find” (walls, roofs, floors that touch) with pictures. Click = jump there, double click = select and move with the arrows (Ctrl+arrow = copy), “↻ 90°”, “→ Template”, “Cellar below”, “Level …”, “✖ Delete”. **“🏘 Rearrange town …”**: the chosen (or all) buildings set again in rows with a gap – floor taken along, ground levelled, free land filled with a road tile."
+            },
+            new GuideTopic
+            {
                 Key = "areastamp", Group = "Bauen|Building", TitleDe = "Ganze Gebiete als Stempel (Stadt aus alter Karte)", TitleEn = "Whole areas as stamps (town of an old map)",
                 De = @"# Ganze Gebiete als Stempel
 Eine ganze Stadt (Boden-Tiles, Höhen, alle Statics) aus einer alten oder anderen UO-Karte nehmen und in neue Karten stempeln.

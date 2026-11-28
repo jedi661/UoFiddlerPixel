@@ -2178,3 +2178,106 @@ Bereich per Koordinaten: Ecke 1 / Ecke 2 oder Start + Größe – auch größer 
 Gebiet aus fremder Karte	Area from a foreign map
 Eigenes Fenster: alte / andere UO-Karte öffnen, eine ganze Stadt markieren (ziehen, Umschalt = erweitern, Strg + Klick = zwei Ecken mit Scrollen, Koordinaten) und als Vorlage (CGI: Boden + Höhen + Statics) oder Farb-Stempel (Karten-Editor) speichern	Own window: open an old / other UO map, mark a whole town (drag, Shift = extend, Ctrl + click = two corners with scrolling, coordinates) and save it as a template (CGI: land + heights + statics) or colour stamp (map editor)
 Bereich in der CGI-Ansicht mit Zahlen markieren (Ecke 1 / Ecke 2 oder Start + Größe) – für Gebiete größer als der Bildschirm	Mark an area in the CGI view with numbers (corner 1 / corner 2 or start + size) – for areas larger than the screen
+
+# Werkstatt 39 – Bereich im eigenen Fenster, Stadt ausbauen, Liniensystem
+Bereich bearbeiten	Edit area
+Die Änderungen im Bereich in die Karte übernehmen?\n\nJa = zurückschreiben (Fertig)\nNein = verwerfen\nAbbrechen = weiter bearbeiten	Take the changes of the area into the map?\n\nYes = write back (done)\nNo = discard\nCancel = keep editing
+✔ Fertig – zurückschreiben	✔ Done – write back
+✖ Abbrechen	✖ Cancel
+Alles, was im Bereich geändert wurde, an derselben Stelle in die große Karte schreiben (ein Rückgängig-Schritt dort) und das Fenster schließen	Write everything changed in the area to the same place of the big map (one undo step there) and close the window
+Die Kopie verwerfen – die große Karte bleibt wie sie war	Discard the copy – the big map stays as it was
+Schnell ausbauen	Quick build-out
+Werkzeug wählen – alle Einstellungen oben in der Leiste / im Optionen-Fenster	Choose a tool – all settings in the bar at the top / in the options window
+Boden füllen (Bereich + F)	Fill ground (area + F)
+Bereich aufziehen, F = mit dem Land-Tile füllen, T = Übergänge	Drag an area, F = fill with the land tile, T = transitions
+Land-Pinsel / neuer Boden	Land brush / new ground
+Bergwall / Labyrinth	Mountain wall / maze
+Wald / Pflanzen streuen	Scatter forest / plants
+Muster (Mauern, Zinnen …)	Pattern (walls, battlements …)
+Vorlage / Gebiets-Stempel	Template / area stamp
+Multi (Haus)	Multi (house)
+Keller / unter der Karte	Cellar / under the map
+Kanalisation, Keller: Rechteck aufziehen – das Land wird unsichtbar, darunter bauen	Sewers, cellars: drag a rectangle – the land becomes invisible, build below
+⬇ Unter der Karte bauen	⬇ Build under the map
+Hauptansicht unter dem Boden (Keller, Kanalisation, Höhlen) – die Ebenen-Ansicht daneben zeigt dann die Oberfläche (das Haus darüber)	Main view below the ground (cellars, sewers, caves) – the level view beside it then shows the surface (the house above)
+Linien:	Lines:
+Koordinaten-Linien alle N Tiles (8 = ein Karten-Block) mit den Zahlen der großen Karte	Coordinate lines every N tiles (8 = one map block) with the numbers of the big map
+aus	off
+Tile-Info	Tile info
+Am Mauszeiger: X / Y (große Karte), Boden-Höhe, Land-Tile und die Statics auf dem Feld mit ihrer Höhe	At the mouse: X / Y (big map), ground height, land tile and the statics on the field with their height
+Werkzeug-Palette ein / aus (F7) – über ihren Kopf lässt sie sich lösen und auf einen anderen Monitor ziehen	Tool palette on / off (F7) – its header detaches it to another monitor
+Seitenleiste ein / aus (F8)	Side panel on / off (F8)
+Seitenleiste (Items, Multis, Land, Pinsel …) als eigenes Fenster	Side panel (items, multis, land, brushes …) as its own window
+⧉ Optionen	⧉ Options
+Werkzeug-Optionen als eigenes Fenster	Tool options as their own window
+Hilfe zum Bereichs-Fenster	Help for the area window
+Andere Ebene	Other level
+Gebäude	Buildings
+Alle Werkzeuge wirken auf die Kopie des Bereichs. '✔ Fertig' schreibt die Änderungen an dieselbe Stelle zurück, '✖ Abbrechen' verwirft sie. Strg+Z / Strg+Y, F7 / F8 gehen auch hier.	All tools work on the copy of the area. '✔ Done' writes the changes back to the same place, '✖ Cancel' discards them. Ctrl+Z / Ctrl+Y, F7 / F8 work here too.
+lösen	detach
+andocken	dock
+Als eigenes Fenster (z. B. auf einen anderen Monitor) – Schließen dockt es wieder an	As its own window (e.g. on another monitor) – closing docks it again
+folgt der Hauptansicht	follows the main view
+Die Ebenen-Ansicht zeigt immer dieselbe Stelle wie die Hauptansicht	The level view always shows the same place as the main view
+Ebenen tauschen	Swap levels
+Hauptansicht und Ebenen-Ansicht tauschen (oben ↔ unten) – gebaut wird immer in der Hauptansicht	Swap main view and level view (top ↔ bottom) – building always happens in the main view
+Unter der Karte: Keller, Kanalisation, Höhlen	Under the map: cellars, sewers, caves
+Oberfläche: das Haus / die Stadt darüber	Surface: the house / town above
+↻ Erkennen	↻ Find
+Gebäude im markierten Bereich (sonst im ganzen Bereichs-Fenster) suchen: Wände, Dächer, Böden, die sich berühren	Find buildings in the marked area (else in the whole area window): walls, roofs, floors that touch
+🏘 Stadt neu ordnen …	🏘 Rearrange town …
+Die gewählten Gebäude (keins gewählt = alle) in Reihen mit Straßen dazwischen neu setzen – im markierten Bereich, sonst im ganzen Fenster	Set the chosen buildings (none chosen = all) again in rows with streets in between – in the marked area, else in the whole window
+Wählen	Select
+Gebäude auswählen: dann mit Pfeilen / Ziehen (Auswahl) verschieben, Strg+Pfeil = Kopie daneben	Select the building: then move it with the arrows / dragging (select), Ctrl+arrow = copy beside it
+Gebäude mit Boden um 90° drehen (Wände werden getauscht, Richtungs-Tabelle gilt)	Turn the building with its ground by 90° (walls are swapped, the direction table applies)
+→ Vorlage	→ Template
+Als Vorlage (Gebiets-Stempel) speichern – dann mit dem Werkzeug 'Vorlage' beliebig oft setzen	Save as a template (area stamp) – then place it as often as you like with the tool 'Template'
+Keller darunter	Cellar below
+Zum Gebäude, Hauptansicht unter die Karte – daneben sieht man das Haus darüber	Go to the building, main view under the map – beside it you see the house above
+Unter dem Gebäude bauen: Keller (Rechteck aufziehen), Treppe, Static setzen – die Ebenen-Ansicht zeigt das Haus darüber.	Build under the building: cellar (drag a rectangle), stairs, place statics – the level view shows the house above.
+Begradigen …	Level …
+Boden unter dem Gebäude auf eine Höhe setzen (Statics mitnehmen = höher / tiefer)	Set the ground under the building to one height (take statics along = higher / lower)
+✖ Löschen	✖ Delete
+Alle Statics des Gebäudes entfernen (Strg+Z nimmt es zurück)	Remove all statics of the building (Ctrl+Z takes it back)
+Erst ein Gebäude in der Liste anklicken (oder '↻ Erkennen').	First click a building in the list (or '↻ Find').
+ausgewählt: Pfeile = verschieben, Strg+Pfeil = Kopie daneben, Bild↑/↓ = Höhe, R im Bereich = drehen	selected: arrows = move, Ctrl+arrow = copy beside, PgUp/PgDn = height, R in the area = turn
+Gebäude gefunden	buildings found
+anklicken = hinspringen, doppelklicken = auswählen (verschieben)	click = jump there, double click = select (move)
+Keine Gebäude – erst '↻ Erkennen'.	No buildings – '↻ Find' first.
+Stadt neu ordnen	Rearrange town
+Gebäude werden in Reihen gesetzt, Ziel	buildings are set in rows, target
+(markierter Bereich, sonst das ganze Fenster)	(marked area, else the whole window)
+Ein Rückgängig-Schritt.	One undo step.
+Neu ordnen	Rearrange
+Gebäude neu gesetzt	buildings set again
+passten nicht (bleiben stehen)	did not fit (stay)
+passt nicht mehr in den Bereich – bleibt stehen	does not fit into the area any more – stays
+Erst das Bereichs-Fenster mit '✔ Fertig' oder '✖ Abbrechen' schließen.	Close the area window with '✔ Done' or '✖ Cancel' first.
+Erst mit 'Bereich' ein Gebiet markieren (Umschalt = erweitern, Strg + Klick = zwei Ecken, 'Koordinaten …'), dann 'In eigenem Fenster bearbeiten'.	First mark an area with 'Area' (Shift = extend, Ctrl + click = two corners, 'Coordinates …'), then 'Edit in own window'.
+Bereich im eigenen Fenster	Area in its own window
+alle Werkzeuge wirken auf die Kopie; '✔ Fertig' schreibt sie zurück.	all tools work on the copy; '✔ Done' writes it back.
+Der Bereich	The area
+wird gerade im eigenen Fenster bearbeitet. Die CGI-Arbeitsfläche ist dort.	is being edited in its own window. The CGI work surface is there.
+⧉ Bereichs-Fenster zeigen	⧉ Show area window
+Bereichs-Fenster	Area window
+Bereich zurückgeschrieben	Area written back
+Änderungen an	changes at
+nimmt alles zurück	takes it all back
+Im Bereich wurde nichts geändert.	Nothing was changed in the area.
+Bereichs-Fenster abgebrochen – die Karte ist unverändert.	Area window cancelled – the map is unchanged.
+▣ In eigenem Fenster bearbeiten	▣ Edit in own window
+Den Bereich in ein eigenes Fenster laden und dort mit allen Werkzeugen bearbeiten – daneben die andere Ebene (Keller / Oberfläche) und die Gebäude; '✔ Fertig' schreibt die Änderungen an dieselbe Stelle zurück	Load the area into its own window and edit it there with all tools – beside it the other level (cellar / surface) and the buildings; '✔ Done' writes the changes back to the same place
+Bereich bearbeiten (Fenster)	Edit area (window)
+Den markierten Bereich in einem eigenen Fenster mit allen Werkzeugen bearbeiten: Stadt ausbauen, Gebäude verschieben / neu ordnen, Wald, Fluss, Brücke, Berg, Keller / Kanalisation darunter (das Haus darüber daneben sichtbar), Liniensystem; '✔ Fertig' schreibt es an dieselbe Stelle zurück	Edit the marked area in its own window with all tools: build out a town, move / rearrange buildings, forest, river, bridge, mountain, cellar / sewers below (the house above visible beside it), line system; '✔ Done' writes it back to the same place
+Wie vorher (von oben links)	As before (from top left)
+Nach Größe (große zuerst)	By size (large first)
+Zufällig	Random
+Freie Tiles zwischen zwei Gebäuden (Straße / Weg).	Free tiles between two buildings (street / path).
+Reihenfolge	Order
+In welcher Reihenfolge die Gebäude in die Reihen gesetzt werden.	In which order the buildings are set into the rows.
+Boden mitnehmen	Take the floor along
+Die Land-Tiles unter dem Gebäude (Fußboden, Pflaster) wandern mit.	The land tiles under the building (floor, paving) move along.
+Das Land unter jedem Gebäude (+1 Rand) auf seine alte Bodenhöhe setzen – nichts steckt im Boden.	Set the land under every building (+1 margin) to its old ground height – nothing sticks in the ground.
+Freiflächen-Tile (hex, 0 = aus)	Free area tile (hex, 0 = off)
+Alle freien Tiles im Ziel-Bereich bekommen dieses Land-Tile (Straße, Pflaster). 0 = Land bleibt.	All free tiles in the target area get this land tile (street, paving). 0 = land stays.
+Für 'Zufällig'. 0 = jedes Mal anders.	For 'Random'. 0 = different every time.

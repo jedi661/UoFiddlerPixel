@@ -705,6 +705,12 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }, "build");
             add(new ToolPaletteEntry
             {
+                Key = "region", Name = "Bereich bearbeiten (Fenster)", Accent = ColBuild,
+                Help = "Den markierten Bereich in einem eigenen Fenster mit allen Werkzeugen bearbeiten: Stadt ausbauen, Gebäude verschieben / neu ordnen, Wald, Fluss, Brücke, Berg, Keller / Kanalisation darunter (das Haus darüber daneben sichtbar), Liniensystem; '✔ Fertig' schreibt es an dieselbe Stelle zurück",
+                Click = OpenRegion
+            }, "build");
+            add(new ToolPaletteEntry
+            {
                 Key = "areacoords", Name = "Bereich per Koordinaten", Accent = ColBuild,
                 Help = "Bereich in der CGI-Ansicht mit Zahlen markieren (Ecke 1 / Ecke 2 oder Start + Größe) – für Gebiete größer als der Bildschirm",
                 Click = AskCgiArea

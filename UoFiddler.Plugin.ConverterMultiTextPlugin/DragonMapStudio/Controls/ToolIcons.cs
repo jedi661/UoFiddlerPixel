@@ -233,6 +233,20 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                         }
                         break;
                     }
+                case "region":
+                    {
+                        // a window with a marked town block
+                        using var frame = new Pen(Color.FromArgb(30, 64, 175), 1.5f);
+                        using var bar = new SolidBrush(Color.FromArgb(30, 64, 175));
+                        using var roof = new SolidBrush(Color.FromArgb(185, 28, 28));
+                        g.DrawRectangle(frame, 2, 3, 20, 18);
+                        g.FillRectangle(bar, 2, 3, 20, 4);
+                        g.FillRectangle(roof, 6, 11, 5, 4);
+                        g.FillRectangle(roof, 13, 13, 5, 4);
+                        using var mark = new Pen(Color.FromArgb(219, 39, 119), 1.5f) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
+                        g.DrawRectangle(mark, 4, 9, 16, 10);
+                        break;
+                    }
                 case "foreignmap":
                 case "areacoords":
                     {
