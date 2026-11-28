@@ -89,6 +89,50 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
 
         public bool SideWindowOpen { get; set; }
 
+        /// <summary>Palettes / side panel switched off (◧ / ◨, F7 / F8) – they stay off at the next start.</summary>
+        [Browsable(false)]
+        public bool CgiPaletteHidden { get; set; }
+
+        [Browsable(false)]
+        public bool EditorPaletteHidden { get; set; }
+
+        [Browsable(false)]
+        public bool CgiSideCollapsed { get; set; }
+
+        /// <summary>Width of the docked CGI side panel (splitter of the CGI view), 0 = default.</summary>
+        [Browsable(false)]
+        public int CgiSideWidth { get; set; }
+
+        /// <summary>Region window: "x,y,w,h", splitters, detached panes ("x,y,w,h" or empty = docked).</summary>
+        [Browsable(false)]
+        public string RegionWindow { get; set; } = string.Empty;
+
+        [Browsable(false)]
+        public int RegionSplit { get; set; }
+
+        [Browsable(false)]
+        public int RegionSideSplit { get; set; }
+
+        [Browsable(false)]
+        public string RegionLevelPane { get; set; } = string.Empty;
+
+        [Browsable(false)]
+        public string RegionBuildPane { get; set; } = string.Empty;
+
+        /// <summary>View helpers of the CGI view: coordinate lines (0 = off), tile info, height scale.</summary>
+        [Browsable(false)]
+        public int ViewCoordLines { get; set; }
+
+        [Browsable(false)]
+        public bool ViewTileInfo { get; set; }
+
+        [Browsable(false)]
+        public bool ViewHeightScale { get; set; }
+
+        /// <summary>Map editor ↔ CGI view when the tab changes: 0 = automatically, 1 = ask, 2 = off (only warn).</summary>
+        [Browsable(false)]
+        public int SyncMode { get; set; }
+
         /// <summary>New brushes of the CGI view (scatter, wall, river, road …), view filter, bookmarks.</summary>
         [Browsable(false)]
         public CgiBrushSettings CgiBrushes { get; set; } = new CgiBrushSettings();

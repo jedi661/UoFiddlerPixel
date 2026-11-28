@@ -142,6 +142,11 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 }
                 _cts?.Cancel();
             }
+            if (!WarnPending(false, true))
+            {
+                e.Cancel = true;
+                return;
+            }
             if (!ConfirmDiscardMap() || !ConfirmDiscardCgi())
             {
                 e.Cancel = true;
@@ -183,6 +188,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private void TabMain_SelectedIndexChanged(object sender, EventArgs e)
         {
             HideColorPreview();
+            SyncOnTabChange();
             if (tabMain.SelectedTab == tabEditor)
             {
                 mapCanvas.Focus();
@@ -921,6 +927,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         private bool SaveMap(bool saveAs)
         {
             if (_map == null)
+            {
+                return false;
+            }
+            if (!WarnPending(false, false))
             {
                 return false;
             }

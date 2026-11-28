@@ -356,6 +356,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             _redo.Clear();
             StaticsModified |= step.Statics.Count > 0;
             LandModified |= step.Land.Count > 0;
+            RaiseEdited(step);
         }
 
         // ------------------------------------------------------------------ land strokes (mouse drag = one undo step)
@@ -461,6 +462,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             _redo.Clear();
             LandModified |= step.Land.Count > 0;
             StaticsModified |= statics.Count > 0;
+            RaiseEdited(step);
             return step.Land.Count + statics.Count;
         }
 
@@ -475,6 +477,47 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         private bool InMask(StaticItem s) => s == null || EditMask == null || (InBounds(s.X, s.Y) && EditMask.Contains(s.Y * Width + s.X));
 
         public int UndoCount => _undo.Count;
+
+        /// <summary>
+        /// Raised after every change of the map (edit, stroke end, undo, redo) with the rectangle that changed – the
+        /// studio keeps the map editor and the CGI view in step with it.
+        /// </summary>
+        public event Action<Rectangle> Edited;
+
+        private void RaiseEdited(EditStep step)
+        {
+            if (Edited == null || step == null)
+            {
+                return;
+            }
+            int x0 = int.MaxValue, y0 = int.MaxValue, x1 = int.MinValue, y1 = int.MinValue;
+            void Take(int x, int y)
+            {
+                x0 = Math.Min(x0, x);
+                y0 = Math.Min(y0, y);
+                x1 = Math.Max(x1, x);
+                y1 = Math.Max(y1, y);
+            }
+            foreach (StaticChange c in step.Statics)
+            {
+                if (c.Before != null)
+                {
+                    Take(c.Before.X, c.Before.Y);
+                }
+                if (c.After != null)
+                {
+                    Take(c.After.X, c.After.Y);
+                }
+            }
+            foreach (LandChange l in step.Land)
+            {
+                Take(l.Index % Width, l.Index / Width);
+            }
+            if (x0 <= x1)
+            {
+                Edited(Rectangle.FromLTRB(x0, y0, x1 + 1, y1 + 1));
+            }
+        }
 
         public int RedoCount => _redo.Count;
 
@@ -522,6 +565,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             _redo.Push(step);
             StaticsModified |= step.Statics.Count > 0;
             LandModified |= step.Land.Count > 0;
+            RaiseEdited(step);
             return true;
         }
 
@@ -544,6 +588,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             _undo.Push(step);
             StaticsModified |= step.Statics.Count > 0;
             LandModified |= step.Land.Count > 0;
+            RaiseEdited(step);
             return true;
         }
 

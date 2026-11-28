@@ -240,7 +240,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 mapCanvas.SetStaticMarkers(_staticsLayer.Items);
             }
             var box = Rectangle.FromLTRB(added.Min(s => s.X), added.Min(s => s.Y), added.Max(s => s.X) + 1, added.Max(s => s.Y) + 1);
-            mapCanvas.EditRect(new Rectangle(box.X, box.Y, 1, 1), L.T("Muster") + " " + m.Name, _ => { }, () =>
+            mapCanvas.EditRect(box, L.T("Muster") + " " + m.Name, _ => { }, () =>
             {
                 Apply(removed, added);
                 _history.AddExtra(() => Apply(added, removed), () => Apply(removed, added));

@@ -884,6 +884,44 @@ Workshop → layout → “Floors”: this many levels below each other (20 Z ea
             },
             new GuideTopic
             {
+                Key = "underground", Group = "Bauen|Building", TitleDe = "Höhlen und unter der Karte bauen", TitleEn = "Caves and building under the map",
+                De = @"# Höhlen und unter der Karte
+## Werkzeug Höhle
+Am Fuß des Berges anfangen und in den Berg ziehen. Jeder Tile unter dem Pinsel wird Höhlen-Boden (zufällig aus den Boden-Tiles) auf der Höhe des ERSTEN Klicks (oder „Boden auf Höhe =“). „Rand → Wand“: Berg-Tiles am Pinsel-Rand werden auf Boden + Wand-Höhe angehoben – das ist die Fels-Wand. Pinselgröße = Gangbreite, ein Zug = ein Rückgängig-Schritt.
+## Werkzeug Eingang
+Auf den Boden direkt am Bergfuß klicken und 2–3 Tiles in den Hang ziehen (mind. 2×2): der Mund wird 01DB (schwarz) oder 0002 (unsichtbar) „Mund-Höhe“ über dem Boden, der Rand bekommt 01D3–01DA. Sichtbar nur nach Süden / Osten. Der Höhlen-Stempel macht das mit einem Klick fertig.
+## Höhlen-Boden und -Items
+Leiste beim Werkzeug Höhle: „Boden …“ oder Ansicht → „Höhlen-Boden und -Items …“: Land-Tiles (Klick = dieser Boden, Strg+Klick = dazu mischen) und Items wie Stalagmiten, Felsen (Klick = mit Static setzen platzieren).
+## Unter der Karte
+„⬇ Unter der Karte“ baut unter dem Boden; Ansicht → **Oberfläche aus** zeigt das Land nur als Umriss und blendet die Statics auf dem Boden aus – so sieht man Keller, Kanalisation, Höhlen. **Höhen-Skala** rechts: Boden (grün), Bau-Ebene (orange), Keller-Ebene (lila) und jedes Static des Feldes als blauer Balken. Tile-Info und Koordinaten-Linien ebenfalls unter Ansicht.",
+                En = @"# Caves and under the map
+## Tool Cave
+Start at the foot of the mountain and drag into it. Every tile under the brush becomes cave floor (random from the floor tiles) at the height of the FIRST click (or “Floor at height =”). “Edge → wall”: mountain tiles at the brush edge are raised to floor + wall height – that is the rock wall. Brush size = passage width, one drag = one undo step.
+## Tool Entrance
+Click the ground right at the foot of the mountain and drag 2–3 tiles into the slope (at least 2×2): the mouth becomes 01DB (black) or 0002 (invisible) “mouth height” above the ground, the edge gets 01D3–01DA. Only visible facing south / east. The cave stamp does it finished with one click.
+## Cave floors and items
+Bar of the tool Cave: “Floor …” or View → “Cave floors and items …”: land tiles (click = this floor, Ctrl+click = mix in) and items like stalagmites, rocks (click = place with Place static).
+## Under the map
+“⬇ Under the map” builds below the ground; View → **Surface off** shows the land only as an outline and hides the statics on the ground – so cellars, sewers, caves can be seen. **Height scale** on the right: ground (green), build level (orange), cellar level (purple) and every static of the tile as a blue bar. Tile info and coordinate lines are under View too."
+            },
+            new GuideTopic
+            {
+                Key = "sync", Group = "Anleitung|Guide", TitleDe = "Karten-Editor und CGI-Ansicht abgleichen", TitleEn = "Keep map editor and CGI view in step",
+                De = @"# Abgleich Karten-Editor ↔ CGI
+Beide Seiten merken sich, wo sie geändert wurden. Ein ⟳ am Tab heißt: dort fehlt noch etwas von der anderen Seite.
+Beim Tab-Wechsel automatisch | der geänderte Bereich der Farbkarte wird in der CGI-Ansicht neu gebaut, bzw. der CGI-Bereich in Farben (+ Statics-Ebene) umgerechnet
+erst fragen | vor jedem Abgleich eine Frage
+nur hinweisen | nichts von selbst, nur ein Hinweis; „Jetzt abgleichen“ macht es
+An derselben Stelle auf beiden Seiten geändert: das Studio fragt, welche Seite gewinnt. Beim Speichern / Schließen mit offenen Änderungen gibt es eine Warnung („Nein = ignorieren“). „Offene Änderungen vergessen“ verwirft die Markierung. Gilt, wenn die CGI-Karte aus dieser Farbkarte gebaut wurde (gleiche Größe).",
+                En = @"# Sync map editor ↔ CGI
+Both sides remember where they were changed. A ⟳ on a tab means: something of the other side is still missing there.
+Automatically when the tab changes | the changed area of the colour map is built again in the CGI view, or the CGI area is converted into colours (+ statics layer)
+Ask first | a question before every sync
+Only hint | nothing by itself, only a hint; “Sync now” does it
+Changed at the same place on both sides: the studio asks which side wins. Saving / closing with open changes gives a warning (“No = ignore”). “Forget open changes” drops the mark. Works when the CGI map was built from this colour map (same size)."
+            },
+            new GuideTopic
+            {
                 Key = "region", Group = "Bauen|Building", TitleDe = "Bereich im eigenen Fenster bearbeiten (Stadt ausbauen)", TitleEn = "Edit an area in its own window (build out a town)",
                 De = @"# Bereich im eigenen Fenster bearbeiten
 Ein Gebiet (z. B. eine Stadt) markieren und mit allen Werkzeugen in einem eigenen Fenster ausbauen – danach kommt es an dieselbe Stelle zurück.

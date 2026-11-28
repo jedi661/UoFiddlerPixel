@@ -206,6 +206,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             tsbCgiRedo.Enabled = has && _cgiMap.CanRedo;
             btnCgiScan.Enabled = has;
             tabCgi.Text = L.T("CGI-Ansicht") + (has && (_cgiMap.StaticsModified || _cgiMap.LandModified) ? " *" : string.Empty);
+            UpdateSyncMarks();
         }
 
         private void SetCgiMap(MapData data, double? centerX = null, double? centerY = null)
@@ -223,6 +224,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             }
             UpdateCgiThumbnail();
             UpdateCgiState();
+            WatchCgiMap();
             tabMain.SelectedTab = tabCgi;
             isoView.Focus();
         }
@@ -302,6 +304,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 _cgiFromEditor = true;
                 _cgiUserEdits = false;
                 SetCgiMap(data, cx ?? data.Width / 2.0, cy ?? data.Height / 2.0);
+                ForgetPending();
                 SetStatus($"CGI-Karte gebaut: {data.Width}×{data.Height}, {data.StaticCount:N0} Statics. 'Speichern' schreibt nach {o.OutputFolder}.");
                 if (!UoArtCache.ArtAvailable)
                 {
@@ -339,6 +342,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             {
                 _cgiFromEditor = false;
                 SetCgiMap(r.data);
+                ForgetPending();
                 SetStatus($"Geladen: {file} ({w}×{h}), {r.info}");
             });
         }
@@ -364,6 +368,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                 return false;
             }
             if (_cgiMap == null)
+            {
+                return false;
+            }
+            if (!WarnPending(true, false))
             {
                 return false;
             }

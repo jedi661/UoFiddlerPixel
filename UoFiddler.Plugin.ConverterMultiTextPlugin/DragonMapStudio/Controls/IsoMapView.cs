@@ -832,7 +832,16 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     bool landVisible = maxY >= 0 && minY <= sh && top.X + Half >= 0 && top.X - Half <= sw;
                     ushort landId = _map.LandId(x, y);
                     int zMin = Math.Min(Math.Min(zt, zr), Math.Min(zb, zl));
-                    if (landVisible)
+                    if (landVisible && SurfaceHidden)
+                    {
+                        // "Oberfläche aus": only the outline of the land – what lies below the map can be seen and built
+                        drawables.Add((x + y, zMin * 4 - 2, order++, () =>
+                        {
+                            using var outline = new Pen(Color.FromArgb(90, 148, 163, 184), 1f);
+                            g.DrawPolygon(outline, poly);
+                        }));
+                    }
+                    else if (landVisible)
                     {
                         drawables.Add((x + y, zMin * 4 - 2, order++, () => DrawLand(g, landId, poly, zt, zr, zb, zl, x, y)));
                     }
@@ -843,7 +852,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                     }
                     foreach (StaticItem st in _map.StaticsAt(x, y))
                     {
-                        if (st.Z > MaxZ || Hidden(st.Id))
+                        if (st.Z > MaxZ || Hidden(st.Id) || (SurfaceHidden && st.Z >= zMin - 1))
                         {
                             continue;
                         }

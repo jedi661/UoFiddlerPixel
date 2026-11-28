@@ -42,6 +42,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         public Action ToggleSide;
         public Action UndockSide;
         public Action ToggleOptions;
+        public StudioSettings Settings;
+        public Action SaveSoon;
     }
 
     public sealed class RegionEditorForm : Form
@@ -60,6 +62,8 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
         private bool _finishing;
         private bool _closingNow;
         private bool _followMain = true;
+        private readonly Dictionary<int, Action<Rectangle?>> _floatPane = new Dictionary<int, Action<Rectangle?>>();
+        private bool _layoutReady;
 
         /// <summary>The panel the CGI work surface is put into.</summary>
         public Panel WorkspaceHost { get; } = new Panel { Dock = DockStyle.Fill };
@@ -104,11 +108,14 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             FormClosing += OnClosing;
             Shown += (s, e) =>
             {
-                _split.SplitterDistance = Math.Max(400, ClientSize.Width - 760);
-                _side.SplitterDistance = 380;
+                RestoreLayout();
                 SetupLevel();
                 Detect();
             };
+            ResizeEnd += (s, e) => RememberLayout();
+            Move += (s, e) => RememberLayout();
+            _split.SplitterMoved += (s, e) => RememberLayout();
+            _side.SplitterMoved += (s, e) => RememberLayout();
         }
 
         private MapData Map => _host.Map();
@@ -272,6 +279,91 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             Say(L.T("Alle Werkzeuge wirken auf die Kopie des Bereichs. '✔ Fertig' schreibt die Änderungen an dieselbe Stelle zurück, '✖ Abbrechen' verwirft sie. Strg+Z / Strg+Y, F7 / F8 gehen auch hier."));
         }
 
+        private static Rectangle ParseRect(string text)
+        {
+            int[] v = (text ?? string.Empty).Split(',').Select(t => int.TryParse(t, out int n) ? n : int.MinValue).ToArray();
+            if (v.Length != 4 || v.Any(n => n == int.MinValue) || v[2] < 100 || v[3] < 100)
+            {
+                return Rectangle.Empty;
+            }
+            var r = new Rectangle(v[0], v[1], v[2], v[3]);
+            return Screen.AllScreens.Any(sc => sc.WorkingArea.IntersectsWith(r)) ? r : Rectangle.Empty;
+        }
+
+        private static string RectText(Rectangle r) => $"{r.X},{r.Y},{r.Width},{r.Height}";
+
+        /// <summary>Size, splitters and detached panes as last time.</summary>
+        private void RestoreLayout()
+        {
+            StudioSettings st = _host.Settings;
+            Rectangle w = st == null ? Rectangle.Empty : ParseRect(st.RegionWindow);
+            if (!w.IsEmpty)
+            {
+                Bounds = w;
+            }
+            try
+            {
+                int right = st != null && st.RegionSplit > 200 ? st.RegionSplit : 760;
+                _split.SplitterDistance = Math.Max(400, ClientSize.Width - right);
+                _side.SplitterDistance = st != null && st.RegionSideSplit > 100 ? Math.Min(st.RegionSideSplit, Math.Max(150, _side.Width - 150)) : 380;
+            }
+            catch (Exception)
+            {
+                // window too small – the defaults stay
+            }
+            if (st != null)
+            {
+                Rectangle a = ParseRect(st.RegionLevelPane), b = ParseRect(st.RegionBuildPane);
+                if (!a.IsEmpty)
+                {
+                    _floatPane[1](a);
+                }
+                if (!b.IsEmpty)
+                {
+                    _floatPane[2](b);
+                }
+            }
+            _layoutReady = true;
+        }
+
+        private void RememberLayout()
+        {
+            StudioSettings st = _host.Settings;
+            if (!_layoutReady || st == null || WindowState != FormWindowState.Normal)
+            {
+                return;
+            }
+            st.RegionWindow = RectText(Bounds);
+            if (!_split.Panel2Collapsed)
+            {
+                st.RegionSplit = _split.Width - _split.SplitterDistance;
+                if (!_side.Panel1Collapsed && !_side.Panel2Collapsed)
+                {
+                    st.RegionSideSplit = _side.SplitterDistance;
+                }
+            }
+            _host.SaveSoon?.Invoke();
+        }
+
+        private void RememberPane(int slot, Form floating)
+        {
+            StudioSettings st = _host.Settings;
+            if (st == null || _finishing)
+            {
+                return;
+            }
+            string text = floating == null || floating.WindowState != FormWindowState.Normal ? string.Empty : RectText(floating.Bounds);
+            if (slot == 1)
+            {
+                st.RegionLevelPane = text;
+            }
+            else
+            {
+                st.RegionBuildPane = text;
+            }
+            _host.SaveSoon?.Invoke();
+        }
+
         /// <summary>A side pane with a title and "⧉ lösen" (own window, closing docks it back).</summary>
         private Panel Pane(string title, Label extraTitle, Control content, int slot)
         {
@@ -287,19 +379,21 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             }
             pane.Controls.Add(head);
             Form floating = null;
-            undock.Click += (s, e) =>
+            void Float(Rectangle? where)
             {
                 if (floating != null)
                 {
-                    floating.Close();
                     return;
                 }
                 SplitterPanel home = slot == 1 ? _side.Panel1 : _side.Panel2;
                 floating = new Form
                 {
                     Text = title + " – " + L.T("Bereich bearbeiten"), Owner = this, ShowInTaskbar = false, FormBorderStyle = FormBorderStyle.SizableToolWindow,
-                    StartPosition = FormStartPosition.Manual, Bounds = new Rectangle(Right - 40, Top + 60, 640, Math.Max(500, Height - 120))
+                    StartPosition = FormStartPosition.Manual, Bounds = where ?? new Rectangle(Right - 40, Top + 60, 640, Math.Max(500, Height - 120))
                 };
+                Form me = floating;
+                me.ResizeEnd += (s3, e3) => RememberPane(slot, me);
+                me.Move += (s3, e3) => RememberPane(slot, me);
                 home.Controls.Remove(pane);
                 floating.Controls.Add(pane);
                 if (slot == 1)
@@ -315,8 +409,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                     _split.Panel2Collapsed = true;
                 }
                 undock.Text = "⇤ " + L.T("andocken");
+                bool ownerGone = false;
                 floating.FormClosing += (s2, e2) =>
                 {
+                    ownerGone = e2.CloseReason == CloseReason.FormOwnerClosing || _finishing;
                     floating.Controls.Remove(pane);
                     if (!IsDisposed)
                     {
@@ -333,8 +429,23 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
                     }
                     undock.Text = "⧉ " + L.T("lösen");
                     floating = null;
+                    if (!ownerGone)
+                    {
+                        RememberPane(slot, null);
+                    }
                 };
                 floating.Show(this);
+                RememberPane(slot, floating);
+            }
+            _floatPane[slot] = Float;
+            undock.Click += (s, e) =>
+            {
+                if (floating != null)
+                {
+                    floating.Close();
+                    return;
+                }
+                Float(null);
             };
             return pane;
         }
@@ -411,6 +522,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Dialogs
             if (force || _level.UnderView != wantUnder)
             {
                 _level.UnderView = wantUnder;
+                _level.SurfaceHidden = wantUnder;
                 _levelTitle.Text = "  " + (wantUnder ? L.T("Unter der Karte: Keller, Kanalisation, Höhlen") : L.T("Oberfläche: das Haus / die Stadt darüber"));
                 _levelTitle.BackColor = wantUnder ? Color.FromArgb(126, 34, 206) : Color.FromArgb(22, 128, 61);
                 if (_followMain)

@@ -134,6 +134,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             public readonly Dictionary<int, ushort[]> Before = new Dictionary<int, ushort[]>();
             public readonly Dictionary<int, ushort[]> After = new Dictionary<int, ushort[]>();
             public long Bytes;
+
+            /// <summary>The cells that were touched (exact rectangle, for keeping the CGI view in step).</summary>
+            public Rectangle Area = Rectangle.Empty;
         }
 
         private readonly LinkedList<Step> _undo = new LinkedList<Step>();
@@ -146,6 +149,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
         public long MemoryLimit { get; set; } = 768L * 1024 * 1024;
 
         public event EventHandler Changed;
+
+        /// <summary>After a step, undo or redo: the area of the map that changed.</summary>
+        public event Action<Rectangle> Edited;
 
         public bool CanUndo => _undo.Count > 0;
         public bool CanRedo => _redo.Count > 0;
@@ -215,6 +221,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             {
                 return;
             }
+            _current.Area = _current.Area.IsEmpty ? r : Rectangle.Union(_current.Area, r);
             int tx0 = r.Left / TileSize, ty0 = r.Top / TileSize;
             int tx1 = (r.Right - 1) / TileSize, ty1 = (r.Bottom - 1) / TileSize;
             for (int ty = ty0; ty <= ty1; ty++)
@@ -276,6 +283,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             Trim();
             _map.Modified = true;
             Changed?.Invoke(this, EventArgs.Empty);
+            if (!step.Area.IsEmpty)
+            {
+                Edited?.Invoke(step.Area);
+            }
         }
 
         public void Cancel()
@@ -310,6 +321,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             _redo.Push(step);
             _map.Modified = true;
             Changed?.Invoke(this, EventArgs.Empty);
+            Edited?.Invoke(step.Area.IsEmpty ? area : step.Area);
             return area;
         }
 
@@ -325,6 +337,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             _undo.AddLast(step);
             _map.Modified = true;
             Changed?.Invoke(this, EventArgs.Empty);
+            Edited?.Invoke(step.Area.IsEmpty ? area : step.Area);
             return area;
         }
 
