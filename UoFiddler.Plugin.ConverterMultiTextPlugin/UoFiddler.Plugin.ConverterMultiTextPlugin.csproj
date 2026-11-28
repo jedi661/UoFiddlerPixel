@@ -106,6 +106,9 @@
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.Tools.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>
+		<Compile Update="DragonMapStudio\DragonMapStudioForm.Region.cs">
+			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.AreaStamps.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
 		</Compile>
@@ -156,6 +159,9 @@
 		</Compile>
 		<Compile Update="DragonMapStudio\DragonMapStudioForm.ToolOptions.cs">
 			<DependentUpon>DragonMapStudioForm.cs</DependentUpon>
+		</Compile>
+		<Compile Update="DragonMapStudio\Controls\IsoMapView.Lines.cs">
+			<DependentUpon>IsoMapView.cs</DependentUpon>
 		</Compile>
 		<Compile Update="DragonMapStudio\Controls\IsoMapView.AreaMark.cs">
 			<DependentUpon>IsoMapView.cs</DependentUpon>

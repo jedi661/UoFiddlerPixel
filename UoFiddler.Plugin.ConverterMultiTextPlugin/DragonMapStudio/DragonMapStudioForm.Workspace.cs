@@ -508,6 +508,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
             Cmd(_cgiAreaItems, "Berg (M)", "Berg formen (Reiter Berg)", () => isoView.MountainArea());
             Cmd(_cgiAreaItems, "Übergänge (T)", "Übergänge neu berechnen", () => isoView.TransitionArea());
             Cmd(_cgiAreaItems, "→ Stempel (P)", "Bereich als Farb-Stempel", CgiAreaToColorStamp);
+            Cmd(_cgiAreaItems, "▣ In eigenem Fenster bearbeiten", "Den Bereich in ein eigenes Fenster laden und dort mit allen Werkzeugen bearbeiten – daneben die andere Ebene (Keller / Oberfläche) und die Gebäude; '✔ Fertig' schreibt die Änderungen an dieselbe Stelle zurück", OpenRegion);
             Cmd(_cgiAreaItems, "Koordinaten …", "Bereich per Koordinaten: Ecke 1 / Ecke 2 oder Start + Größe – auch größer als der Bildschirm. Sonst: Umschalt + ziehen = erweitern, Strg + Klick, Strg + Klick = zwei Ecken (dazwischen scrollen), ziehen an den Rand = mitscrollen", AskCgiArea);
             Cmd(_cgiAreaItems, "Boden begradigen …", "Land unter dem Bereich (z. B. unter einem Haus) auf eine Höhe setzen – Statics wahlweise mitnehmen, höher / tiefer per Z", LevelGroundDialog);
             Cmd(_cgiAreaItems, "→ Muster", "Die Statics des Bereichs in den Muster-Baukasten holen (als Muster übernehmen)", AreaToMotif);

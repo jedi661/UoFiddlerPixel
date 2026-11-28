@@ -114,6 +114,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
                 ("Treppe", "Treppen-Modell: aufnehmen, in alle Richtungen drehen, mehrmals", c => StairModels((Ctx)c, b)),
                 ("Muster", "Muster-Baukasten: Zinnen-Mauer, 4 Richtungen, ziehen, 2 Etagen", c => Motifs((Ctx)c, b)),
                 ("Muster", "Burgmauer Punkt zu Punkt: Türme, Ecken, genaue Länge, Radius, Begradigen", c => MotifPath((Ctx)c, b)),
+                ("Bereich", "Bereichs-Fenster: kopieren, Gebäude erkennen, Stadt neu ordnen, zurückschreiben", c => RegionRoundTrip((Ctx)c, b)),
                 ("Drehen", "Drehen 90°: gerichtete Teile tauschen", c => RotateSwap((Ctx)c, b)),
                 ("Wand", "Wand Punkt zu Punkt, Dicke, Ecken", c => WallPath((Ctx)c, b)),
                 ("Fluss", "Fluss-Lauf: Breite, Mitte bleibt Wasser, Grund wie Küste", c => River((Ctx)c, b)),
@@ -620,6 +621,71 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Core
             c.Line($"Boden begradigen: {land.Count} Land-Tiles auf z {startZ}, alle Statics unten auf z {fl.Min(x => x.After.Z)}");
             c.Check(flat, "der Boden unter der Mauer ist flach");
             c.Picture("Mauer am Hang mit 'Boden begradigen'", hill, new Rectangle(0, 2, 30, 12));
+        }
+
+        private static void RegionRoundTrip(Ctx c, CgiBrushSettings b)
+        {
+            WallSet w = b.WallSets.FirstOrDefault(x => x.Name == b.WallSet);
+            ushort wall = w != null ? HexList.Parse(w.AlongX).FirstOrDefault() : (ushort)0;
+            if (wall == 0)
+            {
+                wall = 0x0026;
+            }
+            bool real = TownTools.IsBuildingPart(wall);
+            Func<ushort, bool> keep = TownTools.IsBuildingPart;
+            if (!real)
+            {
+                c.Warn($"{Item(wall)} gilt laut TileData nicht als Wand – der Test zählt sie trotzdem als Gebäude-Teil.");
+                TownTools.IsBuildingPart = id => id == wall || keep(id);
+            }
+            try
+            {
+                MapData big = Map(160, 160, 3, 0);
+                var ch = new List<StaticChange>();
+                void House(int x0, int y0, int sw, int sh)
+                {
+                    for (int y = y0; y < y0 + sh; y++)
+                    {
+                        for (int x = x0; x < x0 + sw; x++)
+                        {
+                            if (x == x0 || y == y0 || x == x0 + sw - 1 || y == y0 + sh - 1)
+                            {
+                                ch.Add(MapData.Add(new StaticItem { Id = wall, X = x, Y = y }));
+                            }
+                        }
+                    }
+                }
+                House(50, 50, 6, 5);
+                House(75, 58, 5, 5);
+                House(60, 75, 7, 6);
+                ch.Add(MapData.Add(new StaticItem { Id = wall, X = 10, Y = 10 }));
+                big.Apply(ch);
+                big.ClearHistory();
+                var area = new Rectangle(45, 45, 50, 50);
+                MapData copy = big.CopyRegion(Rectangle.Inflate(area, 8, 8), out Point origin);
+                var local = new Rectangle(area.X - origin.X, area.Y - origin.Y, area.Width, area.Height);
+                List<TownBuilding> found = TownTools.FindBuildings(copy, local);
+                c.Line($"Kopie {copy.Width}×{copy.Height} ab ({origin.X}, {origin.Y}), {found.Count} Gebäude erkannt");
+                c.Check(found.Count == 3, "3 Gebäude erkannt");
+                c.Picture("Bereich vorher (Kopie)", copy, new Rectangle(0, 0, copy.Width, copy.Height));
+                (List<StaticChange> st, List<LandChange> ld) = TownTools.Rearrange(copy, found, local, new TownLayoutSettings { Gap = 3 }, out int n, out _);
+                copy.Apply(st, ld);
+                c.Picture("Stadt neu geordnet (Kopie)", copy, new Rectangle(0, 0, copy.Width, copy.Height));
+                int steps = big.UndoCount;
+                int changes = big.WriteBack(copy, origin);
+                c.Line($"neu geordnet {n}, zurückgeschrieben {changes} Änderungen in {big.UndoCount - steps} Rückgängig-Schritt(en)");
+                c.Check(n == 3, "alle 3 Gebäude neu gesetzt");
+                c.Check(big.UndoCount - steps == 1, "ein einziger Rückgängig-Schritt in der großen Karte");
+                c.Check(big.StaticsAt(10, 10).Any(), "außerhalb des Bereichs bleibt alles stehen");
+                c.Picture("Große Karte nach 'Fertig'", big, new Rectangle(40, 40, 60, 60));
+                big.Undo();
+                List<TownBuilding> back = TownTools.FindBuildings(big, new Rectangle(0, 0, 160, 160));
+                c.Check(back.Any(x => x.Bounds.X == 50 && x.Bounds.Y == 50), "Strg+Z stellt den alten Zustand wieder her");
+            }
+            finally
+            {
+                TownTools.IsBuildingPart = keep;
+            }
         }
 
         private static void RotateSwap(Ctx c, CgiBrushSettings b)

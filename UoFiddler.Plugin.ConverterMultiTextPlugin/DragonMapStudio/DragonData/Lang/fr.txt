@@ -2170,3 +2170,106 @@ Bereich per Koordinaten: Ecke 1 / Ecke 2 oder Start + Größe – auch größer 
 Gebiet aus fremder Karte	Zone d'une autre carte
 Eigenes Fenster: alte / andere UO-Karte öffnen, eine ganze Stadt markieren (ziehen, Umschalt = erweitern, Strg + Klick = zwei Ecken mit Scrollen, Koordinaten) und als Vorlage (CGI: Boden + Höhen + Statics) oder Farb-Stempel (Karten-Editor) speichern	Fenêtre séparée : ouvrir une ancienne / autre carte UO, marquer une ville entière (tirer, Maj = agrandir, Ctrl + clic = deux coins avec défilement, coordonnées) et l'enregistrer comme modèle (CGI : sol + hauteurs + statics) ou tampon de couleurs (éditeur de carte)
 Bereich in der CGI-Ansicht mit Zahlen markieren (Ecke 1 / Ecke 2 oder Start + Größe) – für Gebiete größer als der Bildschirm	Marquer une zone dans la vue CGI avec des chiffres (coin 1 / coin 2 ou début + taille) – pour des zones plus grandes que l'écran
+
+# Werkstatt 39 – Bereich im eigenen Fenster, Stadt ausbauen, Liniensystem
+Bereich bearbeiten	Modifier la zone
+Die Änderungen im Bereich in die Karte übernehmen?\n\nJa = zurückschreiben (Fertig)\nNein = verwerfen\nAbbrechen = weiter bearbeiten	Reprendre les modifications de la zone dans la carte ?\n\nOui = réécrire (terminé)\nNon = abandonner\nAnnuler = continuer
+✔ Fertig – zurückschreiben	✔ Terminé – réécrire
+✖ Abbrechen	✖ Annuler
+Alles, was im Bereich geändert wurde, an derselben Stelle in die große Karte schreiben (ein Rückgängig-Schritt dort) und das Fenster schließen	Écrire tout ce qui a changé dans la zone au même endroit de la grande carte (une étape d'annulation) et fermer la fenêtre
+Die Kopie verwerfen – die große Karte bleibt wie sie war	Abandonner la copie – la grande carte reste telle quelle
+Schnell ausbauen	Aménagement rapide
+Werkzeug wählen – alle Einstellungen oben in der Leiste / im Optionen-Fenster	Choisir un outil – tous les réglages dans la barre en haut / dans la fenêtre d'options
+Boden füllen (Bereich + F)	Remplir le sol (zone + F)
+Bereich aufziehen, F = mit dem Land-Tile füllen, T = Übergänge	Tirer une zone, F = remplir avec la tuile, T = transitions
+Land-Pinsel / neuer Boden	Pinceau de terrain / nouveau sol
+Bergwall / Labyrinth	Mur de montagne / labyrinthe
+Wald / Pflanzen streuen	Disperser forêt / plantes
+Muster (Mauern, Zinnen …)	Motif (murs, créneaux …)
+Vorlage / Gebiets-Stempel	Modèle / tampon de zone
+Multi (Haus)	Multi (maison)
+Keller / unter der Karte	Cave / sous la carte
+Kanalisation, Keller: Rechteck aufziehen – das Land wird unsichtbar, darunter bauen	Égouts, caves : tirer un rectangle – le terrain devient invisible, construire dessous
+⬇ Unter der Karte bauen	⬇ Construire sous la carte
+Hauptansicht unter dem Boden (Keller, Kanalisation, Höhlen) – die Ebenen-Ansicht daneben zeigt dann die Oberfläche (das Haus darüber)	Vue principale sous le sol (caves, égouts, grottes) – la vue de niveau à côté montre alors la surface (la maison au-dessus)
+Linien:	Lignes :
+Koordinaten-Linien alle N Tiles (8 = ein Karten-Block) mit den Zahlen der großen Karte	Lignes de coordonnées toutes les N tuiles (8 = un bloc) avec les numéros de la grande carte
+aus	désactivé
+Tile-Info	Info tuile
+Am Mauszeiger: X / Y (große Karte), Boden-Höhe, Land-Tile und die Statics auf dem Feld mit ihrer Höhe	À la souris : X / Y (grande carte), hauteur du sol, tuile et les statics de la case avec leur hauteur
+Werkzeug-Palette ein / aus (F7) – über ihren Kopf lässt sie sich lösen und auf einen anderen Monitor ziehen	Palette d'outils oui / non (F7) – son en-tête la détache vers un autre écran
+Seitenleiste ein / aus (F8)	Panneau latéral oui / non (F8)
+Seitenleiste (Items, Multis, Land, Pinsel …) als eigenes Fenster	Panneau latéral (items, multis, terrain, pinceaux …) en fenêtre séparée
+⧉ Optionen	⧉ Options
+Werkzeug-Optionen als eigenes Fenster	Options d'outil en fenêtre séparée
+Hilfe zum Bereichs-Fenster	Aide de la fenêtre de zone
+Andere Ebene	Autre niveau
+Gebäude	Bâtiments
+Alle Werkzeuge wirken auf die Kopie des Bereichs. '✔ Fertig' schreibt die Änderungen an dieselbe Stelle zurück, '✖ Abbrechen' verwirft sie. Strg+Z / Strg+Y, F7 / F8 gehen auch hier.	Tous les outils agissent sur la copie de la zone. '✔ Terminé' réécrit les modifications au même endroit, '✖ Annuler' les abandonne. Ctrl+Z / Ctrl+Y, F7 / F8 marchent aussi ici.
+lösen	détacher
+andocken	ancrer
+Als eigenes Fenster (z. B. auf einen anderen Monitor) – Schließen dockt es wieder an	En fenêtre séparée (p. ex. sur un autre écran) – la fermer la réancre
+folgt der Hauptansicht	suit la vue principale
+Die Ebenen-Ansicht zeigt immer dieselbe Stelle wie die Hauptansicht	La vue de niveau montre toujours le même endroit que la vue principale
+Ebenen tauschen	Échanger les niveaux
+Hauptansicht und Ebenen-Ansicht tauschen (oben ↔ unten) – gebaut wird immer in der Hauptansicht	Échanger vue principale et vue de niveau (haut ↔ bas) – on construit toujours dans la vue principale
+Unter der Karte: Keller, Kanalisation, Höhlen	Sous la carte : caves, égouts, grottes
+Oberfläche: das Haus / die Stadt darüber	Surface : la maison / la ville au-dessus
+↻ Erkennen	↻ Détecter
+Gebäude im markierten Bereich (sonst im ganzen Bereichs-Fenster) suchen: Wände, Dächer, Böden, die sich berühren	Chercher les bâtiments dans la zone marquée (sinon dans toute la fenêtre) : murs, toits, sols qui se touchent
+🏘 Stadt neu ordnen …	🏘 Réorganiser la ville …
+Die gewählten Gebäude (keins gewählt = alle) in Reihen mit Straßen dazwischen neu setzen – im markierten Bereich, sonst im ganzen Fenster	Replacer les bâtiments choisis (aucun = tous) en rangées avec des rues entre eux – dans la zone marquée, sinon dans toute la fenêtre
+Wählen	Choisir
+Gebäude auswählen: dann mit Pfeilen / Ziehen (Auswahl) verschieben, Strg+Pfeil = Kopie daneben	Choisir le bâtiment : puis le déplacer avec les flèches / en tirant (sélection), Ctrl+flèche = copie à côté
+Gebäude mit Boden um 90° drehen (Wände werden getauscht, Richtungs-Tabelle gilt)	Tourner le bâtiment avec son sol de 90° (murs échangés, la table de directions s'applique)
+→ Vorlage	→ Modèle
+Als Vorlage (Gebiets-Stempel) speichern – dann mit dem Werkzeug 'Vorlage' beliebig oft setzen	Enregistrer comme modèle (tampon de zone) – puis le poser autant de fois que voulu avec l'outil 'Modèle'
+Keller darunter	Cave dessous
+Zum Gebäude, Hauptansicht unter die Karte – daneben sieht man das Haus darüber	Aller au bâtiment, vue principale sous la carte – à côté on voit la maison au-dessus
+Unter dem Gebäude bauen: Keller (Rechteck aufziehen), Treppe, Static setzen – die Ebenen-Ansicht zeigt das Haus darüber.	Construire sous le bâtiment : cave (tirer un rectangle), escalier, poser des statics – la vue de niveau montre la maison au-dessus.
+Begradigen …	Aplanir …
+Boden unter dem Gebäude auf eine Höhe setzen (Statics mitnehmen = höher / tiefer)	Mettre le sol sous le bâtiment à une hauteur (emporter les statics = plus haut / bas)
+✖ Löschen	✖ Supprimer
+Alle Statics des Gebäudes entfernen (Strg+Z nimmt es zurück)	Retirer tous les statics du bâtiment (Ctrl+Z annule)
+Erst ein Gebäude in der Liste anklicken (oder '↻ Erkennen').	Cliquer d'abord un bâtiment dans la liste (ou '↻ Détecter').
+ausgewählt: Pfeile = verschieben, Strg+Pfeil = Kopie daneben, Bild↑/↓ = Höhe, R im Bereich = drehen	choisi : flèches = déplacer, Ctrl+flèche = copie à côté, PgHaut/PgBas = hauteur, R dans la zone = tourner
+Gebäude gefunden	bâtiments trouvés
+anklicken = hinspringen, doppelklicken = auswählen (verschieben)	clic = y aller, double-clic = choisir (déplacer)
+Keine Gebäude – erst '↻ Erkennen'.	Aucun bâtiment – d'abord '↻ Détecter'.
+Stadt neu ordnen	Réorganiser la ville
+Gebäude werden in Reihen gesetzt, Ziel	bâtiments placés en rangées, cible
+(markierter Bereich, sonst das ganze Fenster)	(zone marquée, sinon toute la fenêtre)
+Ein Rückgängig-Schritt.	Une étape d'annulation.
+Neu ordnen	Réorganiser
+Gebäude neu gesetzt	bâtiments replacés
+passten nicht (bleiben stehen)	ne rentraient pas (restent)
+passt nicht mehr in den Bereich – bleibt stehen	ne rentre plus dans la zone – reste
+Erst das Bereichs-Fenster mit '✔ Fertig' oder '✖ Abbrechen' schließen.	Fermer d'abord la fenêtre de zone avec '✔ Terminé' ou '✖ Annuler'.
+Erst mit 'Bereich' ein Gebiet markieren (Umschalt = erweitern, Strg + Klick = zwei Ecken, 'Koordinaten …'), dann 'In eigenem Fenster bearbeiten'.	Marquer d'abord une zone avec 'Zone' (Maj = agrandir, Ctrl + clic = deux coins, 'Coordonnées …'), puis 'Modifier dans une fenêtre'.
+Bereich im eigenen Fenster	Zone dans sa propre fenêtre
+alle Werkzeuge wirken auf die Kopie; '✔ Fertig' schreibt sie zurück.	tous les outils agissent sur la copie ; '✔ Terminé' la réécrit.
+Der Bereich	La zone
+wird gerade im eigenen Fenster bearbeitet. Die CGI-Arbeitsfläche ist dort.	est modifiée dans sa propre fenêtre. La surface de travail CGI s'y trouve.
+⧉ Bereichs-Fenster zeigen	⧉ Afficher la fenêtre de zone
+Bereichs-Fenster	Fenêtre de zone
+Bereich zurückgeschrieben	Zone réécrite
+Änderungen an	modifications à
+nimmt alles zurück	annule tout
+Im Bereich wurde nichts geändert.	Rien n'a été modifié dans la zone.
+Bereichs-Fenster abgebrochen – die Karte ist unverändert.	Fenêtre de zone annulée – la carte est inchangée.
+▣ In eigenem Fenster bearbeiten	▣ Modifier dans une fenêtre
+Den Bereich in ein eigenes Fenster laden und dort mit allen Werkzeugen bearbeiten – daneben die andere Ebene (Keller / Oberfläche) und die Gebäude; '✔ Fertig' schreibt die Änderungen an dieselbe Stelle zurück	Charger la zone dans sa propre fenêtre et la modifier avec tous les outils – à côté l'autre niveau (cave / surface) et les bâtiments ; '✔ Terminé' réécrit au même endroit
+Bereich bearbeiten (Fenster)	Modifier la zone (fenêtre)
+Den markierten Bereich in einem eigenen Fenster mit allen Werkzeugen bearbeiten: Stadt ausbauen, Gebäude verschieben / neu ordnen, Wald, Fluss, Brücke, Berg, Keller / Kanalisation darunter (das Haus darüber daneben sichtbar), Liniensystem; '✔ Fertig' schreibt es an dieselbe Stelle zurück	Modifier la zone marquée dans sa propre fenêtre avec tous les outils : aménager une ville, déplacer / réorganiser les bâtiments, forêt, rivière, pont, montagne, cave / égouts dessous (la maison au-dessus visible à côté), système de lignes ; '✔ Terminé' réécrit au même endroit
+Wie vorher (von oben links)	Comme avant (depuis en haut à gauche)
+Nach Größe (große zuerst)	Par taille (grands d'abord)
+Zufällig	Aléatoire
+Freie Tiles zwischen zwei Gebäuden (Straße / Weg).	Tuiles libres entre deux bâtiments (rue / chemin).
+Reihenfolge	Ordre
+In welcher Reihenfolge die Gebäude in die Reihen gesetzt werden.	Dans quel ordre les bâtiments sont placés dans les rangées.
+Boden mitnehmen	Emporter le sol
+Die Land-Tiles unter dem Gebäude (Fußboden, Pflaster) wandern mit.	Les tuiles sous le bâtiment (sol, pavage) suivent.
+Das Land unter jedem Gebäude (+1 Rand) auf seine alte Bodenhöhe setzen – nichts steckt im Boden.	Mettre le terrain sous chaque bâtiment (+1 bord) à son ancienne hauteur – rien ne s'enfonce.
+Freiflächen-Tile (hex, 0 = aus)	Tuile des espaces libres (hex, 0 = non)
+Alle freien Tiles im Ziel-Bereich bekommen dieses Land-Tile (Straße, Pflaster). 0 = Land bleibt.	Toutes les tuiles libres de la zone cible reçoivent cette tuile (rue, pavage). 0 = le terrain reste.
+Für 'Zufällig'. 0 = jedes Mal anders.	Pour 'Aléatoire'. 0 = différent à chaque fois.

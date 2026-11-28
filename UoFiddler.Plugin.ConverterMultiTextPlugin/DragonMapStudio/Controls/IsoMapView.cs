@@ -1293,6 +1293,7 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio.Controls
                 g.DrawPolygon(pen, AreaPoly(_area));
             }
             DrawAreaCorner(g);
+            DrawCoordLines(g);
             DrawToolOverlay(g);
             if (_areaPaste && _areaClip != null && _map.InBounds(_hover.X, _hover.Y))
             {

@@ -259,6 +259,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
 
         private bool ConfirmDiscardCgi()
         {
+            if (RegionBlocks())
+            {
+                return false;
+            }
             if (_cgiMap == null || !_cgiMap.StaticsModified)
             {
                 return true;
@@ -355,6 +359,10 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
         /// </summary>
         private bool SaveCgi(string folder)
         {
+            if (RegionBlocks())
+            {
+                return false;
+            }
             if (_cgiMap == null)
             {
                 return false;

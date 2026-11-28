@@ -263,6 +263,9 @@ namespace UoFiddler.Plugin.ConverterMultiTextPlugin.DragonMapStudio
                         case "foreignmap":
                             OpenForeignStamps();
                             break;
+                        case "region":
+                            OpenRegion();
+                            break;
                         case "course":
                             tabMain.SelectedTab = tabEditor;
                             SelectTool(MapTool.Course);
